@@ -39,23 +39,11 @@ jobs:
           flutter doctor -v
           xcodebuild -version
 
-      - name: 📦 Install Flutter Dependencies
+      - name: 📦 Install Flutter Dependencies & Precache iOS
         run: |
           cd flutter_client
           flutter pub get
-
-      - name: 🍎 Cache CocoaPods
-        uses: actions/cache@v4
-        with:
-          path: flutter_client/ios/Pods
-          key: ${{ runner.os }}-pods-${{ hashFiles('flutter_client/ios/Podfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pods-
-
-      - name: 🍫 Install CocoaPods
-        run: |
-          cd flutter_client/ios
-          pod install --repo-update
+          flutter precache --ios
 
       - name: ⚙️ Build iOS App Bundle (No CodeSign)
         run: |
