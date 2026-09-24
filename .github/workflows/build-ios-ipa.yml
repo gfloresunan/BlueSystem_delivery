@@ -1,0 +1,94 @@
+name: 🍏 Build iOS Flutter Client (.ipa)
+
+on:
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'Tipo de Compilación'
+        required: true
+        default: 'release'
+        type: choice
+        options:
+          - release
+          - debug
+
+jobs:
+  build_ios:
+    name: 🍎 Compile iOS App & Package .IPA
+    runs-on: macos-14 # Apple Silicon M1/M2 macOS Runner
+    timeout-minutes: 60
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ☕ Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: 🐦 Setup Flutter SDK
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: 🔍 Verify Flutter & Xcode Environment
+        run: |
+          flutter doctor -v
+          xcodebuild -version
+
+      - name: 📦 Install Flutter Dependencies
+        run: |
+          cd flutter_client
+          flutter pub get
+
+      - name: 🍎 Cache CocoaPods
+        uses: actions/cache@v4
+        with:
+          path: flutter_client/ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('flutter_client/ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+
+      - name: 🍫 Install CocoaPods
+        run: |
+          cd flutter_client/ios
+          pod install --repo-update
+
+      - name: ⚙️ Build iOS App Bundle (No CodeSign)
+        run: |
+          cd flutter_client
+          flutter build ios --release --no-codesign
+
+      - name: 📦 Package .IPA for Sideloading / AltStore / Test Installation
+        run: |
+          cd flutter_client
+          mkdir -p build/ios/ipa/Payload
+          cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
+          cd build/ios/ipa
+          zip -r -q ../../../BlueSystem_Delivery_iOS_Release.ipa Payload
+          cd ../../..
+          ls -lh BlueSystem_Delivery_iOS_Release.ipa
+
+      - name: 🚀 Upload .IPA Installer as GitHub Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BlueSystem-Delivery-iOS-IPA
+          path: flutter_client/BlueSystem_Delivery_iOS_Release.ipa
+          retention-days: 14
+
+      - name: 📋 Build Summary Notice
+        run: |
+          echo "### 🍏 Compilación iOS Finalizada con Éxito" >> $GITHUB_STEP_SUMMARY
+          echo "El archivo instalador **BlueSystem_Delivery_iOS_Release.ipa** ha sido generado y empaquetado." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Cómo descargarlo:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. Ve a la pestaña **Actions** en tu repositorio de GitHub." >> $GITHUB_STEP_SUMMARY
+          echo "2. Abre la última ejecución de este workflow (**Build iOS Flutter Client**)." >> $GITHUB_STEP_SUMMARY
+          echo "3. En la sección inferior **Artifacts**, descarga el archivo ZIP que contiene el instalador **.ipa**." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Cómo instalarlo en tu iPhone:**" >> $GITHUB_STEP_SUMMARY
+          echo "- **Opción 1:** Usando herramientas de instalación como **AltStore**, **Sideloadly** o **TrollStore**." >> $GITHUB_STEP_SUMMARY
+          echo "- **Opción 2:** Conectando el iPhone a una Mac con Apple Configurator / Xcode." >> $GITHUB_STEP_SUMMARY
