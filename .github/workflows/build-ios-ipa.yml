@@ -53,6 +53,35 @@ jobs:
       - name: 📦 Package .IPA for Sideloading / AltStore / Test Installation
         run: |
           cd flutter_client
+          mkdir -p build/ios/iphoneos/Runner.app/Frameworks
+          echo "=== Checking embedded frameworks in Runner.app ==="
+          ls -la build/ios/iphoneos/Runner.app/Frameworks/ || true
+
+          # Guaranteed embed of Flutter.framework
+          if [ ! -d "build/ios/iphoneos/Runner.app/Frameworks/Flutter.framework" ]; then
+            echo "Embedding Flutter.framework from cache..."
+            FLUTTER_BIN=$(which flutter)
+            FLUTTER_SDK_DIR=$(dirname $(dirname "$FLUTTER_BIN"))
+            ENGINE_IOS="$FLUTTER_SDK_DIR/bin/cache/artifacts/engine/ios-release"
+            if [ -d "$ENGINE_IOS/Flutter.xcframework/ios-arm64/Flutter.framework" ]; then
+              cp -r "$ENGINE_IOS/Flutter.xcframework/ios-arm64/Flutter.framework" build/ios/iphoneos/Runner.app/Frameworks/
+            elif [ -d "$ENGINE_IOS/Flutter.framework" ]; then
+              cp -r "$ENGINE_IOS/Flutter.framework" build/ios/iphoneos/Runner.app/Frameworks/
+            fi
+          fi
+
+          # Guaranteed embed of App.framework (AOT compiled Dart code)
+          if [ ! -d "build/ios/iphoneos/Runner.app/Frameworks/App.framework" ]; then
+            echo "Checking App.framework in build artifacts..."
+            FOUND_APP=$(find build -name "App.framework" -type d | head -n 1)
+            if [ -n "$FOUND_APP" ]; then
+              cp -r "$FOUND_APP" build/ios/iphoneos/Runner.app/Frameworks/
+            fi
+          fi
+
+          echo "=== Final verified frameworks in Runner.app ==="
+          ls -la build/ios/iphoneos/Runner.app/Frameworks/
+
           mkdir -p build/ios/ipa/Payload
           cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
           cd build/ios/ipa
