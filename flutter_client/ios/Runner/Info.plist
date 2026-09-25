@@ -70,7 +70,7 @@
 
 	<!-- Firebase & Push Configuration -->
 	<key>FirebaseAppDelegateProxyEnabled</key>
-	<true/>
+	<false/>
 
 	<!-- Google Maps iOS SDK Configuration -->
 	<key>io.flutter.embedded_views_preview</key>
