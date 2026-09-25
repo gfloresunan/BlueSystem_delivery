@@ -45,17 +45,17 @@ class MerchantFirestoreService implements IMerchantService {
         ? businessId.substring(4)
         : 'biz_$businessId';
 
-    return _firestore.collection('businesses').document(businessId).snapshots().asyncMap((doc) async {
+    return _firestore.collection('businesses').doc(businessId).snapshots().asyncMap((doc) async {
       if (doc.exists && doc.data() != null) {
         return BusinessEntity.fromMap(doc.data()!, doc.id);
       }
       // Fallback to alternate ID
-      final altDoc = await _firestore.collection('businesses').document(candidateId).get();
+      final altDoc = await _firestore.collection('businesses').doc(candidateId).get();
       if (altDoc.exists && altDoc.data() != null) {
         return BusinessEntity.fromMap(altDoc.data()!, altDoc.id);
       }
       // Fallback to /users collection
-      final userDoc = await _firestore.collection('users').document(businessId).get();
+      final userDoc = await _firestore.collection('users').doc(businessId).get();
       if (userDoc.exists && userDoc.data() != null) {
         return BusinessEntity.fromMap(userDoc.data()!, userDoc.id);
       }

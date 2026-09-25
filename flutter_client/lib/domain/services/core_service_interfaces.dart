@@ -7,11 +7,17 @@ import '../../core/config/app_config.dart';
 import '../../core/gatekeeper/gatekeeper.dart';
 import '../../core/subscription/subscription_context.dart';
 import '../../core/tenant/tenant_context.dart';
+import '../entities/banner_entity.dart';
 import '../entities/catalog_entity.dart';
 import '../entities/courier_location_entity.dart';
 import '../entities/order_entity.dart';
 import '../entities/trip_entity.dart';
 import '../entities/user_profile_entity.dart';
+
+abstract class IBannerService {
+  Stream<List<BannerEntity>> watchActiveBanners();
+  Future<List<BannerEntity>> getActiveBanners();
+}
 
 abstract class IAuthService {
   Stream<UserProfileEntity?> get authStateChanges;

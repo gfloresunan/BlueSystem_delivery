@@ -164,16 +164,27 @@ class CategoryEntity {
     String icon = map['icon'] as String? ?? map['icono'] as String? ?? '';
     if (icon.isEmpty) {
       final n = name.toLowerCase();
-      if (n.contains('restaurante') || n.contains('comida')) icon = '🍔';
-      else if (n.contains('fritanga')) icon = '🥩';
-      else if (n.contains('tecnolog') || n.contains('laptop') || n.contains('pc')) icon = '💻';
-      else if (n.contains('tienda')) icon = '🏪';
-      else if (n.contains('supermercado')) icon = '🛒';
-      else if (n.contains('farmacia')) icon = '💊';
-      else if (n.contains('postre')) icon = '🍰';
-      else if (n.contains('ensalada')) icon = '🥗';
-      else if (n.contains('cafeter')) icon = '☕';
-      else icon = '📁';
+      if (n.contains('restaurante') || n.contains('comida')) {
+        icon = '🍔';
+      } else if (n.contains('fritanga')) {
+        icon = '🥩';
+      } else if (n.contains('tecnolog') || n.contains('laptop') || n.contains('pc')) {
+        icon = '💻';
+      } else if (n.contains('tienda')) {
+        icon = '🏪';
+      } else if (n.contains('supermercado')) {
+        icon = '🛒';
+      } else if (n.contains('farmacia')) {
+        icon = '💊';
+      } else if (n.contains('postre')) {
+        icon = '🍰';
+      } else if (n.contains('ensalada')) {
+        icon = '🥗';
+      } else if (n.contains('cafeter')) {
+        icon = '☕';
+      } else {
+        icon = '📁';
+      }
     }
 
     return CategoryEntity(

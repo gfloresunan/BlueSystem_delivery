@@ -407,13 +407,13 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
                       offset: const Offset(0, 4),
                     ),
                   ],
-                  image: b.effectiveImageUrl != null && b.effectiveImageUrl!.isNotEmpty
+                  image: b.effectiveImageUrl.isNotEmpty
                       ? DecorationImage(
-                          image: NetworkImage(b.effectiveImageUrl!),
+                          image: NetworkImage(b.effectiveImageUrl),
                           fit: BoxFit.cover,
                         )
                       : null,
-                  gradient: b.effectiveImageUrl == null || b.effectiveImageUrl!.isEmpty
+                  gradient: b.effectiveImageUrl.isEmpty
                       ? const LinearGradient(
                           colors: [BrandColors.bluePrimary, BrandColors.blueSecondary],
                           begin: Alignment.topLeft,

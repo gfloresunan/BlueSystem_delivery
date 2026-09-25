@@ -78,12 +78,12 @@ class BrandThemeBuilder {
       fontFamily: visual.fontFamily,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: BrandColors.bgLightApp,
-      appBarTheme: AppBarTheme(
+      appBarTheme: const AppBarTheme(
         backgroundColor: BrandColors.surfaceLight,
         foregroundColor: BrandColors.textPrimaryLight,
         elevation: 0,
         centerTitle: false,
-        titleTextStyle: const TextStyle(
+        titleTextStyle: TextStyle(
           color: BrandColors.textPrimaryLight,
           fontSize: 18,
           fontWeight: FontWeight.bold,

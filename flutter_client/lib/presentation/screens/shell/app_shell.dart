@@ -12,6 +12,7 @@ import '../../../domain/services/core_service_interfaces.dart';
 import '../../../data/services/banner_service.dart';
 import '../../../data/services/courier_cash_closure_service.dart';
 import '../../providers/session_state.dart';
+import '../../theme/brand_theme_builder.dart';
 import '../../widgets/state_views.dart';
 import '../auth/login_screen.dart';
 import '../courier/courier_dashboard_screen.dart';
@@ -328,8 +329,9 @@ class _AppShellState extends State<AppShell> {
   Widget _buildUserProfileView() {
     final user = widget.sessionState.currentUser;
     final claims = widget.sessionState.claims;
-    final initialLetter = (user?.displayName?.isNotEmpty ?? false)
-        ? user!.displayName!.substring(0, 1).toUpperCase()
+    final displayName = user?.displayName ?? '';
+    final initialLetter = displayName.isNotEmpty
+        ? displayName.substring(0, 1).toUpperCase()
         : 'C';
 
     return SingleChildScrollView(
@@ -348,9 +350,9 @@ class _AppShellState extends State<AppShell> {
                   Container(
                     width: 60,
                     height: 60,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: LinearGradient(
+                      gradient: const LinearGradient(
                         colors: [BrandColors.bluePrimary, BrandColors.blueSecondary],
                       ),
                     ),

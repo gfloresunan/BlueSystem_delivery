@@ -6,11 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../core/observability/app_logger.dart';
 import '../../domain/entities/banner_entity.dart';
-
-abstract class IBannerService {
-  Stream<List<BannerEntity>> watchActiveBanners();
-  Future<List<BannerEntity>> getActiveBanners();
-}
+import '../../domain/services/core_service_interfaces.dart';
 
 class BannerFirestoreService implements IBannerService {
   final FirebaseFirestore _firestore;
