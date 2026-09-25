@@ -159,7 +159,7 @@ class _AppShellState extends State<AppShell> {
         backgroundColor: const Color(0xFF2563EB),
         foregroundColor: Colors.white,
         elevation: 6,
-        shape: const CircleShape(),
+        shape: const CircleBorder(),
         child: Badge(
           isLabelVisible: _cartItems.isNotEmpty,
           label: Text(
@@ -396,11 +396,11 @@ class _AppShellState extends State<AppShell> {
       backgroundColor: const Color(0xFF020617),
       appBar: AppBar(
         backgroundColor: const Color(0xFF0F172A),
-        title: Row(
+        title: const Row(
           children: [
-            const Icon(Icons.two_wheeler_rounded, color: Color(0xFF818CF8)),
-            const SizedBox(width: 8),
-            const Text(
+            Icon(Icons.two_wheeler_rounded, color: Color(0xFF818CF8)),
+            SizedBox(width: 8),
+            Text(
               'BlueSystem Courier',
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
             ),

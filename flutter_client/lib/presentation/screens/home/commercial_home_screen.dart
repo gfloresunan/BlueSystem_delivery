@@ -219,7 +219,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
                 separatorBuilder: (_, __) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
                   final banner = banners[index];
-                  return _buildBannerCard(theme, banner.title, banner.description, banner.imageUrl);
+                  return _buildBannerCard(theme, banner.effectiveTitle, banner.subtitle, banner.effectiveImageUrl);
                 },
               ),
             );
@@ -241,7 +241,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
       },
       {
         'title': '🛵 Envío Gratis en Comercios Aliados',
-        'subtitle': 'En pedidos mayores a C$ 300 con entrega express',
+        'subtitle': 'En pedidos mayores a C\\$ 300 con entrega express',
         'color1': const Color(0xFF2563EB),
         'color2': const Color(0xFF3B82F6),
       },
@@ -614,7 +614,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   }
 
   Widget _buildFallbackBusinesses(ThemeData theme) {
-    final fallbacks = [
+    final fallbacks = const [
       BusinessEntity(
         businessId: 'biz_restaurante_el_portal',
         tenantId: 'ten_bluesystem_core',
