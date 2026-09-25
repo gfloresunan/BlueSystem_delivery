@@ -14,6 +14,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../core/design_system/bsds_theme.dart';
 import '../../../domain/entities/banner_entity.dart';
 import '../../../domain/entities/catalog_entity.dart';
 import '../../../domain/services/core_service_interfaces.dart';
@@ -92,7 +93,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
     final tenantId = widget.sessionState.claims?.tenantId ?? 'ten_bluesystem_core';
 
     return Scaffold(
-      backgroundColor: BrandColors.bgLightApp,
+      backgroundColor: BSColors.bgLight,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -102,7 +103,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
             ),
           );
         },
-        backgroundColor: BrandColors.bluePrimary,
+        backgroundColor: BSColors.primary,
         elevation: 6,
         shape: const CircleBorder(),
         child: const Icon(Icons.auto_awesome, color: Colors.white, size: 26),

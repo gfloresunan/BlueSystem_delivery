@@ -7,6 +7,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../core/auth/auth_context.dart';
+import '../../../core/design_system/bsds_theme.dart';
 import '../../../domain/entities/catalog_entity.dart';
 import '../../../domain/services/core_service_interfaces.dart';
 import '../../../data/services/courier_cash_closure_service.dart';
@@ -150,26 +151,9 @@ class _AppShellState extends State<AppShell> {
               ],
             ),
       body: _buildCustomerScreen(isGuestMode),
-      floatingActionButton: Container(
-        height: 64,
-        width: 64,
-        margin: const EdgeInsets.only(top: 24),
-        child: FloatingActionButton(
-          onPressed: _openCartDialog,
-          backgroundColor: BrandColors.fabAccent, // Vibrant Red/Pink (#FF2D55)
-          foregroundColor: Colors.white,
-          elevation: 8,
-          shape: const CircleBorder(),
-          child: Badge(
-            isLabelVisible: _cartItems.isNotEmpty,
-            backgroundColor: BrandColors.bluePrimary,
-            label: Text(
-              '${_cartItems.length}',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
-            ),
-            child: const Icon(Icons.shopping_cart_rounded, size: 28),
-          ),
-        ),
+      floatingActionButton: BSCartButton(
+        itemCount: _cartItems.length,
+        onPressed: _openCartDialog,
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: Container(
@@ -634,26 +618,26 @@ class _AppShellState extends State<AppShell> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _selectedIndex,
         onDestinationSelected: (idx) => setState(() => _selectedIndex = idx),
-        backgroundColor: const Color(0xFF0F172A),
-        indicatorColor: const Color(0xFF6366F1),
+        backgroundColor: BSColors.surfaceDark,
+        indicatorColor: BSColors.courierAccent,
         destinations: const [
           NavigationDestination(
-            icon: Icon(Icons.two_wheeler_outlined, color: Color(0xFF94A3B8)),
+            icon: Icon(Icons.two_wheeler_outlined, color: BSColors.textSecondaryDark),
             selectedIcon: Icon(Icons.two_wheeler, color: Colors.white),
             label: 'Pedidos',
           ),
           NavigationDestination(
-            icon: Icon(Icons.local_shipping_outlined, color: Color(0xFF94A3B8)),
+            icon: Icon(Icons.local_shipping_outlined, color: BSColors.textSecondaryDark),
             selectedIcon: Icon(Icons.local_shipping, color: Colors.white),
             label: 'Envíos',
           ),
           NavigationDestination(
-            icon: Icon(Icons.map_outlined, color: Color(0xFF94A3B8)),
+            icon: Icon(Icons.map_outlined, color: BSColors.textSecondaryDark),
             selectedIcon: Icon(Icons.map, color: Colors.white),
             label: 'Flota / GPS',
           ),
           NavigationDestination(
-            icon: Icon(Icons.person_outline, color: Color(0xFF94A3B8)),
+            icon: Icon(Icons.person_outline, color: BSColors.textSecondaryDark),
             selectedIcon: Icon(Icons.person, color: Colors.white),
             label: 'Mi Perfil',
           ),

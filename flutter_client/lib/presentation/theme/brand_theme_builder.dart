@@ -3,37 +3,38 @@
 
 import 'package:flutter/material.dart';
 import '../../core/brand/brand_context.dart';
+import '../../core/design_system/colors/bs_colors.dart';
 
 class BrandColors {
   // Brand / Primary
-  static const Color bluePrimary = Color(0xFF0D47A1);
-  static const Color blueSecondary = Color(0xFF0288D1);
-  static const Color blueTertiary = Color(0xFF00B0FF);
-  static const Color blueDarkPrimaryContainer = Color(0xFF1E3A8A);
+  static const Color bluePrimary = BSColors.primary;
+  static const Color blueSecondary = BSColors.secondary;
+  static const Color blueTertiary = BSColors.tertiary;
+  static const Color blueDarkPrimaryContainer = BSColors.primaryDarkContainer;
 
   // Surfaces & Backgrounds - Light
-  static const Color bgLightApp = Color(0xFFF4F7FA);
-  static const Color surfaceLight = Color(0xFFFFFFFF);
-  static const Color surfaceContainerLight = Color(0xFFF8FAFC);
-  static const Color surfaceContainerLowLight = Color(0xFFF1F5F9);
-  static const Color surfaceContainerHighLight = Color(0xFFE2E8F0);
+  static const Color bgLightApp = BSColors.bgLight;
+  static const Color surfaceLight = BSColors.surfaceLight;
+  static const Color surfaceContainerLight = BSColors.surfaceContainerLight;
+  static const Color surfaceContainerLowLight = BSColors.surfaceContainerLowLight;
+  static const Color surfaceContainerHighLight = BSColors.surfaceContainerHighLight;
 
   // Text / On Surfaces - Light
-  static const Color textPrimaryLight = Color(0xFF0F172A);
-  static const Color textSecondaryLight = Color(0xFF64748B);
+  static const Color textPrimaryLight = BSColors.textPrimaryLight;
+  static const Color textSecondaryLight = BSColors.textSecondaryLight;
 
   // Accent / Status
-  static const Color fabAccent = Color(0xFFFF2D55); // Red/Pink Central Cart Button
-  static const Color statusSuccess = Color(0xFF10B981);
-  static const Color statusSuccessContainer = Color(0xFFD1FAE5);
-  static const Color statusWarning = Color(0xFFD97706);
-  static const Color statusWarningContainer = Color(0xFFFEF3C7);
-  static const Color statusError = Color(0xFFDC2626);
-  static const Color statusErrorContainer = Color(0xFFFEE2E2);
+  static const Color fabAccent = BSColors.cartFabAccent; // Red/Pink Central Cart Button
+  static const Color statusSuccess = BSColors.success;
+  static const Color statusSuccessContainer = BSColors.successContainerLight;
+  static const Color statusWarning = BSColors.warning;
+  static const Color statusWarningContainer = BSColors.warningContainerLight;
+  static const Color statusError = BSColors.error;
+  static const Color statusErrorContainer = BSColors.errorContainerLight;
 
   // Outlines & Borders
-  static const Color outlineLight = Color(0xFFCBD5E1);
-  static const Color outlineVariantLight = Color(0xFFE2E8F0);
+  static const Color outlineLight = BSColors.outlineLight;
+  static const Color outlineVariantLight = BSColors.outlineVariantLight;
 }
 
 class BrandThemeBuilder {

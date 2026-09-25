@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../core/design_system/bsds_theme.dart';
 import '../../../core/observability/app_logger.dart';
 import '../../providers/session_state.dart';
 import '../../theme/brand_theme_builder.dart';
@@ -261,7 +262,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFEEF2FF),
+      backgroundColor: BSColors.bgLight,
       body: SafeArea(
         bottom: false,
         child: Column(
@@ -279,7 +280,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF6366F1).withOpacity(0.2),
+                          color: BSColors.primary.withOpacity(0.2),
                           blurRadius: 16,
                           offset: const Offset(0, 6),
                         ),
@@ -288,25 +289,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     child: const Icon(
                       Icons.local_shipping_rounded,
                       size: 42,
-                      color: Color(0xFF4F46E5),
+                      color: BSColors.primary,
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
+                  Text(
                     'BlueSystem',
-                    style: TextStyle(
-                      fontSize: 28,
+                    style: BSTypography.headlineLarge(color: BSColors.textPrimaryLight).copyWith(
                       fontWeight: FontWeight.w900,
-                      color: Color(0xFF1E293B),
                       letterSpacing: -0.5,
                     ),
                   ),
-                  const Text(
+                  Text(
                     'Delivery Express',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      color: Color(0xFF64748B),
+                    style: BSTypography.labelLarge(color: BSColors.textSecondaryLight).copyWith(
                       letterSpacing: 1.2,
                     ),
                   ),
