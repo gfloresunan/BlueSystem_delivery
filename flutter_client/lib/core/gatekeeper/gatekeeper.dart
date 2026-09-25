@@ -193,7 +193,6 @@ class GatekeeperEngine {
     }
 
     // 7. Entitlement Feature Check
-    final normalizedModule = moduleKey.toUpperCase();
     if (!sub.isFeatureEnabled(normalizedModule)) {
       return AccessDecision.deny(
         AccessDecisionReason.entitlementMissing,

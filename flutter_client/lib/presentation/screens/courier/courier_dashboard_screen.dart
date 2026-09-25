@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../core/auth/auth_context.dart';
 import '../../../core/observability/app_logger.dart';
 import '../../../domain/entities/courier_balance_entity.dart';
 import '../../../domain/entities/order_entity.dart';
