@@ -60,6 +60,10 @@ class SessionState extends ChangeNotifier {
   AppConfigEntity? get activeAppConfig => _activeAppConfig;
   String? get errorMessage => _errorMessage;
   bool get isOffline => _isOffline;
+  bool get isGuestMode =>
+      _currentUser == null ||
+      _claims?.role == EiamRole.guest ||
+      _status == AuthStatus.unauthenticated;
 
   GatekeeperContext? get gatekeeperContext {
     if (_currentUser == null || _claims == null) return null;
@@ -89,14 +93,11 @@ class SessionState extends ChangeNotifier {
       if (user != null) {
         await _hydrateSession(user);
       } else {
-        _status = AuthStatus.unauthenticated;
-        notifyListeners();
+        continueAsGuest();
       }
     } catch (e, st) {
       AppLogger.error('SessionState', 'Failed initializing session', e, st);
-      _status = AuthStatus.unauthenticated;
-      _errorMessage = e.toString();
-      notifyListeners();
+      continueAsGuest();
     }
   }
 
@@ -126,10 +127,10 @@ class SessionState extends ChangeNotifier {
       _activeBrand = null;
       _activeSubscription = null;
       _activeAppConfig = null;
-      _status = AuthStatus.unauthenticated;
-      notifyListeners();
+      continueAsGuest();
     } catch (e, st) {
       AppLogger.error('SessionState', 'Sign out error', e, st);
+      continueAsGuest();
     }
   }
 

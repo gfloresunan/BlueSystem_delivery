@@ -84,7 +84,9 @@ abstract class IFleetService {
 }
 
 abstract class IMerchantService {
+  Stream<List<BusinessEntity>> watchBusinesses({required String tenantId});
   Stream<List<ProductEntity>> watchProducts(String businessId, {required String tenantId});
+  Future<List<ProductEntity>> getProductsForBusiness(String businessId, {required String tenantId});
   Stream<List<BranchEntity>> watchBranches(String businessId, {required String tenantId});
   Stream<List<PromotionEntity>> watchPromotions({required String tenantId});
 }

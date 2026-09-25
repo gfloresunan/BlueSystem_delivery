@@ -160,3 +160,82 @@ class PromotionEntity {
     };
   }
 }
+
+class BusinessEntity {
+  final String businessId;
+  final String tenantId;
+  final String name;
+  final String category;
+  final String address;
+  final String phone;
+  final String description;
+  final String? logoUrl;
+  final String? bannerUrl;
+  final String deliveryTime;
+  final double rating;
+  final double deliveryFee;
+  final bool isOpen;
+
+  const BusinessEntity({
+    required this.businessId,
+    required this.tenantId,
+    required this.name,
+    required this.category,
+    required this.address,
+    required this.phone,
+    required this.description,
+    this.logoUrl,
+    this.bannerUrl,
+    this.deliveryTime = '20-35 min',
+    this.rating = 4.8,
+    this.deliveryFee = 35.0,
+    this.isOpen = true,
+  });
+
+  factory BusinessEntity.fromMap(Map<String, dynamic> map, String id) {
+    final name = map['name'] as String? ??
+        map['nombre'] as String? ??
+        map['comercioNombre'] as String? ??
+        map['businessName'] as String? ??
+        'Restaurante Aliado';
+    final category = map['category'] as String? ??
+        map['categoria'] as String? ??
+        'Comida';
+    final logoUrl = map['logoUrl'] as String? ??
+        map['photoUrl'] as String? ??
+        map['avatarUrl'] as String? ??
+        map['logo'] as String?;
+    final bannerUrl = map['bannerUrl'] as String? ??
+        map['coverUrl'] as String? ??
+        map['portadaUrl'] as String? ??
+        map['banner'] as String?;
+    final deliveryTime = map['deliveryTime'] as String? ??
+        map['tiempoEntrega'] as String? ??
+        '20-35 min';
+    final rating = (map['rating'] as num?)?.toDouble() ??
+        (map['calificacion'] as num?)?.toDouble() ??
+        4.8;
+    final deliveryFee = (map['deliveryFee'] as num?)?.toDouble() ??
+        (map['costoEnvio'] as num?)?.toDouble() ??
+        35.0;
+    final isOpen = map['isOpen'] as bool? ??
+        map['abierto'] as bool? ??
+        (map['active'] as bool? ?? true);
+
+    return BusinessEntity(
+      businessId: id.isNotEmpty ? id : (map['businessId'] as String? ?? ''),
+      tenantId: map['tenantId'] as String? ?? '',
+      name: name,
+      category: category,
+      address: map['address'] as String? ?? map['direccion'] as String? ?? '',
+      phone: map['phone'] as String? ?? map['telefono'] as String? ?? '',
+      description: map['description'] as String? ?? map['descripcion'] as String? ?? '',
+      logoUrl: logoUrl,
+      bannerUrl: bannerUrl,
+      deliveryTime: deliveryTime,
+      rating: rating,
+      deliveryFee: deliveryFee,
+      isOpen: isOpen,
+    );
+  }
+}
