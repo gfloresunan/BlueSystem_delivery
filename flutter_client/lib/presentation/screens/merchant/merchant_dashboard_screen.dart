@@ -294,7 +294,7 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
             .where((o) => o.status == OrderStatus.pending || o.status == OrderStatus.preparing || o.status == OrderStatus.accepted)
             .toList();
 
-        final totalSales = completedOrders.fold(0.0, (sum, o) => sum + o.total);
+        final totalSales = completedOrders.fold(0.0, (acc, o) => acc + o.total);
         final avgTicket = completedOrders.isNotEmpty ? totalSales / completedOrders.length : 0.0;
 
         return RefreshIndicator(
@@ -553,7 +553,7 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
         onSelected: (_) => setState(() => _ordersFilter = key),
         selectedColor: const Color(0xFFEFF6FF),
         labelStyle: TextStyle(
-          color: isSelected ? BrandColors.bluePrimary : Colors.black89,
+          color: isSelected ? BrandColors.bluePrimary : Colors.black87,
           fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           fontSize: 12,
         ),
@@ -895,10 +895,10 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
           onTap: () {},
         ),
         const Divider(),
-        ListTile(
-          leading: const Icon(Icons.lock_outline, color: Color(0xFF6366F1)),
-          title: const Text('Seguridad y Permisos'),
-          subtitle: const Text('EIAM v3 - Multi-tenant Enterprise Guard'),
+        const ListTile(
+          leading: Icon(Icons.lock_outline, color: Color(0xFF6366F1)),
+          title: Text('Seguridad y Permisos'),
+          subtitle: Text('EIAM v3 - Multi-tenant Enterprise Guard'),
         ),
       ],
     );

@@ -756,6 +756,7 @@ class _AppShellState extends State<AppShell> {
     return MerchantDashboardScreen(
       sessionState: widget.sessionState,
       merchantService: widget.merchantService,
+      orderService: widget.orderService,
     );
   }
 

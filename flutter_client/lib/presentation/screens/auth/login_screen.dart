@@ -284,7 +284,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           offset: const Offset(0, 6),
                         ),
                       ],
-                    ],
+                    ),
                     child: const Icon(
                       Icons.local_shipping_rounded,
                       size: 42,
