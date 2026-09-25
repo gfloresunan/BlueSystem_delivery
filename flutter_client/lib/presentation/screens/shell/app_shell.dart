@@ -9,7 +9,6 @@ import 'package:flutter/material.dart';
 import '../../../core/auth/auth_context.dart';
 import '../../../domain/entities/catalog_entity.dart';
 import '../../../domain/services/core_service_interfaces.dart';
-import '../../../data/services/banner_service.dart';
 import '../../../data/services/courier_cash_closure_service.dart';
 import '../../providers/session_state.dart';
 import '../../theme/brand_theme_builder.dart';
@@ -350,9 +349,9 @@ class _AppShellState extends State<AppShell> {
                   Container(
                     width: 60,
                     height: 60,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         colors: [BrandColors.bluePrimary, BrandColors.blueSecondary],
                       ),
                     ),
