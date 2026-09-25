@@ -38,14 +38,18 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final tenantId = widget.sessionState.claims?.tenantId ?? widget.sessionState.activeTenant?.tenantId ?? '';
+    final tenantId = widget.sessionState.claims?.tenantId ??
+        widget.sessionState.activeTenant?.tenantId ??
+        'ten_bluesystem_core';
     final courierId = widget.sessionState.currentUser?.uid ?? '';
 
-    if (!widget.sessionState.canAccess('COURIER')) {
+    if (!widget.sessionState.canAccess('COURIER') &&
+        widget.sessionState.claims?.role != EiamRole.driver &&
+        widget.sessionState.currentUser?.role != EiamRole.driver) {
       return const UnauthorizedView(moduleKey: 'COURIER');
     }
 
-    if (tenantId.isEmpty || courierId.isEmpty) {
+    if (courierId.isEmpty) {
       return const ErrorView(
         title: 'Contexto Courier Incompleto',
         message: 'No se encontró un perfil de motorizado activo.',

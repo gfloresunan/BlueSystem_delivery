@@ -68,12 +68,14 @@ class _AppShellState extends State<AppShell> {
         final status = widget.sessionState.status;
 
         // ─── Uninitialized ─────────────────────────────────────────────────
-        if (status == AuthStatus.uninitialized || status == AuthStatus.authenticating) {
+        if (status == AuthStatus.uninitialized) {
           return const Scaffold(body: LoadingView(message: 'Inicializando BlueSystem Enterprise...'));
         }
 
-        // ─── Unauthenticated → Login ───────────────────────────────────────
-        if (status == AuthStatus.unauthenticated || status == AuthStatus.error) {
+        // ─── Unauthenticated / Error / Authenticating → Login ────────────────
+        if (status == AuthStatus.unauthenticated ||
+            status == AuthStatus.error ||
+            status == AuthStatus.authenticating) {
           return LoginScreen(
             sessionState: widget.sessionState,
             onLoginSuccess: () {
@@ -84,8 +86,12 @@ class _AppShellState extends State<AppShell> {
 
         // ─── Authenticated → Commercial Shell ──────────────────────────────
         final brand = widget.sessionState.activeBrand;
-        final isCourier = widget.sessionState.claims?.role == EiamRole.driver;
+        final isCourier = widget.sessionState.claims?.role == EiamRole.driver ||
+            widget.sessionState.currentUser?.role == EiamRole.driver;
         final navItems = _getNavItems(isCourier);
+        final isGuestMode = widget.sessionState.currentUser == null ||
+            (widget.sessionState.claims?.role == EiamRole.guest &&
+                widget.sessionState.currentUser?.role != EiamRole.driver);
 
         return Scaffold(
           appBar: AppBar(
@@ -98,11 +104,18 @@ class _AppShellState extends State<AppShell> {
             ),
             actions: [
               if (widget.sessionState.isOffline) const OfflineBanner(),
-              IconButton(
-                icon: const Icon(Icons.account_circle_outlined),
-                tooltip: widget.sessionState.currentUser?.email ?? 'Perfil',
-                onPressed: () => _showUserMenu(context),
-              ),
+              if (isGuestMode)
+                TextButton.icon(
+                  onPressed: () => widget.sessionState.signOut(),
+                  icon: const Icon(Icons.login_rounded, size: 18),
+                  label: const Text('Iniciar Sesión'),
+                )
+              else
+                IconButton(
+                  icon: const Icon(Icons.account_circle_outlined),
+                  tooltip: widget.sessionState.currentUser?.email ?? 'Perfil',
+                  onPressed: () => _showUserMenu(context),
+                ),
             ],
           ),
           body: _buildCurrentScreen(isCourier),

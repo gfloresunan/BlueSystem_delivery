@@ -43,8 +43,13 @@ class GatekeeperContext {
     this.entitlements,
   });
 
-  bool get isValid =>
-      uid.isNotEmpty && membershipId.isNotEmpty && tenantId.isNotEmpty;
+  bool get isValid {
+    if (role == EiamRole.guest) return true;
+    if (role == EiamRole.client || role == EiamRole.driver) {
+      return uid.isNotEmpty;
+    }
+    return uid.isNotEmpty && membershipId.isNotEmpty && tenantId.isNotEmpty;
+  }
 }
 
 class AccessDecision {
@@ -84,8 +89,45 @@ class GatekeeperEngine {
     int? nowMs,
   }) {
     final now = nowMs ?? DateTime.now().millisecondsSinceEpoch;
+    final normalizedModule = moduleKey.toUpperCase();
 
-    // 1. Structural Context Validation
+    // 1. Platform Admin Bypass (Platform Level Only)
+    if (context.role == EiamRole.superAdmin ||
+        context.role == EiamRole.admin ||
+        context.role == EiamRole.auditor) {
+      return AccessDecision.allow(moduleKey);
+    }
+
+    // 2. Driver / Courier Direct Access (Fleet Operations)
+    if (context.role == EiamRole.driver) {
+      const driverAllowedModules = [
+        'COURIER',
+        'ORDERS',
+        'TRIPS',
+        'FLEET',
+        'FLEET_CORE',
+        'CONTROL_TOWER',
+      ];
+      if (driverAllowedModules.contains(normalizedModule)) {
+        return AccessDecision.allow(moduleKey);
+      }
+    }
+
+    // 3. Client / Guest Direct Access (Commercial Catalog & Tracking)
+    if (context.role == EiamRole.client || context.role == EiamRole.guest) {
+      const clientAllowedModules = [
+        'HOME',
+        'CATALOG',
+        'COMMERCIAL_CATALOG',
+        'ORDERS',
+        'TRIPS',
+      ];
+      if (clientAllowedModules.contains(normalizedModule)) {
+        return AccessDecision.allow(moduleKey);
+      }
+    }
+
+    // 4. Structural Context Validation for B2B Merchant modules
     if (!context.isValid) {
       return AccessDecision.deny(
         AccessDecisionReason.contextInvalid,
@@ -93,14 +135,7 @@ class GatekeeperEngine {
       );
     }
 
-    // 2. Platform Admin Bypass (Platform Level Only)
-    if (context.role == EiamRole.superAdmin ||
-        context.role == EiamRole.admin ||
-        context.role == EiamRole.auditor) {
-      return AccessDecision.allow(moduleKey);
-    }
-
-    // 3. Subscription Verification
+    // 5. Subscription Verification (B2B SaaS Tenants)
     final sub = context.subscription;
     if (sub == null) {
       return AccessDecision.deny(

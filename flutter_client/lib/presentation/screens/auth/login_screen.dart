@@ -29,6 +29,14 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.sessionState.errorMessage != null) {
+      _errorMessage = widget.sessionState.errorMessage!.replaceAll('Exception: ', '');
+    }
+  }
+
+  @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
@@ -189,6 +197,26 @@ class _LoginScreenState extends State<LoginScreen> {
                             'INICIAR SESIÓN',
                             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                           ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Guest exploration button
+                  OutlinedButton.icon(
+                    onPressed: _isLoading
+                        ? null
+                        : () {
+                            widget.sessionState.continueAsGuest();
+                            widget.onLoginSuccess();
+                          },
+                    icon: const Icon(Icons.storefront_outlined),
+                    label: const Text(
+                      'EXPLORAR COMO INVITADO',
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    ),
                   ),
                   const SizedBox(height: 32),
 

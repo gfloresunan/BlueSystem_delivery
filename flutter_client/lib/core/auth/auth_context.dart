@@ -98,30 +98,44 @@ class MembershipV3Entity {
   }
 
   static EiamRole parseRole(String? value) {
-    switch (value?.toUpperCase()) {
+    switch (value?.toUpperCase().trim()) {
       case 'SUPER_ADMIN':
         return EiamRole.superAdmin;
       case 'ADMIN':
+      case 'ADMINISTRADOR':
         return EiamRole.admin;
       case 'AUDITOR':
         return EiamRole.auditor;
       case 'SUPPORT':
+      case 'SOPORTE':
         return EiamRole.support;
       case 'OWNER':
+      case 'COMERCIO':
+      case 'BUSINESS':
+      case 'MERCHANT':
         return EiamRole.owner;
       case 'MANAGER':
+      case 'GERENTE':
         return EiamRole.manager;
       case 'SUPERVISOR':
         return EiamRole.supervisor;
       case 'CASHIER':
+      case 'CAJERO':
         return EiamRole.cashier;
       case 'COOK':
+      case 'COCINERO':
         return EiamRole.cook;
       case 'DRIVER':
+      case 'COURIER':
+      case 'MOTORIZADO':
+      case 'REPARTIDOR':
         return EiamRole.driver;
       case 'CLIENT':
+      case 'CLIENTE':
+      case 'CUSTOMER':
         return EiamRole.client;
       case 'GUEST':
+      case 'INVITADO':
       default:
         return EiamRole.guest;
     }
@@ -201,9 +215,12 @@ class CanonicalCustomClaimsV3 {
       role == EiamRole.owner || role == EiamRole.manager;
 
   factory CanonicalCustomClaimsV3.fromTokenMap(Map<String, dynamic> tokenClaims) {
-    final rawRole = tokenClaims['role'] ?? tokenClaims['eiamRole'];
+    final rawRole = tokenClaims['role'] ??
+        tokenClaims['eiamRole'] ??
+        tokenClaims['userType'] ??
+        tokenClaims['rol'];
     return CanonicalCustomClaimsV3(
-      role: MembershipV3Entity.parseRole(rawRole as String?),
+      role: MembershipV3Entity.parseRole(rawRole?.toString()),
       tenantId: tokenClaims['tenantId'] as String?,
       brandId: tokenClaims['brandId'] as String?,
       orgId: tokenClaims['orgId'] as String?,

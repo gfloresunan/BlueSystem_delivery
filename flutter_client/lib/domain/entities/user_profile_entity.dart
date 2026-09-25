@@ -36,20 +36,43 @@ class UserProfileEntity {
     required this.updatedAt,
   });
 
+  static int _parseTimestamp(dynamic val) {
+    if (val == null) return 0;
+    if (val is num) return val.toInt();
+    if (val is String) {
+      final parsedNum = num.tryParse(val);
+      if (parsedNum != null) return parsedNum.toInt();
+      final parsedDate = DateTime.tryParse(val);
+      if (parsedDate != null) return parsedDate.millisecondsSinceEpoch;
+    }
+    // Handles cloud_firestore Timestamp if present via duck-typing
+    try {
+      final ms = (val as dynamic).millisecondsSinceEpoch;
+      if (ms is num) return ms.toInt();
+    } catch (_) {}
+    return 0;
+  }
+
   factory UserProfileEntity.fromMap(Map<String, dynamic> map, String uid) {
+    final rawRole = map['role'] ?? map['rol'] ?? map['eiamRole'] ?? map['userType'];
+    final rawPhoto = map['photoUrl'] ?? map['photoURL'] ?? map['fotoUrl'] ?? map['profilePhotoUrl'];
+    final rawName = map['displayName'] ?? map['nombre'] ?? map['name'];
+    final rawPhone = map['phoneNumber'] ?? map['telefono'] ?? map['phone'];
+    final rawTenant = map['activeTenantId'] ?? map['tenantId'] ?? map['commercialTenantId'];
+
     return UserProfileEntity(
       uid: uid,
       email: map['email'] as String? ?? '',
-      displayName: map['displayName'] as String? ?? map['nombre'] as String? ?? '',
-      phoneNumber: map['phoneNumber'] as String? ?? map['telefono'] as String?,
-      photoUrl: map['photoUrl'] as String?,
-      role: MembershipV3Entity.parseRole(map['role'] as String? ?? map['eiamRole'] as String?),
-      activeTenantId: map['activeTenantId'] as String? ?? map['tenantId'] as String?,
+      displayName: rawName?.toString() ?? '',
+      phoneNumber: rawPhone?.toString(),
+      photoUrl: rawPhoto?.toString(),
+      role: MembershipV3Entity.parseRole(rawRole?.toString()),
+      activeTenantId: rawTenant?.toString(),
       activeBrandId: map['activeBrandId'] as String? ?? map['brandId'] as String?,
       activeMembershipId: map['activeMembershipId'] as String? ?? map['membershipId'] as String?,
-      isVerified: map['isVerified'] as bool? ?? false,
-      createdAt: (map['createdAt'] as num?)?.toInt() ?? 0,
-      updatedAt: (map['updatedAt'] as num?)?.toInt() ?? 0,
+      isVerified: map['isVerified'] == true || map['emailVerified'] == true,
+      createdAt: _parseTimestamp(map['createdAt']),
+      updatedAt: _parseTimestamp(map['updatedAt']),
     );
   }
 

@@ -133,17 +133,49 @@ class SessionState extends ChangeNotifier {
     }
   }
 
+  void continueAsGuest() {
+    _currentUser = null;
+    _claims = const CanonicalCustomClaimsV3(
+      role: EiamRole.guest,
+      tenantId: 'ten_bluesystem_core',
+    );
+    _status = AuthStatus.authenticated;
+    _errorMessage = null;
+    AppLogger.info('SessionState', 'Continuing as Guest/Invitado in Commercial catalog');
+    notifyListeners();
+  }
+
   Future<void> _hydrateSession(UserProfileEntity user) async {
     _currentUser = user;
     final customClaims = await _authService.getCustomClaims();
-    _claims = customClaims ?? CanonicalCustomClaimsV3(
-      role: EiamRole.guest,
-      tenantId: user.tenantId,
-    );
+    
+    // Resolve effective role: Custom claims takes precedence, then Firestore user profile, then guest
+    final effectiveRole = (customClaims?.role != null && customClaims!.role != EiamRole.guest)
+        ? customClaims.role
+        : (user.role != EiamRole.guest ? user.role : EiamRole.guest);
 
-    final tenantId = _claims?.tenantId ?? user.tenantId;
+    final effectiveTenantId = customClaims?.tenantId ?? user.tenantId ?? 'ten_bluesystem_core';
 
-    if (tenantId != null && tenantId.isNotEmpty) {
+    _claims = customClaims != null
+        ? CanonicalCustomClaimsV3(
+            role: effectiveRole,
+            tenantId: effectiveTenantId,
+            brandId: customClaims.brandId ?? user.brandId,
+            orgId: customClaims.orgId,
+            businessId: customClaims.businessId,
+            branchId: customClaims.branchId,
+            status: customClaims.status,
+            eiamVer: customClaims.eiamVer,
+          )
+        : CanonicalCustomClaimsV3(
+            role: effectiveRole,
+            tenantId: effectiveTenantId,
+            brandId: user.brandId,
+          );
+
+    final tenantId = _claims?.tenantId ?? effectiveTenantId;
+
+    if (tenantId.isNotEmpty) {
       // 1. Hydrate Tenant
       _activeTenant = await _tenantService.getTenantById(tenantId);
 
