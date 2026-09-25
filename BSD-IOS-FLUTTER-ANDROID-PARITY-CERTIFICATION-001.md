@@ -287,8 +287,13 @@ Flujo completo: Exploración de comercios → Selección de productos reales →
 ## 17. Courier Module Parity: 🟢 PASS
 Conserva el soporte unificado de Courier dentro de `app_shell.dart`, respetando la telemetría GPS, pooling y asignación sin alterar contratos.
 
-## 18. X→Y Parity: 🟢 PASS
-Cumple estrictamente con ADR-015 y ADR-026: Pricing canónico (Base C$ 35 + km × C$ 15), geocodificación nativa y sincronización atómica con `/deliveryTrips`.
+## 18. X→Y Parity: 🟢 PASS (Nivel A)
+Cumple estrictamente con ADR-015 y ADR-026: Pricing canónico extraído directamente del SSOT autoritativo (`/system_config/global.xToYPricing`):
+- **Tarifa Base (`baseFee`):** C$ 35
+- **Tarifa por Kilómetro (`pricePerKm` / `perKmRate`):** C$ 10
+- **Política de Cálculo (`calculationPolicy`):** `KM_BLOCK_2DEC`
+- **Sincronización:** Persistencia atómica de viajes en la colección `/deliveryTrips`.
+*(Nota: Se rectifica la mención preliminar de C$ 15/km, confirmando que el valor oficial y vigente en el backend congelado es C$ 10/km).*
 
 ## 19. GPS Parity: 🟢 PASS
 Telemetría de geolocalización basada en `Geolocator` con reporte continuo al SSOT `/ubicaciones_repartidores` para couriers y ubicación precisa para customers.
@@ -363,27 +368,28 @@ Todos los cambios fueron realizados estrictamente dentro de `flutter_client/`:
 
 ---
 
-## 28. Final Parity Matrix
+## 28. Final Parity Matrix (Two-Level Evaluation)
 
-| Criterio de Paridad | Estado Previo | Estado Actual | Veredicto |
+| Criterio de Paridad | Nivel A (Implementación / Código) | Nivel B (Prueba Física en iPhone) | Estatus Consolidado |
 | :--- | :---: | :---: | :---: |
-| **Architecture Parity** | 🟡 PARTIAL | 🟢 PASS | CERTIFIED |
+| **Architecture Parity** | 🟢 PASS | 🟢 PASS | CERTIFIED |
 | **Contract Parity** | 🟢 PASS | 🟢 PASS | CERTIFIED |
-| **Data Parity** | 🔴 FAIL | 🟢 PASS | CERTIFIED |
-| **Catalog Parity** | 🔴 FAIL | 🟢 PASS | CERTIFIED |
-| **Merchant Parity** | 🔴 FAIL | 🟢 PASS | CERTIFIED |
-| **Functional Parity** | 🟡 PARTIAL | 🟢 PASS | CERTIFIED |
-| **UI/UX Parity** | 🔴 FAIL | 🟢 PASS | CERTIFIED |
-| **Navigation Parity** | 🟡 PARTIAL | 🟢 PASS | CERTIFIED |
-| **Customer Parity** | 🟡 PARTIAL | 🟢 PASS | CERTIFIED |
-| **Courier Parity** | 🟢 PASS | 🟢 PASS | CERTIFIED |
+| **Data Parity (SSOT)** | 🟢 PASS | 🟡 PENDING POST-FIX RUN | RELEASE CANDIDATE |
+| **Catalog Parity (Real Products)** | 🟢 PASS | 🟡 PENDING POST-FIX RUN | RELEASE CANDIDATE |
+| **Merchant Parity (5 Canónicos)** | 🟢 PASS | 🟡 PENDING POST-FIX RUN | RELEASE CANDIDATE |
+| **Functional Parity** | 🟢 PASS | 🟡 PENDING POST-FIX RUN | RELEASE CANDIDATE |
+| **UI/UX Parity (BSDS Light)** | 🟢 PASS | 🟡 PENDING POST-FIX RUN | RELEASE CANDIDATE |
+| **Navigation Parity** | 🟢 PASS | 🟡 PENDING POST-FIX RUN | RELEASE CANDIDATE |
+| **Customer Parity** | 🟢 PASS | 🟡 PENDING POST-FIX RUN | RELEASE CANDIDATE |
+| **Courier Parity** | 🟢 PASS | 🟡 PENDING POST-FIX RUN | RELEASE CANDIDATE |
 
 ---
 
 ## 29. Release Gate
 
-- **Criterio de Aceptación:** Paridad total alcanzada con Android como referencia canónica sin alterar el SSOT compartido ni el código Android nativo.
-- **Veredicto:** **GREEN (PASA)**
+- **Criterio de Aceptación:** Paridad total implementada en código (Nivel A) confirmada. Pendiente la validación en dispositivo físico iPhone con el nuevo paquete .ipa compilado (Nivel B).
+- **Veredicto:** 🟡 **YELLOW / RELEASE CANDIDATE (RC-1)**  
+*(No se declara GREEN definitivo hasta completar la prueba física tripartita en hardware real).*
 
 ---
 
@@ -416,25 +422,25 @@ Business Logic:
 SAME
 
 Customer Experience:
-PARITY VALIDATED
+PARITY VALIDATED (LEVEL A) / PENDING ON-DEVICE (LEVEL B)
 
 Courier Experience:
-PARITY VALIDATED
+PARITY VALIDATED (LEVEL A) / PENDING ON-DEVICE (LEVEL B)
 
 Merchant Data:
-PARITY VALIDATED
+PARITY VALIDATED (5 CANONICAL MERCHANTS IN SSOT)
 
 Catalog:
-PARITY VALIDATED
+PARITY VALIDATED (REAL PRODUCTS STREAMED)
 
 UI/UX:
-PARITY VALIDATED
+PARITY VALIDATED (BSDS LIGHT THEME APPLIED)
 
 Navigation:
 PARITY VALIDATED
 
 Android Regression:
-PASSED
+PASSED (0 FILES / 0 BYTES MODIFIED)
 
 Mock/Test Data:
 REMOVED FROM PRODUCTION PATH
@@ -446,10 +452,10 @@ Product Catalog:
 CANONICAL SSOT
 
 Release Gate:
-GREEN
+YELLOW
 
 Final Status:
-ANDROID PARITY CERTIFIED
+RELEASE CANDIDATE (RC-1) — PENDING PHYSICAL DEVICE RUN
 
 ============================================================
 ```
