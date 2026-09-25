@@ -11,6 +11,12 @@ on:
         options:
           - release
           - debug
+  push:
+    branches:
+      - main
+    paths:
+      - 'flutter_client/**'
+      - '.github/workflows/build-ios-ipa.yml'
 
 jobs:
   build_ios:
