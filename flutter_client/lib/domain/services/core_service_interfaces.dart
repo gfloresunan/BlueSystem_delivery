@@ -24,6 +24,15 @@ abstract class IAuthService {
   Future<UserProfileEntity?> getCurrentUser();
   Future<CanonicalCustomClaimsV3?> getCustomClaims();
   Future<UserProfileEntity> signInWithEmailPassword(String email, String password);
+  Future<UserProfileEntity> registerWithEmailPassword({
+    required String email,
+    required String password,
+    required String name,
+    required String phone,
+  });
+  Future<UserProfileEntity> signInWithGoogleToken(String idToken, {String? accessToken});
+  Future<UserProfileEntity> signInWithFacebookToken(String accessToken);
+  Future<void> sendPasswordReset(String email);
   Future<void> signOut();
   Future<void> refreshIdToken();
 }

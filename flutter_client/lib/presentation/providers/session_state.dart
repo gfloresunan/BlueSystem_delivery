@@ -93,11 +93,13 @@ class SessionState extends ChangeNotifier {
       if (user != null) {
         await _hydrateSession(user);
       } else {
-        continueAsGuest();
+        _status = AuthStatus.unauthenticated;
+        notifyListeners();
       }
     } catch (e, st) {
       AppLogger.error('SessionState', 'Failed initializing session', e, st);
-      continueAsGuest();
+      _status = AuthStatus.unauthenticated;
+      notifyListeners();
     }
   }
 
@@ -111,11 +113,83 @@ class SessionState extends ChangeNotifier {
       await _hydrateSession(user);
     } catch (e, st) {
       AppLogger.error('SessionState', 'Sign in failed for $email', e, st);
-      _status = AuthStatus.error;
+      _status = AuthStatus.unauthenticated;
       _errorMessage = e.toString();
       notifyListeners();
       rethrow;
     }
+  }
+
+  Future<void> register({
+    required String email,
+    required String password,
+    required String name,
+    required String phone,
+  }) async {
+    try {
+      _status = AuthStatus.authenticating;
+      _errorMessage = null;
+      notifyListeners();
+
+      final user = await _authService.registerWithEmailPassword(
+        email: email,
+        password: password,
+        name: name,
+        phone: phone,
+      );
+      await _hydrateSession(user);
+    } catch (e, st) {
+      AppLogger.error('SessionState', 'Registration failed for $email', e, st);
+      _status = AuthStatus.unauthenticated;
+      _errorMessage = e.toString();
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<void> signInWithGoogle(String idToken, {String? accessToken}) async {
+    try {
+      _status = AuthStatus.authenticating;
+      _errorMessage = null;
+      notifyListeners();
+
+      final user = await _authService.signInWithGoogleToken(idToken, accessToken: accessToken);
+      await _hydrateSession(user);
+    } catch (e, st) {
+      AppLogger.error('SessionState', 'Google sign in failed', e, st);
+      _status = AuthStatus.unauthenticated;
+      _errorMessage = e.toString();
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<void> signInWithFacebook(String accessToken) async {
+    try {
+      _status = AuthStatus.authenticating;
+      _errorMessage = null;
+      notifyListeners();
+
+      final user = await _authService.signInWithFacebookToken(accessToken);
+      await _hydrateSession(user);
+    } catch (e, st) {
+      AppLogger.error('SessionState', 'Facebook sign in failed', e, st);
+      _status = AuthStatus.unauthenticated;
+      _errorMessage = e.toString();
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<void> sendPasswordReset(String email) async {
+    await _authService.sendPasswordReset(email);
+  }
+
+  void requireLogin() {
+    _status = AuthStatus.unauthenticated;
+    _currentUser = null;
+    _claims = null;
+    notifyListeners();
   }
 
   Future<void> signOut() async {
@@ -127,10 +201,12 @@ class SessionState extends ChangeNotifier {
       _activeBrand = null;
       _activeSubscription = null;
       _activeAppConfig = null;
-      continueAsGuest();
+      _status = AuthStatus.unauthenticated;
+      notifyListeners();
     } catch (e, st) {
       AppLogger.error('SessionState', 'Sign out error', e, st);
-      continueAsGuest();
+      _status = AuthStatus.unauthenticated;
+      notifyListeners();
     }
   }
 

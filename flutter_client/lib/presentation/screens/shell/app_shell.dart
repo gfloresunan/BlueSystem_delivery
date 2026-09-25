@@ -98,13 +98,24 @@ class _AppShellState extends State<AppShell> {
             user?.role == EiamRole.owner;
         final isGuestMode = widget.sessionState.isGuestMode;
 
+        // ─── 3. Unified Authentication Gate (1:1 Android Parity) ────────────
+        // If unauthenticated and NOT explicitly exploring as guest, show Android LoginScreen
+        if (status == AuthStatus.unauthenticated && !isGuestMode) {
+          return LoginScreen(
+            sessionState: widget.sessionState,
+            onLoginSuccess: () {
+              setState(() {});
+            },
+          );
+        }
+
         // Reset selected index if exceeding tab bounds
-        final maxTabs = isCourier ? 4 : (isMerchant ? 4 : 4);
+        final maxTabs = isCourier ? 4 : (isMerchant ? 5 : 4);
         if (_selectedIndex >= maxTabs) {
           _selectedIndex = 0;
         }
 
-        // ─── 3. Render Appropriate Shell Based on Role ───────────────────────
+        // ─── 4. Render Appropriate Shell Based on Role ───────────────────────
         if (isCourier) {
           return _buildCourierShell();
         } else if (isMerchant) {
@@ -523,23 +534,37 @@ class _AppShellState extends State<AppShell> {
           ),
           const SizedBox(height: 20),
 
-          // Sign Out Button
+          // Sign Out / Sign In Button
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton.icon(
-              style: OutlinedButton.styleFrom(
-                foregroundColor: BrandColors.statusError,
-                side: const BorderSide(color: BrandColors.statusError),
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-              ),
-              onPressed: () async {
-                await widget.sessionState.signOut();
-                setState(() => _selectedIndex = 0);
-              },
-              icon: const Icon(Icons.logout_rounded),
-              label: const Text('Cerrar Sesión', style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
+            child: widget.sessionState.isGuestMode
+                ? ElevatedButton.icon(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: BrandColors.bluePrimary,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    onPressed: () {
+                      widget.sessionState.requireLogin();
+                    },
+                    icon: const Icon(Icons.login_rounded),
+                    label: const Text('Iniciar Sesión / Registrarme', style: TextStyle(fontWeight: FontWeight.bold)),
+                  )
+                : OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: BrandColors.statusError,
+                      side: const BorderSide(color: BrandColors.statusError),
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    ),
+                    onPressed: () async {
+                      await widget.sessionState.signOut();
+                      setState(() => _selectedIndex = 0);
+                    },
+                    icon: const Icon(Icons.logout_rounded),
+                    label: const Text('Cerrar Sesión', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
           ),
         ],
       ),
@@ -728,79 +753,12 @@ class _AppShellState extends State<AppShell> {
   // C. COMERCIO / MERCHANT SHELL (Business Center)
   // ═════════════════════════════════════════════════════════════════════════════
   Widget _buildMerchantShell() {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Row(
-          children: [
-            Icon(Icons.storefront_rounded, color: Color(0xFF2563EB)),
-            SizedBox(width: 8),
-            Text('Panel de Comercio', style: TextStyle(fontWeight: FontWeight.bold)),
-          ],
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout_rounded, color: Colors.red),
-            tooltip: 'Cerrar Sesión',
-            onPressed: () async {
-              await widget.sessionState.signOut();
-              setState(() => _selectedIndex = 0);
-            },
-          ),
-        ],
-      ),
-      body: _buildMerchantScreen(),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _selectedIndex,
-        onDestinationSelected: (idx) => setState(() => _selectedIndex = idx),
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.storefront_outlined),
-            selectedIcon: Icon(Icons.storefront_rounded),
-            label: 'Mi Comercio',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.receipt_long_outlined),
-            selectedIcon: Icon(Icons.receipt_long_rounded),
-            label: 'Pedidos',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.local_shipping_outlined),
-            selectedIcon: Icon(Icons.local_shipping_rounded),
-            label: 'Envíos',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Perfil',
-          ),
-        ],
-      ),
+    return MerchantDashboardScreen(
+      sessionState: widget.sessionState,
+      merchantService: widget.merchantService,
     );
   }
 
-  Widget _buildMerchantScreen() {
-    switch (_selectedIndex) {
-      case 0:
-        return MerchantDashboardScreen(
-          sessionState: widget.sessionState,
-          merchantService: widget.merchantService,
-        );
-      case 1:
-        return OrdersScreen(
-          sessionState: widget.sessionState,
-          orderService: widget.orderService,
-        );
-      case 2:
-        return TripsScreen(
-          sessionState: widget.sessionState,
-          tripService: widget.tripService,
-        );
-      case 3:
-        return _buildUserProfileView();
-      default:
-        return const SizedBox.shrink();
-    }
-  }
 
   // ═════════════════════════════════════════════════════════════════════════════
   // MODAL DE CARRITO DE COMPRAS
