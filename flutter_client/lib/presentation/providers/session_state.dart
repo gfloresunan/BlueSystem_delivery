@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import '../../core/auth/auth_context.dart';
 import '../../core/brand/brand_context.dart';
 import '../../core/config/app_config.dart';
-import '../../core/errors/app_exceptions.dart';
 import '../../core/gatekeeper/gatekeeper.dart';
 import '../../core/observability/app_logger.dart';
 import '../../core/subscription/subscription_context.dart';

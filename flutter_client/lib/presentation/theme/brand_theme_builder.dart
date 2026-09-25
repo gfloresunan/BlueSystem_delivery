@@ -50,7 +50,7 @@ class BrandThemeBuilder {
         elevation: 0,
         centerTitle: false,
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: colorScheme.surface,
         elevation: 1,
         shape: RoundedRectangleBorder(

@@ -3,8 +3,6 @@
 
 import 'package:flutter/material.dart';
 
-import '../../../core/auth/auth_context.dart';
-import '../../../core/gatekeeper/gatekeeper.dart';
 import '../../../domain/entities/banner_entity.dart';
 import '../../../data/services/banner_service.dart';
 import '../../providers/session_state.dart';
@@ -374,9 +372,10 @@ class CommercialHomeScreen extends StatelessWidget {
     final theme = Theme.of(context);
     return InkWell(
       onTap: () {
-        if (banner.actionType == BannerActionType.openStore && banner.actionId != null) {
+        final act = banner.effectiveActionType.toUpperCase();
+        if ((act == 'BUSINESS' || act == 'OPENSTORE' || act == 'STORE') && banner.effectiveActionId.isNotEmpty) {
           onNavigate('/merchant');
-        } else if (banner.actionType == BannerActionType.openPromotion) {
+        } else if (act == 'PRODUCT' || act == 'CATEGORY' || act == 'OPENPROMOTION' || act == 'PROMOTION') {
           onNavigate('/orders');
         }
       },

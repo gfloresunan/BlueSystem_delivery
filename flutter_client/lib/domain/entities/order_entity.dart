@@ -23,6 +23,8 @@ class OrderItemEntity {
   final double subtotal;
   final String? notes;
 
+  String get name => title;
+
   const OrderItemEntity({
     required this.productId,
     required this.title,
@@ -33,12 +35,14 @@ class OrderItemEntity {
   });
 
   factory OrderItemEntity.fromMap(Map<String, dynamic> map) {
+    final qty = (map['quantity'] as num?)?.toInt() ?? 1;
+    final price = (map['unitPrice'] as num?)?.toDouble() ?? 0.0;
     return OrderItemEntity(
       productId: map['productId'] as String? ?? '',
-      title: map['title'] as String? ?? '',
-      quantity: (map['quantity'] as num?)?.toInt() ?? 1,
-      unitPrice: (map['unitPrice'] as num?)?.toDouble() ?? 0.0,
-      subtotal: (map['subtotal'] as num?)?.toDouble() ?? 0.0,
+      title: map['title'] as String? ?? map['name'] as String? ?? '',
+      quantity: qty,
+      unitPrice: price,
+      subtotal: (map['subtotal'] as num?)?.toDouble() ?? (price * qty),
       notes: map['notes'] as String?,
     );
   }
@@ -178,6 +182,7 @@ class OrderEntity {
   }
 
   Map<String, dynamic> toMap() => {
+        'orderId': orderId,
         'tenantId': tenantId,
         'brandId': brandId,
         'businessId': businessId,

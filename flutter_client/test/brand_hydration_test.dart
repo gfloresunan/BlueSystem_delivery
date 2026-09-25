@@ -1,7 +1,7 @@
 /// BLUE SYSTEM DELIVERY ENTERPRISE — BRAND & APP CONFIG UNIT TESTS
 import 'package:flutter_test/flutter_test.dart';
-import '../lib/core/brand/brand_context.dart';
-import '../lib/core/config/app_config.dart';
+import 'package:bluesystem_delivery_flutter/core/brand/brand_context.dart';
+import 'package:bluesystem_delivery_flutter/core/config/app_config.dart';
 
 void main() {
   group('Brand Context and Hydration Tests', () {
@@ -18,14 +18,14 @@ void main() {
     });
 
     test('Serializes and deserializes BrandEntity accurately', () {
-      final brand = BrandEntity(
+      const brand = BrandEntity(
         brandId: 'brand_fitoni',
         tenantId: 'tenant_001',
         displayName: 'Fitoni Express',
         shortName: 'Fitoni',
         slug: 'fitoni-express',
         visual: BrandVisualConfig.fallback,
-        metadata: const BrandMetadata(
+        metadata: BrandMetadata(
           supportEmail: 'fitoni@example.com',
           supportPhone: '+525512345678',
         ),

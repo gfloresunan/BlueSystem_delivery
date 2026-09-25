@@ -74,7 +74,7 @@ class FirebaseAuthService implements IAuthService {
   @override
   Future<UserProfileEntity> signInWithEmailPassword(String email, String password) async {
     try {
-      final credential = await _firebaseAuth.signInWithEmailAndPassword(
+      await _firebaseAuth.signInWithEmailAndPassword(
         email: email.trim(),
         password: password,
       );

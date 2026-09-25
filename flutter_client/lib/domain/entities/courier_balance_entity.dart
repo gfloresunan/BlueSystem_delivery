@@ -9,6 +9,7 @@ class CourierBalanceEntity {
   final int effectiveCashLimitCents;
   final bool isBlockedByCashLimit;
   final int lastCalculatedAt;
+  final String? lastActNumber;
 
   const CourierBalanceEntity({
     required this.courierId,
@@ -16,6 +17,7 @@ class CourierBalanceEntity {
     required this.effectiveCashLimitCents,
     this.isBlockedByCashLimit = false,
     this.lastCalculatedAt = 0,
+    this.lastActNumber,
   });
 
   double get cashOutstanding => cashOutstandingCents / 100.0;
@@ -32,6 +34,7 @@ class CourierBalanceEntity {
           300000, // C$3,000 default
       isBlockedByCashLimit: map['isBlockedByCashLimit'] as bool? ?? false,
       lastCalculatedAt: (map['lastCalculatedAt'] as num?)?.toInt() ?? 0,
+      lastActNumber: map['lastActNumber'] as String?,
     );
   }
 
@@ -41,10 +44,11 @@ class CourierBalanceEntity {
         'effectiveCashLimitCents': effectiveCashLimitCents,
         'isBlockedByCashLimit': isBlockedByCashLimit,
         'lastCalculatedAt': lastCalculatedAt,
+        'lastActNumber': lastActNumber,
       };
 }
 
-enum ClosureStatus { pendingApproval, approved, rejected }
+enum ClosureStatus { submitted, pendingApproval, approved, rejected }
 
 class CourierDailyClosureEntity {
   final String closureId;
@@ -57,6 +61,9 @@ class CourierDailyClosureEntity {
   final int createdAt;
   final int? approvedAt;
   final String? approvedBy;
+  final String? actNumber;
+
+  String get id => closureId;
 
   const CourierDailyClosureEntity({
     required this.closureId,
@@ -69,19 +76,22 @@ class CourierDailyClosureEntity {
     required this.createdAt,
     this.approvedAt,
     this.approvedBy,
+    this.actNumber,
   });
 
   double get totalCollected => totalCollectedCents / 100.0;
 
   factory CourierDailyClosureEntity.fromMap(Map<String, dynamic> map, String id) {
-    final statusStr = (map['status'] as String? ?? 'PENDING_APPROVAL').toUpperCase();
+    final statusStr = (map['status'] as String? ?? 'SUBMITTED').toUpperCase();
     ClosureStatus parsedStatus;
     if (statusStr == 'APPROVED') {
       parsedStatus = ClosureStatus.approved;
     } else if (statusStr == 'REJECTED') {
       parsedStatus = ClosureStatus.rejected;
-    } else {
+    } else if (statusStr == 'PENDING_APPROVAL') {
       parsedStatus = ClosureStatus.pendingApproval;
+    } else {
+      parsedStatus = ClosureStatus.submitted;
     }
 
     return CourierDailyClosureEntity(
@@ -96,6 +106,7 @@ class CourierDailyClosureEntity {
       createdAt: (map['createdAt'] as num?)?.toInt() ?? 0,
       approvedAt: (map['approvedAt'] as num?)?.toInt(),
       approvedBy: map['approvedBy'] as String?,
+      actNumber: map['actNumber'] as String?,
     );
   }
 

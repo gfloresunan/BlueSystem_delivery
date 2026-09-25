@@ -17,9 +17,15 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 
 class PlatformNotificationAdapter implements INotificationService {
-  final FirebaseMessaging _fcm;
-  final FirebaseFirestore _firestore;
-  final FlutterLocalNotificationsPlugin _localNotifications;
+  final FirebaseMessaging? _fcmInstance;
+  final FirebaseFirestore? _firestoreInstance;
+  final FlutterLocalNotificationsPlugin? _localNotificationsInstance;
+
+  FirebaseMessaging get _fcm => _fcmInstance ?? FirebaseMessaging.instance;
+  FirebaseFirestore get _firestore => _firestoreInstance ?? FirebaseFirestore.instance;
+  FlutterLocalNotificationsPlugin get _localNotifications =>
+      _localNotificationsInstance ?? FlutterLocalNotificationsPlugin();
+
   final StreamController<Map<String, dynamic>> _notificationController =
       StreamController<Map<String, dynamic>>.broadcast();
   final StreamController<Map<String, dynamic>> _deepLinkController =
@@ -31,9 +37,9 @@ class PlatformNotificationAdapter implements INotificationService {
     FirebaseMessaging? fcm,
     FirebaseFirestore? firestore,
     FlutterLocalNotificationsPlugin? localNotifications,
-  })  : _fcm = fcm ?? FirebaseMessaging.instance,
-        _firestore = firestore ?? FirebaseFirestore.instance,
-        _localNotifications = localNotifications ?? FlutterLocalNotificationsPlugin();
+  })  : _fcmInstance = fcm,
+        _firestoreInstance = firestore,
+        _localNotificationsInstance = localNotifications;
 
   Future<void> initialize() async {
     // 1. Request iOS / Android 13+ Notification Permissions

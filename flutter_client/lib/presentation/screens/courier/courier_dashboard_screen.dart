@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 
 import '../../../core/observability/app_logger.dart';
 import '../../../domain/entities/courier_balance_entity.dart';
-import '../../../domain/entities/courier_location_entity.dart';
 import '../../../domain/entities/order_entity.dart';
 import '../../../domain/entities/trip_entity.dart';
 import '../../../domain/services/core_service_interfaces.dart';
@@ -211,11 +210,11 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                 borderRadius: BorderRadius.circular(10),
                 border: Border.all(color: Colors.blue.withOpacity(0.2)),
               ),
-              child: Row(
+              child: const Row(
                 children: [
-                  const Icon(Icons.gps_fixed, color: Colors.blue, size: 20),
-                  const SizedBox(width: 10),
-                  const Expanded(
+                  Icon(Icons.gps_fixed, color: Colors.blue, size: 20),
+                  SizedBox(width: 10),
+                  Expanded(
                     child: Text(
                       'La transmisión GPS utiliza /ubicaciones_repartidores/{courierId} conforme a ADR-016.',
                       style: TextStyle(fontSize: 12, color: Colors.blue),
@@ -403,10 +402,11 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
           ),
           onPressed: () async {
             try {
+              final courierName = widget.sessionState.currentUser?.displayName ?? 'Motorizado';
               final ok = await widget.orderService.claimOrderAtomically(
                 order.orderId,
                 courierId,
-                tenantId: tenantId,
+                courierName,
               );
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(

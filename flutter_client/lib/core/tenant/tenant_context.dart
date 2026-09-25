@@ -42,6 +42,31 @@ class TenantEntity {
 
   bool get isActive => status == TenantStatus.active;
 
+  factory TenantEntity.create({
+    required String tenantId,
+    required String slug,
+    required String name,
+    String legalName = '',
+    String contactEmail = '',
+    CommercialModel type = CommercialModel.marketplace,
+    TenantStatus status = TenantStatus.active,
+  }) {
+    final now = DateTime.now().millisecondsSinceEpoch;
+    return TenantEntity(
+      tenantId: tenantId,
+      name: name,
+      legalName: legalName.isNotEmpty ? legalName : name,
+      slug: slug,
+      type: type,
+      status: status,
+      schemaVersion: '1.0',
+      createdAt: now,
+      updatedAt: now,
+      createdBy: contactEmail,
+      updatedBy: contactEmail,
+    );
+  }
+
   factory TenantEntity.fromMap(Map<String, dynamic> map) {
     return TenantEntity(
       tenantId: map['tenantId'] as String? ?? '',

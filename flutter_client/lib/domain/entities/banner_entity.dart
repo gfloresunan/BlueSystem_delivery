@@ -51,23 +51,33 @@ class BannerEntity {
   String get effectiveActionId =>
       actionId.isNotEmpty ? actionId : (destinoId.isNotEmpty ? destinoId : targetUrl);
 
+  String get subtitulo => subtitle;
+
   factory BannerEntity.fromMap(Map<String, dynamic> map, String id) {
+    final effectiveImg = map['imageUrl'] as String? ?? map['imagenUrl'] as String? ?? '';
+    final effectiveTtl = map['title'] as String? ?? map['titulo'] as String? ?? '';
+    final effectiveSub = map['subtitle'] as String? ?? map['subtitulo'] as String? ?? '';
+    final effectiveAct = map['actionType'] as String? ?? map['tipoAccion'] as String? ?? 'NONE';
+    final effectiveDest = map['actionId'] as String? ?? map['destinoId'] as String? ?? map['targetUrl'] as String? ?? '';
+    final effectivePrio = (map['priority'] as num?)?.toInt() ?? (map['prioridad'] as num?)?.toInt() ?? 0;
+    final effectiveActive = map['isActive'] as bool? ?? map['activo'] as bool? ?? true;
+
     return BannerEntity(
       id: id,
-      imageUrl: map['imageUrl'] as String? ?? map['imagenUrl'] as String? ?? '',
-      title: map['title'] as String? ?? map['titulo'] as String? ?? '',
-      subtitle: map['subtitle'] as String? ?? '',
-      actionType: map['actionType'] as String? ?? map['tipoAccion'] as String? ?? 'NONE',
-      actionId: map['actionId'] as String? ?? map['destinoId'] as String? ?? map['targetUrl'] as String? ?? '',
+      imageUrl: effectiveImg,
+      title: effectiveTtl,
+      subtitle: effectiveSub,
+      actionType: effectiveAct,
+      actionId: effectiveDest,
       targetUrl: map['targetUrl'] as String? ?? '',
       businessId: map['businessId'] as String? ?? '',
-      isActive: map['isActive'] as bool? ?? true,
-      priority: (map['priority'] as num?)?.toInt() ?? 0,
+      isActive: effectiveActive,
+      priority: effectivePrio,
       backgroundColor: map['backgroundColor'] as String? ?? '#0D47A1',
-      imagenUrl: map['imagenUrl'] as String? ?? '',
-      titulo: map['titulo'] as String? ?? '',
-      tipoAccion: map['tipoAccion'] as String? ?? '',
-      destinoId: map['destinoId'] as String? ?? '',
+      imagenUrl: effectiveImg,
+      titulo: effectiveTtl,
+      tipoAccion: effectiveAct,
+      destinoId: effectiveDest,
     );
   }
 

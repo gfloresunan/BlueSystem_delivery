@@ -178,13 +178,13 @@ class TripsScreen extends StatelessWidget {
       case TripStatus.assigned:
         return Colors.blue;
       case TripStatus.onWayToOrigin:
-      case TripStatus.arrivedOrigin:
+      case TripStatus.arrivedAtOrigin:
         return Colors.purple;
-      case TripStatus.pickedUp:
-      case TripStatus.onWayDestination:
+      case TripStatus.goodsPickedUp:
+      case TripStatus.onWayToDestination:
         return Colors.teal;
-      case TripStatus.arrivedDestination:
-      case TripStatus.delivered:
+      case TripStatus.arrivedAtDestination:
+      case TripStatus.completed:
         return Colors.green;
       case TripStatus.cancelled:
         return Colors.red;

@@ -79,7 +79,7 @@ class MembershipV3Entity {
       organizationId: map['organizationId'] as String?,
       businessId: map['businessId'] as String?,
       branchId: map['branchId'] as String?,
-      role: _parseRole(map['role'] as String?),
+      role: parseRole(map['role'] as String?),
       status: _parseStatus(map['status'] as String?),
       permissions: (map['permissions'] as List<dynamic>?)
               ?.map((e) => e.toString())
@@ -97,7 +97,7 @@ class MembershipV3Entity {
     );
   }
 
-  static EiamRole _parseRole(String? value) {
+  static EiamRole parseRole(String? value) {
     switch (value?.toUpperCase()) {
       case 'SUPER_ADMIN':
         return EiamRole.superAdmin;
@@ -203,7 +203,7 @@ class CanonicalCustomClaimsV3 {
   factory CanonicalCustomClaimsV3.fromTokenMap(Map<String, dynamic> tokenClaims) {
     final rawRole = tokenClaims['role'] ?? tokenClaims['eiamRole'];
     return CanonicalCustomClaimsV3(
-      role: MembershipV3Entity._parseRole(rawRole as String?),
+      role: MembershipV3Entity.parseRole(rawRole as String?),
       tenantId: tokenClaims['tenantId'] as String?,
       brandId: tokenClaims['brandId'] as String?,
       orgId: tokenClaims['orgId'] as String?,

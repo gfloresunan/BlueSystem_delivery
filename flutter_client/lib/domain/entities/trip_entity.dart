@@ -23,7 +23,7 @@ class LocationPoint {
   final String? contactPhone;
 
   const LocationPoint({
-    required this.address,
+    this.address = '',
     required this.latitude,
     required this.longitude,
     this.reference,
@@ -69,6 +69,10 @@ class TripEntity {
   final int createdAt;
   final int updatedAt;
 
+  String get originAddress => origin.address;
+  String get destinationAddress => destination.address;
+  double get fare => totalPrice;
+
   const TripEntity({
     required this.tripId,
     required this.tenantId,
@@ -88,18 +92,30 @@ class TripEntity {
   });
 
   factory TripEntity.fromMap(Map<String, dynamic> map, String id) {
+    final originMap = (map['origin'] as Map<String, dynamic>?) ?? {
+      'address': map['originAddress'] as String? ?? map['address'] as String? ?? '',
+      'latitude': (map['originLat'] as num?)?.toDouble() ?? 0.0,
+      'longitude': (map['originLng'] as num?)?.toDouble() ?? 0.0,
+    };
+    final destMap = (map['destination'] as Map<String, dynamic>?) ?? {
+      'address': map['destinationAddress'] as String? ?? '',
+      'latitude': (map['destinationLat'] as num?)?.toDouble() ?? 0.0,
+      'longitude': (map['destinationLng'] as num?)?.toDouble() ?? 0.0,
+    };
+    final fare = (map['totalPrice'] as num?)?.toDouble() ?? (map['fare'] as num?)?.toDouble() ?? 35.0;
+
     return TripEntity(
       tripId: id,
       tenantId: map['tenantId'] as String? ?? '',
       brandId: map['brandId'] as String?,
       customerId: map['customerId'] as String? ?? '',
       assignedCourierId: map['assignedCourierId'] as String? ?? map['courierId'] as String?,
-      origin: LocationPoint.fromMap((map['origin'] as Map<String, dynamic>?) ?? {}),
-      destination: LocationPoint.fromMap((map['destination'] as Map<String, dynamic>?) ?? {}),
+      origin: LocationPoint.fromMap(originMap),
+      destination: LocationPoint.fromMap(destMap),
       distanceKm: (map['distanceKm'] as num?)?.toDouble() ?? 0.0,
-      basePrice: (map['basePrice'] as num?)?.toDouble() ?? 35.0,
+      basePrice: (map['basePrice'] as num?)?.toDouble() ?? fare,
       distancePrice: (map['distancePrice'] as num?)?.toDouble() ?? 0.0,
-      totalPrice: (map['totalPrice'] as num?)?.toDouble() ?? 35.0,
+      totalPrice: fare,
       status: _parseStatus(map['status'] as String?),
       packageDescription: map['packageDescription'] as String?,
       createdAt: (map['createdAt'] as num?)?.toInt() ?? 0,

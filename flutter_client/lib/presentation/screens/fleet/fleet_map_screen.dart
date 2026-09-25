@@ -181,7 +181,7 @@ class FleetMapScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
-            '${courier.speedKmh?.toStringAsFixed(0) ?? "—"} km/h',
+            '${courier.speedKmh.toStringAsFixed(0)} km/h',
             style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
           ),
           Text(

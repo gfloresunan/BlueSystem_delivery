@@ -39,3 +39,5 @@ flutter_client/ios/Flutter/Generated.xcconfig
 flutter_client/ios/Flutter/app.framework
 flutter_client/ios/Flutter/Flutter.framework
 flutter_client/ios/Flutter/Flutter.podspec
+flutter_client/ios/Flutter/ephemeral/
+flutter_client/ios/Flutter/flutter_export_environment.sh

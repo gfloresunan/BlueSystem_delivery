@@ -238,7 +238,6 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen>
   }
 
   Widget _buildPromoCard(BuildContext context, PromotionEntity promo) {
-    final theme = Theme.of(context);
     return Card(
       elevation: 0,
       margin: const EdgeInsets.only(bottom: 12),

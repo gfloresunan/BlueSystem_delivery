@@ -17,18 +17,37 @@ class BrandVisualConfig {
   final Map<String, dynamic>? themeConfig;
 
   const BrandVisualConfig({
-    required this.logoUrl,
-    required this.iconUrl,
-    required this.splashUrl,
+    this.logoUrl = '',
+    this.iconUrl = '',
+    this.splashUrl = '',
     this.faviconUrl,
-    required this.primaryColor,
-    required this.secondaryColor,
-    required this.accentColor,
-    required this.backgroundColor,
-    required this.textColor,
-    required this.fontFamily,
+    String primaryColor = '#0284C7',
+    String secondaryColor = '#0EA5E9',
+    String accentColor = '#10B981',
+    String backgroundColor = '#0F172A',
+    String textColor = '#F8FAFC',
+    this.fontFamily = 'Inter',
+    String? primaryColorHex,
+    String? secondaryColorHex,
+    String? accentColorHex,
+    String? backgroundColorHex,
+    String? surfaceColorHex,
+    String? onPrimaryHex,
+    String? onSurfaceHex,
     this.themeConfig,
-  });
+  })  : primaryColor = primaryColorHex ?? primaryColor,
+        secondaryColor = secondaryColorHex ?? secondaryColor,
+        accentColor = accentColorHex ?? accentColor,
+        backgroundColor = backgroundColorHex ?? backgroundColor,
+        textColor = onPrimaryHex ?? textColor;
+
+  String get primaryColorHex => primaryColor;
+  String get secondaryColorHex => secondaryColor;
+  String get accentColorHex => accentColor;
+  String get backgroundColorHex => backgroundColor;
+  String get surfaceColorHex => backgroundColor;
+  String get onPrimaryHex => textColor;
+  String get onSurfaceHex => textColor;
 
   static const BrandVisualConfig fallback = BrandVisualConfig(
     logoUrl: 'https://storage.googleapis.com/bluesystem-7c9af.appspot.com/assets/default_logo.png',
@@ -91,8 +110,8 @@ class BrandMetadata {
   final String? privacyUrl;
 
   const BrandMetadata({
-    required this.supportEmail,
-    required this.supportPhone,
+    this.supportEmail = 'support@bluesystemdelivery.com',
+    this.supportPhone = '+525500000000',
     this.website,
     this.socialLinks,
     this.termsUrl,
@@ -145,16 +164,16 @@ class BrandEntity {
     required this.tenantId,
     required this.displayName,
     this.legalName,
-    required this.shortName,
-    required this.slug,
-    required this.visual,
-    required this.metadata,
-    required this.status,
-    required this.schemaVersion,
-    required this.createdAt,
-    required this.updatedAt,
-    required this.createdBy,
-    required this.updatedBy,
+    this.shortName = '',
+    this.slug = '',
+    this.visual = BrandVisualConfig.fallback,
+    this.metadata = const BrandMetadata(),
+    this.status = BrandStatus.active,
+    this.schemaVersion = '1.0',
+    this.createdAt = 0,
+    this.updatedAt = 0,
+    this.createdBy = '',
+    this.updatedBy = '',
   });
 
   factory BrandEntity.fromMap(Map<String, dynamic> map) {

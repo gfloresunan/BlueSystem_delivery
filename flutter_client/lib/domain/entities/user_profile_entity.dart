@@ -12,9 +12,14 @@ class UserProfileEntity {
   final EiamRole role;
   final String? activeTenantId;
   final String? activeBrandId;
+  final String? activeMembershipId;
   final bool isVerified;
   final int createdAt;
   final int updatedAt;
+
+  String? get tenantId => activeTenantId;
+  String? get brandId => activeBrandId;
+  String? get membershipId => activeMembershipId;
 
   const UserProfileEntity({
     required this.uid,
@@ -25,6 +30,7 @@ class UserProfileEntity {
     required this.role,
     this.activeTenantId,
     this.activeBrandId,
+    this.activeMembershipId,
     required this.isVerified,
     required this.createdAt,
     required this.updatedAt,
@@ -37,9 +43,10 @@ class UserProfileEntity {
       displayName: map['displayName'] as String? ?? map['nombre'] as String? ?? '',
       phoneNumber: map['phoneNumber'] as String? ?? map['telefono'] as String?,
       photoUrl: map['photoUrl'] as String?,
-      role: MembershipV3Entity._parseRole(map['role'] as String? ?? map['eiamRole'] as String?),
+      role: MembershipV3Entity.parseRole(map['role'] as String? ?? map['eiamRole'] as String?),
       activeTenantId: map['activeTenantId'] as String? ?? map['tenantId'] as String?,
       activeBrandId: map['activeBrandId'] as String? ?? map['brandId'] as String?,
+      activeMembershipId: map['activeMembershipId'] as String? ?? map['membershipId'] as String?,
       isVerified: map['isVerified'] as bool? ?? false,
       createdAt: (map['createdAt'] as num?)?.toInt() ?? 0,
       updatedAt: (map['updatedAt'] as num?)?.toInt() ?? 0,
@@ -54,6 +61,7 @@ class UserProfileEntity {
         'role': role.name.toUpperCase(),
         'activeTenantId': activeTenantId,
         'activeBrandId': activeBrandId,
+        'activeMembershipId': activeMembershipId,
         'isVerified': isVerified,
         'createdAt': createdAt,
         'updatedAt': updatedAt,

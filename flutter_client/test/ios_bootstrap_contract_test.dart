@@ -3,9 +3,9 @@
 /// Firestore SSOT, Cloud Functions, and Admin/Merchant Web.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_client/domain/entities/banner_entity.dart';
-import 'package:flutter_client/domain/entities/courier_balance_entity.dart';
-import 'package:flutter_client/domain/entities/order_entity.dart';
+import 'package:bluesystem_delivery_flutter/domain/entities/banner_entity.dart';
+import 'package:bluesystem_delivery_flutter/domain/entities/courier_balance_entity.dart';
+import 'package:bluesystem_delivery_flutter/domain/entities/order_entity.dart';
 
 void main() {
   group('BSD-IOS-BOOTSTRAP — Banner Contract Tests (/banners)', () {
@@ -30,7 +30,7 @@ void main() {
       expect(banner.imageUrl, equals('https://storage.googleapis.com/bluesystem-7c9af.appspot.com/banners/promo1.jpg'));
       expect(banner.priority, equals(1));
       expect(banner.isActive, isTrue);
-      expect(banner.actionType, equals(BannerActionType.openStore));
+      expect(banner.actionType, equals('OPEN_STORE'));
       expect(banner.actionId, equals('store_tecnostore_123'));
     });
 
@@ -49,7 +49,7 @@ void main() {
       expect(banner.titulo, equals('Delivery Gratis'));
       expect(banner.subtitulo, equals('En pedidos mayores a C\$ 300'));
       expect(banner.priority, equals(5));
-      expect(banner.actionType, equals(BannerActionType.openPromotion));
+      expect(banner.actionType, equals('OPEN_PROMOTION'));
     });
   });
 

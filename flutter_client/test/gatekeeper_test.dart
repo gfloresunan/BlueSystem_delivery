@@ -1,8 +1,8 @@
 /// BLUE SYSTEM DELIVERY ENTERPRISE — GATEKEEPER & ISOLATION UNIT TESTS
 import 'package:flutter_test/flutter_test.dart';
-import '../lib/core/auth/auth_context.dart';
-import '../lib/core/gatekeeper/gatekeeper.dart';
-import '../lib/core/subscription/subscription_context.dart';
+import 'package:bluesystem_delivery_flutter/core/auth/auth_context.dart';
+import 'package:bluesystem_delivery_flutter/core/gatekeeper/gatekeeper.dart';
+import 'package:bluesystem_delivery_flutter/core/subscription/subscription_context.dart';
 
 void main() {
   group('Gatekeeper Engine Pure Evaluation Tests', () {

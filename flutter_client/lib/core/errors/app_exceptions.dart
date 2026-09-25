@@ -16,7 +16,7 @@ enum ErrorCode {
   platformCapabilityUnavailable,
 }
 
-abstract class BlueSystemException implements Exception {
+class BlueSystemException implements Exception {
   final ErrorCode code;
   final String message;
   final String? technicalDetails;

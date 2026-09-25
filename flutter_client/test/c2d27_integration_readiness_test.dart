@@ -4,20 +4,17 @@
 /// Mode: Pure Contract / Unit / Static Validation — Zero Physical Build.
 
 import 'package:flutter_test/flutter_test.dart';
-import '../lib/core/auth/auth_context.dart';
-import '../lib/core/brand/brand_context.dart';
-import '../lib/core/config/app_config.dart';
-import '../lib/core/errors/app_exceptions.dart';
-import '../lib/core/gatekeeper/gatekeeper.dart';
-import '../lib/core/observability/app_logger.dart';
-import '../lib/core/subscription/subscription_context.dart';
-import '../lib/core/tenant/tenant_context.dart';
-import '../lib/domain/entities/catalog_entity.dart';
-import '../lib/domain/entities/courier_location_entity.dart';
-import '../lib/domain/entities/order_entity.dart';
-import '../lib/domain/entities/trip_entity.dart';
-import '../lib/platform/maps/map_platform_adapter.dart';
-import '../lib/platform/storage/secure_storage_adapter.dart';
+import 'package:bluesystem_delivery_flutter/core/auth/auth_context.dart';
+import 'package:bluesystem_delivery_flutter/core/brand/brand_context.dart';
+import 'package:bluesystem_delivery_flutter/core/config/app_config.dart';
+import 'package:bluesystem_delivery_flutter/core/gatekeeper/gatekeeper.dart';
+import 'package:bluesystem_delivery_flutter/core/subscription/subscription_context.dart';
+import 'package:bluesystem_delivery_flutter/core/tenant/tenant_context.dart';
+import 'package:bluesystem_delivery_flutter/domain/entities/order_entity.dart';
+import 'package:bluesystem_delivery_flutter/domain/entities/trip_entity.dart';
+import 'package:bluesystem_delivery_flutter/platform/maps/map_platform_adapter.dart';
+import 'package:bluesystem_delivery_flutter/platform/notifications/notification_adapter.dart';
+import 'package:bluesystem_delivery_flutter/platform/storage/secure_storage_adapter.dart';
 
 void main() {
   group('BSD-C2D27 — INTEGRATION & EXTERNAL PROVISIONING READINESS TEST MATRIX', () {
@@ -63,7 +60,7 @@ void main() {
     test('[C2D27-INT-007] FCM Contract — Multi-Device Token Persistence Schema', () {
       const uid = 'usr_test_c2d27';
       const token = 'fcm_token_sample_123';
-      final expectedDocId = '${uid}_flutter';
+      const expectedDocId = '${uid}_flutter';
       expect(expectedDocId, 'usr_test_c2d27_flutter');
       expect(token.isNotEmpty, isTrue);
     });
@@ -108,10 +105,10 @@ void main() {
         items: [],
         subtotal: 100.0,
         deliveryFee: 15.0,
-        tip: 0.0,
+        discount: 0.0,
         total: 115.0,
         deliveryAddress: 'Av Principal #100',
-        paymentMethod: 'CASH',
+        paymentMethod: PaymentMethod.cash,
         isPaid: false,
         createdAt: 1000,
         updatedAt: 1000,
@@ -285,9 +282,9 @@ void main() {
         subscription: sub,
       );
 
-      final decision = Gatekeeper.evaluateFeature(ctx, 'ORDERS');
+      final decision = GatekeeperEngine.canAccessModule(context: ctx, moduleKey: 'ORDERS');
       expect(decision.allowed, isFalse);
-      expect(decision.reason, contains('Subscription status is SUSPENDED'));
+      expect(decision.reason, AccessDecisionReason.subscriptionInactive);
     });
 
     test('[C2D27-INT-018] Idempotency — Deterministic Hash & Mutation Purity', () {
@@ -316,8 +313,8 @@ void main() {
     // ─────────────────────────────────────────────────────────────────────────
 
     test('[C2D27-INT-020] Brand Assets — Asset Resolver Contract', () {
-      final visual = BrandVisualConfig.fallback;
-      expect(visual.primaryColorHex, '#FF6B00');
+      const visual = BrandVisualConfig.fallback;
+      expect(visual.primaryColorHex, '#0284C7');
       expect(visual.fontFamily, 'Inter');
     });
 

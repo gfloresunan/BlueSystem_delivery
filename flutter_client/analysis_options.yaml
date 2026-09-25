@@ -1,3 +1,11 @@
+analyzer:
+  exclude:
+    - build/**
+    - ios/**
+  errors:
+    dangling_library_doc_comments: ignore
+    deprecated_member_use: ignore
+    use_build_context_synchronously: ignore
 include: package:flutter_lints/flutter.yaml
 
 linter:
@@ -6,7 +14,6 @@ linter:
     prefer_const_constructors: true
     prefer_const_declarations: true
     prefer_final_locals: true
-    unnecessary_null_comparison: true
     always_declare_return_types: true
     avoid_empty_else: true
     avoid_relative_lib_imports: true

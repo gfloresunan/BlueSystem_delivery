@@ -49,6 +49,36 @@ class SubscriptionQuotas {
     required this.maxApiRequests,
   });
 
+  static const starter = SubscriptionQuotas(
+    maxBusinesses: 1,
+    maxBranches: 1,
+    maxUsers: 5,
+    maxCouriers: 2,
+    maxOrders: 500,
+    maxStorageMb: 1024,
+    maxApiRequests: 10000,
+  );
+
+  static const professional = SubscriptionQuotas(
+    maxBusinesses: 3,
+    maxBranches: 10,
+    maxUsers: 25,
+    maxCouriers: 10,
+    maxOrders: 5000,
+    maxStorageMb: 10240,
+    maxApiRequests: 100000,
+  );
+
+  static const enterprise = SubscriptionQuotas(
+    maxBusinesses: -1,
+    maxBranches: -1,
+    maxUsers: -1,
+    maxCouriers: -1,
+    maxOrders: -1,
+    maxStorageMb: -1,
+    maxApiRequests: -1,
+  );
+
   factory SubscriptionQuotas.fromMap(Map<String, dynamic> map) {
     return SubscriptionQuotas(
       maxBusinesses: (map['maxBusinesses'] as num?)?.toInt() ?? 1,

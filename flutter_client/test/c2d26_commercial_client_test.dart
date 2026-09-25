@@ -3,19 +3,17 @@
 /// Catalog Entities, Gatekeeper, AppConfig, Platform Adapters, Observability.
 
 import 'package:flutter_test/flutter_test.dart';
-import '../lib/core/auth/auth_context.dart';
-import '../lib/core/brand/brand_context.dart';
-import '../lib/core/config/app_config.dart';
-import '../lib/core/errors/app_exceptions.dart';
-import '../lib/core/gatekeeper/gatekeeper.dart';
-import '../lib/core/observability/app_logger.dart';
-import '../lib/core/subscription/subscription_context.dart';
-import '../lib/core/tenant/tenant_context.dart';
-import '../lib/domain/entities/catalog_entity.dart';
-import '../lib/domain/entities/courier_location_entity.dart';
-import '../lib/domain/entities/order_entity.dart';
-import '../lib/domain/entities/trip_entity.dart';
-import '../lib/platform/maps/map_platform_adapter.dart';
+import 'package:bluesystem_delivery_flutter/core/auth/auth_context.dart';
+import 'package:bluesystem_delivery_flutter/core/brand/brand_context.dart';
+import 'package:bluesystem_delivery_flutter/core/config/app_config.dart';
+import 'package:bluesystem_delivery_flutter/core/gatekeeper/gatekeeper.dart';
+import 'package:bluesystem_delivery_flutter/core/observability/app_logger.dart';
+import 'package:bluesystem_delivery_flutter/core/subscription/subscription_context.dart';
+import 'package:bluesystem_delivery_flutter/domain/entities/catalog_entity.dart';
+import 'package:bluesystem_delivery_flutter/domain/entities/courier_location_entity.dart';
+import 'package:bluesystem_delivery_flutter/domain/entities/order_entity.dart';
+import 'package:bluesystem_delivery_flutter/domain/entities/trip_entity.dart';
+import 'package:bluesystem_delivery_flutter/platform/maps/map_platform_adapter.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPER FACTORIES
@@ -110,7 +108,7 @@ void main() {
   // ─── C2D26-TEST-02: MEMBERSHIP V3 ENTITY ───────────────────────────────────
   group('[C2D26-TEST-02] AUTH — MembershipV3Entity Round-Trip Serialization', () {
     test('Serializes and deserializes MembershipV3Entity accurately', () {
-      final membership = MembershipV3Entity(
+      const membership = MembershipV3Entity(
         membershipId: 'mem_001',
         uid: 'uid_001',
         tenantId: 'tenant_001',
@@ -218,14 +216,14 @@ void main() {
     });
 
     test('BrandEntity round-trip serialization', () {
-      final brand = BrandEntity(
+      const brand = BrandEntity(
         brandId: 'brand_test',
         tenantId: 'tenant_001',
         displayName: 'Test Brand',
         shortName: 'TB',
         slug: 'test-brand',
         visual: BrandVisualConfig.fallback,
-        metadata: const BrandMetadata(supportEmail: 'test@test.com', supportPhone: '+1234567890'),
+        metadata: BrandMetadata(supportEmail: 'test@test.com', supportPhone: '+1234567890'),
         status: BrandStatus.active,
         schemaVersion: '1.0',
         createdAt: 1000,
@@ -242,14 +240,14 @@ void main() {
 
     test('Brand from different tenant should be treated as isolation violation (structural check)', () {
       // This verifies that tenantId field is always present and matchable
-      final brand = BrandEntity(
+      const brand = BrandEntity(
         brandId: 'brand_other',
         tenantId: 'tenant_WRONG',
         displayName: 'Wrong Tenant Brand',
         shortName: 'WTB',
         slug: 'wrong-tenant-brand',
         visual: BrandVisualConfig.fallback,
-        metadata: const BrandMetadata(supportEmail: 'x@x.com', supportPhone: '+0'),
+        metadata: BrandMetadata(supportEmail: 'x@x.com', supportPhone: '+0'),
         status: BrandStatus.active,
         schemaVersion: '1.0',
         createdAt: 1,
@@ -375,7 +373,7 @@ void main() {
   // ─── C2D26-TEST-08: CATALOG ENTITY ─────────────────────────────────────────
   group('[C2D26-TEST-08] MERCHANT — Catalog Entity Serialization', () {
     test('ProductEntity round-trip serialization with tenant isolation', () {
-      final product = ProductEntity(
+      const product = ProductEntity(
         productId: 'prod_001',
         tenantId: 'tenant_001',
         businessId: 'biz_001',
@@ -399,7 +397,7 @@ void main() {
     });
 
     test('BranchEntity round-trip serialization', () {
-      final branch = BranchEntity(
+      const branch = BranchEntity(
         branchId: 'branch_001',
         tenantId: 'tenant_001',
         businessId: 'biz_001',

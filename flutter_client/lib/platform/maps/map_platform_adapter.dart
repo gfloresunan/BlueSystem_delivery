@@ -3,7 +3,7 @@
 /// NOTE: No Google Maps API provisioning performed in this phase (C2D.26).
 /// External API key configuration is deferred to C2D.27 (provisioning phase).
 
-import '../../domain/entities/courier_location_entity.dart';
+import '../../domain/entities/trip_entity.dart';
 
 /// Abstract contract for all map operations in the Flutter client.
 /// Both Android and iOS adapters must implement this interface.

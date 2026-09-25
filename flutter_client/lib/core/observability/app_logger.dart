@@ -29,7 +29,7 @@ class AppLogger {
     };
 
     developer.log(
-      '[$tag] ${level.name.toUpperCase()}: $message',
+      '[$tag] ${level.name.toUpperCase()}: $message | $logPayload',
       name: 'BlueSystemFlutter',
       error: error,
       stackTrace: stackTrace,
@@ -44,6 +44,9 @@ class AppLogger {
 
   static void warn(String tag, String message, [Map<String, dynamic>? ctx]) =>
       log(level: LogLevel.warning, tag: tag, message: message, context: ctx);
+
+  static void warning(String tag, String message, [Map<String, dynamic>? ctx]) =>
+      warn(tag, message, ctx);
 
   static void error(String tag, String message, [Object? err, StackTrace? st, Map<String, dynamic>? ctx]) =>
       log(level: LogLevel.error, tag: tag, message: message, context: ctx, error: err, stackTrace: st);

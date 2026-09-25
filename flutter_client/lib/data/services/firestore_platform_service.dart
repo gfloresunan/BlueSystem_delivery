@@ -5,7 +5,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../core/brand/brand_context.dart';
 import '../../core/config/app_config.dart';
-import '../../core/errors/app_exceptions.dart';
 import '../../core/observability/app_logger.dart';
 import '../../core/subscription/subscription_context.dart';
 import '../../core/tenant/tenant_context.dart';

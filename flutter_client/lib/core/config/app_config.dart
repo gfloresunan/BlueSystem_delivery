@@ -128,7 +128,7 @@ class AppConfigEntity {
     EnvironmentType environment = EnvironmentType.production,
   }) {
     return AppConfigEntity(
-      configId: 'cfg_${tenantId}_${brandId}',
+      configId: 'cfg_${tenantId}_$brandId',
       tenantId: tenantId,
       brandId: brandId,
       platform: platform,

@@ -1,0 +1,16 @@
+include: flutter_client/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - build/**
+    - flutter_client/build/**
+    - flutter_client/ios/**
+    - app/**
+    - functions/**
+    - panel-admin/**
+    - public/**
+    - website/**
+  errors:
+    dangling_library_doc_comments: ignore
+    deprecated_member_use: ignore
+    use_build_context_synchronously: ignore

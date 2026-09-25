@@ -28,7 +28,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     final tenantId = widget.sessionState.claims?.tenantId ?? widget.sessionState.activeTenant?.tenantId ?? '';
     final businessId = widget.sessionState.claims?.businessId;
 
