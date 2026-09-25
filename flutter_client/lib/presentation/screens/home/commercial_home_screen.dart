@@ -241,7 +241,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
       },
       {
         'title': '🛵 Envío Gratis en Comercios Aliados',
-        'subtitle': 'En pedidos mayores a C\\$ 300 con entrega express',
+        'subtitle': 'En pedidos mayores a 300 Córdobas con entrega express',
         'color1': const Color(0xFF2563EB),
         'color2': const Color(0xFF3B82F6),
       },
@@ -614,7 +614,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   }
 
   Widget _buildFallbackBusinesses(ThemeData theme) {
-    final fallbacks = const [
+    const fallbacks = [
       BusinessEntity(
         businessId: 'biz_restaurante_el_portal',
         tenantId: 'ten_bluesystem_core',
