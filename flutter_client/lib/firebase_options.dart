@@ -41,11 +41,12 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyD-0-CBKWBjgFpCcZL8dvwRbocLbCDcrGI',
-    appId: '1:514416631826:ios:788b99430f87324e88b8cb',
+    apiKey: 'AIzaSyD7N8jMtma2vFm003wWShabrqSB-TkOxz4',
+    appId: '1:514416631826:ios:696fe6e124b4e74988b8cb',
     messagingSenderId: '514416631826',
     projectId: 'bluesystem-7c9af',
     storageBucket: 'bluesystem-7c9af.firebasestorage.app',
+    iosClientId: '514416631826-h0l17ts1hg8tsd84o89165ckmhk278a8.apps.googleusercontent.com',
     iosBundleId: 'com.bluesystem.delivery.client',
   );
 }
