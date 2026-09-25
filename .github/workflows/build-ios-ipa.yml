@@ -36,6 +36,7 @@ jobs:
 
       - name: 🔍 Verify Flutter & Xcode Environment
         run: |
+          flutter config --no-enable-swift-package-manager
           flutter doctor -v
           xcodebuild -version
 
