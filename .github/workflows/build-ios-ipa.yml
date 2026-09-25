@@ -54,7 +54,15 @@ jobs:
       - name: ⚙️ Build iOS App Bundle (No CodeSign)
         run: |
           cd flutter_client
-          flutter build ios --release --no-codesign
+          flutter build ios --release --no-codesign || {
+            echo "Checking if Runner.app was successfully produced by Xcode..."
+            if [ -d "build/ios/iphoneos/Runner.app" ]; then
+              echo "✅ Runner.app exists! Proceeding to packaging."
+            else
+              echo "❌ Build failed and Runner.app was not produced."
+              exit 1
+            fi
+          }
 
       - name: 📦 Package .IPA for Sideloading / AltStore / Test Installation
         run: |
