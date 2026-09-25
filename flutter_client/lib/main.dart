@@ -95,7 +95,7 @@ class _BlueSystemDeliveryAppState extends State<BlueSystemDeliveryApp> {
           debugShowCheckedModeBanner: false,
           theme: theme,
           darkTheme: darkTheme,
-          themeMode: ThemeMode.dark,
+          themeMode: ThemeMode.light,
           home: AppShell(
             sessionState: _sessionState,
             orderService: _firestoreOps,

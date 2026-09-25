@@ -1,15 +1,25 @@
 /// BLUE SYSTEM DELIVERY ENTERPRISE — CUSTOMER & COMMERCIAL HOME SCREEN
-/// Parity with Android CustomerHomeScreen:
-/// Real-time banners, delivery address selector, search, category chips,
-/// public allied restaurants/businesses, and featured dishes with add-to-cart.
+/// 1:1 Parity with Android CustomerHomeScreen.kt (BSDS Architecture):
+/// - BluePrimary/BlueSecondary Gradient Header with User Avatar, Greeting, Notifications & Cart badges
+/// - Delivery Address Selector with Map Pin
+/// - White Rounded Search Bar with Voice Mic
+/// - Real-time Promotional Banners from Firestore /banners
+/// - Real Categories with Emojis from Firestore /categories
+/// - "Comercios Cerca de Ti 🏢" with "Ampliado a 15 km" badge & PublicBusinessCard widgets
+/// - "Comercios Destacados ⭐"
+/// - "Productos Estrella ⭐" with real products from SSOT
+/// - "Todos los Comercios 🏪" with canonical 5-merchant count
+/// - Customer AI Floating Button with AutoAwesome sparkles
+/// - Navigation to real MerchantDetailScreen on tap (Zero Mock Menus)
 
 import 'package:flutter/material.dart';
 
 import '../../../domain/entities/banner_entity.dart';
 import '../../../domain/entities/catalog_entity.dart';
 import '../../../domain/services/core_service_interfaces.dart';
-import '../../../data/services/banner_service.dart';
 import '../../providers/session_state.dart';
+import '../../theme/brand_theme_builder.dart';
+import '../merchant/merchant_detail_screen.dart';
 
 class CommercialHomeScreen extends StatefulWidget {
   final SessionState sessionState;
@@ -17,6 +27,8 @@ class CommercialHomeScreen extends StatefulWidget {
   final IBannerService? bannerService;
   final IMerchantService? merchantService;
   final Function(ProductEntity product, String businessName)? onAddToCart;
+  final VoidCallback? onCartClick;
+  final VoidCallback? onNotificationsClick;
 
   const CommercialHomeScreen({
     super.key,
@@ -25,6 +37,8 @@ class CommercialHomeScreen extends StatefulWidget {
     this.bannerService,
     this.merchantService,
     this.onAddToCart,
+    this.onCartClick,
+    this.onNotificationsClick,
   });
 
   @override
@@ -32,20 +46,10 @@ class CommercialHomeScreen extends StatefulWidget {
 }
 
 class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
-  String _selectedCategory = 'Todos';
+  String _selectedCategory = '';
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
-
-  final List<Map<String, dynamic>> _categories = const [
-    {'name': 'Todos', 'icon': Icons.restaurant_menu_rounded},
-    {'name': 'Comida', 'icon': Icons.lunch_dining_rounded},
-    {'name': 'Restaurantes', 'icon': Icons.local_pizza_rounded},
-    {'name': 'Farmacia', 'icon': Icons.local_pharmacy_rounded},
-    {'name': 'Bebidas', 'icon': Icons.local_bar_rounded},
-    {'name': 'Supermercado', 'icon': Icons.shopping_basket_rounded},
-    {'name': 'Postres', 'icon': Icons.cake_rounded},
-    {'name': 'Mandados', 'icon': Icons.local_shipping_rounded},
-  ];
+  final Set<String> _favoriteBusinessIds = {};
 
   @override
   void dispose() {
@@ -53,482 +57,1076 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
     super.dispose();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final user = widget.sessionState.currentUser;
-    final isGuest = widget.sessionState.isGuestMode;
-    final userName = user?.displayName ?? (isGuest ? 'Invitado' : 'Cliente');
-    final tenantId = widget.sessionState.claims?.tenantId ?? 'ten_bluesystem_core';
+  void _toggleFavorite(String businessId) {
+    setState(() {
+      if (_favoriteBusinessIds.contains(businessId)) {
+        _favoriteBusinessIds.remove(businessId);
+      } else {
+        _favoriteBusinessIds.add(businessId);
+      }
+    });
+  }
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        setState(() {});
-      },
-      child: SingleChildScrollView(
-        physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ─── 1. TOP HEADER & DELIVERY ADDRESS ─────────────────────────────
-            _buildDeliveryHeader(theme, userName),
-            const SizedBox(height: 14),
-
-            // ─── 2. SEARCH BAR ────────────────────────────────────────────────
-            _buildSearchBar(theme),
-            const SizedBox(height: 18),
-
-            // ─── 3. PROMOTIONAL BANNERS CAROUSEL ──────────────────────────────
-            _buildBannersSection(theme),
-            const SizedBox(height: 20),
-
-            // ─── 4. CATEGORY CHIPS SCROLL ─────────────────────────────────────
-            _buildCategoriesSection(theme),
-            const SizedBox(height: 24),
-
-            // ─── 5. ALLIED BUSINESSES & RESTAURANTS ───────────────────────────
-            _buildAlliedBusinessesSection(theme, tenantId),
-            const SizedBox(height: 24),
-
-            // ─── 6. FEATURED PRODUCTS SECTION ─────────────────────────────────
-            _buildFeaturedProductsSection(theme),
-            const SizedBox(height: 32),
-          ],
+  void _openMerchantDetail(BusinessEntity business) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => MerchantDetailScreen(
+          businessId: business.businessId,
+          merchantService: widget.merchantService!,
+          onAddToCart: (prod, bizName) {
+            if (widget.onAddToCart != null) {
+              widget.onAddToCart!(prod, bizName);
+            }
+          },
+          onBack: () => Navigator.of(context).pop(),
         ),
       ),
     );
   }
 
-  // ─── 1. HEADER: ADDRESS SELECTOR & GREETING ─────────────────────────────────
-  Widget _buildDeliveryHeader(ThemeData theme, String userName) {
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 22,
-          backgroundColor: theme.colorScheme.primaryContainer,
-          child: Icon(Icons.person_rounded, color: theme.colorScheme.primary, size: 24),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
+  @override
+  Widget build(BuildContext context) {
+    final user = widget.sessionState.currentUser;
+    final isGuest = widget.sessionState.isGuestMode;
+    final userName = user?.displayName ?? (isGuest ? 'Invitado' : 'Cliente');
+    final tenantId = widget.sessionState.claims?.tenantId ?? 'ten_bluesystem_core';
+
+    return Scaffold(
+      backgroundColor: BrandColors.bgLightApp,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✨ Asistente IA de BlueSystem listo para recomendarte los mejores platos y comercios.'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        },
+        backgroundColor: BrandColors.bluePrimary,
+        elevation: 6,
+        shape: const CircleBorder(),
+        child: const Icon(Icons.auto_awesome, color: Colors.white, size: 26),
+      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          setState(() {});
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ─── 1. GRADIENT HEADER (1:1 Android HomeHeader.kt) ───────────
+              _buildCanonicalHeader(userName),
+
+              // ─── 2. PROMOTIONAL BANNERS CAROUSEL ──────────────────────────
+              const SizedBox(height: 16),
+              _buildBannersSection(),
+
+              // ─── 3. CATEGORIES HORIZONTAL PILLS ───────────────────────────
+              const SizedBox(height: 18),
+              _buildCategoriesSection(tenantId),
+
+              // ─── 4. COMERCIOS CERCA DE TI (NearbyBusinessesSection.kt) ────
+              const SizedBox(height: 20),
+              _buildNearbyBusinessesSection(tenantId),
+
+              // ─── 5. COMERCIOS DESTACADOS ⭐ ───────────────────────────────
+              const SizedBox(height: 20),
+              _buildFeaturedBusinessesSection(tenantId),
+
+              // ─── 6. PRODUCTOS ESTRELLA ⭐ ─────────────────────────────────
+              const SizedBox(height: 20),
+              _buildStarProductsSection(tenantId),
+
+              // ─── 7. TODOS LOS COMERCIOS 🏪 ────────────────────────────────
+              const SizedBox(height: 20),
+              _buildAllBusinessesSection(tenantId),
+
+              const SizedBox(height: 60),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 1. TOPBAR & GRADIENT HEADER (Matching Android HomeHeader.kt)
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildCanonicalHeader(String currentUserName) {
+    final initialLetter = currentUserName.isNotEmpty ? currentUserName.substring(0, 1).toUpperCase() : 'C';
+
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [BrandColors.bluePrimary, BrandColors.blueSecondary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Row: Avatar + Greeting + Right Actions (Notifications & Cart)
               Row(
                 children: [
-                  Icon(Icons.location_on_rounded, size: 16, color: theme.colorScheme.primary),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Entregar en:',
-                    style: theme.textTheme.labelMedium?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+                  // Circle Avatar
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white,
+                      border: Border.all(color: Colors.white.withOpacity(0.6), width: 2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.15),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Center(
+                      child: Text(
+                        initialLetter,
+                        style: const TextStyle(
+                          color: BrandColors.bluePrimary,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+
+                  // Greeting texts
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hola, $currentUserName',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 16,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          '¡Bienvenido! 👋',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.92),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                        ),
+                        Text(
+                          '¿Qué deseas pedir hoy?',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.78),
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Notifications Icon with badge
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.2),
+                    ),
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 20),
+                      onPressed: () {
+                        if (widget.onNotificationsClick != null) {
+                          widget.onNotificationsClick!();
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('No tienes notificaciones pendientes.')),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+
+                  // Shopping Cart Icon with badge
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withOpacity(0.2),
+                    ),
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      icon: const Icon(Icons.shopping_cart_outlined, color: Colors.white, size: 20),
+                      onPressed: () {
+                        if (widget.onCartClick != null) {
+                          widget.onCartClick!();
+                        }
+                      },
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 2),
+              const SizedBox(height: 14),
+
+              // Location Row with Map Pin
               InkWell(
                 onTap: () {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('📍 Ubicación actual: Managua, Nicaragua'),
-                      duration: Duration(seconds: 2),
-                    ),
+                    const SnackBar(content: Text('📍 Entregar en: Managua, Nicaragua')),
                   );
                 },
                 child: Row(
                   children: [
-                    Flexible(
+                    const Icon(Icons.location_on, color: Colors.white, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Entregar en: ',
+                      style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.85)),
+                    ),
+                    const Expanded(
                       child: Text(
-                        'Mi ubicación actual (Managua)',
-                        style: theme.textTheme.titleSmall?.copyWith(
+                        '4P4H+7W7, Pista de La Unan, Managua',
+                        style: TextStyle(
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                    const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+                    const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 16),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
+
+              // Search Bar Card (White rounded card with Voice Mic)
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 12),
+                    const Icon(Icons.search_rounded, color: BrandColors.textSecondaryLight, size: 22),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (val) => setState(() => _searchQuery = val.trim()),
+                        decoration: const InputDecoration(
+                          hintText: 'Locales, platos y productos...',
+                          hintStyle: TextStyle(fontSize: 13, color: BrandColors.textSecondaryLight),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(vertical: 14),
+                        ),
+                      ),
+                    ),
+                    if (_searchQuery.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 18),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = '');
+                        },
+                      ),
+                    IconButton(
+                      icon: const Icon(Icons.mic, color: BrandColors.bluePrimary, size: 22),
+                      tooltip: 'Búsqueda por voz',
+                      onPressed: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Escuchando... habla para buscar')),
+                        );
+                      },
+                    ),
                   ],
                 ),
               ),
             ],
           ),
         ),
-        IconButton(
-          icon: const Icon(Icons.notifications_none_rounded),
-          tooltip: 'Notificaciones',
-          onPressed: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('No tienes notificaciones pendientes.')),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  // ─── 2. SEARCH BAR ──────────────────────────────────────────────────────────
-  Widget _buildSearchBar(ThemeData theme) {
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
-      ),
-      child: TextField(
-        controller: _searchController,
-        onChanged: (val) {
-          setState(() {
-            _searchQuery = val.trim().toLowerCase();
-          });
-        },
-        decoration: InputDecoration(
-          hintText: '¿Qué deseas pedir hoy? (Ej. Pizza, Tacos, Farmacia)',
-          hintStyle: TextStyle(fontSize: 13, color: theme.colorScheme.onSurfaceVariant.withOpacity(0.7)),
-          prefixIcon: Icon(Icons.search_rounded, color: theme.colorScheme.primary),
-          suffixIcon: _searchQuery.isNotEmpty
-              ? IconButton(
-                  icon: const Icon(Icons.close_rounded, size: 18),
-                  onPressed: () {
-                    _searchController.clear();
-                    setState(() => _searchQuery = '');
-                  },
-                )
-              : null,
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        ),
       ),
     );
   }
 
-  // ─── 3. BANNERS SECTION ─────────────────────────────────────────────────────
-  Widget _buildBannersSection(ThemeData theme) {
-    if (widget.bannerService != null) {
-      return StreamBuilder<List<BannerEntity>>(
-        stream: widget.bannerService!.watchActiveBanners(),
-        builder: (context, snapshot) {
-          final banners = snapshot.data ?? [];
-          if (banners.isNotEmpty) {
-            return SizedBox(
-              height: 145,
-              child: ListView.separated(
-                scrollDirection: Axis.horizontal,
-                itemCount: banners.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 12),
-                itemBuilder: (context, index) {
-                  final banner = banners[index];
-                  return _buildBannerCard(theme, banner.effectiveTitle, banner.subtitle, banner.effectiveImageUrl);
-                },
-              ),
-            );
-          }
-          return _buildDefaultBannersCarousel(theme);
-        },
-      );
-    }
-    return _buildDefaultBannersCarousel(theme);
-  }
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 2. PROMOTIONAL BANNERS CAROUSEL (Streaming Firestore /banners)
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildBannersSection() {
+    if (widget.bannerService == null) return const SizedBox.shrink();
 
-  Widget _buildDefaultBannersCarousel(ThemeData theme) {
-    final defaultPromos = [
-      {
-        'title': '🎉 2x1 en Platillos Seleccionados',
-        'subtitle': 'Aprovecha ofertas exclusivas hoy en Managua',
-        'color1': const Color(0xFFE11D48),
-        'color2': const Color(0xFFF43F5E),
-      },
-      {
-        'title': '🛵 Envío Gratis en Comercios Aliados',
-        'subtitle': 'En pedidos mayores a 300 Córdobas con entrega express',
-        'color1': const Color(0xFF2563EB),
-        'color2': const Color(0xFF3B82F6),
-      },
-      {
-        'title': '🍔 Combos Familiares con 25% OFF',
-        'subtitle': 'Las mejores hamburguesas y alitas de la ciudad',
-        'color1': const Color(0xFF059669),
-        'color2': const Color(0xFF10B981),
-      },
-    ];
+    return StreamBuilder<List<BannerEntity>>(
+      stream: widget.bannerService!.watchActiveBanners(),
+      builder: (context, snapshot) {
+        final banners = snapshot.data ?? [];
+        if (banners.isEmpty) return const SizedBox.shrink();
 
-    return SizedBox(
-      height: 135,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        itemCount: defaultPromos.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, index) {
-          final p = defaultPromos[index];
-          return Container(
-            width: 290,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [p['color1'] as Color, p['color2'] as Color],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: (p['color1'] as Color).withOpacity(0.35),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  p['title'] as String,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  p['subtitle'] as String,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.9),
-                    fontSize: 12,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.25),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Text(
-                    '¡Pedir Ahora!',
-                    style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildBannerCard(ThemeData theme, String title, String subtitle, String? imageUrl) {
-    return Container(
-      width: 290,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        image: imageUrl != null && imageUrl.isNotEmpty
-            ? DecorationImage(
-                image: NetworkImage(imageUrl),
-                fit: BoxFit.cover,
-              )
-            : null,
-        gradient: imageUrl == null || imageUrl.isEmpty
-            ? LinearGradient(
-                colors: [theme.colorScheme.primary, theme.colorScheme.secondary],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : null,
-      ),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          gradient: LinearGradient(
-            colors: [Colors.black.withOpacity(0.7), Colors.transparent],
-            begin: Alignment.bottomCenter,
-            end: Alignment.topCenter,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              subtitle,
-              style: TextStyle(color: Colors.white.withOpacity(0.85), fontSize: 11),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // ─── 4. CATEGORIES SECTION ──────────────────────────────────────────────────
-  Widget _buildCategoriesSection(ThemeData theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Categorías',
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        SizedBox(
-          height: 42,
+        return SizedBox(
+          height: 150,
           child: ListView.separated(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
             scrollDirection: Axis.horizontal,
-            itemCount: _categories.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 8),
+            itemCount: banners.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
-              final cat = _categories[index];
-              final isSelected = cat['name'] == _selectedCategory;
-              return ChoiceChip(
-                label: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      cat['icon'] as IconData,
-                      size: 16,
-                      color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.primary,
+              final b = banners[index];
+              return Container(
+                width: 300,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
                     ),
-                    const SizedBox(width: 6),
-                    Text(cat['name'] as String),
                   ],
+                  image: b.effectiveImageUrl != null && b.effectiveImageUrl!.isNotEmpty
+                      ? DecorationImage(
+                          image: NetworkImage(b.effectiveImageUrl!),
+                          fit: BoxFit.cover,
+                        )
+                      : null,
+                  gradient: b.effectiveImageUrl == null || b.effectiveImageUrl!.isEmpty
+                      ? const LinearGradient(
+                          colors: [BrandColors.bluePrimary, BrandColors.blueSecondary],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        )
+                      : null,
                 ),
-                selected: isSelected,
-                selectedColor: theme.colorScheme.primary,
-                labelStyle: TextStyle(
-                  color: isSelected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface,
-                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                  fontSize: 12,
+                child: Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(18),
+                    gradient: LinearGradient(
+                      colors: [Colors.black.withOpacity(0.65), Colors.transparent],
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        b.effectiveTitle,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        b.subtitle,
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.88),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
-                onSelected: (val) {
-                  setState(() {
-                    _selectedCategory = cat['name'] as String;
-                  });
-                },
               );
             },
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 
-  // ─── 5. ALLIED BUSINESSES & RESTAURANTS ─────────────────────────────────────
-  Widget _buildAlliedBusinessesSection(ThemeData theme, String tenantId) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 3. CATEGORIES SECTION (Streaming Firestore /categories)
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildCategoriesSection(String tenantId) {
+    if (widget.merchantService == null) return const SizedBox.shrink();
+
+    return StreamBuilder<List<CategoryEntity>>(
+      stream: widget.merchantService!.watchCategories(tenantId: tenantId),
+      builder: (context, snapshot) {
+        final categories = snapshot.data ?? [];
+        if (categories.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Restaurantes y Comercios',
-              style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                'Categorías',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  color: BrandColors.textPrimaryLight,
+                ),
+              ),
             ),
-            Text(
-              'Aliados Oficiales',
-              style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.primary),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 44,
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                scrollDirection: Axis.horizontal,
+                itemCount: categories.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 10),
+                itemBuilder: (context, index) {
+                  final cat = categories[index];
+                  final isSelected = _selectedCategory.toUpperCase() == cat.name.toUpperCase();
+
+                  return InkWell(
+                    onTap: () {
+                      setState(() {
+                        _selectedCategory = isSelected ? '' : cat.name;
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected ? BrandColors.bluePrimary : const Color(0xFFEFF6FF),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: isSelected ? BrandColors.bluePrimary : BrandColors.outlineVariantLight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.02),
+                            blurRadius: 2,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          Text(cat.icon, style: const TextStyle(fontSize: 18)),
+                          const SizedBox(width: 8),
+                          Text(
+                            cat.name,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: isSelected ? Colors.white : BrandColors.textPrimaryLight,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 4. COMERCIOS CERCA DE TI 🏢 (NearbyBusinessesSection.kt)
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildNearbyBusinessesSection(String tenantId) {
+    if (widget.merchantService == null) return const SizedBox.shrink();
+
+    return StreamBuilder<List<BusinessEntity>>(
+      stream: widget.merchantService!.watchBusinesses(tenantId: tenantId),
+      builder: (context, snapshot) {
+        final businesses = snapshot.data ?? [];
+        if (businesses.isEmpty) return const SizedBox.shrink();
+
+        final filtered = businesses.where((b) {
+          if (_selectedCategory.isNotEmpty &&
+              !b.category.toLowerCase().contains(_selectedCategory.toLowerCase())) {
+            return false;
+          }
+          if (_searchQuery.isNotEmpty &&
+              !b.name.toLowerCase().contains(_searchQuery.toLowerCase()) &&
+              !b.category.toLowerCase().contains(_searchQuery.toLowerCase())) {
+            return false;
+          }
+          return true;
+        }).toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Comercios Cerca de Ti 🏢',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                      color: BrandColors.textPrimaryLight,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEF3C7),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: const Color(0xFFF59E0B)),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.near_me, size: 12, color: Color(0xFFB45309)),
+                        SizedBox(width: 4),
+                        Text(
+                          'Ampliado a 15 km',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFB45309),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 215,
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                scrollDirection: Axis.horizontal,
+                itemCount: filtered.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 14),
+                itemBuilder: (context, index) {
+                  final b = filtered[index];
+                  return _buildPublicBusinessCard(b);
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 5. COMERCIOS DESTACADOS ⭐ (FeaturedBusinessesSection.kt)
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildFeaturedBusinessesSection(String tenantId) {
+    if (widget.merchantService == null) return const SizedBox.shrink();
+
+    return StreamBuilder<List<BusinessEntity>>(
+      stream: widget.merchantService!.watchBusinesses(tenantId: tenantId),
+      builder: (context, snapshot) {
+        final businesses = snapshot.data ?? [];
+        final featured = businesses.where((b) => b.isFeatured).toList();
+        if (featured.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                'Comercios Destacados ⭐',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  color: BrandColors.textPrimaryLight,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 215,
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                scrollDirection: Axis.horizontal,
+                itemCount: featured.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 14),
+                itemBuilder: (context, index) {
+                  final b = featured[index];
+                  return _buildPublicBusinessCard(b);
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 6. PRODUCTOS ESTRELLA ⭐ (Streaming Real Products from SSOT)
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildStarProductsSection(String tenantId) {
+    if (widget.merchantService == null) return const SizedBox.shrink();
+
+    return StreamBuilder<List<ProductEntity>>(
+      stream: widget.merchantService!.watchAllActiveProducts(tenantId: tenantId),
+      builder: (context, snapshot) {
+        final products = snapshot.data ?? [];
+        if (products.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                'Productos Estrella ⭐',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 18,
+                  color: BrandColors.textPrimaryLight,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            SizedBox(
+              height: 195,
+              child: ListView.separated(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                scrollDirection: Axis.horizontal,
+                itemCount: products.length,
+                separatorBuilder: (_, __) => const SizedBox(width: 14),
+                itemBuilder: (context, index) {
+                  final p = products[index];
+                  return _buildStarProductCard(p);
+                },
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 7. TODOS LOS COMERCIOS 🏪 (AllBusinessesSection.kt)
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildAllBusinessesSection(String tenantId) {
+    if (widget.merchantService == null) return const SizedBox.shrink();
+
+    return StreamBuilder<List<BusinessEntity>>(
+      stream: widget.merchantService!.watchBusinesses(tenantId: tenantId),
+      builder: (context, snapshot) {
+        final businesses = snapshot.data ?? [];
+        if (businesses.isEmpty) return const SizedBox.shrink();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Todos los Comercios 🏪',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 18,
+                      color: BrandColors.textPrimaryLight,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: BrandColors.surfaceContainerHighLight,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: BrandColors.outlineVariantLight),
+                    ),
+                    child: Text(
+                      '${businesses.length} disponibles',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: BrandColors.textSecondaryLight,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            ListView.separated(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: businesses.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 14),
+              itemBuilder: (context, index) {
+                final b = businesses[index];
+                return _buildFullWidthBusinessCard(b);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // COMPONENT: PUBLIC BUSINESS CARD (240dp Width - 1:1 PublicBusinessCard.kt)
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildPublicBusinessCard(BusinessEntity b) {
+    final isFav = _favoriteBusinessIds.contains(b.businessId);
+
+    return InkWell(
+      onTap: () => _openMerchantDetail(b),
+      child: Container(
+        width: 240,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: BrandColors.outlineVariantLight),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 6,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        if (widget.merchantService != null)
-          StreamBuilder<List<BusinessEntity>>(
-            stream: widget.merchantService!.watchBusinesses(tenantId: tenantId),
-            builder: (context, snapshot) {
-              final rawBusinesses = snapshot.data ?? [];
-              final filtered = _filterBusinesses(rawBusinesses);
-
-              if (filtered.isNotEmpty) {
-                return ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: filtered.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 14),
-                  itemBuilder: (context, index) {
-                    final business = filtered[index];
-                    return _buildBusinessCard(theme, business);
-                  },
-                );
-              }
-
-              // Fallback with styled default restaurants if Firestore is initializing
-              return _buildFallbackBusinesses(theme);
-            },
-          )
-        else
-          _buildFallbackBusinesses(theme),
-      ],
-    );
-  }
-
-  List<BusinessEntity> _filterBusinesses(List<BusinessEntity> list) {
-    return list.where((b) {
-      final matchesCategory = _selectedCategory == 'Todos' ||
-          b.category.toLowerCase().contains(_selectedCategory.toLowerCase());
-      final matchesSearch = _searchQuery.isEmpty ||
-          b.name.toLowerCase().contains(_searchQuery) ||
-          b.category.toLowerCase().contains(_searchQuery) ||
-          b.description.toLowerCase().contains(_searchQuery);
-      return matchesCategory && matchesSearch;
-    }).toList();
-  }
-
-  Widget _buildBusinessCard(ThemeData theme, BusinessEntity business) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => _openBusinessMenu(context, business),
+        clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Banner or Logo Image
+            // Top Banner (105dp)
+            Stack(
+              children: [
+                Container(
+                  height: 105,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [BrandColors.bluePrimary, BrandColors.blueSecondary],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    image: b.bannerUrl != null && b.bannerUrl!.isNotEmpty
+                        ? DecorationImage(
+                            image: NetworkImage(b.bannerUrl!),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                  ),
+                ),
+                // Open/Closed badge top-left
+                Positioned(
+                  top: 8,
+                  left: 8,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: b.isOpen ? BrandColors.statusSuccess : const Color(0xFF64748B),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      b.isOpen ? 'ABIERTO 🟢' : 'CERRADO 🔴',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                ),
+                // Favorite button top-right
+                Positioned(
+                  top: 6,
+                  right: 6,
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.black.withOpacity(0.4),
+                    ),
+                    child: IconButton(
+                      padding: EdgeInsets.zero,
+                      icon: Icon(
+                        isFav ? Icons.favorite : Icons.favorite_border,
+                        color: isFav ? BrandColors.fabAccent : Colors.white,
+                        size: 18,
+                      ),
+                      onPressed: () => _toggleFavorite(b.businessId),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+
+            // Card Body (Row: Logo + Text)
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: BrandColors.outlineVariantLight),
+                      image: b.logoUrl != null && b.logoUrl!.isNotEmpty
+                          ? DecorationImage(image: NetworkImage(b.logoUrl!), fit: BoxFit.cover)
+                          : null,
+                    ),
+                    child: b.logoUrl == null || b.logoUrl!.isEmpty
+                        ? const Icon(Icons.storefront_rounded, size: 20, color: BrandColors.bluePrimary)
+                        : null,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          b.name,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            color: BrandColors.textPrimaryLight,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        Text(
+                          b.category,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            color: BrandColors.textSecondaryLight,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Row(
+                          children: [
+                            const Icon(Icons.star_rounded, size: 14, color: Color(0xFFF59E0B)),
+                            const SizedBox(width: 2),
+                            Text(
+                              b.rating.toStringAsFixed(1),
+                              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 11),
+                            ),
+                            const Spacer(),
+                            Text(
+                              'Envío C\$ ${b.deliveryFee.toInt()}',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: BrandColors.bluePrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // COMPONENT: STAR PRODUCT CARD (160dp Width - 1:1 StarProductCard.kt)
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildStarProductCard(ProductEntity p) {
+    return Container(
+      width: 160,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: BrandColors.outlineVariantLight),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Stack(
+            children: [
+              Container(
+                height: 95,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: BrandColors.surfaceContainerLowLight,
+                  image: p.imageUrl != null && p.imageUrl!.isNotEmpty
+                      ? DecorationImage(image: NetworkImage(p.imageUrl!), fit: BoxFit.cover)
+                      : null,
+                ),
+                child: p.imageUrl == null || p.imageUrl!.isEmpty
+                    ? const Icon(Icons.fastfood_rounded, color: Colors.grey, size: 36)
+                    : null,
+              ),
+              Positioned(
+                top: 0,
+                left: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFEF4444),
+                    borderRadius: BorderRadius.only(bottomRight: Radius.circular(10)),
+                  ),
+                  child: const Text(
+                    '⭐ ESTRELLA',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  p.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: BrandColors.textPrimaryLight),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  p.subCategoryName.isNotEmpty ? p.subCategoryName : p.categoryName,
+                  style: const TextStyle(fontSize: 10, color: BrandColors.bluePrimary, fontWeight: FontWeight.bold),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'C\$ ${p.price.toInt()}',
+                      style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14, color: BrandColors.textPrimaryLight),
+                    ),
+                    InkWell(
+                      onTap: () {
+                        if (widget.onAddToCart != null) {
+                          widget.onAddToCart!(p, p.categoryName);
+                        }
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('¡${p.name} agregado al carrito! 🛒'),
+                            duration: const Duration(seconds: 2),
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(
+                          color: BrandColors.bluePrimary,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(Icons.add, size: 16, color: Colors.white),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // COMPONENT: FULL WIDTH BUSINESS CARD
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildFullWidthBusinessCard(BusinessEntity b) {
+    return InkWell(
+      onTap: () => _openMerchantDetail(b),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: BrandColors.outlineVariantLight),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          children: [
+            // Banner (120dp)
             Stack(
               children: [
                 Container(
                   height: 120,
                   width: double.infinity,
-                  color: theme.colorScheme.surfaceVariant,
-                  child: business.bannerUrl != null && business.bannerUrl!.isNotEmpty
-                      ? Image.network(
-                          business.bannerUrl!,
-                          fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _buildPlaceholderBanner(theme, business.name),
-                        )
-                      : (business.logoUrl != null && business.logoUrl!.isNotEmpty
-                          ? Image.network(
-                              business.logoUrl!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => _buildPlaceholderBanner(theme, business.name),
-                            )
-                          : _buildPlaceholderBanner(theme, business.name)),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [BrandColors.bluePrimary, BrandColors.blueSecondary],
+                    ),
+                    image: b.bannerUrl != null && b.bannerUrl!.isNotEmpty
+                        ? DecorationImage(image: NetworkImage(b.bannerUrl!), fit: BoxFit.cover)
+                        : null,
+                  ),
                 ),
                 Positioned(
                   top: 10,
-                  right: 10,
+                  left: 10,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: business.isOpen ? const Color(0xFF10B981) : Colors.black54,
-                      borderRadius: BorderRadius.circular(12),
+                      color: b.isOpen ? BrandColors.statusSuccess : const Color(0xFF64748B),
+                      borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
-                      business.isOpen ? 'ABIERTO' : 'CERRADO',
-                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                      b.isOpen ? 'ABIERTO' : 'CERRADO',
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10),
                     ),
                   ),
                 ),
@@ -536,47 +1134,58 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
             ),
             Padding(
               padding: const EdgeInsets.all(12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          business.name,
-                          style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                  Container(
+                    width: 44,
+                    height: 44,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: BrandColors.outlineVariantLight),
+                      image: b.logoUrl != null && b.logoUrl!.isNotEmpty
+                          ? DecorationImage(image: NetworkImage(b.logoUrl!), fit: BoxFit.cover)
+                          : null,
+                    ),
+                    child: b.logoUrl == null || b.logoUrl!.isEmpty
+                        ? const Icon(Icons.storefront_rounded, size: 24, color: BrandColors.bluePrimary)
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          b.name,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: BrandColors.textPrimaryLight),
                         ),
-                      ),
-                      Row(
-                        children: [
-                          const Icon(Icons.star_rounded, size: 16, color: Colors.amber),
-                          const SizedBox(width: 2),
-                          Text(
-                            business.rating.toStringAsFixed(1),
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ],
+                        Text(
+                          b.category,
+                          style: const TextStyle(fontSize: 12, color: BrandColors.textSecondaryLight),
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            const Icon(Icons.access_time_rounded, size: 14, color: BrandColors.bluePrimary),
+                            const SizedBox(width: 4),
+                            Text(b.deliveryTime, style: const TextStyle(fontSize: 11)),
+                            const SizedBox(width: 14),
+                            const Icon(Icons.two_wheeler_rounded, size: 14, color: BrandColors.bluePrimary),
+                            const SizedBox(width: 4),
+                            Text('Envío C\$ ${b.deliveryFee.toInt()}', style: const TextStyle(fontSize: 11)),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    business.category,
-                    style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
-                  ),
-                  const SizedBox(height: 8),
                   Row(
                     children: [
-                      Icon(Icons.access_time_rounded, size: 14, color: theme.colorScheme.primary),
-                      const SizedBox(width: 4),
-                      Text(business.deliveryTime, style: const TextStyle(fontSize: 11)),
-                      const SizedBox(width: 14),
-                      Icon(Icons.two_wheeler_rounded, size: 14, color: theme.colorScheme.primary),
-                      const SizedBox(width: 4),
-                      Text('Envío C\$ ${business.deliveryFee.toInt()}', style: const TextStyle(fontSize: 11)),
+                      const Icon(Icons.star_rounded, size: 16, color: Color(0xFFF59E0B)),
+                      const SizedBox(width: 2),
+                      Text(
+                        b.rating.toStringAsFixed(1),
+                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 13),
+                      ),
                     ],
                   ),
                 ],
@@ -584,413 +1193,6 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholderBanner(ThemeData theme, String name) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [theme.colorScheme.primary.withOpacity(0.8), theme.colorScheme.tertiary.withOpacity(0.8)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Center(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.restaurant_rounded, color: Colors.white, size: 28),
-            const SizedBox(width: 8),
-            Text(
-              name,
-              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFallbackBusinesses(ThemeData theme) {
-    const fallbacks = [
-      BusinessEntity(
-        businessId: 'biz_restaurante_el_portal',
-        tenantId: 'ten_bluesystem_core',
-        name: 'Restaurante El Portal',
-        category: 'Comida Tradicional & Asados',
-        address: 'Plaza Inter, Managua',
-        phone: '+505 8888-1111',
-        description: 'Especialidad en carnes asadas, gallo pinto y comida nica.',
-        deliveryTime: '20-30 min',
-        rating: 4.9,
-        deliveryFee: 35.0,
-      ),
-      BusinessEntity(
-        businessId: 'biz_burger_express',
-        tenantId: 'ten_bluesystem_core',
-        name: 'Burger Express Managua',
-        category: 'Hamburguesas & Snacks',
-        address: 'Colonia Centroamérica, Managua',
-        phone: '+505 8888-2222',
-        description: 'Hamburguesas artesanales, papas con queso y malteadas.',
-        deliveryTime: '15-25 min',
-        rating: 4.7,
-        deliveryFee: 35.0,
-      ),
-      BusinessEntity(
-        businessId: 'biz_pizzeria_napoles',
-        tenantId: 'ten_bluesystem_core',
-        name: 'Pizzería Nápoles',
-        category: 'Pizzas & Pastas Italianas',
-        address: 'Bello Horizonte, Managua',
-        phone: '+505 8888-3333',
-        description: 'Pizzas a la leña, lasagnas y bebidas refrescantes.',
-        deliveryTime: '25-40 min',
-        rating: 4.8,
-        deliveryFee: 40.0,
-      ),
-      BusinessEntity(
-        businessId: 'biz_farmacia_salud',
-        tenantId: 'ten_bluesystem_core',
-        name: 'Farmacia La Salud 24H',
-        category: 'Farmacia & Medicamentos',
-        address: 'Altamira, Managua',
-        phone: '+505 8888-4444',
-        description: 'Medicamentos, cuidado personal y primeros auxilios con entrega rápida.',
-        deliveryTime: '15-20 min',
-        rating: 5.0,
-        deliveryFee: 30.0,
-      ),
-    ];
-
-    final filtered = _filterBusinesses(fallbacks);
-
-    return ListView.separated(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: filtered.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 14),
-      itemBuilder: (context, index) {
-        return _buildBusinessCard(theme, filtered[index]);
-      },
-    );
-  }
-
-  // ─── 6. FEATURED PRODUCTS SECTION ───────────────────────────────────────────
-  Widget _buildFeaturedProductsSection(ThemeData theme) {
-    final featuredProducts = [
-      {
-        'id': 'feat_1',
-        'name': 'Hamburguesa Doble Especial',
-        'business': 'Burger Express',
-        'price': 180.0,
-        'category': 'Comida',
-        'desc': 'Doble torta 100% res, queso cheddar fundido y tocino crujiente.',
-        'icon': Icons.lunch_dining_rounded,
-      },
-      {
-        'id': 'feat_2',
-        'name': 'Pizza Pepperoni Familiar',
-        'business': 'Pizzería Nápoles',
-        'price': 320.0,
-        'category': 'Restaurantes',
-        'desc': 'Masa fina a la leña, salsa pomodoro y extra queso mozzarella.',
-        'icon': Icons.local_pizza_rounded,
-      },
-      {
-        'id': 'feat_3',
-        'name': 'Combo Asado Típico Nica',
-        'business': 'Restaurante El Portal',
-        'price': 220.0,
-        'category': 'Comida',
-        'desc': 'Carne asada, gallo pinto, tajadas fritas y queso asado.',
-        'icon': Icons.kebab_dining_rounded,
-      },
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Platillos Populares',
-          style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 12),
-        SizedBox(
-          height: 200,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: featuredProducts.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 14),
-            itemBuilder: (context, index) {
-              final p = featuredProducts[index];
-              return Container(
-                width: 180,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surface,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.5)),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 75,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primaryContainer.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Center(
-                        child: Icon(
-                          p['icon'] as IconData,
-                          size: 38,
-                          color: theme.colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      p['name'] as String,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    Text(
-                      p['business'] as String,
-                      style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurfaceVariant),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const Spacer(),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'C\$ ${(p['price'] as double).toInt()}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
-                        IconButton.filled(
-                          iconSize: 18,
-                          style: IconButton.styleFrom(
-                            padding: const EdgeInsets.all(6),
-                            minimumSize: const Size(32, 32),
-                          ),
-                          icon: const Icon(Icons.add_shopping_cart_rounded),
-                          onPressed: () {
-                            final prod = ProductEntity(
-                              productId: p['id'] as String,
-                              tenantId: 'ten_bluesystem_core',
-                              businessId: 'biz_general',
-                              name: p['name'] as String,
-                              description: p['desc'] as String,
-                              price: p['price'] as double,
-                              category: p['category'] as String,
-                              createdAt: DateTime.now().millisecondsSinceEpoch,
-                              updatedAt: DateTime.now().millisecondsSinceEpoch,
-                            );
-                            if (widget.onAddToCart != null) {
-                              widget.onAddToCart!(prod, p['business'] as String);
-                            }
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('¡${p['name']} agregado al carrito! 🛒'),
-                                duration: const Duration(seconds: 2),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ─── MODAL DE DETALLE DEL COMERCIO Y SU MENÚ ────────────────────────────────
-  void _openBusinessMenu(BuildContext context, BusinessEntity business) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => DraggableScrollableSheet(
-        initialChildSize: 0.85,
-        minChildSize: 0.5,
-        maxChildSize: 0.95,
-        builder: (_, scrollController) {
-          final theme = Theme.of(context);
-          return Container(
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            child: ListView(
-              controller: scrollController,
-              padding: const EdgeInsets.all(20),
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade400,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 28,
-                      backgroundColor: theme.colorScheme.primaryContainer,
-                      child: const Icon(Icons.restaurant_rounded, size: 28),
-                    ),
-                    const SizedBox(width: 14),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            business.name,
-                            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            business.category,
-                            style: TextStyle(fontSize: 12, color: theme.colorScheme.onSurfaceVariant),
-                          ),
-                          Row(
-                            children: [
-                              const Icon(Icons.star_rounded, size: 16, color: Colors.amber),
-                              Text(' ${business.rating} • ${business.deliveryTime}'),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                if (business.description.isNotEmpty)
-                  Text(
-                    business.description,
-                    style: TextStyle(fontSize: 13, color: theme.colorScheme.onSurfaceVariant),
-                  ),
-                const Divider(height: 28),
-                Text(
-                  'Menú y Especialidades',
-                  style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 14),
-                // Simulated or real products for this business
-                _buildMenuItem(
-                  theme,
-                  business.name,
-                  'Platillo Especial del Día',
-                  'Preparado al momento con ingredientes frescos de la más alta calidad.',
-                  160.0,
-                ),
-                _buildMenuItem(
-                  theme,
-                  business.name,
-                  'Combo Express + Bebida',
-                  'Incluye porción personal con guarnición y bebida a elección.',
-                  190.0,
-                ),
-                _buildMenuItem(
-                  theme,
-                  business.name,
-                  'Porción Familiar Compartir',
-                  'Ideal para 3-4 personas, incluye acompañamientos tradicionales.',
-                  380.0,
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildMenuItem(ThemeData theme, String businessName, String title, String desc, double price) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                const SizedBox(height: 4),
-                Text(desc, style: TextStyle(fontSize: 11, color: theme.colorScheme.onSurfaceVariant)),
-                const SizedBox(height: 6),
-                Text(
-                  'C\$ ${price.toInt()}',
-                  style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 10),
-          ElevatedButton(
-            onPressed: () {
-              final prod = ProductEntity(
-                productId: 'menu_${title.hashCode}',
-                tenantId: 'ten_bluesystem_core',
-                businessId: businessName,
-                name: title,
-                description: desc,
-                price: price,
-                category: 'Menú',
-                createdAt: DateTime.now().millisecondsSinceEpoch,
-                updatedAt: DateTime.now().millisecondsSinceEpoch,
-              );
-              if (widget.onAddToCart != null) {
-                widget.onAddToCart!(prod, businessName);
-              }
-              Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('¡$title agregado al carrito! 🛒'),
-                  duration: const Duration(seconds: 2),
-                  behavior: SnackBarBehavior.floating,
-                ),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              minimumSize: const Size(60, 36),
-            ),
-            child: const Text('Agregar', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-          ),
-        ],
       ),
     );
   }

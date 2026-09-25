@@ -120,106 +120,106 @@ class _AppShellState extends State<AppShell> {
   // A. CUSTOMER & GUEST SHELL (Android CustomerBottomNavigationBar Parity)
   // ═════════════════════════════════════════════════════════════════════════════
   Widget _buildCustomerShell(bool isGuestMode) {
-    final theme = Theme.of(context);
-    final brand = widget.sessionState.activeBrand;
-
     return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          children: [
-            const Icon(Icons.delivery_dining_rounded, size: 24, color: Color(0xFF2563EB)),
-            const SizedBox(width: 8),
-            Text(
-              brand?.displayName ?? 'BlueSystem Delivery',
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+      backgroundColor: BrandColors.bgLightApp,
+      appBar: _selectedIndex == 0
+          ? null // Home has its own gradient header
+          : AppBar(
+              backgroundColor: BrandColors.surfaceLight,
+              foregroundColor: BrandColors.textPrimaryLight,
+              elevation: 1,
+              title: Text(
+                _selectedIndex == 1
+                    ? 'Favoritos'
+                    : (_selectedIndex == 2 ? 'Mis Pedidos' : 'Mi Perfil'),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              actions: [
+                if (widget.sessionState.isOffline) const OfflineBanner(),
+              ],
             ),
-          ],
-        ),
-        actions: [
-          if (widget.sessionState.isOffline) const OfflineBanner(),
-          if (isGuestMode)
-            TextButton.icon(
-              onPressed: () {
-                setState(() => _selectedIndex = 3); // Navegar a tab Mi Perfil (Login)
-              },
-              icon: const Icon(Icons.login_rounded, size: 18),
-              label: const Text('Ingresar'),
-            )
-          else
-            IconButton(
-              icon: const Icon(Icons.account_circle_outlined),
-              tooltip: 'Mi Cuenta',
-              onPressed: () => setState(() => _selectedIndex = 3),
-            ),
-        ],
-      ),
       body: _buildCustomerScreen(isGuestMode),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _openCartDialog,
-        backgroundColor: const Color(0xFF2563EB),
-        foregroundColor: Colors.white,
-        elevation: 6,
-        shape: const CircleBorder(),
-        child: Badge(
-          isLabelVisible: _cartItems.isNotEmpty,
-          label: Text(
-            '${_cartItems.length}',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+      floatingActionButton: Container(
+        height: 64,
+        width: 64,
+        margin: const EdgeInsets.only(top: 24),
+        child: FloatingActionButton(
+          onPressed: _openCartDialog,
+          backgroundColor: BrandColors.fabAccent, // Vibrant Red/Pink (#FF2D55)
+          foregroundColor: Colors.white,
+          elevation: 8,
+          shape: const CircleBorder(),
+          child: Badge(
+            isLabelVisible: _cartItems.isNotEmpty,
+            backgroundColor: BrandColors.bluePrimary,
+            label: Text(
+              '${_cartItems.length}',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
+            ),
+            child: const Icon(Icons.shopping_cart_rounded, size: 28),
           ),
-          child: const Icon(Icons.shopping_bag_rounded, size: 26),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8.0,
-        color: theme.colorScheme.surface,
-        elevation: 12,
-        child: SizedBox(
-          height: 60,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              // Tab 0: Inicio
-              _buildBottomNavItem(
-                icon: Icons.home_rounded,
-                label: 'Inicio',
-                isSelected: _selectedIndex == 0,
-                onTap: () => setState(() => _selectedIndex = 0),
-              ),
-              // Tab 1: Favoritos
-              _buildBottomNavItem(
-                icon: Icons.favorite_rounded,
-                label: 'Favoritos',
-                isSelected: _selectedIndex == 1,
-                onTap: () => setState(() => _selectedIndex = 1),
-              ),
-              // Spacer for the center FAB
-              const SizedBox(width: 48),
-              // Tab 2: Pedidos
-              _buildBottomNavItem(
-                icon: Icons.receipt_long_rounded,
-                label: 'Pedidos',
-                isSelected: _selectedIndex == 2,
-                onTap: () {
-                  if (isGuestMode) {
-                    setState(() => _selectedIndex = 3);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Inicia sesión para consultar tus pedidos en curso.')),
-                    );
-                  } else {
-                    setState(() => _selectedIndex = 2);
-                  }
-                },
-              ),
-              // Tab 3: Mi Perfil
-              _buildBottomNavItem(
-                icon: Icons.person_rounded,
-                label: 'Mi Perfil',
-                isSelected: _selectedIndex == 3,
-                onTap: () => setState(() => _selectedIndex = 3),
-              ),
-            ],
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 16,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: SizedBox(
+            height: 64,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                // Item 1: Inicio
+                _buildBottomNavItem(
+                  icon: Icons.home_rounded,
+                  label: 'Inicio',
+                  isSelected: _selectedIndex == 0,
+                  onTap: () => setState(() => _selectedIndex = 0),
+                ),
+                // Item 2: Favorito
+                _buildBottomNavItem(
+                  icon: Icons.favorite_border_rounded,
+                  label: 'Favorito',
+                  isSelected: _selectedIndex == 1,
+                  onTap: () => setState(() => _selectedIndex = 1),
+                ),
+                // Spacer for the center FAB
+                const SizedBox(width: 64),
+                // Item 4: Pedidos
+                _buildBottomNavItem(
+                  icon: Icons.receipt_long_rounded,
+                  label: 'Pedidos',
+                  isSelected: _selectedIndex == 2,
+                  onTap: () {
+                    if (isGuestMode) {
+                      setState(() => _selectedIndex = 3);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Inicia sesión para consultar tus pedidos en curso.')),
+                      );
+                    } else {
+                      setState(() => _selectedIndex = 2);
+                    }
+                  },
+                ),
+                // Item 5: Mi Perfil
+                _buildBottomNavItem(
+                  icon: Icons.person_rounded,
+                  label: 'Mi Perfil',
+                  isSelected: _selectedIndex == 3,
+                  onTap: () => setState(() => _selectedIndex = 3),
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -232,23 +232,23 @@ class _AppShellState extends State<AppShell> {
     required bool isSelected,
     required VoidCallback onTap,
   }) {
-    final color = isSelected ? const Color(0xFF2563EB) : Colors.grey.shade500;
+    final color = isSelected ? BrandColors.fabAccent : BrandColors.textSecondaryLight;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 22),
-            const SizedBox(height: 2),
+            Icon(icon, color: color, size: 24),
+            const SizedBox(height: 3),
             Text(
               label,
               style: TextStyle(
                 color: color,
                 fontSize: 10,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
               ),
             ),
           ],
@@ -266,6 +266,7 @@ class _AppShellState extends State<AppShell> {
           bannerService: widget.bannerService,
           merchantService: widget.merchantService,
           onAddToCart: _addToCart,
+          onCartClick: _openCartDialog,
         );
       case 1:
         return _buildFavoritesView();
@@ -310,6 +311,10 @@ class _AppShellState extends State<AppShell> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: BrandColors.bluePrimary,
+                foregroundColor: Colors.white,
+              ),
               onPressed: () => setState(() => _selectedIndex = 0),
               child: const Text('Explorar Restaurantes'),
             ),
@@ -319,61 +324,213 @@ class _AppShellState extends State<AppShell> {
     );
   }
 
+  // 1:1 Android ProfileScreen.kt implementation
   Widget _buildUserProfileView() {
     final user = widget.sessionState.currentUser;
     final claims = widget.sessionState.claims;
+    final initialLetter = (user?.displayName?.isNotEmpty ?? false)
+        ? user!.displayName!.substring(0, 1).toUpperCase()
+        : 'C';
+
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 40,
-            backgroundColor: const Color(0xFF2563EB).withOpacity(0.15),
-            child: const Icon(Icons.person, size: 45, color: Color(0xFF2563EB)),
+          // Header Card with Avatar & Account Info
+          Card(
+            elevation: 2,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [BrandColors.bluePrimary, BrandColors.blueSecondary],
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        initialLetter,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          user?.displayName ?? 'Cliente BlueSystem',
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w900,
+                            color: BrandColors.textPrimaryLight,
+                          ),
+                        ),
+                        Text(
+                          user?.email ?? '',
+                          style: const TextStyle(fontSize: 12, color: BrandColors.textSecondaryLight),
+                        ),
+                        const SizedBox(height: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEFF6FF),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: const Color(0xFFBFDBFE)),
+                          ),
+                          child: Text(
+                            'ROL: ${claims?.role.name.toUpperCase() ?? "CLIENT"}',
+                            style: const TextStyle(
+                              color: BrandColors.bluePrimary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 10,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
-          const SizedBox(height: 12),
-          Text(
-            user?.displayName ?? user?.email ?? 'Cliente Registrado',
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          const SizedBox(height: 16),
+
+          // Menu Section 1: Core Navigation
+          Card(
+            elevation: 1,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Column(
+              children: [
+                _buildProfileListTile(
+                  icon: Icons.person_outline,
+                  iconColor: BrandColors.bluePrimary,
+                  title: 'Mi Perfil',
+                  subtitle: 'Datos personales y contacto',
+                  onTap: () {},
+                ),
+                const Divider(height: 1),
+                _buildProfileListTile(
+                  icon: Icons.favorite_border_rounded,
+                  iconColor: BrandColors.fabAccent,
+                  title: 'Favoritos',
+                  subtitle: 'Comercios y platos guardados',
+                  onTap: () => setState(() => _selectedIndex = 1),
+                ),
+                const Divider(height: 1),
+                _buildProfileListTile(
+                  icon: Icons.location_on_outlined,
+                  iconColor: BrandColors.statusSuccess,
+                  title: 'Mis direcciones',
+                  subtitle: 'Gestionar puntos de entrega',
+                  onTap: () {},
+                ),
+                const Divider(height: 1),
+                _buildProfileListTile(
+                  icon: Icons.local_shipping_outlined,
+                  iconColor: BrandColors.blueSecondary,
+                  title: 'Envío A → B (Express X→Y)',
+                  subtitle: 'Solicitar mensajería punto a punto',
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('🚚 Módulo de Envíos Express X→Y listo para cotizar.')),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
-          Text(user?.email ?? '', style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
-          const SizedBox(height: 8),
-          Chip(
-            label: Text('ROL: ${claims?.role.name.toUpperCase() ?? "CLIENT"}'),
-            backgroundColor: const Color(0xFF2563EB).withOpacity(0.1),
-            labelStyle: const TextStyle(color: Color(0xFF2563EB), fontWeight: FontWeight.bold, fontSize: 11),
+          const SizedBox(height: 14),
+
+          // Menu Section 2: Loyalty & Rewards
+          Card(
+            elevation: 1,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Column(
+              children: [
+                _buildProfileListTile(
+                  icon: Icons.card_giftcard_rounded,
+                  iconColor: const Color(0xFFF59E0B),
+                  title: 'Fidelidad: Puntos & Nivel Cliente',
+                  subtitle: 'Puntos acumulados y recompensas',
+                  onTap: () {},
+                ),
+                const Divider(height: 1),
+                _buildProfileListTile(
+                  icon: Icons.confirmation_number_outlined,
+                  iconColor: const Color(0xFF8B5CF6),
+                  title: 'Mis cupones',
+                  subtitle: 'Descuentos exclusivos y promociones',
+                  onTap: () {},
+                ),
+              ],
+            ),
           ),
-          const SizedBox(height: 24),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.location_on_outlined),
-            title: const Text('Mis Direcciones'),
-            subtitle: const Text('Managua, Nicaragua'),
-            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
-            onTap: () {},
+          const SizedBox(height: 14),
+
+          // Menu Section 3: Settings & Support
+          Card(
+            elevation: 1,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            child: Column(
+              children: [
+                _buildProfileListTile(
+                  icon: Icons.security_rounded,
+                  iconColor: const Color(0xFF6366F1),
+                  title: 'Seguridad & Contraseña',
+                  subtitle: 'PIN y autenticación',
+                  onTap: () {},
+                ),
+                const Divider(height: 1),
+                _buildProfileListTile(
+                  icon: Icons.settings_outlined,
+                  iconColor: BrandColors.bluePrimary,
+                  title: 'Configuración & Preferencias',
+                  subtitle: 'Notificaciones y temas',
+                  onTap: () {},
+                ),
+                const Divider(height: 1),
+                _buildProfileListTile(
+                  icon: Icons.help_outline_rounded,
+                  iconColor: BrandColors.textSecondaryLight,
+                  title: 'Ayuda & Soporte',
+                  subtitle: 'Centro de atención al cliente',
+                  onTap: () {},
+                ),
+                const Divider(height: 1),
+                _buildProfileListTile(
+                  icon: Icons.chat_rounded,
+                  iconColor: const Color(0xFF25D366),
+                  title: 'Únete al canal WhatsApp',
+                  subtitle: 'Ofertas exclusivas y soporte directo',
+                  onTap: () {},
+                ),
+              ],
+            ),
           ),
-          ListTile(
-            leading: const Icon(Icons.local_offer_outlined),
-            title: const Text('Cupones y Descuentos'),
-            subtitle: const Text('Promociones activas disponibles'),
-            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
-            onTap: () {},
-          ),
-          ListTile(
-            leading: const Icon(Icons.security_outlined),
-            title: const Text('Seguridad y PIN'),
-            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
-            onTap: () {},
-          ),
-          const Divider(),
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
+
+          // Sign Out Button
           SizedBox(
             width: double.infinity,
             child: OutlinedButton.icon(
               style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.red,
-                side: const BorderSide(color: Colors.red),
+                foregroundColor: BrandColors.statusError,
+                side: const BorderSide(color: BrandColors.statusError),
                 padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               ),
               onPressed: () async {
                 await widget.sessionState.signOut();
@@ -385,6 +542,36 @@ class _AppShellState extends State<AppShell> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildProfileListTile({
+    required IconData icon,
+    required Color iconColor,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Container(
+        width: 38,
+        height: 38,
+        decoration: BoxDecoration(
+          color: iconColor.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Icon(icon, color: iconColor, size: 20),
+      ),
+      title: Text(
+        title,
+        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: BrandColors.textPrimaryLight),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: const TextStyle(fontSize: 11, color: BrandColors.textSecondaryLight),
+      ),
+      trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: BrandColors.textSecondaryLight),
+      onTap: onTap,
     );
   }
 
