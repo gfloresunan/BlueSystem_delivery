@@ -80,8 +80,8 @@ jobs:
   # JOB 2 — Build iOS real en macOS (L1 Validation)
   # ───────────────────────────────────────────────────────────────────────────
   build_ios:
-    name: "🍎 [L1] iOS Build — macos-14 Apple Silicon"
-    runs-on: macos-14
+    name: "🍎 [L1] iOS Build — macos-15 Xcode 16 Swift 6"
+    runs-on: macos-15  # Xcode 16 + Swift 6 — requerido por Firebase iOS SDK v11+
     timeout-minutes: 60
     needs: analyze_and_test
 
