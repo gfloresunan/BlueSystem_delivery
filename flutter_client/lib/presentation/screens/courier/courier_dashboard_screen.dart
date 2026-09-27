@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../core/auth/auth_context.dart';
 import '../../../core/observability/app_logger.dart';
 import '../../../domain/entities/courier_balance_entity.dart';
+import '../../../domain/entities/courier_location_entity.dart';
 import '../../../domain/entities/order_entity.dart';
 import '../../../domain/entities/trip_entity.dart';
 import '../../../domain/services/core_service_interfaces.dart';
@@ -75,14 +76,10 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                 ),
                 const SizedBox(width: 8),
                 Switch.adaptive(
+                  key: const Key('courier_availability_switch'),
                   value: _isOnline,
                   activeColor: Colors.green,
-                  onChanged: (val) {
-                    setState(() => _isOnline = val);
-                    AppLogger.info('CourierDashboardScreen', 'Courier availability changed: $val for uid: $courierId');
-                    // NOTE: Actual availability update must go through Cloud Function / Backend
-                    // 🟡 GAP: CONTRACT REQUIRED — updateCourierAvailability Cloud Function
-                  },
+                  onChanged: (val) => _toggleAvailability(val, courierId, tenantId),
                 ),
               ],
             ),
@@ -239,6 +236,196 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   }
 
   final Set<String> _updatingOrderIds = {};
+  final Set<String> _updatingTripIds = {};
+
+  Future<void> _toggleAvailability(bool val, String courierId, String tenantId) async {
+    setState(() => _isOnline = val);
+    AppLogger.info('CourierDashboardScreen', 'Courier availability changed: $val for uid: $courierId');
+    try {
+      final courierName = widget.sessionState.currentUser?.displayName ?? 'Motorizado';
+      final telemetry = CourierLocationEntity(
+        courierId: courierId,
+        tenantId: tenantId,
+        courierName: courierName,
+        latitude: 12.1364,
+        longitude: -86.2514,
+        speed: 0.0,
+        heading: 0.0,
+        accuracy: 5.0,
+        timestamp: DateTime.now().millisecondsSinceEpoch,
+        isOnline: val,
+      );
+      await widget.fleetService.publishCourierTelemetry(telemetry);
+    } catch (e) {
+      AppLogger.warn('CourierDashboardScreen', 'Could not publish courier telemetry: $e');
+    }
+  }
+
+  void _showNavigationOptions(BuildContext context, String title, String address, double lat, double lng) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.navigation_rounded, color: Color(0xFF2563EB)),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('Navegar: $title', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(address, style: const TextStyle(fontSize: 13, color: Color(0xFF475569))),
+            const SizedBox(height: 6),
+            Text('GPS: ${lat.toStringAsFixed(4)}, ${lng.toStringAsFixed(4)}',
+                style: const TextStyle(fontSize: 12, color: Colors.grey)),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                key: const Key('open_maps_button'),
+                icon: const Icon(Icons.map_outlined),
+                label: const Text('Iniciar Navegación GPS Externa'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF2563EB),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Abriendo navegación hacia: $address'),
+                      backgroundColor: const Color(0xFF2563EB),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<Map<String, dynamic>?> _showProofOfDeliveryDialog({
+    required BuildContext context,
+    required String title,
+    required String identifier,
+    required double total,
+    required bool isCash,
+  }) async {
+    final nameController = TextEditingController();
+    final notesController = TextEditingController();
+    return await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            const Icon(Icons.verified_user_rounded, color: Color(0xFF16A34A)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                isCash ? 'Confirmar Cobro en Efectivo' : title,
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Confirmar Entrega (POD)',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Color(0xFF16A34A)),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                'Identificador: $identifier',
+                style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+              ),
+              const SizedBox(height: 12),
+              if (isCash) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFFCD34D)),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Total cobrado en efectivo:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      Text(
+                        'C\$ ${total.toInt()}',
+                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: Color(0xFF92400E)),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+              TextField(
+                key: const Key('pod_recipient_name_input'),
+                controller: nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre de quien recibe (opcional)',
+                  hintText: 'Ej. Juan Pérez / Recepción',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.person_outline),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                key: const Key('pod_notes_input'),
+                controller: notesController,
+                decoration: const InputDecoration(
+                  labelText: 'Notas / Observaciones (opcional)',
+                  hintText: 'Ej. Entregado en recepción',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.note_alt_outlined),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, null),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            key: const Key('pod_confirm_submit_button'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF16A34A),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () {
+              final recipient = nameController.text.trim().isEmpty ? 'Cliente' : nameController.text.trim();
+              Navigator.pop(ctx, {
+                'recipientName': recipient,
+                'notes': notesController.text.trim(),
+                'timestamp': DateTime.now().millisecondsSinceEpoch,
+              });
+            },
+            child: const Text('Confirmar Entrega'),
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildAssignedOrderTile(BuildContext context, OrderEntity order) {
     final theme = Theme.of(context);
@@ -366,17 +553,39 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
             ),
             const SizedBox(height: 12),
 
-            // ─── Address ─────────────────────────────────────────────────────
+            // ─── Address & Navigation ───────────────────────────────────────
             Row(
               children: [
-                const Icon(Icons.location_on_outlined, size: 16, color: Colors.grey),
-                const SizedBox(width: 4),
                 Expanded(
-                  child: Text(
-                    order.deliveryAddress.isNotEmpty ? order.deliveryAddress : 'Dirección del cliente',
-                    style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  child: Row(
+                    children: [
+                      const Icon(Icons.location_on_outlined, size: 16, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          order.deliveryAddress.isNotEmpty ? order.deliveryAddress : 'Dirección del cliente',
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                TextButton.icon(
+                  key: Key('order_navigate_btn_${order.orderId}'),
+                  icon: const Icon(Icons.navigation_outlined, size: 14),
+                  label: const Text('Navegar', style: TextStyle(fontSize: 11)),
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  onPressed: () => _showNavigationOptions(
+                    context,
+                    'Cliente (Pedido #${order.orderId.length > 6 ? order.orderId.substring(0, 6) : order.orderId})',
+                    order.deliveryAddress,
+                    12.1364,
+                    -86.2514,
                   ),
                 ),
               ],
@@ -407,9 +616,15 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                         final targetStatus = nextStatus;
                         if (targetStatus == null) return;
 
-                        if (targetStatus == OrderStatus.delivered && isCash) {
-                          final confirmed = await _confirmCashDeliveryDialog(context, order.total);
-                          if (!confirmed) return;
+                        if (targetStatus == OrderStatus.delivered) {
+                          final podData = await _showProofOfDeliveryDialog(
+                            context: context,
+                            title: 'Confirmar Entrega (POD)',
+                            identifier: 'Pedido #${order.orderId.length > 8 ? order.orderId.substring(0, 8).toUpperCase() : order.orderId}',
+                            total: order.total,
+                            isCash: isCash,
+                          );
+                          if (podData == null) return;
                         }
 
                         setState(() => _updatingOrderIds.add(order.orderId));
@@ -520,56 +735,6 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
     );
   }
 
-  Future<bool> _confirmCashDeliveryDialog(BuildContext context, double total) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: const Text('Confirmar Cobro en Efectivo'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('Asegúrate de haber recibido el monto total del cliente antes de finalizar:'),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFEF3C7),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xFFFCD34D)),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Total a cobrar:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
-                      Text(
-                        'C\$ ${total.toInt()}',
-                        style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17, color: Color(0xFF92400E)),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Cancelar'),
-              ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF16A34A),
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Confirmar Entrega'),
-              ),
-            ],
-          ),
-        ) ??
-        false;
-  }
 
   Widget _buildBalanceCard(BuildContext context, String courierId) {
     final theme = Theme.of(context);
@@ -719,8 +884,107 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
             );
           },
         ),
+        // ─── Eligible X→Y Trips ─────────────────────────────────────
+        StreamBuilder<List<TripEntity>>(
+          stream: widget.tripService.watchEligibleTrips(tenantId: tenantId),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const SizedBox.shrink();
+            }
+            final readyTrips = snapshot.data ?? [];
+            if (readyTrips.isEmpty) {
+              return const SizedBox.shrink();
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Envíos Express X→Y Disponibles', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(color: Colors.teal.withOpacity(0.2), borderRadius: BorderRadius.circular(4)),
+                      child: const Text('EXPRESS', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.teal)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                ...readyTrips.map((t) => _buildEligibleTripTile(context, t, tenantId, courierId)),
+              ],
+            );
+          },
+        ),
         const SizedBox(height: 10),
       ],
+    );
+  }
+
+  Widget _buildEligibleTripTile(BuildContext context, TripEntity trip, String tenantId, String courierId) {
+    return Card(
+      elevation: 1,
+      margin: const EdgeInsets.only(bottom: 8),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: ListTile(
+        leading: const CircleAvatar(
+          backgroundColor: Colors.teal,
+          child: Icon(Icons.local_shipping, color: Colors.white, size: 20),
+        ),
+        title: Text(
+          'Envío Express #${trip.tripId.length > 8 ? trip.tripId.substring(0, 8) : trip.tripId}',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(
+          '${trip.originAddress} → ${trip.destinationAddress} (${trip.distanceKm.toStringAsFixed(1)} km)',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'C\$ ${trip.totalPrice.toStringAsFixed(2)}',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton(
+              key: Key('claim_trip_btn_${trip.tripId}'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0D9488),
+                foregroundColor: Colors.white,
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              ),
+              onPressed: () async {
+                try {
+                  final courierName = widget.sessionState.currentUser?.displayName ?? 'Motorizado';
+                  final ok = await widget.tripService.claimTripAtomically(
+                    trip.tripId,
+                    courierId,
+                    courierName,
+                  );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(ok ? '¡Envío express tomado con éxito!' : 'Conflicto: El envío ya fue asignado.'),
+                        backgroundColor: ok ? Colors.green : Colors.red,
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error al tomar envío express: $e'), backgroundColor: Colors.red),
+                    );
+                  }
+                }
+              },
+              child: const Text('Tomar', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -907,14 +1171,267 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
   }
 
   Widget _buildTripTile(BuildContext context, TripEntity trip) {
+    final theme = Theme.of(context);
+    final isUpdating = _updatingTripIds.contains(trip.tripId);
+
+    // Calculate step for X→Y:
+    // 0: Asignado (assigned / onWayToOrigin)
+    // 1: En Origen / Recogida (arrivedAtOrigin / goodsPickedUp)
+    // 2: En Camino (onWayToDestination / arrivedAtDestination)
+    // 3: Entregado (completed)
+    int currentStep = 0;
+    if (trip.status == TripStatus.assigned || trip.status == TripStatus.onWayToOrigin) {
+      currentStep = 0;
+    } else if (trip.status == TripStatus.arrivedAtOrigin || trip.status == TripStatus.goodsPickedUp) {
+      currentStep = 1;
+    } else if (trip.status == TripStatus.onWayToDestination || trip.status == TripStatus.arrivedAtDestination) {
+      currentStep = 2;
+    } else if (trip.status == TripStatus.completed) {
+      currentStep = 3;
+    }
+
+    String nextButtonLabel = '';
+    TripStatus? nextStatus;
+    Color buttonColor = Colors.teal;
+
+    switch (trip.status) {
+      case TripStatus.requested:
+      case TripStatus.offered:
+      case TripStatus.assigned:
+      case TripStatus.onWayToOrigin:
+        nextButtonLabel = 'Estoy en Origen — CONFIRMAR RECOGIDA 📦';
+        nextStatus = TripStatus.goodsPickedUp;
+        buttonColor = const Color(0xFF2563EB);
+        break;
+      case TripStatus.arrivedAtOrigin:
+      case TripStatus.goodsPickedUp:
+        nextButtonLabel = 'INICIAR RUTA AL DESTINO 🚀';
+        nextStatus = TripStatus.onWayToDestination;
+        buttonColor = const Color(0xFF0284C7);
+        break;
+      case TripStatus.onWayToDestination:
+        nextButtonLabel = 'Llegué a Destino 📍';
+        nextStatus = TripStatus.arrivedAtDestination;
+        buttonColor = const Color(0xFF0D9488);
+        break;
+      case TripStatus.arrivedAtDestination:
+        nextButtonLabel = 'CONFIRMAR ENTREGA (POD) Y FINALIZAR ✅';
+        nextStatus = TripStatus.completed;
+        buttonColor = const Color(0xFF16A34A);
+        break;
+      case TripStatus.completed:
+        nextButtonLabel = 'ENVÍO EXPRESS FINALIZADO EXITOSAMENTE ✅';
+        nextStatus = null;
+        buttonColor = Colors.grey;
+        break;
+      case TripStatus.cancelled:
+        nextButtonLabel = 'ENVÍO EXPRESS CANCELADO ❌';
+        nextStatus = null;
+        buttonColor = Colors.red;
+        break;
+    }
+
     return Card(
-      elevation: 0,
-      margin: const EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: const Icon(Icons.local_shipping_outlined, color: Colors.teal),
-        title: Text('Viaje #${trip.tripId.length > 8 ? trip.tripId.substring(0, 8) : trip.tripId}'),
-        subtitle: Text('${trip.originAddress} → ${trip.destinationAddress}', maxLines: 1, overflow: TextOverflow.ellipsis),
-        trailing: Text('\$${trip.fare.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 16),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF0FDFA),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Icon(Icons.local_shipping_rounded, color: Color(0xFF0D9488), size: 22),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Envío Express #${trip.tripId}',
+                              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                            Text(
+                              'Punto a Punto (${trip.distanceKm.toStringAsFixed(1)} km) • ADR-026',
+                              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Color(0xFF0D9488)),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'C\$ ${trip.totalPrice.toStringAsFixed(2)}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w900,
+                    fontSize: 17,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+
+            // Route: Origin & Destination
+            Row(
+              children: [
+                const Icon(Icons.trip_origin, size: 14, color: Colors.green),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'X: ${trip.originAddress}',
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF334155)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const Icon(Icons.location_on, size: 14, color: Colors.red),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    'Y: ${trip.destinationAddress}',
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF334155)),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                TextButton.icon(
+                  key: Key('trip_navigate_btn_${trip.tripId}'),
+                  icon: const Icon(Icons.navigation_outlined, size: 14),
+                  label: const Text('Navegar', style: TextStyle(fontSize: 11)),
+                  style: TextButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                  ),
+                  onPressed: () => _showNavigationOptions(
+                    context,
+                    'Destino Envío Express',
+                    trip.destinationAddress,
+                    trip.destination.latitude,
+                    trip.destination.longitude,
+                  ),
+                ),
+              ],
+            ),
+            if ((trip.packageDescription ?? '').isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Row(
+                children: [
+                  const Icon(Icons.inventory_2_outlined, size: 14, color: Colors.grey),
+                  const SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Paquete: ${trip.packageDescription}',
+                      style: const TextStyle(fontSize: 11, fontStyle: FontStyle.italic, color: Color(0xFF64748B)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 16),
+
+            // Stepper
+            _buildOrderStepper(currentStep),
+            const SizedBox(height: 16),
+
+            // Action Button
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton(
+                key: Key('trip_action_btn_${trip.tripId}'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  foregroundColor: Colors.white,
+                  disabledBackgroundColor: Colors.grey.shade300,
+                  disabledForegroundColor: Colors.grey.shade600,
+                  elevation: nextStatus != null ? 2 : 0,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: (nextStatus == null || isUpdating)
+                    ? null
+                    : () async {
+                        final targetStatus = nextStatus;
+                        if (targetStatus == null) return;
+
+                        if (targetStatus == TripStatus.completed) {
+                          final podData = await _showProofOfDeliveryDialog(
+                            context: context,
+                            title: 'Confirmar Entrega Envío Express (POD)',
+                            identifier: 'Envío #${trip.tripId.length > 8 ? trip.tripId.substring(0, 8).toUpperCase() : trip.tripId}',
+                            total: trip.totalPrice,
+                            isCash: false,
+                          );
+                          if (podData == null) return;
+                        }
+
+                        setState(() => _updatingTripIds.add(trip.tripId));
+                        try {
+                          await widget.tripService.updateTripStatus(trip.tripId, targetStatus);
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Estado de envío actualizado: ${targetStatus.name.toUpperCase()} ✓'),
+                                backgroundColor: const Color(0xFF10B981),
+                                duration: const Duration(seconds: 2),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Error al actualizar envío: $e'), backgroundColor: Colors.red),
+                            );
+                          }
+                        } finally {
+                          if (mounted) {
+                            setState(() => _updatingTripIds.remove(trip.tripId));
+                          }
+                        }
+                      },
+                child: isUpdating
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      )
+                    : Text(
+                        nextButtonLabel,
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

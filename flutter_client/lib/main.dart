@@ -15,6 +15,7 @@ import 'data/services/courier_cash_closure_service.dart';
 import 'presentation/providers/session_state.dart';
 import 'presentation/screens/shell/app_shell.dart';
 import 'presentation/theme/brand_theme_builder.dart';
+import 'platform/notifications/notification_adapter.dart';
 
 import 'firebase_options.dart';
 
@@ -49,6 +50,7 @@ class _BlueSystemDeliveryAppState extends State<BlueSystemDeliveryApp> {
   late final MerchantFirestoreService _merchantService;
   late final BannerFirestoreService _bannerService;
   late final CourierCashClosureService _cashClosureService;
+  late final PlatformNotificationAdapter _notificationAdapter;
   late final SessionState _sessionState;
 
   @override
@@ -61,6 +63,7 @@ class _BlueSystemDeliveryAppState extends State<BlueSystemDeliveryApp> {
     _merchantService = MerchantFirestoreService();
     _bannerService = BannerFirestoreService();
     _cashClosureService = CourierCashClosureService();
+    _notificationAdapter = PlatformNotificationAdapter();
 
     _sessionState = SessionState(
       authService: _authService,
@@ -68,7 +71,13 @@ class _BlueSystemDeliveryAppState extends State<BlueSystemDeliveryApp> {
       brandService: _platformService,
       subscriptionService: _platformService,
       appConfigService: _platformService,
+      notificationService: _notificationAdapter,
     );
+
+    // Initialize notification adapter
+    _notificationAdapter.initialize().catchError((e) {
+      AppLogger.warn('Main', 'Notification adapter initialization bypassed: $e');
+    });
 
     // Restore session on startup
     _sessionState.initializeSession();
@@ -104,6 +113,7 @@ class _BlueSystemDeliveryAppState extends State<BlueSystemDeliveryApp> {
             merchantService: _merchantService,
             bannerService: _bannerService,
             cashClosureService: _cashClosureService,
+            notificationService: _notificationAdapter,
           ),
         );
       },

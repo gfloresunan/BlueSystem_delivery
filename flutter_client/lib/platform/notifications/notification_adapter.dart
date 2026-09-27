@@ -31,6 +31,7 @@ class PlatformNotificationAdapter implements INotificationService {
   final StreamController<Map<String, dynamic>> _deepLinkController =
       StreamController<Map<String, dynamic>>.broadcast();
 
+  @override
   Stream<Map<String, dynamic>> get onDeepLinkOpened => _deepLinkController.stream;
 
   PlatformNotificationAdapter({
@@ -181,12 +182,13 @@ class PlatformNotificationAdapter implements INotificationService {
       }
 
       // 2. Canonical Multi-Device Document: /user_devices/{uid}_{deviceId}
-      // CRITICAL: Must use 'fcmToken', 'isActive: true', and 'platform: iOS' for backend compatibility
+      // CRITICAL: Must use 'fcmToken' and 'token' for backend Cloud Functions & FcmManager.kt compatibility
       final deviceRef = _firestore.collection('user_devices').doc('${uid}_$resolvedDeviceId');
       await deviceRef.set({
         'deviceId': resolvedDeviceId,
         'uid': uid,
         'fcmToken': token,
+        'token': token, // 1:1 Paridad con Android FcmManager y triggers de Cloud Functions
         'platform': 'iOS',
         'deviceType': 'Smartphone',
         'role': effectiveRole,
@@ -208,9 +210,38 @@ class PlatformNotificationAdapter implements INotificationService {
         );
       });
 
-      // 4. Topic subscriptions according to role
+      // 4. Topic subscriptions according to role (1:1 Android FcmManager parity)
       if (['courier', 'motorizado', 'driver'].contains(effectiveRole)) {
         await _fcm.subscribeToTopic('available_orders');
+        try {
+          final courierDoc = await _firestore.collection('couriers').doc(uid).get();
+          if (courierDoc.exists) {
+            final cData = courierDoc.data();
+            final muni = (cData?['operationalMunicipalityId'] ??
+                    cData?['municipalityId'] ??
+                    cData?['city'] ??
+                    '')
+                .toString()
+                .trim()
+                .toUpperCase();
+            final tenant = (cData?['commercialTenantId'] ??
+                    cData?['tenantId'] ??
+                    'default')
+                .toString()
+                .trim();
+            if (muni.isNotEmpty) {
+              final fleetTopic = 'fleet_${tenant.isEmpty ? "default" : tenant}_$muni';
+              await _fcm.subscribeToTopic(fleetTopic);
+              AppLogger.info('PlatformNotificationAdapter', 'Courier subscribed to municipal topic: $fleetTopic');
+            }
+          }
+        } catch (cErr) {
+          AppLogger.warn('PlatformNotificationAdapter', 'Could not subscribe to courier municipal topic: $cErr');
+        }
+      } else if (['business', 'comercio', 'owner', 'manager', 'cashier', 'cook'].contains(effectiveRole)) {
+        await _fcm.subscribeToTopic('business_alerts');
+      } else if (['admin', 'super_admin', 'superadmin'].contains(effectiveRole)) {
+        await _fcm.subscribeToTopic('admin_alerts');
       } else {
         await _fcm.subscribeToTopic('customer_alerts');
       }

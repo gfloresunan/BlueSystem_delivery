@@ -139,6 +139,7 @@ abstract class INotificationService {
     String? deviceId,
   });
   Stream<Map<String, dynamic>> get onNotificationReceived;
+  Stream<Map<String, dynamic>> get onDeepLinkOpened;
   void handleDeepLink(Map<String, dynamic> data);
 }
 

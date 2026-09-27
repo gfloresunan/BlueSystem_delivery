@@ -4,6 +4,8 @@
 /// Android-aligned Curved Bottom Bar with Central Floating Cart Button for Customers.
 /// Dark-mode Operational Panel for Motorizados, Merchant Center for Comercios.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../../../core/auth/auth_context.dart';
@@ -13,6 +15,7 @@ import '../../../domain/services/core_service_interfaces.dart';
 import '../../../data/services/courier_cash_closure_service.dart';
 import '../../../data/services/user_firestore_service.dart';
 import '../../../domain/entities/saved_address_entity.dart';
+import '../../../domain/entities/user_profile_entity.dart';
 import '../../providers/cart_provider.dart';
 import '../../providers/session_state.dart';
 import '../../theme/brand_theme_builder.dart';
@@ -25,6 +28,8 @@ import '../home/commercial_home_screen.dart';
 import '../merchant/merchant_dashboard_screen.dart';
 import '../orders/orders_screen.dart';
 import '../trips/trips_screen.dart';
+import '../trips/solicitar_envio_screen.dart';
+import '../trips/trip_live_tracking_screen.dart';
 
 class AppShell extends StatefulWidget {
   final SessionState sessionState;
@@ -36,6 +41,7 @@ class AppShell extends StatefulWidget {
   final ICourierCashClosureService? cashClosureService;
   final IUserService? userService;
   final CartProvider? cartProvider;
+  final INotificationService? notificationService;
 
   const AppShell({
     super.key,
@@ -48,6 +54,7 @@ class AppShell extends StatefulWidget {
     this.cashClosureService,
     this.userService,
     this.cartProvider,
+    this.notificationService,
   });
 
   @override
@@ -58,6 +65,7 @@ class _AppShellState extends State<AppShell> {
   int _selectedIndex = 0;
   late final CartProvider _internalCartProvider;
   CartProvider get _cart => widget.cartProvider ?? _internalCartProvider;
+  StreamSubscription<Map<String, dynamic>>? _deepLinkSub;
 
   List<Map<String, dynamic>> get _cartItems => _cart.items.map((i) => i.toMap()).toList();
   double get _cartTotal => _cart.subtotal;
@@ -69,13 +77,43 @@ class _AppShellState extends State<AppShell> {
     super.initState();
     _internalCartProvider = CartProvider();
     _cart.addListener(_onCartChanged);
+    _deepLinkSub = widget.notificationService?.onDeepLinkOpened.listen(_handleDeepLinkNotification);
   }
 
   @override
   void dispose() {
+    _deepLinkSub?.cancel();
     _cart.removeListener(_onCartChanged);
     _internalCartProvider.dispose();
     super.dispose();
+  }
+
+  void _handleDeepLinkNotification(Map<String, dynamic> data) {
+    if (!mounted) return;
+    final action = (data['action'] ?? '').toString();
+    final orderId = (data['orderId'] ?? '').toString();
+    final tripId = (data['tripId'] ?? '').toString();
+    final screen = (data['screen'] ?? data['destinationRoute'] ?? data['deepLink'] ?? '').toString().toLowerCase();
+
+    // 1:1 Android NotificationRouter Parity:
+    // Route to appropriate tab based on payload
+    if (orderId.isNotEmpty || screen.contains('order') || action.contains('ORDER')) {
+      setState(() {
+        _selectedIndex = 2; // Pedidos
+      });
+    } else if (screen.contains('profile') || screen.contains('address')) {
+      setState(() {
+        _selectedIndex = 3; // Mi Perfil
+      });
+    } else if (tripId.isNotEmpty || screen.contains('trip') || screen.contains('favorito')) {
+      setState(() {
+        _selectedIndex = 1; // Favorito / Envíos
+      });
+    } else if (screen.contains('home') || screen.contains('catalog')) {
+      setState(() {
+        _selectedIndex = 0; // Inicio / Catálogo
+      });
+    }
   }
 
   void _onCartChanged() {
@@ -298,10 +336,41 @@ class _AppShellState extends State<AppShell> {
           onAddToCart: _addToCart,
           onCartClick: _openCartDialog,
           onOpenExpress: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('🚚 Módulo de Envíos Express X→Y: Tarifa Base C\$35 + C\$10/km con rastreo en vivo.'),
-                duration: Duration(seconds: 3),
+            final user = widget.sessionState.currentUser ??
+                const UserProfileEntity(
+                  uid: 'guest_user',
+                  email: 'invitado@bluesystemdelivery.com',
+                  displayName: 'Cliente Invitado',
+                  role: EiamRole.client,
+                  isVerified: false,
+                  createdAt: 0,
+                  updatedAt: 0,
+                );
+            final userSvc = widget.userService ?? UserFirestoreService();
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (ctx) => SolicitarEnvioScreen(
+                  tripService: widget.tripService,
+                  userService: userSvc,
+                  currentUser: user,
+                  tenantId: widget.sessionState.claims?.tenantId ?? 'default',
+                  onBack: () => Navigator.pop(ctx),
+                  onTripCreated: (tripId) {
+                    Navigator.pop(ctx);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (trackCtx) => TripLiveTrackingScreen(
+                          tripId: tripId,
+                          tripService: widget.tripService,
+                          fleetService: widget.fleetService,
+                          onBack: () => Navigator.pop(trackCtx),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             );
           },
@@ -1181,6 +1250,8 @@ class _AppShellState extends State<AppShell> {
         return TripsScreen(
           sessionState: widget.sessionState,
           tripService: widget.tripService,
+          fleetService: widget.fleetService,
+          userService: widget.userService,
         );
       case 2:
         return FleetMapScreen(

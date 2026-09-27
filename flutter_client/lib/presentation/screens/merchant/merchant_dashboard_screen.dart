@@ -3,6 +3,7 @@
 /// 5 Canonical Modules: DASHBOARD, ORDERS, MENU/PRODUCTS, FINANCE, SETTINGS.
 /// Real-time live orders, store open/closed toggle, product stock management.
 
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -38,6 +39,15 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
   String _businessName = 'Cargando comercio...';
   String? _canonicalBusinessId;
   bool _isLoadingBusiness = true;
+  StreamSubscription<BusinessEntity?>? _businessSub;
+  bool _isKitchenMode = false;
+  String _menuSelectedCategory = 'TODAS';
+
+  @override
+  void dispose() {
+    _businessSub?.cancel();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -81,8 +91,20 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
         _isOpen = data['isOpen'] as bool? ?? data['abierto'] as bool? ?? true;
       }
     } catch (e) {
-      AppLogger.warn('MerchantDashboardScreen', 'Error resolving business info: $e');
+      AppLogger.warn('MerchantDashboardScreen', 'Error resolving business info via firestore: $e');
     }
+
+    try {
+      _businessSub?.cancel();
+      _businessSub = widget.merchantService.watchBusiness(_canonicalBusinessId!).listen((biz) {
+        if (biz != null && mounted) {
+          setState(() {
+            _businessName = biz.name;
+            _isOpen = biz.isOpen;
+          });
+        }
+      });
+    } catch (_) {}
 
     if (mounted) {
       setState(() => _isLoadingBusiness = false);
@@ -99,17 +121,18 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
         'abierto': newStatus,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(newStatus ? '🟢 Comercio ABIERTO para recibir pedidos' : '🔴 Comercio CERRADO temporalmente'),
-            duration: const Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
     } catch (e) {
       AppLogger.error('MerchantDashboardScreen', 'Error updating store status', e);
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(newStatus ? '🟢 Comercio ABIERTO para recibir pedidos' : '🔴 Comercio CERRADO temporalmente'),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
@@ -120,17 +143,18 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
         'disponible': isAvailable,
         'updatedAt': FieldValue.serverTimestamp(),
       });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${product.name}: ${isAvailable ? "Disponible 🟢" : "Agotado 🔴"}'),
-            duration: const Duration(seconds: 1),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
     } catch (e) {
       AppLogger.error('MerchantDashboardScreen', 'Error updating product availability', e);
+    }
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('${product.name}: ${isAvailable ? "Disponible 🟢" : "Agotado 🔴"}'),
+          duration: const Duration(seconds: 1),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
@@ -218,6 +242,7 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
                   style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
                 Switch(
+                  key: const Key('merchant_store_status_switch'),
                   value: _isOpen,
                   activeColor: BrandColors.statusSuccess,
                   onChanged: _toggleStoreStatus,
@@ -502,7 +527,7 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 2. ORDERS MODULE (Filterable live orders)
+  // 2. ORDERS MODULE (Filterable live orders & KDS Kitchen Mode)
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildOrdersModule(String tenantId) {
     return StreamBuilder<List<OrderEntity>>(
@@ -525,23 +550,89 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
 
         return Column(
           children: [
-            // Filter chips
+            // Top Bar with Filter Chips & KDS Toggle
             Container(
               color: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _buildOrderFilterChip('TODOS', 'Todos (${orders.length})'),
+                          _buildOrderFilterChip('NUEVOS', 'Nuevos (${orders.where((o) => o.status == OrderStatus.pending).length})'),
+                          _buildOrderFilterChip('PREPARANDO', 'En Cocina'),
+                          _buildOrderFilterChip('LISTOS', 'Esperando Repartidor'),
+                          _buildOrderFilterChip('ENTREGADOS', 'Completados'),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  // KDS Kitchen Mode Toggle Button
+                  InkWell(
+                    key: const Key('merchant_toggle_kitchen_mode_btn'),
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: () => setState(() => _isKitchenMode = !_isKitchenMode),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: _isKitchenMode ? const Color(0xFFFFF7ED) : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: _isKitchenMode ? const Color(0xFFEA580C) : const Color(0xFFCBD5E1),
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.soup_kitchen,
+                            size: 16,
+                            color: _isKitchenMode ? const Color(0xFFEA580C) : const Color(0xFF475569),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            _isKitchenMode ? 'KDS Activo' : 'Modo Cocina',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: _isKitchenMode ? const Color(0xFFEA580C) : const Color(0xFF475569),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (_isKitchenMode)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                color: const Color(0xFFFFEDD5),
+                child: const Row(
                   children: [
-                    _buildOrderFilterChip('TODOS', 'Todos (${orders.length})'),
-                    _buildOrderFilterChip('NUEVOS', 'Nuevos (${orders.where((o) => o.status == OrderStatus.pending).length})'),
-                    _buildOrderFilterChip('PREPARANDO', 'En Cocina'),
-                    _buildOrderFilterChip('LISTOS', 'Esperando Repartidor'),
-                    _buildOrderFilterChip('ENTREGADOS', 'Completados'),
+                    Icon(Icons.restaurant, color: Color(0xFFC2410C), size: 18),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'PANTALLA DE COCINA (KDS) — COMANDAS VISUALES',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFF9A3412),
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
             const Divider(height: 1),
 
             Expanded(
@@ -619,7 +710,10 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: BrandColors.outlineVariantLight),
+        border: Border.all(
+          color: _isKitchenMode ? const Color(0xFFFED7AA) : BrandColors.outlineVariantLight,
+          width: _isKitchenMode ? 1.5 : 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -651,22 +745,58 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
           ),
           const SizedBox(height: 8),
           const Divider(),
-          // Items
+          // Items & Kitchen Notes
           ...o.items.map((item) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: 2.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: Text(
-                        '${item.quantity}x ${item.name}',
-                        style: const TextStyle(fontSize: 13),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 2,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            '${item.quantity}x ${item.name}',
+                            style: TextStyle(
+                              fontSize: _isKitchenMode ? 14 : 13,
+                              fontWeight: _isKitchenMode ? FontWeight.bold : FontWeight.normal,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 2,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text('C\$ ${item.subtotal.toInt()}',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                      ],
                     ),
-                    const SizedBox(width: 8),
-                    Text('C\$ ${item.subtotal.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                    if (item.notes != null && item.notes!.trim().isNotEmpty)
+                      Container(
+                        key: Key('kitchen_notes_box_${item.productId}'),
+                        margin: const EdgeInsets.only(top: 4, bottom: 4),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFF7ED),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: const Color(0xFFFED7AA)),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.note_alt_outlined, size: 14, color: Color(0xFFEA580C)),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                'Nota cocina: ${item.notes}',
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF9A3412),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
               )),
@@ -688,12 +818,16 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
+                key: Key('merchant_order_prepare_btn_${o.orderId}'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: BrandColors.statusSuccess,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 icon: const Icon(Icons.check, size: 18),
-                label: const Text('ACEPTAR Y ENVIAR A COCINA', style: TextStyle(fontWeight: FontWeight.bold)),
+                label: Text(
+                  _isKitchenMode ? 'COCINAR PEDIDO 👨‍🍳' : 'ACEPTAR Y ENVIAR A COCINA',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 onPressed: () async {
                   await widget.orderService.updateOrderStatus(o.orderId, OrderStatus.preparing);
                   if (mounted) {
@@ -708,12 +842,16 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
+                key: Key('merchant_order_ready_btn_${o.orderId}'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: BrandColors.bluePrimary,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 icon: const Icon(Icons.done_all, size: 18),
-                label: const Text('MARCAR LISTO PARA REPARTO', style: TextStyle(fontWeight: FontWeight.bold)),
+                label: Text(
+                  _isKitchenMode ? 'PLATO LISTO PARA DESPACHO 🔔' : 'MARCAR LISTO PARA REPARTO',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
                 onPressed: () async {
                   await widget.orderService.updateOrderStatus(o.orderId, OrderStatus.readyForPickup);
                   if (mounted) {
@@ -731,7 +869,7 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 3. MENU / CATALOG MODULE (Live products stock management)
+  // 3. MENU / CATALOG MODULE (Live products stock management & Category filters)
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildMenuModule(String tenantId) {
     return StreamBuilder<List<ProductEntity>>(
@@ -755,74 +893,125 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
           );
         }
 
-        return ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: products.length,
-          itemBuilder: (ctx, i) {
-            final p = products[i];
-            return Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
+        final categories = [
+          'TODAS',
+          ...products.map((p) => p.categoryName).where((c) => c.trim().isNotEmpty).toSet()
+        ];
+
+        final filteredProducts = _menuSelectedCategory == 'TODAS'
+            ? products
+            : products.where((p) => p.categoryName == _menuSelectedCategory).toList();
+
+        return Column(
+          children: [
+            if (categories.length > 2)
+              Container(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: BrandColors.outlineVariantLight),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 54,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      color: BrandColors.surfaceContainerLowLight,
-                      borderRadius: BorderRadius.circular(12),
-                      image: p.imageUrl != null && p.imageUrl!.isNotEmpty
-                          ? DecorationImage(image: NetworkImage(p.imageUrl!), fit: BoxFit.cover)
-                          : null,
-                    ),
-                    child: p.imageUrl == null || p.imageUrl!.isEmpty
-                        ? const Icon(Icons.fastfood, color: Colors.grey)
-                        : null,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(p.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-                        Text('C\$ ${p.price.toInt()}',
-                            style: const TextStyle(color: BrandColors.bluePrimary, fontWeight: FontWeight.bold)),
-                        Text(p.categoryName, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    key: Key('quick_edit_btn_${p.productId}'),
-                    icon: const Icon(Icons.edit_outlined, size: 20, color: BrandColors.bluePrimary),
-                    tooltip: 'Edición Rápida',
-                    onPressed: () => _showQuickEditProductDialog(p),
-                  ),
-                  Column(
-                    children: [
-                      Text(
-                        p.isAvailable ? 'Disponible' : 'Agotado',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: p.isAvailable ? BrandColors.statusSuccess : const Color(0xFFEF4444),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: categories.map((cat) {
+                      final isSelected = _menuSelectedCategory == cat;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: FilterChip(
+                          key: Key('menu_category_filter_$cat'),
+                          label: Text(cat),
+                          selected: isSelected,
+                          onSelected: (_) => setState(() => _menuSelectedCategory = cat),
+                          selectedColor: const Color(0xFFEFF6FF),
+                          labelStyle: TextStyle(
+                            color: isSelected ? BrandColors.bluePrimary : Colors.black87,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                            fontSize: 12,
+                          ),
                         ),
-                      ),
-                      Switch(
-                        value: p.isAvailable,
-                        activeColor: BrandColors.statusSuccess,
-                        onChanged: (val) => _toggleProductAvailability(p, val),
-                      ),
-                    ],
+                      );
+                    }).toList(),
                   ),
-                ],
+                ),
               ),
-            );
-          },
+            Expanded(
+              child: filteredProducts.isEmpty
+                  ? Center(
+                      child: Text(
+                        'No hay productos en "$_menuSelectedCategory"',
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: const EdgeInsets.all(16),
+                      itemCount: filteredProducts.length,
+                      itemBuilder: (ctx, i) {
+                        final p = filteredProducts[i];
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: BrandColors.outlineVariantLight),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 54,
+                                height: 54,
+                                decoration: BoxDecoration(
+                                  color: BrandColors.surfaceContainerLowLight,
+                                  borderRadius: BorderRadius.circular(12),
+                                  image: p.imageUrl != null && p.imageUrl!.isNotEmpty
+                                      ? DecorationImage(image: NetworkImage(p.imageUrl!), fit: BoxFit.cover)
+                                      : null,
+                                ),
+                                child: p.imageUrl == null || p.imageUrl!.isEmpty
+                                    ? const Icon(Icons.fastfood, color: Colors.grey)
+                                    : null,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(p.name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                                    Text('C\$ ${p.price.toInt()}',
+                                        style: const TextStyle(color: BrandColors.bluePrimary, fontWeight: FontWeight.bold)),
+                                    Text(p.categoryName, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                                  ],
+                                ),
+                              ),
+                              IconButton(
+                                key: Key('quick_edit_btn_${p.productId}'),
+                                icon: const Icon(Icons.edit_outlined, size: 20, color: BrandColors.bluePrimary),
+                                tooltip: 'Edición Rápida',
+                                onPressed: () => _showQuickEditProductDialog(p),
+                              ),
+                              Column(
+                                children: [
+                                  Text(
+                                    p.isAvailable ? 'Disponible' : 'Agotado',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: p.isAvailable ? BrandColors.statusSuccess : const Color(0xFFEF4444),
+                                    ),
+                                  ),
+                                  Switch(
+                                    key: Key('product_availability_switch_${p.productId}'),
+                                    value: p.isAvailable,
+                                    activeColor: BrandColors.statusSuccess,
+                                    onChanged: (val) => _toggleProductAvailability(p, val),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
         );
       },
     );

@@ -27,6 +27,7 @@ class SessionState extends ChangeNotifier {
   final IBrandService _brandService;
   final ISubscriptionService _subscriptionService;
   final IAppConfigService _appConfigService;
+  final INotificationService? _notificationService;
 
   AuthStatus _status = AuthStatus.uninitialized;
   UserProfileEntity? _currentUser;
@@ -44,11 +45,13 @@ class SessionState extends ChangeNotifier {
     required IBrandService brandService,
     required ISubscriptionService subscriptionService,
     required IAppConfigService appConfigService,
+    INotificationService? notificationService,
   })  : _authService = authService,
         _tenantService = tenantService,
         _brandService = brandService,
         _subscriptionService = subscriptionService,
-        _appConfigService = appConfigService;
+        _appConfigService = appConfigService,
+        _notificationService = notificationService;
 
   AuthStatus get status => _status;
   bool get isAuthenticated => _status == AuthStatus.authenticated;
@@ -258,6 +261,23 @@ class SessionState extends ChangeNotifier {
     _status = AuthStatus.authenticated;
     _errorMessage = null;
     AppLogger.info('SessionState', 'Continuing as Guest/Invitado in Commercial catalog');
+    if (_notificationService != null) {
+      try {
+        _notificationService!.getDeviceToken().then((token) {
+          if (token != null && token.isNotEmpty) {
+            _notificationService!.registerDeviceToken(
+              uid: 'guest_ios',
+              token: token,
+              role: 'guest',
+            );
+          }
+        }).catchError((e) {
+          AppLogger.warn('SessionState', 'Guest FCM registration skipped: $e');
+        });
+      } catch (e) {
+        AppLogger.warn('SessionState', 'Guest FCM token error: $e');
+      }
+    }
     notifyListeners();
   }
 
@@ -321,6 +341,24 @@ class SessionState extends ChangeNotifier {
 
     _status = AuthStatus.authenticated;
     AppLogger.info('SessionState', 'Session hydrated successfully for UID: ${user.uid}, Role: ${_claims?.role.name}, Tenant: $tenantId');
+
+    // Register FCM device token on auth hydration (1:1 Android MainActivity onAuthStateChanged)
+    if (_notificationService != null) {
+      try {
+        final token = await _notificationService!.getDeviceToken();
+        if (token != null && token.isNotEmpty) {
+          final roleString = _claims?.role.name ?? 'customer';
+          await _notificationService!.registerDeviceToken(
+            uid: user.uid,
+            token: token,
+            role: roleString,
+          );
+        }
+      } catch (e) {
+        AppLogger.warn('SessionState', 'FCM registration skipped or failed: $e');
+      }
+    }
+
     notifyListeners();
   }
 
