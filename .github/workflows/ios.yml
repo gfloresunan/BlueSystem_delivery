@@ -1,12 +1,22 @@
-# ⚠️ WORKFLOW DESHABILITADO
-# Este es el template genérico de Xcode generado por GitHub.
-# Para este proyecto Flutter, usar: build-ios-ipa.yml (ADR-VALIDATION L1)
-#
-# Razón: Este workflow intenta compilar directamente con xcodebuild
-# sin ejecutar flutter pub get / CocoaPods / precache, lo que falla
-# en proyectos Flutter que usan plugins nativos.
-#
-# Ver: .github/workflows/build-ios-ipa.yml
+# WORKFLOW DESHABILITADO
+# Reemplazado por: .github/workflows/build-ios-ipa.yml (ADR-VALIDATION L1)
+# Este archivo es un template genérico de Xcode que no funciona con Flutter+CocoaPods.
+name: "iOS starter workflow (disabled)"
+on:
+  workflow_dispatch:
+    inputs:
+      notice:
+        description: "Este workflow está deshabilitado. Usar: build-ios-ipa.yml"
+        required: false
+        default: "Ver build-ios-ipa.yml"
 
-# name: iOS starter workflow
-# on: ...  (DESHABILITADO — no tiene triggers activos)
+jobs:
+  disabled:
+    name: "Workflow deshabilitado"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "❌ Workflow deshabilitado"
+        run: |
+          echo "Este workflow fue reemplazado por build-ios-ipa.yml"
+          echo "Ver ADR-VALIDATION-PIPELINE.md para la metodología de validación L0-L3"
+          exit 0
