@@ -47,7 +47,6 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version-file: "flutter_client/pubspec.yaml"
           cache: true
 
       - name: "📦 flutter pub get"
@@ -89,7 +88,6 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version-file: "flutter_client/pubspec.yaml"
           cache: true
 
       - name: "🔍 Verify Environment — Flutter + Xcode + CocoaPods"
