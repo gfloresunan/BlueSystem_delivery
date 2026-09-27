@@ -13,9 +13,11 @@ import '../../../domain/services/core_service_interfaces.dart';
 import '../../../data/services/courier_cash_closure_service.dart';
 import '../../../data/services/user_firestore_service.dart';
 import '../../../domain/entities/saved_address_entity.dart';
+import '../../providers/cart_provider.dart';
 import '../../providers/session_state.dart';
 import '../../theme/brand_theme_builder.dart';
 import '../../widgets/state_views.dart';
+import '../address/address_manager_screen.dart';
 import '../auth/login_screen.dart';
 import '../courier/courier_dashboard_screen.dart';
 import '../fleet/fleet_map_screen.dart';
@@ -33,6 +35,7 @@ class AppShell extends StatefulWidget {
   final IBannerService? bannerService;
   final ICourierCashClosureService? cashClosureService;
   final IUserService? userService;
+  final CartProvider? cartProvider;
 
   const AppShell({
     super.key,
@@ -44,6 +47,7 @@ class AppShell extends StatefulWidget {
     this.bannerService,
     this.cashClosureService,
     this.userService,
+    this.cartProvider,
   });
 
   @override
@@ -52,51 +56,60 @@ class AppShell extends StatefulWidget {
 
 class _AppShellState extends State<AppShell> {
   int _selectedIndex = 0;
-  final List<Map<String, dynamic>> _cartItems = [];
+  late final CartProvider _internalCartProvider;
+  CartProvider get _cart => widget.cartProvider ?? _internalCartProvider;
+
+  List<Map<String, dynamic>> get _cartItems => _cart.items.map((i) => i.toMap()).toList();
+  double get _cartTotal => _cart.subtotal;
 
   IUserService get _effectiveUserService => widget.userService ?? UserFirestoreService();
 
-  void _addToCart(ProductEntity product, String businessName) {
-    setState(() {
-      final effectiveBusinessName = businessName.isNotEmpty
-          ? businessName
-          : (product.businessName.isNotEmpty ? product.businessName : 'Comercio');
-      final options = product.selectedOptions;
-      final optionsKey = options.map((o) => o.optionId).toList()..sort();
-      final compositeKey = '${product.productId}_${optionsKey.join("_")}';
+  @override
+  void initState() {
+    super.initState();
+    _internalCartProvider = CartProvider();
+    _cart.addListener(_onCartChanged);
+  }
 
-      final existingIndex = _cartItems.indexWhere((item) => item['compositeKey'] == compositeKey);
-      if (existingIndex >= 0) {
-        _cartItems[existingIndex]['quantity'] = (_cartItems[existingIndex]['quantity'] as int) + 1;
-      } else {
-        _cartItems.add({
-          'compositeKey': compositeKey,
-          'id': product.productId,
-          'productId': product.productId,
-          'name': product.name,
-          'price': product.calculatedTotalPrice,
-          'basePrice': product.price,
-          'business': effectiveBusinessName,
-          'businessId': product.businessId,
-          'branchId': product.branchId,
-          'tenantId': product.tenantId.isNotEmpty ? product.tenantId : 'default',
-          'imageUrl': product.imageUrl,
-          'quantity': 1,
-          'selectedOptions': options.map((o) => o.toMap()).toList(),
-          'optionsSummary': options.map((o) => o.optionName).join(', '),
-        });
-      }
-    });
+  @override
+  void dispose() {
+    _cart.removeListener(_onCartChanged);
+    _internalCartProvider.dispose();
+    super.dispose();
+  }
+
+  void _onCartChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _addToCart(ProductEntity product, String businessName) {
+    final effectiveBusinessName = businessName.isNotEmpty
+        ? businessName
+        : (product.businessName.isNotEmpty ? product.businessName : 'Comercio');
+    final options = product.selectedOptions;
+
+    _cart.addItem(
+      id: product.productId,
+      name: product.name,
+      price: product.calculatedTotalPrice,
+      basePrice: product.price,
+      imageUrl: product.imageUrl,
+      businessId: product.businessId,
+      businessName: effectiveBusinessName,
+      tenantId: product.tenantId.isNotEmpty ? product.tenantId : 'default',
+      branchId: product.branchId,
+      selectedOptions: options.map((o) => o.toMap()).toList(),
+    );
+  }
+
+  void addToCart(ProductEntity product, String businessName) {
+    _addToCart(product, businessName);
   }
 
   void _clearCart() {
-    setState(() {
-      _cartItems.clear();
-    });
-  }
-
-  double get _cartTotal {
-    return _cartItems.fold(0.0, (sum, item) => sum + (item['price'] as double) * (item['quantity'] as int));
+    _cart.clearCart();
   }
 
   @override
@@ -808,17 +821,40 @@ class _AppShellState extends State<AppShell> {
                       ),
                     ],
                   ),
-                  ElevatedButton.icon(
-                    key: const Key('add_address_btn'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: BrandColors.bluePrimary,
-                      foregroundColor: Colors.white,
-                      visualDensity: VisualDensity.compact,
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    ),
-                    icon: const Icon(Icons.add, size: 16),
-                    label: const Text('Nueva', style: TextStyle(fontSize: 12)),
-                    onPressed: () => _openAddAddressDialog(sheetCtx, user.uid),
+                  Row(
+                    children: [
+                      IconButton(
+                        key: const Key('open_fullscreen_addresses_btn'),
+                        icon: const Icon(Icons.open_in_new_rounded, size: 18, color: BrandColors.bluePrimary),
+                        tooltip: 'Ver en pantalla completa',
+                        visualDensity: VisualDensity.compact,
+                        onPressed: () {
+                          Navigator.pop(sheetCtx);
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => AddressManagerScreen(
+                                userId: user.uid,
+                                userService: _effectiveUserService,
+                                onBack: () => Navigator.of(context).pop(),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(width: 4),
+                      ElevatedButton.icon(
+                        key: const Key('add_address_btn'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: BrandColors.bluePrimary,
+                          foregroundColor: Colors.white,
+                          visualDensity: VisualDensity.compact,
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        ),
+                        icon: const Icon(Icons.add, size: 16),
+                        label: const Text('Nueva', style: TextStyle(fontSize: 12)),
+                        onPressed: () => _openAddAddressDialog(sheetCtx, user.uid),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -1256,11 +1292,10 @@ class _AppShellState extends State<AppShell> {
                   : Stream.value(null),
               builder: (context, snapshot) {
                 final business = snapshot.data;
+                _cart.setActiveBusiness(business);
                 // GATE-01: Dynamic deliveryFee from SSOT /businesses/{id}.deliveryFee, fallback C$45.00. NEVER C$35.00
-                final double deliveryFee = _cartItems.isEmpty
-                    ? 0.0
-                    : (business?.deliveryFee ?? 45.0);
-                final totalWithDelivery = _cartTotal > 0 ? _cartTotal + deliveryFee : 0.0;
+                final double deliveryFee = _cart.deliveryFee;
+                final totalWithDelivery = _cart.total;
 
                 return Container(
                   height: MediaQuery.of(context).size.height * 0.75,
@@ -1354,12 +1389,7 @@ class _AppShellState extends State<AppShell> {
                                         icon: const Icon(Icons.remove_circle_outline, size: 20),
                                         onPressed: () {
                                           setModalState(() {
-                                            final currentQty = item['quantity'] as int;
-                                            if (currentQty > 1) {
-                                              item['quantity'] = currentQty - 1;
-                                            } else {
-                                              _cartItems.removeAt(index);
-                                            }
+                                            _cart.updateQuantity(index, -1);
                                           });
                                           setState(() {});
                                         },
@@ -1372,7 +1402,7 @@ class _AppShellState extends State<AppShell> {
                                         icon: const Icon(Icons.add_circle_outline, size: 20),
                                         onPressed: () {
                                           setModalState(() {
-                                            item['quantity'] = (item['quantity'] as int) + 1;
+                                            _cart.updateQuantity(index, 1);
                                           });
                                           setState(() {});
                                         },
@@ -1395,6 +1425,47 @@ class _AppShellState extends State<AppShell> {
                           ],
                         ),
                         const SizedBox(height: 4),
+                        if (widget.sessionState.currentUser != null &&
+                            !widget.sessionState.isGuestMode)
+                          StreamBuilder<List<SavedAddressEntity>>(
+                            stream: _effectiveUserService.watchAddresses(widget.sessionState.currentUser!.uid),
+                            builder: (context, addrSnap) {
+                              final savedAddrs = addrSnap.data ?? [];
+                              if (savedAddrs.isEmpty) return const SizedBox.shrink();
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 6),
+                                child: SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children: savedAddrs.map((sa) {
+                                      return Padding(
+                                        padding: const EdgeInsets.only(right: 6),
+                                        child: ActionChip(
+                                          key: Key('quick_select_address_${sa.id}'),
+                                          avatar: Icon(
+                                            sa.isDefault ? Icons.check_circle : Icons.location_on,
+                                            size: 14,
+                                            color: BrandColors.bluePrimary,
+                                          ),
+                                          label: Text(
+                                            '${sa.label}: ${sa.fullAddress}',
+                                            style: const TextStyle(fontSize: 11),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                          onPressed: () {
+                                            setModalState(() {
+                                              addressController.text = sa.fullAddress;
+                                            });
+                                          },
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
                         TextField(
                           key: const Key('checkout_delivery_address_field'),
                           controller: addressController,

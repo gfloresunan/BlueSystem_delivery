@@ -411,24 +411,42 @@ class CategoryEntity {
   final String categoryId;
   final String name;
   final String icon;
+  final String iconType; // 'EMOJI' | 'SYSTEM_ICON' | 'IMAGE_URL'
+  final String type; // 'BUSINESS' | 'PRODUCT'
+  final String color;
   final String bgColor;
   final int orderIndex;
   final bool showInHome;
   final bool isFeatured;
   final bool active;
   final String slug;
+  final String description;
 
   const CategoryEntity({
     required this.categoryId,
     required this.name,
     required this.icon,
+    this.iconType = 'EMOJI',
+    this.type = 'BUSINESS',
+    this.color = '#3B82F6',
     this.bgColor = '#EFF6FF',
     this.orderIndex = 0,
     this.showInHome = true,
     this.isFeatured = false,
     this.active = true,
     this.slug = '',
+    this.description = '',
   });
+
+  bool get isProductType {
+    final t = type.trim().toUpperCase();
+    return t == 'PRODUCT' || t == 'PRODUCTO';
+  }
+
+  bool get isBusinessType {
+    final t = type.trim().toUpperCase();
+    return t == 'BUSINESS' || t == 'COMERCIO';
+  }
 
   factory CategoryEntity.fromMap(Map<String, dynamic> map, String id) {
     final name = map['name'] as String? ?? map['nombre'] as String? ?? 'Categoría';
@@ -458,16 +476,22 @@ class CategoryEntity {
       }
     }
 
+    final rawType = (map['type'] as String? ?? map['tipo'] as String? ?? 'BUSINESS').trim().toUpperCase();
+
     return CategoryEntity(
       categoryId: id.isNotEmpty ? id : (map['id'] as String? ?? ''),
       name: name,
       icon: icon,
+      iconType: map['iconType'] as String? ?? 'EMOJI',
+      type: rawType,
+      color: map['color'] as String? ?? '#3B82F6',
       bgColor: map['bgColor'] as String? ?? '#EFF6FF',
       orderIndex: (map['orderIndex'] as num?)?.toInt() ?? 0,
       showInHome: map['showInHome'] as bool? ?? true,
       isFeatured: map['isFeatured'] as bool? ?? false,
       active: map['active'] as bool? ?? map['isActive'] as bool? ?? true,
       slug: map['slug'] as String? ?? '',
+      description: map['description'] as String? ?? map['descripcion'] as String? ?? '',
     );
   }
 }
@@ -476,35 +500,57 @@ class BranchEntity {
   final String branchId;
   final String tenantId;
   final String businessId;
+  final String businessName;
+  final String branchName;
   final String name;
   final String address;
   final String phone;
+  final String city;
   final double latitude;
   final double longitude;
+  final double rating;
+  final double distanceKm;
   final bool isOpen;
 
   const BranchEntity({
     required this.branchId,
     required this.tenantId,
     required this.businessId,
+    this.businessName = '',
+    this.branchName = '',
     required this.name,
     required this.address,
     required this.phone,
+    this.city = 'Managua',
     required this.latitude,
     required this.longitude,
+    this.rating = 4.8,
+    this.distanceKm = 0.0,
     this.isOpen = true,
   });
 
+  String get effectiveDisplayName =>
+      branchName.isNotEmpty ? branchName : (name.isNotEmpty ? name : businessName);
+
   factory BranchEntity.fromMap(Map<String, dynamic> map, String id) {
+    final bName = map['branchName'] as String? ?? '';
+    final name = map['name'] as String? ?? map['nombre'] as String? ?? bName;
+    final bizName = map['businessName'] as String? ?? map['comercioNombre'] as String? ?? '';
+
     return BranchEntity(
-      branchId: id.isNotEmpty ? id : (map['branchId'] as String? ?? ''),
+      branchId: id.isNotEmpty ? id : (map['branchId'] as String? ?? map['id'] as String? ?? ''),
       tenantId: map['tenantId'] as String? ?? '',
-      businessId: map['businessId'] as String? ?? '',
-      name: map['name'] as String? ?? map['nombre'] as String? ?? '',
+      businessId: map['businessId'] as String? ?? map['comercioId'] as String? ?? '',
+      businessName: bizName,
+      branchName: bName.isNotEmpty ? bName : name,
+      name: name,
       address: map['address'] as String? ?? map['direccion'] as String? ?? '',
       phone: map['phone'] as String? ?? map['telefono'] as String? ?? '',
+      city: map['city'] as String? ?? map['ciudad'] as String? ?? 'Managua',
       latitude: (map['latitude'] as num?)?.toDouble() ?? 0.0,
       longitude: (map['longitude'] as num?)?.toDouble() ?? 0.0,
+      rating: (map['rating'] as num?)?.toDouble() ?? 4.8,
+      distanceKm: (map['distanceKm'] as num?)?.toDouble() ?? 0.0,
       isOpen: map['isOpen'] as bool? ?? map['abierto'] as bool? ?? true,
     );
   }
@@ -514,11 +560,15 @@ class BranchEntity {
       'branchId': branchId,
       'tenantId': tenantId,
       'businessId': businessId,
+      'businessName': businessName,
+      'branchName': branchName,
       'name': name,
       'address': address,
       'phone': phone,
       'latitude': latitude,
       'longitude': longitude,
+      'rating': rating,
+      'distanceKm': distanceKm,
       'isOpen': isOpen,
     };
   }
@@ -593,6 +643,12 @@ class BusinessEntity {
   final String city;
   final double latitude;
   final double longitude;
+  final int unitsSold30d;
+  final bool priceParityVerified;
+  final int? priceParityVerifiedAt;
+  final int? activatedAt;
+  final Map<String, dynamic>? weeklySchedule;
+  final double? calculatedDistanceKm;
 
   const BusinessEntity({
     required this.businessId,
@@ -619,6 +675,12 @@ class BusinessEntity {
     this.city = 'Managua',
     this.latitude = 0.0,
     this.longitude = 0.0,
+    this.unitsSold30d = 0,
+    this.priceParityVerified = false,
+    this.priceParityVerifiedAt,
+    this.activatedAt,
+    this.weeklySchedule,
+    this.calculatedDistanceKm,
   });
 
   /// 1:1 Android Parity validation from BusinessRepository.kt
@@ -631,6 +693,44 @@ class BusinessEntity {
     if (!isActive) return false;
     if (name.trim().isEmpty) return false;
     return true;
+  }
+
+  BusinessEntity copyWith({
+    double? calculatedDistanceKm,
+    bool? isOpen,
+  }) {
+    return BusinessEntity(
+      businessId: businessId,
+      tenantId: tenantId,
+      name: name,
+      category: category,
+      address: address,
+      phone: phone,
+      description: description,
+      logoUrl: logoUrl,
+      bannerUrl: bannerUrl,
+      deliveryTime: deliveryTime,
+      rating: rating,
+      ratingCount: ratingCount,
+      deliveryFee: deliveryFee,
+      minOrder: minOrder,
+      isOpen: isOpen ?? this.isOpen,
+      isFeatured: isFeatured,
+      isVerified: isVerified,
+      isActive: isActive,
+      isDeleted: isDeleted,
+      status: status,
+      lifecycleStatus: lifecycleStatus,
+      city: city,
+      latitude: latitude,
+      longitude: longitude,
+      unitsSold30d: unitsSold30d,
+      priceParityVerified: priceParityVerified,
+      priceParityVerifiedAt: priceParityVerifiedAt,
+      activatedAt: activatedAt,
+      weeklySchedule: weeklySchedule,
+      calculatedDistanceKm: calculatedDistanceKm ?? this.calculatedDistanceKm,
+    );
   }
 
   factory BusinessEntity.fromMap(Map<String, dynamic> map, String id) {
@@ -688,16 +788,73 @@ class BusinessEntity {
         map['municipalityName'] as String? ??
         'Managua';
 
-    final locMap = map['location'] as Map?;
-    final coordMap = map['coordenadas'] as Map?;
+    // HOTFIX: Safe Map extraction — Firestore may return GeoPoint (not Map) for
+    // 'location'/'coordenadas'. The hard `as Map?` cast throws TypeError in
+    // release mode (minified as 'minified:uq'). Use `is Map` guard instead.
+    final locRaw = map['location'];
+    final coordRaw = map['coordenadas'];
+    final locMap = locRaw is Map ? locRaw : null;
+    final coordMap = coordRaw is Map ? coordRaw : null;
+
+    // Also extract lat/lng directly from GeoPoint if present
+    double? geoPointLat(dynamic obj) {
+      if (obj == null) return null;
+      try {
+        // GeoPoint exposes .latitude and .longitude as getters
+        final dynamic g = obj;
+        final dynamic latVal = g.latitude;
+        if (latVal is num) return latVal.toDouble();
+      } catch (_) {}
+      return null;
+    }
+    double? geoPointLng(dynamic obj) {
+      if (obj == null) return null;
+      try {
+        final dynamic g = obj;
+        final dynamic lngVal = g.longitude;
+        if (lngVal is num) return lngVal.toDouble();
+      } catch (_) {}
+      return null;
+    }
+
     final lat = (map['latitude'] as num?)?.toDouble() ??
         (locMap?['latitude'] as num?)?.toDouble() ??
         (coordMap?['latitud'] as num?)?.toDouble() ??
+        geoPointLat(locRaw) ??
+        geoPointLat(coordRaw) ??
         0.0;
     final lng = (map['longitude'] as num?)?.toDouble() ??
         (locMap?['longitude'] as num?)?.toDouble() ??
         (coordMap?['longitud'] as num?)?.toDouble() ??
+        geoPointLng(locRaw) ??
+        geoPointLng(coordRaw) ??
         0.0;
+
+    final unitsSold = (map['unitsSold30d'] as num?)?.toInt() ?? (map['unitsSold'] as num?)?.toInt() ?? 0;
+    final priceParity = map['priceParityVerified'] as bool? ?? map['mismoPrecioVerificado'] as bool? ?? false;
+
+    int? parseTimestamp(dynamic val) {
+      if (val == null) return null;
+      if (val is num) return val.toInt();
+      if (val is Map && val['_seconds'] != null) {
+        return (val['_seconds'] as num).toInt() * 1000;
+      }
+      // Handle native Firestore Timestamp object (has .millisecondsSinceEpoch)
+      try {
+        final dynamic ts = val;
+        final dynamic ms = ts.millisecondsSinceEpoch;
+        if (ms is num) return ms.toInt();
+        final dynamic sec = ts.seconds;
+        if (sec is num) return sec.toInt() * 1000;
+      } catch (_) {}
+      return null;
+    }
+
+    final Map<String, dynamic>? sched = map['weeklySchedule'] is Map
+        ? Map<String, dynamic>.from(map['weeklySchedule'] as Map)
+        : (map['schedule'] is Map
+            ? Map<String, dynamic>.from(map['schedule'] as Map)
+            : (map['horario'] is Map ? Map<String, dynamic>.from(map['horario'] as Map) : null));
 
     return BusinessEntity(
       businessId: id.isNotEmpty ? id : (map['businessId'] as String? ?? ''),
@@ -724,6 +881,263 @@ class BusinessEntity {
       city: city,
       latitude: lat,
       longitude: lng,
+      unitsSold30d: unitsSold,
+      priceParityVerified: priceParity,
+      priceParityVerifiedAt: parseTimestamp(map['priceParityVerifiedAt']),
+      activatedAt: parseTimestamp(map['activatedAt']),
+      weeklySchedule: sched,
     );
   }
 }
+
+/// SPRINT 15 / C2D ENTERPRISE DASHBOARD CONFIGURATION (1:1 Android Models.kt:1023-1093)
+class DashboardConfigEntity {
+  final bool showBanners;
+  final bool showCategories;
+  final bool showBranchesBlock;
+  final bool showFeaturedBusinesses;
+  final bool showFeaturedProducts;
+  final bool showPromotions;
+  final bool showSamePrice;
+  final bool showFlashDeals;
+  final bool showTopSelling;
+  final bool showRecommended;
+  final bool showNewBusinesses;
+  final bool showQuickReorder;
+  final bool showFavoritesBlock;
+  final bool showNearbyBusinesses;
+  final bool showAllBusinesses;
+  final bool showExpressDeliveryBanner; // FAIL-CLOSED: Oculto por defecto (Addendum P0-02)
+  final bool xToYServiceEnabled; // FAIL-CLOSED: Deshabilitado por defecto (Addendum P0-02)
+  final double nearbyInitialRadiusKm;
+  final double nearbySecondaryRadiusKm;
+  final double nearbyMaxRadiusKm;
+  final int nearbyMinimumMerchantCount;
+  final bool nearbyAutoExpandEnabled;
+  final String nearbyOrdering; // 'nearest' | 'rating'
+  final List<String> sectionOrder;
+
+  static const List<String> canonicalDefaultSectionOrder = [
+    'BANNERS',
+    'CATEGORIES',
+    'BRANCHES',
+    'NEARBY',
+    'FEATURED_BUSINESSES',
+    'FEATURED_PRODUCTS',
+    'FLASH_DEALS',
+    'PROMOTIONS',
+    'SAME_PRICE',
+    'TOP_SELLING',
+    'RECOMMENDED',
+    'NEW_BUSINESSES',
+    'QUICK_REORDER',
+    'FAVORITES',
+    'EXPRESS_DELIVERY',
+  ];
+
+  const DashboardConfigEntity({
+    this.showBanners = true,
+    this.showCategories = true,
+    this.showBranchesBlock = true,
+    this.showFeaturedBusinesses = true,
+    this.showFeaturedProducts = true,
+    this.showPromotions = true,
+    this.showSamePrice = true,
+    this.showFlashDeals = true,
+    this.showTopSelling = true,
+    this.showRecommended = true,
+    this.showNewBusinesses = true,
+    this.showQuickReorder = true,
+    this.showFavoritesBlock = true,
+    this.showNearbyBusinesses = true,
+    this.showAllBusinesses = true,
+    this.showExpressDeliveryBanner = false,
+    this.xToYServiceEnabled = false,
+    this.nearbyInitialRadiusKm = 5.0,
+    this.nearbySecondaryRadiusKm = 10.0,
+    this.nearbyMaxRadiusKm = 15.0,
+    this.nearbyMinimumMerchantCount = 5,
+    this.nearbyAutoExpandEnabled = true,
+    this.nearbyOrdering = 'nearest',
+    this.sectionOrder = canonicalDefaultSectionOrder,
+  });
+
+  /// Normaliza la lista de orden de secciones (1:1 Android Models.kt:1074-1092):
+  /// 1. Elimina IDs duplicados conservando la primera aparición válida.
+  /// 2. Descarta IDs desconocidos.
+  /// 3. Anexa al final cualquier sección canónica faltante para evitar pérdida de bloques.
+  List<String> getNormalizedSectionOrder() {
+    final result = <String>[];
+    final knownSet = canonicalDefaultSectionOrder.toSet();
+
+    for (final rawId in sectionOrder) {
+      final id = rawId.trim().toUpperCase();
+      if (knownSet.contains(id) && !result.contains(id)) {
+        result.add(id);
+      }
+    }
+
+    for (final canonicalId in canonicalDefaultSectionOrder) {
+      if (!result.contains(canonicalId)) {
+        result.add(canonicalId);
+      }
+    }
+
+    return result;
+  }
+
+  factory DashboardConfigEntity.fromMap(Map<String, dynamic> map) {
+    List<String> order = canonicalDefaultSectionOrder;
+    if (map['sectionOrder'] is List) {
+      final list = (map['sectionOrder'] as List).map((e) => e.toString()).toList();
+      if (list.isNotEmpty) order = list;
+    }
+
+    return DashboardConfigEntity(
+      showBanners: map['showBanners'] as bool? ?? true,
+      showCategories: map['showCategories'] as bool? ?? true,
+      showBranchesBlock: map['showBranchesBlock'] as bool? ?? true,
+      showFeaturedBusinesses: map['showFeaturedBusinesses'] as bool? ?? true,
+      showFeaturedProducts: map['showFeaturedProducts'] as bool? ?? true,
+      showPromotions: map['showPromotions'] as bool? ?? true,
+      showSamePrice: map['showSamePrice'] as bool? ?? true,
+      showFlashDeals: map['showFlashDeals'] as bool? ?? true,
+      showTopSelling: map['showTopSelling'] as bool? ?? true,
+      showRecommended: map['showRecommended'] as bool? ?? true,
+      showNewBusinesses: map['showNewBusinesses'] as bool? ?? true,
+      showQuickReorder: map['showQuickReorder'] as bool? ?? true,
+      showFavoritesBlock: map['showFavoritesBlock'] as bool? ?? true,
+      showNearbyBusinesses: map['showNearbyBusinesses'] as bool? ?? true,
+      showAllBusinesses: map['showAllBusinesses'] as bool? ?? true,
+      showExpressDeliveryBanner: map['showExpressDeliveryBanner'] as bool? ?? false,
+      xToYServiceEnabled: map['xToYServiceEnabled'] as bool? ?? false,
+      nearbyInitialRadiusKm: (map['nearbyInitialRadiusKm'] as num?)?.toDouble() ?? 5.0,
+      nearbySecondaryRadiusKm: (map['nearbySecondaryRadiusKm'] as num?)?.toDouble() ?? 10.0,
+      nearbyMaxRadiusKm: (map['nearbyMaxRadiusKm'] as num?)?.toDouble() ?? 15.0,
+      nearbyMinimumMerchantCount: (map['nearbyMinimumMerchantCount'] as num?)?.toInt() ?? 5,
+      nearbyAutoExpandEnabled: map['nearbyAutoExpandEnabled'] as bool? ?? true,
+      nearbyOrdering: map['nearbyOrdering'] as String? ?? 'nearest',
+      sectionOrder: order,
+    );
+  }
+}
+
+/// SPRINT 15 / FLASH DEALS CANONICAL ENTITY (1:1 Android Models.kt:1112-1128)
+class FlashDealEntity {
+  final String id;
+  final String productId;
+  final String title;
+  final String productName;
+  final double price;
+  final double originalPrice;
+  final String discountTag;
+  final String businessId;
+  final String businessName;
+  final String imageUrl;
+  final int expiresAtMinutes;
+  final bool active;
+  final DateTime? startAt;
+  final DateTime? endAt;
+  final DateTime? createdAt;
+
+  const FlashDealEntity({
+    required this.id,
+    this.productId = '',
+    required this.title,
+    this.productName = '',
+    required this.price,
+    this.originalPrice = 0.0,
+    this.discountTag = '40% OFF',
+    this.businessId = '',
+    this.businessName = '',
+    this.imageUrl = '',
+    this.expiresAtMinutes = 120,
+    this.active = true,
+    this.startAt,
+    this.endAt,
+    this.createdAt,
+  });
+
+  /// 1:1 Android FirebaseManager.kt:2081-2093 Temporal Validity Check
+  bool isCurrentlyValid() {
+    if (!active) return false;
+    final now = DateTime.now();
+    if (startAt != null && startAt!.isAfter(now)) return false;
+    if (endAt != null && endAt!.isBefore(now)) return false;
+    if (expiresAtMinutes > 0 && createdAt != null) {
+      final expireTime = createdAt!.add(Duration(minutes: expiresAtMinutes));
+      if (now.isAfter(expireTime)) return false;
+    }
+    return true;
+  }
+
+  FlashDealEntity copyWith({
+    String? id,
+    String? productId,
+    String? title,
+    String? productName,
+    double? price,
+    double? originalPrice,
+    String? discountTag,
+    String? businessId,
+    String? businessName,
+    String? imageUrl,
+  }) {
+    return FlashDealEntity(
+      id: id ?? this.id,
+      productId: productId ?? this.productId,
+      title: title ?? this.title,
+      productName: productName ?? this.productName,
+      price: price ?? this.price,
+      originalPrice: originalPrice ?? this.originalPrice,
+      discountTag: discountTag ?? this.discountTag,
+      businessId: businessId ?? this.businessId,
+      businessName: businessName ?? this.businessName,
+      imageUrl: imageUrl ?? this.imageUrl,
+      expiresAtMinutes: expiresAtMinutes,
+      active: active,
+      startAt: startAt,
+      endAt: endAt,
+      createdAt: createdAt,
+    );
+  }
+
+  factory FlashDealEntity.fromMap(Map<String, dynamic> map, String id) {
+    DateTime? parseDate(dynamic val) {
+      if (val == null) return null;
+      if (val is DateTime) return val;
+      if (val is int) return DateTime.fromMillisecondsSinceEpoch(val);
+      if (val is Map && val['_seconds'] != null) {
+        return DateTime.fromMillisecondsSinceEpoch((val['_seconds'] as int) * 1000);
+      }
+      return null;
+    }
+
+    final origPrice = (map['originalPrice'] as num?)?.toDouble() ?? (map['precioOriginal'] as num?)?.toDouble() ?? 0.0;
+    final dealPrice = (map['price'] as num?)?.toDouble() ?? (map['precio'] as num?)?.toDouble() ?? 0.0;
+    String discTag = map['discountTag'] as String? ?? '';
+    if (discTag.isEmpty && origPrice > dealPrice && origPrice > 0) {
+      final pct = (((origPrice - dealPrice) / origPrice) * 100).toInt();
+      discTag = '-$pct%';
+    }
+
+    return FlashDealEntity(
+      id: id.isNotEmpty ? id : (map['id'] as String? ?? ''),
+      productId: map['productId'] as String? ?? '',
+      title: map['title'] as String? ?? map['titulo'] as String? ?? map['productName'] as String? ?? '',
+      productName: map['productName'] as String? ?? map['nombreProducto'] as String? ?? '',
+      price: dealPrice,
+      originalPrice: origPrice,
+      discountTag: discTag.isNotEmpty ? discTag : '40% OFF',
+      businessId: map['businessId'] as String? ?? map['comercioId'] as String? ?? '',
+      businessName: map['businessName'] as String? ?? map['comercioNombre'] as String? ?? '',
+      imageUrl: map['imageUrl'] as String? ?? map['imagenUrl'] as String? ?? '',
+      expiresAtMinutes: (map['expiresAtMinutes'] as num?)?.toInt() ?? 120,
+      active: map['active'] as bool? ?? map['activo'] as bool? ?? true,
+      startAt: parseDate(map['startAt']),
+      endAt: parseDate(map['endAt']),
+      createdAt: parseDate(map['createdAt']),
+    );
+  }
+}
+

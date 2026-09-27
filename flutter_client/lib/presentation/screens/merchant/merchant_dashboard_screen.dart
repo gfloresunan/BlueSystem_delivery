@@ -657,7 +657,15 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('${item.quantity}x ${item.name}', style: const TextStyle(fontSize: 13)),
+                    Expanded(
+                      child: Text(
+                        '${item.quantity}x ${item.name}',
+                        style: const TextStyle(fontSize: 13),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     Text('C\$ ${item.subtotal.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                   ],
                 ),

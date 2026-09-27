@@ -72,13 +72,36 @@ class FirestoreOperationsService implements IOrderService, ITripService, IFleetS
 
   @override
   Stream<List<OrderEntity>> watchBusinessOrders(String businessId, {required String tenantId}) {
+    if (businessId.isEmpty) {
+      AppLogger.warning('FirestoreOperationsService', 'watchBusinessOrders: businessId is empty');
+      return Stream.value(<OrderEntity>[]);
+    }
+
+    // 1:1 Android Parity (BusinessDashboardScreen.kt:172-185):
+    // Single-field server query on 'businessId' avoids failed-precondition composite index errors.
+    // Tenant isolation and createdAt sorting are evaluated in memory.
     return _firestore
         .collection('orders')
         .where('businessId', isEqualTo: businessId)
-        .where('tenantId', isEqualTo: tenantId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs.map((d) => OrderEntity.fromMap(d.data(), d.id)).toList());
+        .map((snap) {
+          final list = <OrderEntity>[];
+          for (final doc in snap.docs) {
+            final order = OrderEntity.fromMap(doc.data(), doc.id);
+            if (tenantId.isNotEmpty &&
+                order.tenantId.isNotEmpty &&
+                order.tenantId != tenantId) {
+              continue;
+            }
+            list.add(order);
+          }
+          list.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+          return list;
+        })
+        .handleError((error, stackTrace) {
+          AppLogger.error('FirestoreOperationsService', 'Error watching business orders for $businessId', error, stackTrace);
+          throw error;
+        });
   }
 
   @override

@@ -110,8 +110,12 @@ abstract class IMerchantService {
   Stream<List<ProductEntity>> watchFeaturedProducts({required String tenantId});
   Future<List<ProductEntity>> getProductsForBusiness(String businessId, {required String tenantId});
   Stream<List<BranchEntity>> watchBranches(String businessId, {required String tenantId});
+  Stream<List<BranchEntity>> watchAllBranches({required String tenantId});
   Stream<List<CategoryEntity>> watchCategories({required String tenantId});
   Stream<List<PromotionEntity>> watchPromotions({required String tenantId});
+  Stream<DashboardConfigEntity> watchDashboardConfig({String? tenantId});
+  Stream<List<FlashDealEntity>> watchFlashDeals({required String tenantId});
+  Stream<List<ProductEntity>> watchDiscountedProducts({required String tenantId});
   Future<void> updateProductQuick(
     String productId, {
     required String name,

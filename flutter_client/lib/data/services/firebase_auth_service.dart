@@ -3,6 +3,7 @@
 
 import 'package:firebase_auth/firebase_auth.dart' as fb_auth;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import '../../core/auth/auth_context.dart';
 import '../../core/errors/app_exceptions.dart';
@@ -270,7 +271,9 @@ class FirebaseAuthService implements IAuthService {
       final googleProvider = fb_auth.GoogleAuthProvider();
       googleProvider.addScope('email');
       googleProvider.addScope('profile');
-      final cred = await _firebaseAuth.signInWithProvider(googleProvider);
+      final cred = kIsWeb
+          ? await _firebaseAuth.signInWithPopup(googleProvider)
+          : await _firebaseAuth.signInWithProvider(googleProvider);
       final fbUser = cred.user!;
 
       final userDoc = await _firestore.collection('users').doc(fbUser.uid).get();
@@ -310,7 +313,9 @@ class FirebaseAuthService implements IAuthService {
       final facebookProvider = fb_auth.FacebookAuthProvider();
       facebookProvider.addScope('email');
       facebookProvider.addScope('public_profile');
-      final cred = await _firebaseAuth.signInWithProvider(facebookProvider);
+      final cred = kIsWeb
+          ? await _firebaseAuth.signInWithPopup(facebookProvider)
+          : await _firebaseAuth.signInWithProvider(facebookProvider);
       final fbUser = cred.user!;
 
       final userDoc = await _firestore.collection('users').doc(fbUser.uid).get();

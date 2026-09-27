@@ -356,6 +356,7 @@ class BSCartButton extends StatelessWidget {
         boxShadow: BSElevation.cartFabShadow,
       ),
       child: FloatingActionButton(
+        heroTag: 'bs_cart_button_fab',
         onPressed: onPressed,
         backgroundColor: BSColors.cartFabAccent,
         foregroundColor: Colors.white,

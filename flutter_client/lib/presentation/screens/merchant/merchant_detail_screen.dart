@@ -5,6 +5,7 @@
 
 import 'package:flutter/material.dart';
 
+import '../../../core/engine/operating_hours_resolver.dart';
 import '../../../domain/entities/catalog_entity.dart';
 import '../../../domain/services/core_service_interfaces.dart';
 import '../../theme/brand_theme_builder.dart';
@@ -37,6 +38,7 @@ class _MerchantDetailScreenState extends State<MerchantDetailScreen> {
   final TextEditingController _searchController = TextEditingController();
   BranchEntity? _selectedBranch;
   bool _isFavorite = false;
+  bool _initialProductHandled = false;
 
   @override
   void dispose() {
@@ -63,6 +65,22 @@ class _MerchantDetailScreenState extends State<MerchantDetailScreen> {
               stream: widget.merchantService.watchProducts(widget.businessId, tenantId: 'ten_bluesystem_core'),
               builder: (context, prodSnapshot) {
                 final allProducts = prodSnapshot.data ?? [];
+
+                if (!_initialProductHandled &&
+                    widget.initialProductId != null &&
+                    widget.initialProductId!.isNotEmpty &&
+                    allProducts.isNotEmpty) {
+                  _initialProductHandled = true;
+                  final target = allProducts.firstWhere(
+                    (p) => p.productId == widget.initialProductId,
+                    orElse: () => allProducts.first,
+                  );
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (mounted) {
+                      _showProductOptionsModal(context, target, business?.name ?? '');
+                    }
+                  });
+                }
 
                 // Filter products
                 final filtered = allProducts.where((p) {
@@ -111,18 +129,9 @@ class _MerchantDetailScreenState extends State<MerchantDetailScreen> {
                   backgroundColor: BrandColors.bgLightApp,
                   body: CustomScrollView(
                     slivers: [
-                      // 1. Full-width Banner & Top Bar
-                      _buildSliverBanner(business),
-
-                      // 2. Floating Info Card (overhang)
+                      // 1. Combined Header Section (Banner + Overhanging Floating Card)
                       SliverToBoxAdapter(
-                        child: Transform.translate(
-                          offset: const Offset(0, -28),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: _buildBusinessInfoCard(business, branches),
-                          ),
-                        ),
+                        child: _buildHeaderSection(business, branches),
                       ),
 
                       // 3. Search inside store
@@ -218,80 +227,116 @@ class _MerchantDetailScreenState extends State<MerchantDetailScreen> {
     );
   }
 
-  // ─── 1. SLIVER BANNER ───────────────────────────────────────────────────────
-  Widget _buildSliverBanner(BusinessEntity? business) {
+  // ─── 1. COMBINED HEADER (BANNER + OVERHANGING FLOATING CARD) ────────────────
+  Widget _buildHeaderSection(BusinessEntity? business, List<BranchEntity> branches) {
     final bannerUrl = business?.bannerUrl ?? '';
+    const double bannerHeight = 200.0;
+    const double overlap = 36.0;
 
-    return SliverAppBar(
-      expandedHeight: 200,
-      pinned: true,
-      backgroundColor: BrandColors.bluePrimary,
-      leading: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: CircleAvatar(
-          backgroundColor: Colors.white,
-          child: IconButton(
-            icon: const Icon(Icons.arrow_back, color: BrandColors.textPrimaryLight, size: 20),
-            onPressed: widget.onBack,
-          ),
-        ),
-      ),
-      actions: [
-        CircleAvatar(
-          backgroundColor: Colors.white,
-          child: IconButton(
-            icon: const Icon(Icons.share_outlined, color: BrandColors.textPrimaryLight, size: 20),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Compartir ${business?.name ?? "comercio"}')),
-              );
-            },
-          ),
-        ),
-        const SizedBox(width: 8),
-        CircleAvatar(
-          backgroundColor: Colors.white,
-          child: IconButton(
-            icon: Icon(
-              _isFavorite ? Icons.favorite : Icons.favorite_border,
-              color: _isFavorite ? BrandColors.fabAccent : BrandColors.textPrimaryLight,
-              size: 20,
-            ),
-            onPressed: () {
-              setState(() => _isFavorite = !_isFavorite);
-            },
-          ),
-        ),
-        const SizedBox(width: 14),
-      ],
-      flexibleSpace: FlexibleSpaceBar(
-        background: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (bannerUrl.isNotEmpty)
-              Image.network(
-                bannerUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => _buildFallbackBanner(),
-              )
-            else
-              _buildFallbackBanner(),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withOpacity(0.55),
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.65),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // A. Full-width Banner Background with Gradient
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: bannerHeight,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (bannerUrl.isNotEmpty)
+                Image.network(
+                  bannerUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => _buildFallbackBanner(),
+                )
+              else
+                _buildFallbackBanner(),
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.black.withOpacity(0.55),
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.65),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
                 ),
               ),
+            ],
+          ),
+        ),
+
+        // B. Top Bar Action Controls (Back, Share, Favorite)
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.white,
+                    child: IconButton(
+                      icon: const Icon(Icons.arrow_back, color: BrandColors.textPrimaryLight, size: 20),
+                      onPressed: widget.onBack,
+                    ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircleAvatar(
+                        backgroundColor: Colors.white,
+                        child: IconButton(
+                          icon: const Icon(Icons.share_outlined, color: BrandColors.textPrimaryLight, size: 20),
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Compartir ${business?.name ?? "comercio"}')),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      CircleAvatar(
+                        backgroundColor: Colors.white,
+                        child: IconButton(
+                          icon: Icon(
+                            _isFavorite ? Icons.favorite : Icons.favorite_border,
+                            color: _isFavorite ? BrandColors.fabAccent : BrandColors.textPrimaryLight,
+                            size: 20,
+                          ),
+                          onPressed: () {
+                            setState(() => _isFavorite = !_isFavorite);
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // C. Floating Info Card (Painted ON TOP of banner, never clipped)
+        Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: bannerHeight - overlap),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: _buildBusinessInfoCard(business, branches),
             ),
           ],
         ),
-      ),
+      ],
     );
   }
 
@@ -315,7 +360,11 @@ class _MerchantDetailScreenState extends State<MerchantDetailScreen> {
     final ratingCount = business?.ratingCount ?? 18;
     final address = _selectedBranch?.address ?? business?.address ?? 'Managua, Nicaragua';
     final city = _selectedBranch?.name ?? business?.city ?? 'Managua';
-    final isOpen = business?.isOpen ?? true;
+    final opStatus = OperatingHoursResolver.resolveStatus(
+      schedule: business?.weeklySchedule,
+      manualOpen: business?.isOpen ?? true,
+    );
+    final isOpen = opStatus.isOpen;
     final deliveryFee = business?.deliveryFee ?? 45.0;
     final deliveryTime = business?.deliveryTime ?? '20-35 min';
     final description = business?.description ?? '';
@@ -332,21 +381,43 @@ class _MerchantDetailScreenState extends State<MerchantDetailScreen> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Square Logo
+                // Square Logo (Full containment, never cropped)
                 Container(
-                  width: 74,
-                  height: 74,
+                  width: 76,
+                  height: 76,
                   decoration: BoxDecoration(
-                    color: const Color(0xFFEFF6FF),
+                    color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: BrandColors.bluePrimary.withOpacity(0.3), width: 2),
-                    image: logoUrl.isNotEmpty
-                        ? DecorationImage(image: NetworkImage(logoUrl), fit: BoxFit.cover)
-                        : null,
+                    border: Border.all(color: BrandColors.bluePrimary.withOpacity(0.25), width: 2),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.06),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
                   ),
-                  child: logoUrl.isEmpty
-                      ? const Icon(Icons.storefront_rounded, color: BrandColors.bluePrimary, size: 36)
-                      : null,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(14),
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: logoUrl.isNotEmpty
+                          ? Image.network(
+                              logoUrl,
+                              fit: BoxFit.contain,
+                              errorBuilder: (_, __, ___) => const Icon(
+                                Icons.storefront_rounded,
+                                color: BrandColors.bluePrimary,
+                                size: 36,
+                              ),
+                            )
+                          : const Icon(
+                              Icons.storefront_rounded,
+                              color: BrandColors.bluePrimary,
+                              size: 36,
+                            ),
+                    ),
+                  ),
                 ),
                 const SizedBox(width: 14),
 
@@ -356,6 +427,7 @@ class _MerchantDetailScreenState extends State<MerchantDetailScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Expanded(
                             child: Text(
@@ -365,11 +437,12 @@ class _MerchantDetailScreenState extends State<MerchantDetailScreen> {
                                 fontSize: 18,
                                 color: BrandColors.textPrimaryLight,
                               ),
-                              maxLines: 1,
+                              maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                          if (business?.isVerified ?? true)
+                          if (business?.isVerified ?? true) ...[
+                            const SizedBox(width: 6),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                               decoration: BoxDecoration(
@@ -393,6 +466,7 @@ class _MerchantDetailScreenState extends State<MerchantDetailScreen> {
                                 ],
                               ),
                             ),
+                          ],
                         ],
                       ),
                       const SizedBox(height: 4),

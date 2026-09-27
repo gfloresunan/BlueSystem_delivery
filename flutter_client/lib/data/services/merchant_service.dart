@@ -400,6 +400,283 @@ class MerchantFirestoreService implements IMerchantService {
   }
 
   @override
+  Stream<List<BranchEntity>> watchAllBranches({required String tenantId}) {
+    AppLogger.info('MerchantFirestoreService', 'Watching all active branches');
+    return _firestore.collection('branches').snapshots().map((snap) {
+      final list = <BranchEntity>[];
+      for (final doc in snap.docs) {
+        final data = doc.data();
+        final isActive = data['active'] as bool? ?? data['isActive'] as bool? ?? true;
+        if (!isActive) continue;
+        list.add(BranchEntity.fromMap(data, doc.id));
+      }
+      return list;
+    });
+  }
+
+  @override
+  Stream<DashboardConfigEntity> watchDashboardConfig({String? tenantId}) {
+    final effectiveTenantId = tenantId?.trim().isNotEmpty == true && tenantId != 'GLOBAL'
+        ? tenantId!.trim()
+        : null;
+
+    if (effectiveTenantId != null) {
+      return _firestore
+          .collection('tenants')
+          .doc(effectiveTenantId)
+          .collection('dashboard')
+          .doc('configuration')
+          .snapshots()
+          .asyncExpand((tenantSnap) {
+        if (tenantSnap.exists && tenantSnap.data() != null) {
+          try {
+            return Stream.value(DashboardConfigEntity.fromMap(tenantSnap.data()!));
+          } catch (e) {
+            AppLogger.warn('MerchantFirestoreService', 'Error parsing tenant config, fallback to global: $e');
+          }
+        }
+        return _firestore
+            .collection('dashboard')
+            .doc('configuration')
+            .snapshots()
+            .map((globalSnap) {
+          if (globalSnap.exists && globalSnap.data() != null) {
+            return DashboardConfigEntity.fromMap(globalSnap.data()!);
+          }
+          return const DashboardConfigEntity();
+        });
+      });
+    }
+
+    return _firestore
+        .collection('dashboard')
+        .doc('configuration')
+        .snapshots()
+        .map((snap) {
+      if (snap.exists && snap.data() != null) {
+        return DashboardConfigEntity.fromMap(snap.data()!);
+      }
+      return const DashboardConfigEntity();
+    });
+  }
+
+  @override
+  Stream<List<FlashDealEntity>> watchFlashDeals({required String tenantId}) {
+    AppLogger.info('MerchantFirestoreService', 'Watching flash deals from /flashDeals');
+
+    // ignore: close_sinks
+    late StreamController<List<FlashDealEntity>> controller;
+    StreamSubscription? subDeals;
+    StreamSubscription? subProducts;
+    StreamSubscription? subBusinesses;
+
+    final configuredDeals = <String, Map<String, dynamic>>{};
+    final realProductsMap = <String, Map<String, dynamic>>{};
+    final businessNamesMap = <String, String>{};
+
+    void emitCombined() {
+      final resultList = <FlashDealEntity>[];
+
+      for (final entry in configuredDeals.entries) {
+        final docId = entry.key;
+        final dealData = entry.value;
+
+        final rawDeal = FlashDealEntity.fromMap(dealData, docId);
+        if (!rawDeal.isCurrentlyValid()) continue;
+
+        final pId = rawDeal.productId.isNotEmpty ? rawDeal.productId : docId;
+        final liveProdData = realProductsMap[pId];
+
+        if (liveProdData != null) {
+          final liveStatus = (liveProdData['status'] as String? ?? '').trim().toUpperCase();
+          final liveIsActive = liveProdData['active'] as bool? ?? liveProdData['isActive'] as bool? ?? true;
+          final liveIsAvail = liveProdData['isAvailable'] as bool? ?? liveProdData['available'] as bool? ?? true;
+          final isHidden = liveProdData['isHidden'] as bool? ?? false;
+
+          if (liveStatus == 'DELETED' || liveStatus == 'INACTIVE' || !liveIsActive || !liveIsAvail || isHidden) {
+            continue;
+          }
+
+          final bId = (liveProdData['businessId'] as String? ?? rawDeal.businessId).trim();
+          final bName = businessNamesMap[bId] ?? rawDeal.businessName;
+          final imgUrl = (liveProdData['imageUrl'] as String? ?? rawDeal.imageUrl).trim();
+          final livePrice = (liveProdData['price'] as num?)?.toDouble() ?? rawDeal.price;
+          final effectiveOrig = rawDeal.originalPrice > 0.0
+              ? rawDeal.originalPrice
+              : ((liveProdData['originalPrice'] as num?)?.toDouble() ?? livePrice);
+          final effectiveFlash = rawDeal.price > 0.0 ? rawDeal.price : livePrice;
+
+          String calcDiscountTag = rawDeal.discountTag;
+          if (effectiveOrig > effectiveFlash && effectiveOrig > 0.0) {
+            final pct = (((effectiveOrig - effectiveFlash) / effectiveOrig) * 100).toInt();
+            calcDiscountTag = '-$pct%';
+          }
+
+          resultList.add(
+            rawDeal.copyWith(
+              productId: pId,
+              title: rawDeal.title.isNotEmpty ? rawDeal.title : (liveProdData['name'] as String? ?? 'Oferta'),
+              productName: (liveProdData['name'] as String? ?? rawDeal.productName),
+              price: effectiveFlash,
+              originalPrice: effectiveOrig,
+              discountTag: calcDiscountTag,
+              businessId: bId,
+              businessName: bName,
+              imageUrl: imgUrl,
+            ),
+          );
+        } else if (rawDeal.title.isNotEmpty && rawDeal.price > 0) {
+          final bName = businessNamesMap[rawDeal.businessId] ?? rawDeal.businessName;
+          resultList.add(rawDeal.copyWith(businessName: bName));
+        }
+      }
+
+      if (!controller.isClosed) {
+        controller.add(resultList);
+      }
+    }
+
+    controller = StreamController<List<FlashDealEntity>>.broadcast(
+      onListen: () {
+        subBusinesses = _firestore.collection('businesses').snapshots().listen(
+          (snap) {
+            for (final doc in snap.docs) {
+              final data = doc.data();
+              final name = (data['name'] as String? ?? data['nombre'] as String? ?? '').trim();
+              if (name.isNotEmpty) businessNamesMap[doc.id] = name;
+            }
+            emitCombined();
+          },
+          onError: (e, st) => AppLogger.error('MerchantFirestoreService', 'Error in watchFlashDeals businesses', e, st),
+        );
+
+        subDeals = _firestore.collection('flashDeals').snapshots().listen(
+          (snap) {
+            configuredDeals.clear();
+            for (final doc in snap.docs) {
+              configuredDeals[doc.id] = doc.data();
+            }
+            emitCombined();
+          },
+          onError: (e, st) {
+            AppLogger.error('MerchantFirestoreService', 'Error in watchFlashDeals', e, st);
+            if (!controller.isClosed) controller.add([]);
+          },
+        );
+
+        subProducts = _firestore.collection('products').snapshots().listen(
+          (snap) {
+            realProductsMap.clear();
+            for (final doc in snap.docs) {
+              realProductsMap[doc.id] = doc.data();
+            }
+            emitCombined();
+          },
+          onError: (e, st) => AppLogger.error('MerchantFirestoreService', 'Error in watchFlashDeals products', e, st),
+        );
+      },
+      onCancel: () async {
+        await subDeals?.cancel();
+        await subProducts?.cancel();
+        await subBusinesses?.cancel();
+        await controller.close();
+      },
+    );
+
+    return controller.stream;
+  }
+
+  @override
+  Stream<List<ProductEntity>> watchDiscountedProducts({required String tenantId}) {
+    AppLogger.info('MerchantFirestoreService', 'Watching discounted products for tenant: $tenantId');
+
+    // ignore: close_sinks
+    late StreamController<List<ProductEntity>> controller;
+    StreamSubscription? subProducts;
+    StreamSubscription? subBusinesses;
+
+    final realProductsMap = <String, Map<String, dynamic>>{};
+    final businessNamesMap = <String, String>{};
+
+    void emitCombined() {
+      final list = <ProductEntity>[];
+
+      for (final entry in realProductsMap.entries) {
+        final prodData = entry.value;
+        final origPrice = (prodData['originalPrice'] as num?)?.toDouble() ??
+            (prodData['precioOriginal'] as num?)?.toDouble();
+        final price = (prodData['price'] as num?)?.toDouble() ??
+            (prodData['precio'] as num?)?.toDouble() ??
+            0.0;
+
+        if (origPrice == null || origPrice <= price || price <= 0.0) continue;
+
+        final status = (prodData['status'] as String? ?? '').trim().toUpperCase();
+        final isHidden = prodData['isHidden'] as bool? ?? false;
+        final isActive = prodData['active'] as bool? ?? prodData['isActive'] as bool? ?? true;
+        if (status == 'INACTIVE' || status == 'DELETED' || isHidden || !isActive) continue;
+
+        final bId = (prodData['businessId'] as String? ?? prodData['restaurantId'] as String? ?? '').trim();
+        final bName = businessNamesMap[bId] ?? (prodData['businessName'] as String? ?? 'Comercio');
+
+        final product = ProductEntity.fromMap({
+          ...prodData,
+          'productId': entry.key,
+          'businessId': bId,
+          'businessName': bName,
+          'originalPrice': origPrice,
+          'price': price,
+          'hasDiscount': true,
+        }, entry.key);
+
+        if (!product.isValidPublicProduct()) continue;
+        list.add(product);
+      }
+
+      if (!controller.isClosed) {
+        controller.add(list);
+      }
+    }
+
+    controller = StreamController<List<ProductEntity>>.broadcast(
+      onListen: () {
+        subBusinesses = _firestore.collection('businesses').snapshots().listen(
+          (snap) {
+            for (final doc in snap.docs) {
+              final data = doc.data();
+              final name = (data['name'] as String? ?? data['nombre'] as String? ?? '').trim();
+              if (name.isNotEmpty) businessNamesMap[doc.id] = name;
+            }
+            emitCombined();
+          },
+          onError: (e, st) => AppLogger.error('MerchantFirestoreService', 'Error in watchDiscountedProducts businesses', e, st),
+        );
+
+        subProducts = _firestore.collection('products').snapshots().listen(
+          (snap) {
+            realProductsMap.clear();
+            for (final doc in snap.docs) {
+              realProductsMap[doc.id] = doc.data();
+            }
+            emitCombined();
+          },
+          onError: (e, st) {
+            AppLogger.error('MerchantFirestoreService', 'Error in watchDiscountedProducts', e, st);
+            if (!controller.isClosed) controller.addError(e, st);
+          },
+        );
+      },
+      onCancel: () async {
+        await subProducts?.cancel();
+        await subBusinesses?.cancel();
+        await controller.close();
+      },
+    );
+
+    return controller.stream;
+  }
+
+  @override
   Stream<List<CategoryEntity>> watchCategories({required String tenantId}) {
     AppLogger.info('MerchantFirestoreService', 'Watching categories from /categories');
     return _firestore.collection('categories').snapshots().map((snap) {
@@ -455,3 +732,4 @@ class MerchantFirestoreService implements IMerchantService {
     });
   }
 }
+

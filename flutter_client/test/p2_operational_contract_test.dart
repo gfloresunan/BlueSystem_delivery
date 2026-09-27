@@ -166,6 +166,18 @@ class DummyMerchantService implements IMerchantService {
   @override
   Stream<List<BranchEntity>> watchBranches(String businessId, {required String tenantId}) => Stream.value([]);
   @override
+  Stream<List<BranchEntity>> watchAllBranches({required String tenantId}) => Stream.value([]);
+  @override
+  Stream<DashboardConfigEntity> watchDashboardConfig({String? tenantId}) =>
+      Stream.value(const DashboardConfigEntity(
+        showExpressDeliveryBanner: true,
+        xToYServiceEnabled: true,
+      ));
+  @override
+  Stream<List<FlashDealEntity>> watchFlashDeals({required String tenantId}) => Stream.value([]);
+  @override
+  Stream<List<ProductEntity>> watchDiscountedProducts({required String tenantId}) => Stream.value([]);
+  @override
   Stream<List<CategoryEntity>> watchCategories({required String tenantId}) => Stream.value([]);
   @override
   Stream<List<PromotionEntity>> watchPromotions({required String tenantId}) => Stream.value([]);
