@@ -182,17 +182,19 @@ jobs:
           echo "=== Frameworks finales en Runner.app ==="
           ls -la build/ios/iphoneos/Runner.app/Frameworks/
 
-          # Crear estructura IPA
+          # Crear estructura IPA y empaquetar directamente en build/ios/
           mkdir -p build/ios/ipa/Payload
-          cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
+          cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/Runner.app
 
-          IPA_NAME="BlueSystem_Delivery_iOS_${{ github.event.inputs.build_type || 'release' }}_$(date +%Y%m%d_%H%M%S).ipa"
+          IPA_NAME="BlueSystem_Delivery_iOS_${{ github.run_number }}.ipa"
+          # Crear el .ipa directamente en build/ios/ (ruta que espera el upload)
           cd build/ios/ipa
-          zip -r -q "../../$IPA_NAME" Payload
-          cd ../..
-          ls -lh "$IPA_NAME"
-          echo "IPA_PATH=flutter_client/build/ios/$IPA_NAME" >> $GITHUB_ENV
-          echo "IPA_NAME=$IPA_NAME" >> $GITHUB_ENV
+          zip -r -q "../BlueSystem_Delivery_iOS_${{ github.run_number }}.ipa" Payload
+          cd ../../..
+
+          echo "=== IPA generado ==="
+          ls -lh "build/ios/$IPA_NAME"
+          echo "IPA generado: build/ios/$IPA_NAME"
 
       - name: "🚀 Upload .IPA as GitHub Artifact"
         uses: actions/upload-artifact@v4
