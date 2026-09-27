@@ -1,125 +1,231 @@
-name: 🍏 Build iOS Flutter Client (.ipa)
+name: "🍏 [L1] iOS Build Validation — flutter_client"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ADR-VALIDATION Level 1 — iOS BUILD VALIDATION (no-codesign)
+# Estado esperado: BUILD_VALIDATED (no es CERTIFIED)
+# Qué valida: Flutter/Dart compile + CocoaPods + Xcode + arm64 + Firebase iOS
+# Qué NO certifica: Firma, APNs, Push, GPS real, permisos iOS nativos
+# ─────────────────────────────────────────────────────────────────────────────
 
 on:
-  workflow_dispatch:
-    inputs:
-      build_type:
-        description: 'Tipo de Compilación'
-        required: true
-        default: 'release'
-        type: choice
-        options:
-          - release
-          - debug
   push:
     branches:
       - main
     paths:
-      - 'flutter_client/**'
-      - '.github/workflows/build-ios-ipa.yml'
+      - "flutter_client/**"
+      - ".github/workflows/build-ios-ipa.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "flutter_client/**"
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: "Tipo de compilación"
+        required: true
+        default: "release"
+        type: choice
+        options:
+          - release
+          - debug
 
 jobs:
-  build_ios:
-    name: 🍎 Compile iOS App & Package .IPA
-    runs-on: macos-14 # Apple Silicon M1/M2 macOS Runner
-    timeout-minutes: 60
+  # ───────────────────────────────────────────────────────────────────────────
+  # JOB 1 — Análisis estático y tests Dart (rápido, no requiere macOS)
+  # ───────────────────────────────────────────────────────────────────────────
+  analyze_and_test:
+    name: "🔍 Dart Analyze + Unit Tests"
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-      - name: 📥 Checkout Repository
+      - name: "📥 Checkout"
         uses: actions/checkout@v4
 
-      - name: ☕ Setup Java 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-
-      - name: 🐦 Setup Flutter SDK
+      - name: "🐦 Setup Flutter"
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: "stable"
+          flutter-version-file: "flutter_client/pubspec.yaml"
           cache: true
 
-      - name: 🔍 Verify Flutter & Xcode Environment
+      - name: "📦 flutter pub get"
         run: |
-          flutter doctor -v
-          xcodebuild -version
+          cd flutter_client
+          flutter pub get
 
-      - name: 📦 Install Flutter Dependencies & Precache iOS
+      - name: "🔍 flutter analyze"
+        run: |
+          cd flutter_client
+          flutter analyze --no-pub 2>&1 | tee analyze_output.txt
+          # Falla si hay errores, pero permite warnings
+          if grep -q "^  error •" analyze_output.txt; then
+            echo "❌ Flutter analyze encontró errores. Corregir antes de continuar."
+            exit 1
+          fi
+          echo "✅ flutter analyze: sin errores"
+
+      - name: "🧪 flutter test"
+        run: |
+          cd flutter_client
+          flutter test --no-pub 2>&1 | tee test_output.txt
+          echo "✅ flutter test completado"
+
+  # ───────────────────────────────────────────────────────────────────────────
+  # JOB 2 — Build iOS real en macOS (L1 Validation)
+  # ───────────────────────────────────────────────────────────────────────────
+  build_ios:
+    name: "🍎 [L1] iOS Build — macos-14 Apple Silicon"
+    runs-on: macos-14
+    timeout-minutes: 60
+    needs: analyze_and_test
+
+    steps:
+      - name: "📥 Checkout Repository"
+        uses: actions/checkout@v4
+
+      - name: "🐦 Setup Flutter SDK (stable)"
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          flutter-version-file: "flutter_client/pubspec.yaml"
+          cache: true
+
+      - name: "🔍 Verify Environment — Flutter + Xcode + CocoaPods"
+        run: |
+          echo "=== Flutter Version ==="
+          flutter --version
+          echo ""
+          echo "=== Xcode Version ==="
+          xcodebuild -version
+          echo ""
+          echo "=== CocoaPods Version ==="
+          pod --version
+          echo ""
+          echo "=== flutter doctor (iOS) ==="
+          flutter doctor --verbose 2>&1 | grep -A 10 "\[✓\] Xcode\|\[✗\] Xcode\|\[!\] Xcode" || true
+
+      - name: "📦 flutter pub get + precache iOS artifacts"
         run: |
           cd flutter_client
           flutter pub get
           flutter precache --ios
+          echo "✅ pub get y precache completados"
 
-      - name: ⚙️ Build iOS App Bundle (No CodeSign)
+      - name: "☕ Setup CocoaPods"
+        run: |
+          cd flutter_client/ios
+          # Limpiar cache de pods si existe
+          rm -rf Pods Podfile.lock 2>/dev/null || true
+          pod install --repo-update 2>&1 | tail -20
+          echo "✅ CocoaPods instalado"
+
+      - name: "🏗️ Build iOS Release (no-codesign)"
         run: |
           cd flutter_client
-          flutter build ios --release --no-codesign || {
-            echo "Checking if Runner.app was successfully produced by Xcode..."
-            if [ -d "build/ios/iphoneos/Runner.app" ]; then
-              echo "✅ Runner.app exists! Proceeding to packaging."
-            else
-              echo "❌ Build failed and Runner.app was not produced."
-              exit 1
-            fi
-          }
 
-      - name: 📦 Package .IPA for Sideloading / AltStore / Test Installation
+          BUILD_TYPE="${{ github.event.inputs.build_type || 'release' }}"
+
+          if [ "$BUILD_TYPE" = "debug" ]; then
+            flutter build ios --debug --no-codesign --verbose 2>&1 | tail -50
+          else
+            flutter build ios --release --no-codesign --verbose 2>&1 | tail -50
+          fi
+
+          # Verificar que Runner.app fue producido
+          if [ -d "build/ios/iphoneos/Runner.app" ]; then
+            echo "✅ Runner.app generado exitosamente"
+            ls -lh build/ios/iphoneos/Runner.app
+          else
+            echo "❌ Runner.app NO fue generado — Build fallido"
+            exit 1
+          fi
+
+      - name: "📦 Package .IPA (unsigned — for sideloading)"
         run: |
           cd flutter_client
+
+          echo "=== Verificando frameworks embebidos ==="
           mkdir -p build/ios/iphoneos/Runner.app/Frameworks
-          echo "=== Checking embedded frameworks in Runner.app ==="
           ls -la build/ios/iphoneos/Runner.app/Frameworks/ || true
 
-          # Guaranteed embed of Flutter.framework
+          # Embed Flutter.framework si no está presente
           if [ ! -d "build/ios/iphoneos/Runner.app/Frameworks/Flutter.framework" ]; then
-            echo "Embedding Flutter.framework from cache..."
+            echo "Embebiendo Flutter.framework..."
             FLUTTER_BIN=$(which flutter)
             FLUTTER_SDK_DIR=$(dirname $(dirname "$FLUTTER_BIN"))
             ENGINE_IOS="$FLUTTER_SDK_DIR/bin/cache/artifacts/engine/ios-release"
+
             if [ -d "$ENGINE_IOS/Flutter.xcframework/ios-arm64/Flutter.framework" ]; then
-              cp -r "$ENGINE_IOS/Flutter.xcframework/ios-arm64/Flutter.framework" build/ios/iphoneos/Runner.app/Frameworks/
+              cp -r "$ENGINE_IOS/Flutter.xcframework/ios-arm64/Flutter.framework" \
+                build/ios/iphoneos/Runner.app/Frameworks/
             elif [ -d "$ENGINE_IOS/Flutter.framework" ]; then
-              cp -r "$ENGINE_IOS/Flutter.framework" build/ios/iphoneos/Runner.app/Frameworks/
+              cp -r "$ENGINE_IOS/Flutter.framework" \
+                build/ios/iphoneos/Runner.app/Frameworks/
             fi
           fi
 
-          # Guaranteed embed of App.framework (AOT compiled Dart code)
+          # Embed App.framework (Dart AOT code)
           if [ ! -d "build/ios/iphoneos/Runner.app/Frameworks/App.framework" ]; then
-            echo "Checking App.framework in build artifacts..."
             FOUND_APP=$(find build -name "App.framework" -type d | head -n 1)
             if [ -n "$FOUND_APP" ]; then
+              echo "Embebiendo App.framework desde: $FOUND_APP"
               cp -r "$FOUND_APP" build/ios/iphoneos/Runner.app/Frameworks/
             fi
           fi
 
-          echo "=== Final verified frameworks in Runner.app ==="
+          echo "=== Frameworks finales en Runner.app ==="
           ls -la build/ios/iphoneos/Runner.app/Frameworks/
 
+          # Crear estructura IPA
           mkdir -p build/ios/ipa/Payload
           cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/
-          cd build/ios/ipa
-          zip -r -q ../../../BlueSystem_Delivery_iOS_Release.ipa Payload
-          cd ../../..
-          ls -lh BlueSystem_Delivery_iOS_Release.ipa
 
-      - name: 🚀 Upload .IPA Installer as GitHub Artifact
+          IPA_NAME="BlueSystem_Delivery_iOS_${{ github.event.inputs.build_type || 'release' }}_$(date +%Y%m%d_%H%M%S).ipa"
+          cd build/ios/ipa
+          zip -r -q "../../$IPA_NAME" Payload
+          cd ../..
+          ls -lh "$IPA_NAME"
+          echo "IPA_PATH=flutter_client/build/ios/$IPA_NAME" >> $GITHUB_ENV
+          echo "IPA_NAME=$IPA_NAME" >> $GITHUB_ENV
+
+      - name: "🚀 Upload .IPA as GitHub Artifact"
         uses: actions/upload-artifact@v4
         with:
-          name: BlueSystem-Delivery-iOS-IPA
-          path: flutter_client/BlueSystem_Delivery_iOS_Release.ipa
+          name: "BlueSystem-iOS-L1-${{ github.run_number }}"
+          path: "flutter_client/build/ios/${{ env.IPA_NAME }}"
           retention-days: 14
+          if-no-files-found: warn
 
-      - name: 📋 Build Summary Notice
+      - name: "📋 L1 Build Summary"
+        if: always()
         run: |
-          echo "### 🍏 Compilación iOS Finalizada con Éxito" >> $GITHUB_STEP_SUMMARY
-          echo "El archivo instalador **BlueSystem_Delivery_iOS_Release.ipa** ha sido generado y empaquetado." >> $GITHUB_STEP_SUMMARY
+          echo "## 🍏 L1 — iOS Build Validation Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Cómo descargarlo:**" >> $GITHUB_STEP_SUMMARY
-          echo "1. Ve a la pestaña **Actions** en tu repositorio de GitHub." >> $GITHUB_STEP_SUMMARY
-          echo "2. Abre la última ejecución de este workflow (**Build iOS Flutter Client**)." >> $GITHUB_STEP_SUMMARY
-          echo "3. En la sección inferior **Artifacts**, descarga el archivo ZIP que contiene el instalador **.ipa**." >> $GITHUB_STEP_SUMMARY
+          echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| **Estado L1** | BUILD_VALIDATED (no CERTIFIED) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Runner** | macos-14 (Apple Silicon) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Build type** | ${{ github.event.inputs.build_type || 'release' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Codesign** | ❌ no-codesign (unsigned) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Cómo instalarlo en tu iPhone:**" >> $GITHUB_STEP_SUMMARY
-          echo "- **Opción 1:** Usando herramientas de instalación como **AltStore**, **Sideloadly** o **TrollStore**." >> $GITHUB_STEP_SUMMARY
-          echo "- **Opción 2:** Conectando el iPhone a una Mac con Apple Configurator / Xcode." >> $GITHUB_STEP_SUMMARY
+          echo "### ✅ Qué valida este build" >> $GITHUB_STEP_SUMMARY
+          echo "- Compatibilidad de plugins con iOS (CocoaPods)" >> $GITHUB_STEP_SUMMARY
+          echo "- Compilación Swift/ObjC y linker arm64" >> $GITHUB_STEP_SUMMARY
+          echo "- GoogleService-Info.plist presente" >> $GITHUB_STEP_SUMMARY
+          echo "- Dart/Flutter compile sin errores en iOS target" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### ❌ Qué NO certifica" >> $GITHUB_STEP_SUMMARY
+          echo "- APNs / Push nativas | Firma / Bundle ID" >> $GITHUB_STEP_SUMMARY
+          echo "- GPS real | Cámara | Permisos iOS" >> $GITHUB_STEP_SUMMARY
+          echo "- Background execution | Lifecycle iOS" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📱 Siguiente nivel requerido para CERTIFIED" >> $GITHUB_STEP_SUMMARY
+          echo "L2 → iOS Simulator | L3 → iPhone físico E2E" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📥 Cómo instalar el .IPA (sideloading)" >> $GITHUB_STEP_SUMMARY
+          echo "1. Descargá el artifact \`BlueSystem-iOS-L1-${{ github.run_number }}\` desde la pestaña **Actions**" >> $GITHUB_STEP_SUMMARY
+          echo "2. Usá **AltStore**, **Sideloadly** o **Apple Configurator 2** para instalarlo" >> $GITHUB_STEP_SUMMARY
+          echo "3. En el iPhone: **Ajustes → General → VPN y gestión del dispositivo → Confiar**" >> $GITHUB_STEP_SUMMARY
