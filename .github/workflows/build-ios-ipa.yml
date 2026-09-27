@@ -80,8 +80,8 @@ jobs:
   # JOB 2 — Build iOS real en macOS (L1 Validation)
   # ───────────────────────────────────────────────────────────────────────────
   build_ios:
-    name: "🍎 [L1] iOS Build — macos-15 Xcode 16 Swift 6"
-    runs-on: macos-15  # Xcode 16 + Swift 6 — requerido por Firebase iOS SDK v11+
+    name: "🍎 [L1] iOS Build — macos-14 Apple Silicon"
+    runs-on: macos-14  # mismo entorno que runs #22 y #23 que funcionaron
     timeout-minutes: 60
     needs: analyze_and_test
 
@@ -119,10 +119,11 @@ jobs:
       - name: "☕ Setup CocoaPods"
         run: |
           cd flutter_client/ios
-          # Limpiar cache de pods si existe
-          rm -rf Pods Podfile.lock 2>/dev/null || true
-          pod install --repo-update 2>&1 | tail -20
-          echo "✅ CocoaPods instalado"
+          # NO borrar Podfile.lock — contiene las versiones exactas que compilan correctamente
+          # Solo limpiar la carpeta Pods (binarios descargados, no la definición de versiones)
+          rm -rf Pods 2>/dev/null || true
+          pod install 2>&1 | tail -20
+          echo "✅ CocoaPods instalado con versiones del Podfile.lock"
 
       - name: "🏗️ Build iOS Release (no-codesign)"
         run: |
