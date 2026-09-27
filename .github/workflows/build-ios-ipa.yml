@@ -7,6 +7,11 @@ name: "🍏 [L1] iOS Build Validation — flutter_client"
 # Qué NO certifica: Firma, APNs, Push, GPS real, permisos iOS nativos
 # ─────────────────────────────────────────────────────────────────────────────
 
+# Cancela automáticamente runs anteriores del mismo branch al hacer push
+concurrency:
+  group: "ios-build-${{ github.ref }}"
+  cancel-in-progress: true
+
 on:
   push:
     branches:
