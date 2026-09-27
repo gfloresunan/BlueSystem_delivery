@@ -112,21 +112,39 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Conectando con $provider...'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-      // Simula el flujo del intent nativo o continúa con cuenta cliente
-      await Future.delayed(const Duration(seconds: 1));
-      widget.sessionState.continueAsGuest();
+      if (provider.toLowerCase().contains('google')) {
+        AppLogger.info('LoginScreen', 'Iniciando autenticación OAuth federada con Google');
+        await widget.sessionState.signInWithGoogleFederated();
+      } else if (provider.toLowerCase().contains('facebook')) {
+        AppLogger.info('LoginScreen', 'Iniciando autenticación OAuth federada con Facebook');
+        await widget.sessionState.signInWithFacebookFederated();
+      } else {
+        throw Exception('Proveedor de autenticación no soportado: $provider');
+      }
+
       if (mounted) {
         widget.onLoginSuccess();
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _errorMessage = _formatAuthError(e.toString()));
+        final errorStr = e.toString().toLowerCase();
+        // Manejo explícito de cancelación del usuario o cierre de ventana
+        if (errorStr.contains('cancelled') ||
+            errorStr.contains('popup_closed') ||
+            errorStr.contains('user-cancelled') ||
+            errorStr.contains('canceled') ||
+            errorStr.contains('cancel')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Autenticación cancelada por el usuario.'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        } else {
+          setState(() {
+            _errorMessage = _formatAuthError(e.toString());
+          });
+        }
       }
     } finally {
       if (mounted) {

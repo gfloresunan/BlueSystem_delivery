@@ -9,14 +9,18 @@ import '../../../domain/services/core_service_interfaces.dart';
 import '../../providers/session_state.dart';
 import '../../widgets/state_views.dart';
 
+import 'order_live_tracking_screen.dart';
+
 class OrdersScreen extends StatefulWidget {
   final SessionState sessionState;
   final IOrderService orderService;
+  final IFleetService? fleetService;
 
   const OrdersScreen({
     super.key,
     required this.sessionState,
     required this.orderService,
+    this.fleetService,
   });
 
   @override
@@ -150,6 +154,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         side: BorderSide(color: theme.colorScheme.outlineVariant.withOpacity(0.4)),
       ),
       child: InkWell(
+        key: Key('order_card_${order.orderId}'),
         borderRadius: BorderRadius.circular(12),
         onTap: () => _showOrderDetail(context, order),
         child: Padding(
@@ -161,7 +166,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Pedido #${order.orderId.length > 8 ? order.orderId.substring(0, 8) : order.orderId}',
+                    'Pedido #${(order.orderId.length > 8 ? order.orderId.substring(0, 8) : order.orderId).toUpperCase()}',
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                   ),
                   Container(
@@ -333,9 +338,43 @@ class _OrdersScreenState extends State<OrdersScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text('Total:', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                Text('\$${order.total.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.green)),
+                Text('C\$ ${order.total.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.green)),
               ],
             ),
+            if (widget.fleetService != null) ...[
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  key: Key('open_live_tracking_${order.orderId}'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF2563EB),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  icon: const Icon(Icons.map_rounded, size: 20),
+                  label: const Text(
+                    'Ver Seguimiento en Vivo 🛵',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => OrderLiveTrackingScreen(
+                          initialOrder: order,
+                          orderService: widget.orderService,
+                          fleetService: widget.fleetService!,
+                          onBack: () => Navigator.pop(context),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
           ],
         ),
       ),

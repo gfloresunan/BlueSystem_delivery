@@ -84,6 +84,11 @@ class SessionState extends ChangeNotifier {
     }
   }
 
+  void updateCurrentUser(UserProfileEntity user) {
+    _currentUser = user;
+    notifyListeners();
+  }
+
   Future<void> initializeSession() async {
     try {
       _status = AuthStatus.authenticating;
@@ -164,6 +169,23 @@ class SessionState extends ChangeNotifier {
     }
   }
 
+  Future<void> signInWithGoogleFederated() async {
+    try {
+      _status = AuthStatus.authenticating;
+      _errorMessage = null;
+      notifyListeners();
+
+      final user = await _authService.signInWithGoogle();
+      await _hydrateSession(user);
+    } catch (e, st) {
+      AppLogger.error('SessionState', 'Google federated sign in failed', e, st);
+      _status = AuthStatus.unauthenticated;
+      _errorMessage = e.toString();
+      notifyListeners();
+      rethrow;
+    }
+  }
+
   Future<void> signInWithFacebook(String accessToken) async {
     try {
       _status = AuthStatus.authenticating;
@@ -174,6 +196,23 @@ class SessionState extends ChangeNotifier {
       await _hydrateSession(user);
     } catch (e, st) {
       AppLogger.error('SessionState', 'Facebook sign in failed', e, st);
+      _status = AuthStatus.unauthenticated;
+      _errorMessage = e.toString();
+      notifyListeners();
+      rethrow;
+    }
+  }
+
+  Future<void> signInWithFacebookFederated() async {
+    try {
+      _status = AuthStatus.authenticating;
+      _errorMessage = null;
+      notifyListeners();
+
+      final user = await _authService.signInWithFacebook();
+      await _hydrateSession(user);
+    } catch (e, st) {
+      AppLogger.error('SessionState', 'Facebook federated sign in failed', e, st);
       _status = AuthStatus.unauthenticated;
       _errorMessage = e.toString();
       notifyListeners();

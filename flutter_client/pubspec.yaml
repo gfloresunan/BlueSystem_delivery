@@ -12,17 +12,17 @@ dependencies:
     sdk: flutter
 
   # Firebase Core & Backend Services
-  firebase_core: ^2.24.2
-  firebase_auth: ^4.16.0
-  cloud_firestore: ^4.14.0
-  cloud_functions: ^4.6.0
-  firebase_storage: ^11.6.0
-  firebase_messaging: ^14.7.10
+  firebase_core: ^3.10.0
+  firebase_auth: ^5.4.0
+  cloud_firestore: ^5.6.0
+  cloud_functions: ^5.2.0
+  firebase_storage: ^12.4.0
+  firebase_messaging: ^15.2.0
 
   # Platform Capabilities & Adapters
   geolocator: ^10.1.0
   google_maps_flutter: ^2.5.3
-  flutter_local_notifications: ^16.3.2
+  flutter_local_notifications: 17.2.4
   flutter_secure_storage: ^9.0.0
   permission_handler: ^11.1.0
 

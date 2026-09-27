@@ -89,4 +89,34 @@ class UserProfileEntity {
         'createdAt': createdAt,
         'updatedAt': updatedAt,
       };
+
+  UserProfileEntity copyWith({
+    String? uid,
+    String? email,
+    String? displayName,
+    String? phoneNumber,
+    String? photoUrl,
+    EiamRole? role,
+    String? activeTenantId,
+    String? activeBrandId,
+    String? activeMembershipId,
+    bool? isVerified,
+    int? createdAt,
+    int? updatedAt,
+  }) {
+    return UserProfileEntity(
+      uid: uid ?? this.uid,
+      email: email ?? this.email,
+      displayName: displayName ?? this.displayName,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      photoUrl: photoUrl ?? this.photoUrl,
+      role: role ?? this.role,
+      activeTenantId: activeTenantId ?? this.activeTenantId,
+      activeBrandId: activeBrandId ?? this.activeBrandId,
+      activeMembershipId: activeMembershipId ?? this.activeMembershipId,
+      isVerified: isVerified ?? this.isVerified,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
 }

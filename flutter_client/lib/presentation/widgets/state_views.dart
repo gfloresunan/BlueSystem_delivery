@@ -145,11 +145,14 @@ class OfflineBanner extends StatelessWidget {
       child: const Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.wifi_off, size: 16, color: Colors.white),
+          Icon(Icons.wifi_off_rounded, size: 16, color: Colors.white),
           SizedBox(width: 8),
-          Text(
-            'Modo Offline Activo — Algunas funciones en tiempo real están pausadas',
-            style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+          Flexible(
+            child: Text(
+              'Modo sin conexión — Operando con caché local',
+              style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ],
       ),

@@ -265,6 +265,86 @@ class FirebaseAuthService implements IAuthService {
   }
 
   @override
+  Future<UserProfileEntity> signInWithGoogle() async {
+    try {
+      final googleProvider = fb_auth.GoogleAuthProvider();
+      googleProvider.addScope('email');
+      googleProvider.addScope('profile');
+      final cred = await _firebaseAuth.signInWithProvider(googleProvider);
+      final fbUser = cred.user!;
+
+      final userDoc = await _firestore.collection('users').doc(fbUser.uid).get();
+      if (!userDoc.exists) {
+        await _firestore.collection('users').doc(fbUser.uid).set({
+          'uid': fbUser.uid,
+          'email': fbUser.email ?? '',
+          'name': fbUser.displayName ?? 'Cliente Google',
+          'nombre': fbUser.displayName ?? 'Cliente Google',
+          'displayName': fbUser.displayName ?? 'Cliente Google',
+          'photoUrl': fbUser.photoURL,
+          'role': 'customer',
+          'rol': 'customer',
+          'userType': 'customer',
+          'activeTenantId': 'ten_bluesystem_core',
+          'isVerified': true,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      final user = await getCurrentUser();
+      return user!;
+    } on fb_auth.FirebaseAuthException catch (e) {
+      AppLogger.warn('FirebaseAuthService', 'Google federated sign-in failed: ${e.code}');
+      throw BlueSystemException(
+        code: ErrorCode.unauthenticated,
+        message: e.message ?? 'Error al iniciar sesión con Google.',
+        technicalDetails: e.code,
+      );
+    }
+  }
+
+  @override
+  Future<UserProfileEntity> signInWithFacebook() async {
+    try {
+      final facebookProvider = fb_auth.FacebookAuthProvider();
+      facebookProvider.addScope('email');
+      facebookProvider.addScope('public_profile');
+      final cred = await _firebaseAuth.signInWithProvider(facebookProvider);
+      final fbUser = cred.user!;
+
+      final userDoc = await _firestore.collection('users').doc(fbUser.uid).get();
+      if (!userDoc.exists) {
+        await _firestore.collection('users').doc(fbUser.uid).set({
+          'uid': fbUser.uid,
+          'email': fbUser.email ?? '',
+          'name': fbUser.displayName ?? 'Cliente Facebook',
+          'nombre': fbUser.displayName ?? 'Cliente Facebook',
+          'displayName': fbUser.displayName ?? 'Cliente Facebook',
+          'photoUrl': fbUser.photoURL,
+          'role': 'customer',
+          'rol': 'customer',
+          'userType': 'customer',
+          'activeTenantId': 'ten_bluesystem_core',
+          'isVerified': true,
+          'createdAt': FieldValue.serverTimestamp(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+
+      final user = await getCurrentUser();
+      return user!;
+    } on fb_auth.FirebaseAuthException catch (e) {
+      AppLogger.warn('FirebaseAuthService', 'Facebook federated sign-in failed: ${e.code}');
+      throw BlueSystemException(
+        code: ErrorCode.unauthenticated,
+        message: e.message ?? 'Error al iniciar sesión con Facebook.',
+        technicalDetails: e.code,
+      );
+    }
+  }
+
+  @override
   Future<void> sendPasswordReset(String email) async {
     try {
       await _firebaseAuth.sendPasswordResetEmail(email: email.trim());

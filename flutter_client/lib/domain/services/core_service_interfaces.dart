@@ -11,12 +11,13 @@ import '../entities/banner_entity.dart';
 import '../entities/catalog_entity.dart';
 import '../entities/courier_location_entity.dart';
 import '../entities/order_entity.dart';
+import '../entities/saved_address_entity.dart';
 import '../entities/trip_entity.dart';
 import '../entities/user_profile_entity.dart';
 
 abstract class IBannerService {
-  Stream<List<BannerEntity>> watchActiveBanners();
-  Future<List<BannerEntity>> getActiveBanners();
+  Stream<List<BannerEntity>> watchActiveBanners({String? tenantId});
+  Future<List<BannerEntity>> getActiveBanners({String? tenantId});
 }
 
 abstract class IAuthService {
@@ -32,6 +33,8 @@ abstract class IAuthService {
   });
   Future<UserProfileEntity> signInWithGoogleToken(String idToken, {String? accessToken});
   Future<UserProfileEntity> signInWithFacebookToken(String accessToken);
+  Future<UserProfileEntity> signInWithGoogle();
+  Future<UserProfileEntity> signInWithFacebook();
   Future<void> sendPasswordReset(String email);
   Future<void> signOut();
   Future<void> refreshIdToken();
@@ -95,6 +98,7 @@ abstract class ITripService {
 
 abstract class IFleetService {
   Stream<List<CourierLocationEntity>> watchActiveCouriers({required String tenantId});
+  Stream<CourierLocationEntity?> watchCourierLocation(String courierId);
   Future<void> publishCourierTelemetry(CourierLocationEntity telemetry);
 }
 
@@ -103,10 +107,16 @@ abstract class IMerchantService {
   Stream<BusinessEntity?> watchBusiness(String businessId);
   Stream<List<ProductEntity>> watchProducts(String businessId, {required String tenantId});
   Stream<List<ProductEntity>> watchAllActiveProducts({required String tenantId});
+  Stream<List<ProductEntity>> watchFeaturedProducts({required String tenantId});
   Future<List<ProductEntity>> getProductsForBusiness(String businessId, {required String tenantId});
   Stream<List<BranchEntity>> watchBranches(String businessId, {required String tenantId});
   Stream<List<CategoryEntity>> watchCategories({required String tenantId});
   Stream<List<PromotionEntity>> watchPromotions({required String tenantId});
+  Future<void> updateProductQuick(
+    String productId, {
+    required String name,
+    required double price,
+  });
 }
 
 abstract class ILocationService {
@@ -140,3 +150,13 @@ abstract class IMapsService {
   Future<double> calculateRouteDistance(LocationPoint origin, LocationPoint destination);
   Future<List<LocationPoint>> getRoutePolyline(LocationPoint origin, LocationPoint destination);
 }
+
+abstract class IUserService {
+  Stream<UserProfileEntity?> watchProfile(String uid);
+  Future<void> updateProfile(String uid, {required String displayName, String? phoneNumber});
+  Stream<List<SavedAddressEntity>> watchAddresses(String uid);
+  Future<void> saveAddress(String uid, SavedAddressEntity address);
+  Future<void> deleteAddress(String uid, String addressId);
+  Future<void> setDefaultAddress(String uid, String addressId);
+}
+

@@ -837,6 +837,7 @@ class _MerchantDetailScreenState extends State<MerchantDetailScreen> {
                         ],
                       ),
                       IconButton.filled(
+                        key: Key('product_add_${product.productId}'),
                         style: IconButton.styleFrom(
                           backgroundColor: BrandColors.bluePrimary,
                           padding: const EdgeInsets.all(6),
@@ -844,14 +845,18 @@ class _MerchantDetailScreenState extends State<MerchantDetailScreen> {
                         ),
                         icon: const Icon(Icons.add, size: 18, color: Colors.white),
                         onPressed: () {
-                          widget.onAddToCart(product, businessName);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('¡${product.name} agregado al carrito! 🛒'),
-                              duration: const Duration(seconds: 2),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
+                          if (product.parsedOptionGroups.isNotEmpty) {
+                            _showProductOptionsModal(context, product, businessName);
+                          } else {
+                            widget.onAddToCart(product, businessName);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('¡${product.name} agregado al carrito! 🛒'),
+                                duration: const Duration(seconds: 2),
+                                behavior: SnackBarBehavior.floating,
+                              ),
+                            );
+                          }
                         },
                       ),
                     ],
@@ -862,6 +867,322 @@ class _MerchantDetailScreenState extends State<MerchantDetailScreen> {
           ],
         ),
       ),
+    );
+  }
+
+  // ─── 7. PRODUCT OPTIONS / VARIANTS MODAL (1:1 Android ComercioDetalleScreen.kt) ────
+  void _showProductOptionsModal(BuildContext context, ProductEntity product, String businessName) {
+    final groups = product.parsedOptionGroups;
+    final Map<String, SelectedOptionEntity> selectedOptionsMap = {};
+
+    // Pre-populate with default options if configured
+    for (final group in groups) {
+      for (final opt in group.options) {
+        if (opt.isDefault) {
+          selectedOptionsMap[opt.id] = SelectedOptionEntity.fromOption(group: group, option: opt);
+        }
+      }
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            // Calculate current total
+            final optionsSum = selectedOptionsMap.values.fold(0.0, (sum, o) => sum + o.finalPrice);
+            final currentTotal = product.price + optionsSum;
+
+            // Validate all required groups have at least 1 selection
+            bool allRequiredSatisfied = true;
+            for (final g in groups) {
+              if (g.isRequired) {
+                final countInGroup = selectedOptionsMap.values.where((o) => o.optionGroupId == g.id).length;
+                if (countInGroup == 0 || (g.minSelection > 0 && countInGroup < g.minSelection)) {
+                  allRequiredSatisfied = false;
+                  break;
+                }
+              }
+            }
+
+            return Container(
+              constraints: BoxConstraints(
+                maxHeight: MediaQuery.of(context).size.height * 0.85,
+              ),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Drag Handle
+                  const SizedBox(height: 12),
+                  Center(
+                    child: Container(
+                      width: 44,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  // Header with Product Info
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (product.imageUrl != null && product.imageUrl!.isNotEmpty)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.network(
+                              product.imageUrl!,
+                              width: 64,
+                              height: 64,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Container(
+                                width: 64,
+                                height: 64,
+                                color: const Color(0xFFEFF6FF),
+                                child: const Icon(Icons.fastfood, color: BrandColors.bluePrimary),
+                              ),
+                            ),
+                          )
+                        else
+                          Container(
+                            width: 64,
+                            height: 64,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF6FF),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: const Icon(Icons.fastfood, color: BrandColors.bluePrimary, size: 28),
+                          ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                product.name,
+                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Precio Base: C\$ ${product.price.toInt()}',
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: BrandColors.textSecondaryLight,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.grey),
+                          onPressed: () => Navigator.pop(ctx),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Divider(height: 1),
+
+                  // Scrollable Options Groups
+                  Flexible(
+                    child: ListView.separated(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      shrinkWrap: true,
+                      itemCount: groups.length,
+                      separatorBuilder: (_, __) => const SizedBox(height: 20),
+                      itemBuilder: (context, gIndex) {
+                        final group = groups[gIndex];
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Group Header
+                            Row(
+                              children: [
+                                Text(
+                                  group.name,
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF0F172A)),
+                                ),
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: group.isRequired ? const Color(0xFFFEE2E2) : const Color(0xFFF1F5F9),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: Text(
+                                    group.isRequired ? 'Obligatorio' : 'Opcional',
+                                    style: TextStyle(
+                                      color: group.isRequired ? const Color(0xFFDC2626) : const Color(0xFF64748B),
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 10,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            if (group.description.isNotEmpty) ...[
+                              const SizedBox(height: 2),
+                              Text(group.description, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                            ],
+                            const SizedBox(height: 10),
+
+                            // Group Option Items
+                            ...group.options.map((opt) {
+                              final isSelected = selectedOptionsMap.containsKey(opt.id);
+
+                              return InkWell(
+                                key: Key('option_${opt.id}'),
+                                onTap: () {
+                                  setModalState(() {
+                                    if (group.isSingleChoice) {
+                                      // Remove other selections from this group
+                                      selectedOptionsMap.removeWhere((_, v) => v.optionGroupId == group.id);
+                                      selectedOptionsMap[opt.id] = SelectedOptionEntity.fromOption(
+                                        group: group,
+                                        option: opt,
+                                      );
+                                    } else {
+                                      if (isSelected) {
+                                        selectedOptionsMap.remove(opt.id);
+                                      } else {
+                                        // Check maxSelection limit
+                                        final currentInGroup = selectedOptionsMap.values
+                                            .where((o) => o.optionGroupId == group.id)
+                                            .length;
+                                        if (currentInGroup < group.maxSelection) {
+                                          selectedOptionsMap[opt.id] = SelectedOptionEntity.fromOption(
+                                            group: group,
+                                            option: opt,
+                                          );
+                                        }
+                                      }
+                                    }
+                                  });
+                                },
+                                borderRadius: BorderRadius.circular(10),
+                                child: Container(
+                                  margin: const EdgeInsets.only(bottom: 8),
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: isSelected ? const Color(0xFFEFF6FF) : const Color(0xFFF8FAFC),
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                      color: isSelected ? BrandColors.bluePrimary : const Color(0xFFE2E8F0),
+                                      width: isSelected ? 1.5 : 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Icon(
+                                            group.isSingleChoice
+                                                ? (isSelected ? Icons.radio_button_checked : Icons.radio_button_off)
+                                                : (isSelected ? Icons.check_box : Icons.check_box_outline_blank),
+                                            size: 20,
+                                            color: isSelected ? BrandColors.bluePrimary : Colors.grey,
+                                          ),
+                                          const SizedBox(width: 10),
+                                          Text(
+                                            opt.name,
+                                            style: TextStyle(
+                                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                                              fontSize: 13,
+                                              color: const Color(0xFF0F172A),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Text(
+                                        opt.additionalPrice > 0 ? '+C\$ ${opt.additionalPrice.toInt()}' : 'Gratis',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 12,
+                                          color: opt.additionalPrice > 0 ? BrandColors.bluePrimary : const Color(0xFF10B981),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+
+                  // Bottom Action Bar
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.06),
+                          blurRadius: 10,
+                          offset: const Offset(0, -3),
+                        ),
+                      ],
+                    ),
+                    child: SafeArea(
+                      child: SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          key: const Key('add_configured_product_button'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: allRequiredSatisfied ? BrandColors.bluePrimary : Colors.grey,
+                            foregroundColor: Colors.white,
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                          ),
+                          onPressed: allRequiredSatisfied
+                              ? () {
+                                  final configuredProduct = product.copyWith(
+                                    selectedOptions: selectedOptionsMap.values.toList(),
+                                  );
+                                  widget.onAddToCart(configuredProduct, businessName);
+                                  Navigator.pop(ctx);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('¡${product.name} personalizado agregado al carrito! 🛒'),
+                                      duration: const Duration(seconds: 2),
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              : null,
+                          child: Text(
+                            allRequiredSatisfied
+                                ? 'Agregar al Carrito • C\$ ${currentTotal.toInt()}'
+                                : 'Selecciona las opciones requeridas',
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 

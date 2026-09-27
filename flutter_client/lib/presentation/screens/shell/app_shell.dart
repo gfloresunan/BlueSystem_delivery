@@ -11,6 +11,8 @@ import '../../../core/design_system/bsds_theme.dart';
 import '../../../domain/entities/catalog_entity.dart';
 import '../../../domain/services/core_service_interfaces.dart';
 import '../../../data/services/courier_cash_closure_service.dart';
+import '../../../data/services/user_firestore_service.dart';
+import '../../../domain/entities/saved_address_entity.dart';
 import '../../providers/session_state.dart';
 import '../../theme/brand_theme_builder.dart';
 import '../../widgets/state_views.dart';
@@ -30,6 +32,7 @@ class AppShell extends StatefulWidget {
   final IMerchantService merchantService;
   final IBannerService? bannerService;
   final ICourierCashClosureService? cashClosureService;
+  final IUserService? userService;
 
   const AppShell({
     super.key,
@@ -40,6 +43,7 @@ class AppShell extends StatefulWidget {
     required this.merchantService,
     this.bannerService,
     this.cashClosureService,
+    this.userService,
   });
 
   @override
@@ -50,18 +54,36 @@ class _AppShellState extends State<AppShell> {
   int _selectedIndex = 0;
   final List<Map<String, dynamic>> _cartItems = [];
 
+  IUserService get _effectiveUserService => widget.userService ?? UserFirestoreService();
+
   void _addToCart(ProductEntity product, String businessName) {
     setState(() {
-      final existingIndex = _cartItems.indexWhere((item) => item['id'] == product.productId);
+      final effectiveBusinessName = businessName.isNotEmpty
+          ? businessName
+          : (product.businessName.isNotEmpty ? product.businessName : 'Comercio');
+      final options = product.selectedOptions;
+      final optionsKey = options.map((o) => o.optionId).toList()..sort();
+      final compositeKey = '${product.productId}_${optionsKey.join("_")}';
+
+      final existingIndex = _cartItems.indexWhere((item) => item['compositeKey'] == compositeKey);
       if (existingIndex >= 0) {
         _cartItems[existingIndex]['quantity'] = (_cartItems[existingIndex]['quantity'] as int) + 1;
       } else {
         _cartItems.add({
+          'compositeKey': compositeKey,
           'id': product.productId,
+          'productId': product.productId,
           'name': product.name,
-          'price': product.price,
-          'business': businessName,
+          'price': product.calculatedTotalPrice,
+          'basePrice': product.price,
+          'business': effectiveBusinessName,
+          'businessId': product.businessId,
+          'branchId': product.branchId,
+          'tenantId': product.tenantId.isNotEmpty ? product.tenantId : 'default',
+          'imageUrl': product.imageUrl,
           'quantity': 1,
+          'selectedOptions': options.map((o) => o.toMap()).toList(),
+          'optionsSummary': options.map((o) => o.optionName).join(', '),
         });
       }
     });
@@ -262,6 +284,14 @@ class _AppShellState extends State<AppShell> {
           merchantService: widget.merchantService,
           onAddToCart: _addToCart,
           onCartClick: _openCartDialog,
+          onOpenExpress: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('🚚 Módulo de Envíos Express X→Y: Tarifa Base C\$35 + C\$10/km con rastreo en vivo.'),
+                duration: Duration(seconds: 3),
+              ),
+            );
+          },
         );
       case 1:
         return _buildFavoritesView();
@@ -269,6 +299,7 @@ class _AppShellState extends State<AppShell> {
         return OrdersScreen(
           sessionState: widget.sessionState,
           orderService: widget.orderService,
+          fleetService: widget.fleetService,
         );
       case 3:
         if (isGuestMode) {
@@ -411,11 +442,12 @@ class _AppShellState extends State<AppShell> {
             child: Column(
               children: [
                 _buildProfileListTile(
+                  tileKey: const Key('profile_tile_my_profile'),
                   icon: Icons.person_outline,
                   iconColor: BrandColors.bluePrimary,
                   title: 'Mi Perfil',
                   subtitle: 'Datos personales y contacto',
-                  onTap: () {},
+                  onTap: () => _openEditProfileDialog(context),
                 ),
                 const Divider(height: 1),
                 _buildProfileListTile(
@@ -427,11 +459,12 @@ class _AppShellState extends State<AppShell> {
                 ),
                 const Divider(height: 1),
                 _buildProfileListTile(
+                  tileKey: const Key('profile_tile_saved_addresses'),
                   icon: Icons.location_on_outlined,
                   iconColor: BrandColors.statusSuccess,
                   title: 'Mis direcciones',
                   subtitle: 'Gestionar puntos de entrega',
-                  onTap: () {},
+                  onTap: () => _openSavedAddressesModal(context),
                 ),
                 const Divider(height: 1),
                 _buildProfileListTile(
@@ -556,6 +589,7 @@ class _AppShellState extends State<AppShell> {
   }
 
   Widget _buildProfileListTile({
+    Key? tileKey,
     required IconData icon,
     required Color iconColor,
     required String title,
@@ -563,6 +597,7 @@ class _AppShellState extends State<AppShell> {
     required VoidCallback onTap,
   }) {
     return ListTile(
+      key: tileKey,
       leading: Container(
         width: 38,
         height: 38,
@@ -582,6 +617,456 @@ class _AppShellState extends State<AppShell> {
       ),
       trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: BrandColors.textSecondaryLight),
       onTap: onTap,
+    );
+  }
+
+  void _openEditProfileDialog(BuildContext context) {
+    final user = widget.sessionState.currentUser;
+    if (user == null || widget.sessionState.isGuestMode) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Inicia sesión para editar tu perfil'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    final nameController = TextEditingController(text: user.displayName);
+    final phoneController = TextEditingController(text: user.phoneNumber ?? '');
+    final formKey = GlobalKey<FormState>();
+    bool isSaving = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.person, color: BrandColors.bluePrimary),
+              SizedBox(width: 8),
+              Text('Editar Perfil', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Actualiza tus datos de contacto para entregas y notificaciones.',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    key: const Key('edit_profile_name_field'),
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nombre Completo *',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'El nombre es obligatorio';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    key: const Key('edit_profile_phone_field'),
+                    controller: phoneController,
+                    keyboardType: TextInputType.phone,
+                    decoration: const InputDecoration(
+                      labelText: 'Número de Teléfono',
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.phone_outlined, size: 20),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isSaving ? null : () => Navigator.pop(dialogCtx),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              key: const Key('edit_profile_save_btn'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: BrandColors.bluePrimary,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: isSaving
+                  ? null
+                  : () async {
+                      if (!formKey.currentState!.validate()) return;
+                      setDialogState(() => isSaving = true);
+                      final newName = nameController.text.trim();
+                      final newPhone = phoneController.text.trim();
+
+                      try {
+                        await _effectiveUserService.updateProfile(
+                          user.uid,
+                          displayName: newName,
+                          phoneNumber: newPhone.isNotEmpty ? newPhone : null,
+                        );
+                        widget.sessionState.updateCurrentUser(
+                          user.copyWith(
+                            displayName: newName,
+                            phoneNumber: newPhone.isNotEmpty ? newPhone : null,
+                          ),
+                        );
+                        if (mounted) {
+                          Navigator.pop(dialogCtx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('✅ Perfil actualizado correctamente'),
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        setDialogState(() => isSaving = false);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('❌ Error al actualizar: $e'),
+                              backgroundColor: Colors.red,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      }
+                    },
+              child: isSaving
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openSavedAddressesModal(BuildContext context) {
+    final user = widget.sessionState.currentUser;
+    if (user == null || widget.sessionState.isGuestMode) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Inicia sesión para gestionar tus direcciones'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (sheetCtx) => Container(
+        height: MediaQuery.of(sheetCtx).size.height * 0.75,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              margin: const EdgeInsets.only(top: 10, bottom: 8),
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.location_on, color: BrandColors.statusSuccess),
+                      SizedBox(width: 8),
+                      Text(
+                        'Mis Direcciones Guardadas',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
+                    ],
+                  ),
+                  ElevatedButton.icon(
+                    key: const Key('add_address_btn'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: BrandColors.bluePrimary,
+                      foregroundColor: Colors.white,
+                      visualDensity: VisualDensity.compact,
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    ),
+                    icon: const Icon(Icons.add, size: 16),
+                    label: const Text('Nueva', style: TextStyle(fontSize: 12)),
+                    onPressed: () => _openAddAddressDialog(sheetCtx, user.uid),
+                  ),
+                ],
+              ),
+            ),
+            const Divider(height: 1),
+            Expanded(
+              child: StreamBuilder<List<SavedAddressEntity>>(
+                stream: _effectiveUserService.watchAddresses(user.uid),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  final addresses = snapshot.data ?? [];
+                  if (addresses.isEmpty) {
+                    return const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.location_off_outlined, size: 48, color: Colors.grey),
+                          SizedBox(height: 8),
+                          Text('No tienes direcciones guardadas'),
+                          Text(
+                            'Agrega una dirección para pedir más rápido',
+                            style: TextStyle(fontSize: 11, color: Colors.grey),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return ListView.separated(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: addresses.length,
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
+                    itemBuilder: (ctx, i) {
+                      final addr = addresses[i];
+                      return Container(
+                        key: Key('address_tile_${addr.id}'),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: addr.isDefault ? BrandColors.statusSuccess : Colors.grey.shade300,
+                            width: addr.isDefault ? 1.5 : 1.0,
+                          ),
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              radius: 18,
+                              backgroundColor: addr.isDefault
+                                  ? BrandColors.statusSuccess.withOpacity(0.15)
+                                  : Colors.grey.shade100,
+                              child: Icon(
+                                addr.label.toLowerCase().contains('trabajo') ||
+                                        addr.label.toLowerCase().contains('oficina')
+                                    ? Icons.work_outline
+                                    : Icons.home_outlined,
+                                color: addr.isDefault ? BrandColors.statusSuccess : Colors.grey.shade700,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Text(
+                                        addr.label,
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                      ),
+                                      if (addr.isDefault) ...[
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: Colors.green.shade50,
+                                            borderRadius: BorderRadius.circular(4),
+                                            border: Border.all(color: Colors.green.shade200),
+                                          ),
+                                          child: const Text(
+                                            'PREDETERMINADA',
+                                            style: TextStyle(
+                                              color: Colors.green,
+                                              fontSize: 9,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    addr.fullAddress,
+                                    style: const TextStyle(fontSize: 13, color: Colors.black87),
+                                  ),
+                                  if (addr.instructions.isNotEmpty) ...[
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      'Ref: ${addr.instructions}',
+                                      style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            Column(
+                              children: [
+                                if (!addr.isDefault)
+                                  IconButton(
+                                    key: Key('set_default_btn_${addr.id}'),
+                                    icon: const Icon(Icons.star_border, size: 20, color: Colors.amber),
+                                    tooltip: 'Marcar como predeterminada',
+                                    onPressed: () async {
+                                      await _effectiveUserService.setDefaultAddress(user.uid, addr.id);
+                                    },
+                                  ),
+                                IconButton(
+                                  key: Key('delete_address_btn_${addr.id}'),
+                                  icon: const Icon(Icons.delete_outline, size: 20, color: Colors.redAccent),
+                                  tooltip: 'Eliminar dirección',
+                                  onPressed: () async {
+                                    await _effectiveUserService.deleteAddress(user.uid, addr.id);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openAddAddressDialog(BuildContext sheetCtx, String uid) {
+    final labelController = TextEditingController(text: 'Casa');
+    final addressController = TextEditingController();
+    final instructionsController = TextEditingController();
+    bool isDefault = false;
+    final formKey = GlobalKey<FormState>();
+
+    showDialog(
+      context: sheetCtx,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Nueva Dirección', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextFormField(
+                    key: const Key('address_label_field'),
+                    controller: labelController,
+                    decoration: const InputDecoration(
+                      labelText: 'Etiqueta (ej. Casa, Trabajo) *',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    validator: (val) => val == null || val.trim().isEmpty ? 'Requerido' : null,
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    key: const Key('address_full_field'),
+                    controller: addressController,
+                    maxLines: 2,
+                    decoration: const InputDecoration(
+                      labelText: 'Dirección Completa *',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    validator: (val) => val == null || val.trim().isEmpty ? 'Requerido' : null,
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    key: const Key('address_instructions_field'),
+                    controller: instructionsController,
+                    decoration: const InputDecoration(
+                      labelText: 'Punto de referencia o instrucciones',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  SwitchListTile(
+                    key: const Key('address_default_switch'),
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text('Establecer como predeterminada', style: TextStyle(fontSize: 12)),
+                    value: isDefault,
+                    onChanged: (val) => setDialogState(() => isDefault = val),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogCtx),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              key: const Key('save_address_btn'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: BrandColors.bluePrimary,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () async {
+                if (!formKey.currentState!.validate()) return;
+                final newAddress = SavedAddressEntity(
+                  id: '',
+                  userId: uid,
+                  label: labelController.text.trim(),
+                  fullAddress: addressController.text.trim(),
+                  instructions: instructionsController.text.trim(),
+                  isDefault: isDefault,
+                  createdAt: DateTime.now().millisecondsSinceEpoch,
+                  updatedAt: DateTime.now().millisecondsSinceEpoch,
+                );
+                await _effectiveUserService.saveAddress(uid, newAddress);
+                if (mounted) {
+                  Navigator.pop(dialogCtx);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('✅ Dirección guardada exitosamente'),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -753,195 +1238,472 @@ class _AppShellState extends State<AppShell> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => StatefulBuilder(
-        builder: (context, setModalState) {
-          final theme = Theme.of(context);
-          const deliveryFee = 35.0;
-          final totalWithDelivery = _cartTotal > 0 ? _cartTotal + deliveryFee : 0.0;
+      builder: (ctx) {
+        bool isSubmittingOrder = false;
+        String selectedPaymentMethod = 'efectivo';
+        final addressController = TextEditingController(text: 'Colonia Centroamérica, Managua');
 
-          return Container(
-            height: MediaQuery.of(context).size.height * 0.75,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surface,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.shade400,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final theme = Theme.of(context);
+            final businessId = _cartItems.isNotEmpty
+                ? (_cartItems.first['businessId'] as String? ?? '')
+                : '';
+
+            return StreamBuilder<BusinessEntity?>(
+              stream: businessId.isNotEmpty
+                  ? widget.merchantService.watchBusiness(businessId)
+                  : Stream.value(null),
+              builder: (context, snapshot) {
+                final business = snapshot.data;
+                // GATE-01: Dynamic deliveryFee from SSOT /businesses/{id}.deliveryFee, fallback C$45.00. NEVER C$35.00
+                final double deliveryFee = _cartItems.isEmpty
+                    ? 0.0
+                    : (business?.deliveryFee ?? 45.0);
+                final totalWithDelivery = _cartTotal > 0 ? _cartTotal + deliveryFee : 0.0;
+
+                return Container(
+                  height: MediaQuery.of(context).size.height * 0.75,
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
                   ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      '🛒 Tu Carrito de Compras',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    if (_cartItems.isNotEmpty)
-                      TextButton(
-                        onPressed: () {
-                          _clearCart();
-                          setModalState(() {});
-                        },
-                        child: const Text('Vaciar', style: TextStyle(color: Colors.red)),
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 5,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade400,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
                       ),
-                  ],
-                ),
-                const Divider(),
-                if (_cartItems.isEmpty)
-                  Expanded(
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(Icons.shopping_bag_outlined, size: 64, color: Colors.grey.shade400),
-                          const SizedBox(height: 12),
-                          const Text('Tu carrito está vacío', style: TextStyle(fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 6),
-                          Text('Agrega tus platillos favoritos desde el menú', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
+                          const Text(
+                            '🛒 Tu Carrito de Compras',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          if (_cartItems.isNotEmpty)
+                            TextButton(
+                              onPressed: () {
+                                _clearCart();
+                                setModalState(() {});
+                              },
+                              child: const Text('Vaciar', style: TextStyle(color: Colors.red)),
+                            ),
                         ],
                       ),
-                    ),
-                  )
-                else
-                  Expanded(
-                    child: ListView.separated(
-                      itemCount: _cartItems.length,
-                      separatorBuilder: (_, __) => const Divider(),
-                      itemBuilder: (context, index) {
-                        final item = _cartItems[index];
-                        return Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item['name'] as String,
-                                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                  ),
-                                  Text(
-                                    '${item['business']} • C\$ ${(item['price'] as double).toInt()}',
-                                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Row(
+                      const Divider(),
+                      if (_cartItems.isEmpty)
+                        Expanded(
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                IconButton(
-                                  icon: const Icon(Icons.remove_circle_outline, size: 20),
-                                  onPressed: () {
-                                    setModalState(() {
-                                      final currentQty = item['quantity'] as int;
-                                      if (currentQty > 1) {
-                                        item['quantity'] = currentQty - 1;
-                                      } else {
-                                        _cartItems.removeAt(index);
-                                      }
-                                    });
-                                    setState(() {});
-                                  },
-                                ),
-                                Text(
-                                  '${item['quantity']}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.add_circle_outline, size: 20),
-                                  onPressed: () {
-                                    setModalState(() {
-                                      item['quantity'] = (item['quantity'] as int) + 1;
-                                    });
-                                    setState(() {});
-                                  },
-                                ),
+                                Icon(Icons.shopping_bag_outlined, size: 64, color: Colors.grey.shade400),
+                                const SizedBox(height: 12),
+                                const Text('Tu carrito está vacío', style: TextStyle(fontWeight: FontWeight.bold)),
+                                const SizedBox(height: 6),
+                                Text('Agrega tus platillos favoritos desde el menú', style: TextStyle(color: Colors.grey.shade600, fontSize: 12)),
                               ],
                             ),
+                          ),
+                        )
+                      else
+                        Expanded(
+                          child: ListView.separated(
+                            itemCount: _cartItems.length,
+                            separatorBuilder: (_, __) => const Divider(),
+                            itemBuilder: (context, index) {
+                              final item = _cartItems[index];
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          item['name'] as String,
+                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                        ),
+                                        Text(
+                                          '${item['business']} • C\$ ${(item['price'] as double).toInt()}',
+                                          style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
+                                        ),
+                                        if (item['optionsSummary'] != null && (item['optionsSummary'] as String).isNotEmpty)
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 2.0),
+                                            child: Text(
+                                              '+ ${item['optionsSummary']}',
+                                              style: const TextStyle(fontSize: 10, color: Color(0xFF2563EB), fontWeight: FontWeight.w600),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.remove_circle_outline, size: 20),
+                                        onPressed: () {
+                                          setModalState(() {
+                                            final currentQty = item['quantity'] as int;
+                                            if (currentQty > 1) {
+                                              item['quantity'] = currentQty - 1;
+                                            } else {
+                                              _cartItems.removeAt(index);
+                                            }
+                                          });
+                                          setState(() {});
+                                        },
+                                      ),
+                                      Text(
+                                        '${item['quantity']}',
+                                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                      ),
+                                      IconButton(
+                                        icon: const Icon(Icons.add_circle_outline, size: 20),
+                                        onPressed: () {
+                                          setModalState(() {
+                                            item['quantity'] = (item['quantity'] as int) + 1;
+                                          });
+                                          setState(() {});
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      if (_cartItems.isNotEmpty) ...[
+                        const Divider(),
+                        // Delivery Address selector (GAP-UI-01)
+                        const Row(
+                          children: [
+                            Icon(Icons.location_on, size: 16, color: Color(0xFF10B981)),
+                            SizedBox(width: 4),
+                            Text('Dirección de entrega:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                           ],
-                        );
-                      },
-                    ),
-                  ),
-                if (_cartItems.isNotEmpty) ...[
-                  const Divider(),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Subtotal:'),
-                      Text('C\$ ${_cartTotal.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  const Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Tarifa de Envío:'),
-                      Text('C\$ 35', style: TextStyle(fontWeight: FontWeight.bold)),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text('Total a Pagar:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                      Text(
-                        'C\$ ${totalWithDelivery.toInt()}',
-                        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2563EB)),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF2563EB),
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        if (widget.sessionState.isGuestMode) {
-                          setState(() => _selectedIndex = 3);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Por favor inicia sesión para confirmar y enviar tu pedido.'),
-                              duration: Duration(seconds: 3),
+                        ),
+                        const SizedBox(height: 4),
+                        TextField(
+                          key: const Key('checkout_delivery_address_field'),
+                          controller: addressController,
+                          decoration: InputDecoration(
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                            hintText: 'Ingresa tu dirección de entrega...',
+                          ),
+                          style: const TextStyle(fontSize: 12),
+                        ),
+                        const SizedBox(height: 8),
+
+                        // Payment Method selector (GAP-UI-02)
+                        const Row(
+                          children: [
+                            Icon(Icons.payment, size: 16, color: Color(0xFF2563EB)),
+                            SizedBox(width: 4),
+                            Text('Método de pago:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            ChoiceChip(
+                              key: const Key('checkout_payment_cash_chip'),
+                              label: const Text('Efectivo', style: TextStyle(fontSize: 11)),
+                              selected: selectedPaymentMethod == 'efectivo',
+                              onSelected: (val) {
+                                if (val) setModalState(() => selectedPaymentMethod = 'efectivo');
+                              },
                             ),
-                          );
-                        } else {
-                          _clearCart();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('¡Pedido enviado con éxito! Un motorizado lo recogerá pronto. 🛵'),
-                              backgroundColor: Colors.green,
-                              duration: Duration(seconds: 4),
+                            const SizedBox(width: 6),
+                            ChoiceChip(
+                              key: const Key('checkout_payment_transfer_chip'),
+                              label: const Text('Transferencia', style: TextStyle(fontSize: 11)),
+                              selected: selectedPaymentMethod == 'transferencia',
+                              onSelected: (val) {
+                                if (val) setModalState(() => selectedPaymentMethod = 'transferencia');
+                              },
                             ),
-                          );
-                          setState(() => _selectedIndex = 2); // Ir a la pestaña de Pedidos
-                        }
-                      },
-                      child: const Text('Confirmar y Enviar Pedido', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
-                    ),
+                            const SizedBox(width: 6),
+                            ChoiceChip(
+                              key: const Key('checkout_payment_card_chip'),
+                              label: const Text('Tarjeta', style: TextStyle(fontSize: 11)),
+                              selected: selectedPaymentMethod == 'tarjeta',
+                              onSelected: (val) {
+                                if (val) setModalState(() => selectedPaymentMethod = 'tarjeta');
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Subtotal:'),
+                            Text('C\$ ${_cartTotal.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        const SizedBox(height: 4),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Tarifa de Envío:'),
+                            Text('C\$ ${deliveryFee.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text('Total a Pagar:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            Text(
+                              'C\$ ${totalWithDelivery.toInt()}',
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2563EB)),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2563EB),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            ),
+                            onPressed: isSubmittingOrder
+                                ? null
+                                : () async {
+                                    if (widget.sessionState.isGuestMode ||
+                                        widget.sessionState.currentUser == null) {
+                                      Navigator.pop(ctx);
+                                      setState(() => _selectedIndex = 3);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        const SnackBar(
+                                          content: Text('Por favor inicia sesión para confirmar y enviar tu pedido.'),
+                                          duration: Duration(seconds: 3),
+                                        ),
+                                      );
+                                      return;
+                                    }
+
+                                    setModalState(() => isSubmittingOrder = true);
+
+                                    final user = widget.sessionState.currentUser!;
+                                    final customerId = user.uid;
+                                    final customerName = user.displayName.isNotEmpty ? user.displayName : 'Cliente';
+                                    final customerPhone = user.phoneNumber ?? '';
+
+                                    final bizId = business?.businessId.isNotEmpty == true
+                                        ? business!.businessId
+                                        : businessId;
+                                    final bizName = business?.name.isNotEmpty == true
+                                        ? business!.name
+                                        : (_cartItems.first['business'] as String? ?? 'Comercio');
+                                    final bizAddress = business?.address ?? '';
+                                    final bizLat = business?.latitude ?? 0.0;
+                                    final bizLng = business?.longitude ?? 0.0;
+                                    final tenantId = business?.tenantId.isNotEmpty == true
+                                        ? business!.tenantId
+                                        : (_cartItems.first['tenantId'] as String? ?? 'default');
+
+                                    final orderItems = _cartItems.map((item) {
+                                      final qty = item['quantity'] as int;
+                                      final price = (item['price'] as num).toDouble();
+                                      return {
+                                        'productId': item['id'] as String,
+                                        'productName': item['name'] as String,
+                                        'price': price,
+                                        'basePrice': (item['basePrice'] as num?)?.toDouble() ?? price,
+                                        'quantity': qty,
+                                        'subtotal': price * qty,
+                                        'imageUrl': item['imageUrl'] as String?,
+                                        'selectedOptions': (item['selectedOptions'] as List<dynamic>?)
+                                                ?.map((o) => Map<String, dynamic>.from(o as Map))
+                                                .toList() ??
+                                            <Map<String, dynamic>>[],
+                                      };
+                                    }).toList();
+
+                                    final subtotal = _cartTotal;
+                                    final total = subtotal + deliveryFee;
+
+                                    final words = bizName.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
+                                    final cleanPrefix = words.length >= 3
+                                        ? words.take(3).map((w) => w[0].toUpperCase()).join()
+                                        : (words.length == 2
+                                            ? (words[0].substring(0, words[0].length >= 2 ? 2 : 1) + words[1].substring(0, 1)).toUpperCase()
+                                            : (words.isNotEmpty ? words[0].substring(0, words[0].length >= 4 ? 4 : words[0].length).toUpperCase() : 'ORD'));
+
+                                    final effectiveAddress = addressController.text.trim().isNotEmpty
+                                        ? addressController.text.trim()
+                                        : 'Colonia Centroamérica, Managua';
+                                    final effectivePaymentMethod = selectedPaymentMethod;
+
+                                    final orderPayload = <String, dynamic>{
+                                      'customerId': customerId,
+                                      'clienteId': customerId,
+                                      'userId': customerId,
+                                      'uid': customerId,
+                                      'customerName': customerName,
+                                      'customerPhone': customerPhone,
+                                      'businessId': bizId,
+                                      'businessName': bizName,
+                                      'branchId': _cartItems.first['branchId'] ?? '',
+                                      'tenantId': tenantId,
+                                      'commercialTenantId': tenantId,
+                                      'municipalityId': business?.city ?? 'MANAGUA',
+                                      'municipalityName': business?.city ?? 'Managua',
+                                      'cityId': business?.city ?? 'MANAGUA',
+                                      'city': business?.city ?? 'Managua',
+                                      'cityName': business?.city ?? 'Managua',
+                                      'routeDistanceMeters': 0,
+                                      'routeDistanceKm': 0.0,
+                                      'distanceKm': 0.0,
+                                      'distanceSource': 'FALLBACK_ESTIMATED',
+                                      'routingProvider': 'FALLBACK_ESTIMATED',
+                                      'items': orderItems,
+                                      'subtotal': subtotal,
+                                      'merchantGrossSales': subtotal,
+                                      'deliveryFee': deliveryFee,
+                                      'discountAmount': 0.0,
+                                      'couponCode': '',
+                                      'couponDiscount': 0.0,
+                                      'promotionDiscount': 0.0,
+                                      'totalDiscount': 0.0,
+                                      'coupon': <String, dynamic>{},
+                                      'additionalChargeAmount': 0.0,
+                                      'additionalCharge': 0.0,
+                                      'tipAmount': 0.0,
+                                      'tip': 0.0,
+                                      'deliveryNote': '',
+                                      'notes': '',
+                                      'instructions': '',
+                                      'deliveryInstructions': '',
+                                      'total': total,
+                                      'customerTotal': total,
+                                      'valoresMonetarios': {
+                                        'subtotal': subtotal,
+                                        'merchantGrossSales': subtotal,
+                                        'costoEnvio': deliveryFee,
+                                        'cargoAdicional': 0.0,
+                                        'propina': 0.0,
+                                        'descuento': 0.0,
+                                        'total': total,
+                                        'customerTotal': total,
+                                        'metodoPago': effectivePaymentMethod,
+                                      },
+                                      'status': 'pending',
+                                      'estado': 'pendiente',
+                                      'paymentMethod': effectivePaymentMethod,
+                                      'paymentStatus': 'pending',
+                                      'paymentVerified': false,
+                                      'addressId': '',
+                                      'address': effectiveAddress,
+                                      'deliveryAddress': effectiveAddress,
+                                      'destinationAddress': effectiveAddress,
+                                      'fullAddress': effectiveAddress,
+                                      'latitude': 12.1364,
+                                      'longitude': -86.2514,
+                                      'destinationLatitude': 12.1364,
+                                      'destinationLongitude': -86.2514,
+                                      'destino': {
+                                        'direccion': effectiveAddress,
+                                        'coordenadas': {
+                                          'latitud': 12.1364,
+                                          'longitud': -86.2514,
+                                        },
+                                      },
+                                      'destination': {
+                                        'address': effectiveAddress,
+                                        'latitude': 12.1364,
+                                        'longitude': -86.2514,
+                                      },
+                                      'origen': {
+                                        'nombreComercio': bizName,
+                                        'direccion': bizAddress,
+                                        'coordenadas': {
+                                          'latitud': bizLat,
+                                          'longitud': bizLng,
+                                        },
+                                      },
+                                      'origin': {
+                                        'businessName': bizName,
+                                        'address': bizAddress,
+                                        'latitude': bizLat,
+                                        'longitude': bizLng,
+                                      },
+                                      'orderCodePrefix': cleanPrefix,
+                                      'platform': 'IOS',
+                                      'courierPhase': 1,
+                                      'hasBeenRated': false,
+                                    };
+
+                                    try {
+                                      final orderId = await widget.orderService.createOrder(orderPayload);
+                                      _clearCart();
+                                      if (ctx.mounted) {
+                                        Navigator.pop(ctx);
+                                      }
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('¡Pedido enviado con éxito! ID: $orderId 🛵'),
+                                            backgroundColor: Colors.green,
+                                            duration: const Duration(seconds: 4),
+                                          ),
+                                        );
+                                        setState(() => _selectedIndex = 2);
+                                      }
+                                    } catch (e) {
+                                      if (ctx.mounted) {
+                                        setModalState(() => isSubmittingOrder = false);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Error al enviar pedido: $e'),
+                                            backgroundColor: Colors.red,
+                                            duration: const Duration(seconds: 4),
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                            child: isSubmittingOrder
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : const Text('Confirmar y Enviar Pedido',
+                                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                ],
-              ],
-            ),
-          );
-        },
-      ),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 

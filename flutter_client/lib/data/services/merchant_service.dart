@@ -154,11 +154,226 @@ class MerchantFirestoreService implements IMerchantService {
       for (final doc in snap.docs) {
         final data = doc.data();
         final status = (data['status'] as String? ?? '').trim().toUpperCase();
-        if (status == 'DELETED') continue;
-        list.add(ProductEntity.fromMap(data, doc.id));
+        final lifecycle = (data['lifecycleStatus'] as String? ?? '').trim().toUpperCase();
+        if (status == 'DELETED' || lifecycle == 'DELETED' || status == 'INACTIVE') continue;
+
+        final product = ProductEntity.fromMap(data, doc.id);
+        if (!product.isValidPublicProduct()) continue;
+
+        if (tenantId.isNotEmpty &&
+            product.tenantId.isNotEmpty &&
+            product.tenantId != 'GLOBAL' &&
+            product.tenantId != tenantId) {
+          continue;
+        }
+
+        list.add(product);
       }
       return list;
     });
+  }
+
+  @override
+  Stream<List<ProductEntity>> watchFeaturedProducts({required String tenantId}) {
+    AppLogger.info('MerchantFirestoreService', 'Watching canonical featured products for tenant: $tenantId');
+
+    // ignore: close_sinks
+    late StreamController<List<ProductEntity>> controller;
+    StreamSubscription? subFeatured;
+    StreamSubscription? subProducts;
+    StreamSubscription? subBusinesses;
+
+    final configuredFeaturedDocs = <String, Map<String, dynamic>>{};
+    final realProductsMap = <String, Map<String, dynamic>>{};
+    final businessNamesMap = <String, String>{};
+
+    void emitCombined() {
+      final resultList = <ProductEntity>[];
+      final handledProductIds = <String>{};
+
+      // 1. Process elements configured explicitly in /featuredProducts (1:1 Android FirebaseManager.kt:1957)
+      for (final entry in configuredFeaturedDocs.entries) {
+        final docId = entry.key;
+        final fpData = entry.value;
+
+        final isActive = fpData['active'] as bool? ?? fpData['isActive'] as bool? ?? true;
+        if (!isActive) continue;
+
+        final pId = (fpData['productId'] as String? ?? '').trim().isNotEmpty
+            ? (fpData['productId'] as String).trim()
+            : docId;
+
+        final liveProdData = realProductsMap[pId];
+
+        if (liveProdData != null) {
+          final liveStatus = (liveProdData['status'] as String? ?? '').trim().toUpperCase();
+          final liveLifecycle = (liveProdData['lifecycleStatus'] as String? ?? '').trim().toUpperCase();
+          final liveIsActive = liveProdData['active'] as bool? ?? liveProdData['isActive'] as bool? ?? true;
+          final liveIsAvail = liveProdData['isAvailable'] as bool? ?? liveProdData['available'] as bool? ?? true;
+          final isHidden = liveProdData['isHidden'] as bool? ?? false;
+
+          if (liveStatus == 'DELETED' || liveLifecycle == 'DELETED' || liveStatus == 'INACTIVE' || !liveIsActive || !liveIsAvail || isHidden) {
+            continue;
+          }
+
+          final name = (liveProdData['name'] as String? ?? liveProdData['nombre'] as String? ?? fpData['name'] as String? ?? '').trim();
+          final price = (liveProdData['price'] as num?)?.toDouble() ?? (liveProdData['precio'] as num?)?.toDouble() ?? 0.0;
+          final bId = (liveProdData['businessId'] as String? ?? fpData['businessId'] as String? ?? '').trim();
+
+          final product = ProductEntity.fromMap({
+            ...liveProdData,
+            'productId': pId,
+            'name': name,
+            'price': price,
+            'businessId': bId,
+            'businessName': businessNamesMap[bId] ?? (fpData['businessName'] as String? ?? 'Comercio'),
+            'isPopular': true,
+          }, pId);
+
+          if (!product.isValidPublicProduct()) continue;
+
+          // Multi-tenant check
+          final prodTenant = product.tenantId.trim();
+          if (tenantId.isNotEmpty && prodTenant.isNotEmpty && prodTenant != 'GLOBAL' && prodTenant != tenantId) {
+            continue;
+          }
+
+          resultList.add(product);
+          handledProductIds.add(pId);
+        } else {
+          // Backup snapshot from /featuredProducts doc directly if /products hasn't loaded yet
+          final name = (fpData['name'] as String? ?? fpData['nombre'] as String? ?? '').trim();
+          final price = (fpData['price'] as num?)?.toDouble() ?? (fpData['precio'] as num?)?.toDouble() ?? 0.0;
+          final bId = (fpData['businessId'] as String? ?? '').trim();
+
+          final product = ProductEntity.fromMap({
+            ...fpData,
+            'productId': pId,
+            'name': name,
+            'price': price,
+            'businessId': bId,
+            'businessName': businessNamesMap[bId] ?? (fpData['businessName'] as String? ?? 'Comercio'),
+            'isPopular': true,
+          }, pId);
+
+          if (!product.isValidPublicProduct()) continue;
+
+          final prodTenant = product.tenantId.trim();
+          if (tenantId.isNotEmpty && prodTenant.isNotEmpty && prodTenant != 'GLOBAL' && prodTenant != tenantId) {
+            continue;
+          }
+
+          resultList.add(product);
+          handledProductIds.add(pId);
+        }
+      }
+
+      // 2. Process products in /products with isPopular/isTopSeller/isFeatured flags (1:1 Android FirebaseManager.kt:1996)
+      for (final entry in realProductsMap.entries) {
+        final pId = entry.key;
+        if (handledProductIds.contains(pId)) continue;
+
+        final prodData = entry.value;
+
+        final isFeaturedFlag = (prodData['isPopular'] as bool? ?? false) ||
+            (prodData['isTopSeller'] as bool? ?? false) ||
+            (prodData['isFeatured'] as bool? ?? false) ||
+            (prodData['destacado'] as bool? ?? false) ||
+            (prodData['popular'] as bool? ?? false);
+
+        if (!isFeaturedFlag) continue;
+
+        final status = (prodData['status'] as String? ?? '').trim().toUpperCase();
+        final lifecycle = (prodData['lifecycleStatus'] as String? ?? '').trim().toUpperCase();
+        final isActive = prodData['active'] as bool? ?? prodData['isActive'] as bool? ?? true;
+        final isAvail = prodData['isAvailable'] as bool? ?? prodData['available'] as bool? ?? true;
+        final isHidden = prodData['isHidden'] as bool? ?? false;
+
+        if (status == 'DELETED' || lifecycle == 'DELETED' || status == 'INACTIVE' || !isActive || !isAvail || isHidden) {
+          continue;
+        }
+
+        final bId = (prodData['businessId'] as String? ?? prodData['restaurantId'] as String? ?? prodData['comercioId'] as String? ?? '').trim();
+        final bName = businessNamesMap[bId] ?? (prodData['businessName'] as String? ?? 'Comercio');
+
+        final product = ProductEntity.fromMap({
+          ...prodData,
+          'productId': pId,
+          'businessId': bId,
+          'businessName': bName,
+          'isPopular': true,
+        }, pId);
+
+        if (!product.isValidPublicProduct()) continue;
+
+        final prodTenant = product.tenantId.trim();
+        if (tenantId.isNotEmpty && prodTenant.isNotEmpty && prodTenant != 'GLOBAL' && prodTenant != tenantId) {
+          continue;
+        }
+
+        resultList.add(product);
+        handledProductIds.add(pId);
+      }
+
+      if (!controller.isClosed) {
+        controller.add(resultList);
+      }
+    }
+
+    controller = StreamController<List<ProductEntity>>.broadcast(
+      onListen: () {
+        subBusinesses = _firestore.collection('businesses').snapshots().listen(
+          (snap) {
+            for (final doc in snap.docs) {
+              final data = doc.data();
+              final name = (data['name'] as String? ?? data['nombre'] as String? ?? '').trim();
+              if (name.isNotEmpty) businessNamesMap[doc.id] = name;
+            }
+            emitCombined();
+          },
+          onError: (e, st) {
+            AppLogger.error('MerchantFirestoreService', 'Error watching businesses for featured products', e, st);
+          },
+        );
+
+        subFeatured = _firestore.collection('featuredProducts').snapshots().listen(
+          (snap) {
+            configuredFeaturedDocs.clear();
+            for (final doc in snap.docs) {
+              configuredFeaturedDocs[doc.id] = doc.data();
+            }
+            emitCombined();
+          },
+          onError: (e, st) {
+            AppLogger.error('MerchantFirestoreService', 'Error watching featuredProducts', e, st);
+            // Non-fatal if collection is empty or unpopulated; fallback to realProductsMap
+            emitCombined();
+          },
+        );
+
+        subProducts = _firestore.collection('products').snapshots().listen(
+          (snap) {
+            realProductsMap.clear();
+            for (final doc in snap.docs) {
+              realProductsMap[doc.id] = doc.data();
+            }
+            emitCombined();
+          },
+          onError: (e, st) {
+            AppLogger.error('MerchantFirestoreService', 'Error watching products for featured products', e, st);
+            if (!controller.isClosed) controller.addError(e, st);
+          },
+        );
+      },
+      onCancel: () async {
+        await subFeatured?.cancel();
+        await subProducts?.cancel();
+        await subBusinesses?.cancel();
+        await controller.close();
+      },
+    );
+
+    return controller.stream;
   }
 
   @override
@@ -208,5 +423,35 @@ class MerchantFirestoreService implements IMerchantService {
         .where('isActive', isEqualTo: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => PromotionEntity.fromMap(d.data(), d.id)).toList());
+  }
+
+  @override
+  Future<void> updateProductQuick(
+    String productId, {
+    required String name,
+    required double price,
+  }) async {
+    final trimmedId = productId.trim();
+    final trimmedName = name.trim();
+
+    if (trimmedId.isEmpty) {
+      throw ArgumentError('productId cannot be empty');
+    }
+    if (trimmedName.isEmpty) {
+      throw ArgumentError('name cannot be empty');
+    }
+    if (price < 0) {
+      throw ArgumentError('price cannot be negative');
+    }
+
+    AppLogger.info('MerchantFirestoreService', 'Quick updating product $trimmedId: name="$trimmedName", price=$price');
+
+    await _firestore.collection('products').doc(trimmedId).update({
+      'name': trimmedName,
+      'nombre': trimmedName,
+      'price': price,
+      'precio': price,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 }

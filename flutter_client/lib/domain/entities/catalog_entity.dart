@@ -25,6 +25,8 @@ class ProductEntity {
   final int createdAt;
   final int updatedAt;
   final List<Map<String, dynamic>> optionGroups;
+  final List<SelectedOptionEntity> selectedOptions;
+  final String businessName;
 
   const ProductEntity({
     required this.productId,
@@ -50,6 +52,8 @@ class ProductEntity {
     required this.createdAt,
     required this.updatedAt,
     this.optionGroups = const [],
+    this.selectedOptions = const [],
+    this.businessName = '',
   });
 
   factory ProductEntity.fromMap(Map<String, dynamic> map, String id) {
@@ -112,6 +116,95 @@ class ProductEntity {
       createdAt: (map['createdAt'] is num) ? (map['createdAt'] as num).toInt() : 0,
       updatedAt: (map['updatedAt'] is num) ? (map['updatedAt'] as num).toInt() : 0,
       optionGroups: groups,
+      businessName: map['businessName'] as String? ?? map['comercioNombre'] as String? ?? map['restaurantName'] as String? ?? '',
+    );
+  }
+
+  /// Validates if the product is suitable for customer display (1:1 Android FirebaseManager.kt:1855-1945)
+  bool isValidPublicProduct() {
+    if (!isAvailable) return false;
+    if (price <= 0) return false;
+    if (name.trim().isEmpty) return false;
+    if (businessId.trim().isEmpty) return false;
+    if (isTestFixture()) return false;
+    return true;
+  }
+
+  /// Identifies test fixtures, E2E artifacts, or developer test records (Ficha Técnica 06 / GAP-CAT-01)
+  bool isTestFixture() {
+    final n = name.trim().toLowerCase();
+    if (n.isEmpty) return true;
+    if (n == 'aldrich' || n == 'matio' || n == 'test' || n == 'prueba' || n == 'dummy' || n == 'fixture') return true;
+    if (n.startsWith('test ') || n.startsWith('prueba ') || n.endsWith(' test') || n.endsWith(' prueba')) return true;
+    if (n.contains('certificado e2e') || n.contains('certificación e2e')) return true;
+    final b = businessId.trim().toLowerCase();
+    if (b == 'demo_comercio' || b == 'test_biz') return true;
+    return false;
+  }
+
+  List<OptionGroupEntity> get parsedOptionGroups {
+    if (optionGroups.isEmpty) return const [];
+    return optionGroups.map((g) => OptionGroupEntity.fromMap(g)).toList();
+  }
+
+  double get calculatedTotalPrice {
+    final optionsCost = selectedOptions.fold(0.0, (sum, opt) => sum + opt.finalPrice);
+    return price + optionsCost;
+  }
+
+  ProductEntity copyWith({
+    String? productId,
+    String? tenantId,
+    String? businessId,
+    String? restaurantId,
+    String? comercioId,
+    String? branchId,
+    String? name,
+    String? description,
+    double? price,
+    double? originalPrice,
+    int? discountPercentage,
+    bool? hasDiscount,
+    String? category,
+    String? categoryName,
+    String? subCategoryName,
+    String? imageUrl,
+    bool? isAvailable,
+    bool? isPopular,
+    bool? isTopSeller,
+    int? stock,
+    int? createdAt,
+    int? updatedAt,
+    List<Map<String, dynamic>>? optionGroups,
+    List<SelectedOptionEntity>? selectedOptions,
+    String? businessName,
+  }) {
+    return ProductEntity(
+      productId: productId ?? this.productId,
+      tenantId: tenantId ?? this.tenantId,
+      businessId: businessId ?? this.businessId,
+      restaurantId: restaurantId ?? this.restaurantId,
+      comercioId: comercioId ?? this.comercioId,
+      branchId: branchId ?? this.branchId,
+      name: name ?? this.name,
+      description: description ?? this.description,
+      price: price ?? this.price,
+      originalPrice: originalPrice ?? this.originalPrice,
+      discountPercentage: discountPercentage ?? this.discountPercentage,
+      hasDiscount: hasDiscount ?? this.hasDiscount,
+      category: category ?? this.category,
+      categoryName: categoryName ?? this.categoryName,
+      subCategoryName: subCategoryName ?? this.subCategoryName,
+      imageUrl: imageUrl ?? this.imageUrl,
+      isAvailable: isAvailable ?? this.isAvailable,
+      isPopular: isPopular ?? this.isPopular,
+      isTopSeller: isTopSeller ?? this.isTopSeller,
+      stock: stock ?? this.stock,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      optionGroups: optionGroups ?? this.optionGroups,
+      selectedOptions: selectedOptions ?? this.selectedOptions,
+      businessName: businessName ?? this.businessName,
     );
   }
 
@@ -120,6 +213,7 @@ class ProductEntity {
       'productId': productId,
       'tenantId': tenantId,
       'businessId': businessId,
+      'businessName': businessName,
       'name': name,
       'description': description,
       'price': price,
@@ -132,8 +226,185 @@ class ProductEntity {
       'stock': stock,
       'createdAt': createdAt,
       'updatedAt': updatedAt,
+      'selectedOptions': selectedOptions.map((o) => o.toMap()).toList(),
     };
   }
+}
+
+/// Contrato Canónico 1:1 Android OptionDto (OptionDto.kt)
+class OptionItemEntity {
+  final String id;
+  final String groupId;
+  final String restaurantId;
+  final String name;
+  final double additionalPrice;
+  final bool isDefault;
+  final String status;
+  final int orderIndex;
+
+  const OptionItemEntity({
+    required this.id,
+    this.groupId = '',
+    this.restaurantId = '',
+    required this.name,
+    this.additionalPrice = 0.0,
+    this.isDefault = false,
+    this.status = 'ACTIVE',
+    this.orderIndex = 0,
+  });
+
+  bool get isFree => additionalPrice <= 0.0;
+
+  factory OptionItemEntity.fromMap(Map<String, dynamic> map) {
+    return OptionItemEntity(
+      id: map['id'] as String? ?? map['optionId'] as String? ?? '',
+      groupId: map['groupId'] as String? ?? '',
+      restaurantId: map['restaurantId'] as String? ?? '',
+      name: map['name'] as String? ?? map['nombre'] as String? ?? '',
+      additionalPrice: (map['additionalPrice'] as num?)?.toDouble() ??
+          (map['precioAdicional'] as num?)?.toDouble() ??
+          (map['price'] as num?)?.toDouble() ??
+          0.0,
+      isDefault: map['isDefault'] as bool? ?? false,
+      status: map['status'] as String? ?? 'ACTIVE',
+      orderIndex: (map['orderIndex'] as num?)?.toInt() ?? 0,
+    );
+  }
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'groupId': groupId,
+        'name': name,
+        'additionalPrice': additionalPrice,
+        'isDefault': isDefault,
+        'status': status,
+        'orderIndex': orderIndex,
+      };
+}
+
+/// Contrato Canónico 1:1 Android OptionGroupDto (OptionGroupDto.kt)
+class OptionGroupEntity {
+  final String id;
+  final String restaurantId;
+  final String name;
+  final String description;
+  final int minSelection;
+  final int maxSelection;
+  final bool isRequired;
+  final int allowFreeOptionsCount;
+  final int orderIndex;
+  final List<OptionItemEntity> options;
+
+  const OptionGroupEntity({
+    required this.id,
+    this.restaurantId = '',
+    required this.name,
+    this.description = '',
+    this.minSelection = 0,
+    this.maxSelection = 1,
+    this.isRequired = false,
+    this.allowFreeOptionsCount = 0,
+    this.orderIndex = 0,
+    this.options = const [],
+  });
+
+  bool get isSingleChoice => maxSelection == 1;
+
+  factory OptionGroupEntity.fromMap(Map<String, dynamic> map) {
+    final rawOptions = map['options'];
+    final List<OptionItemEntity> parsedOptions = [];
+    if (rawOptions is List) {
+      for (final opt in rawOptions) {
+        if (opt is Map) {
+          parsedOptions.add(OptionItemEntity.fromMap(Map<String, dynamic>.from(opt)));
+        }
+      }
+    }
+
+    return OptionGroupEntity(
+      id: map['id'] as String? ?? map['groupId'] as String? ?? '',
+      restaurantId: map['restaurantId'] as String? ?? '',
+      name: map['name'] as String? ?? map['nombre'] as String? ?? 'Opciones',
+      description: map['description'] as String? ?? '',
+      minSelection: (map['minSelection'] as num?)?.toInt() ?? 0,
+      maxSelection: (map['maxSelection'] as num?)?.toInt() ?? (map['isSingleChoice'] == true ? 1 : 99),
+      isRequired: map['isRequired'] as bool? ?? map['required'] as bool? ?? false,
+      allowFreeOptionsCount: (map['allowFreeOptionsCount'] as num?)?.toInt() ?? 0,
+      orderIndex: (map['orderIndex'] as num?)?.toInt() ?? 0,
+      options: parsedOptions,
+    );
+  }
+
+  Map<String, dynamic> toMap() => {
+        'id': id,
+        'name': name,
+        'description': description,
+        'minSelection': minSelection,
+        'maxSelection': maxSelection,
+        'isRequired': isRequired,
+        'options': options.map((o) => o.toMap()).toList(),
+      };
+}
+
+/// Contrato Canónico 1:1 Android SelectedOption (SelectedOption.kt)
+class SelectedOptionEntity {
+  final String optionGroupId;
+  final String optionGroupName;
+  final String optionId;
+  final String optionName;
+  final double additionalPrice;
+  final bool isFreeOption;
+  final double finalPrice;
+
+  const SelectedOptionEntity({
+    required this.optionGroupId,
+    required this.optionGroupName,
+    required this.optionId,
+    required this.optionName,
+    required this.additionalPrice,
+    this.isFreeOption = false,
+    required this.finalPrice,
+  });
+
+  factory SelectedOptionEntity.fromOption({
+    required OptionGroupEntity group,
+    required OptionItemEntity option,
+  }) {
+    final isFree = option.additionalPrice <= 0;
+    return SelectedOptionEntity(
+      optionGroupId: group.id,
+      optionGroupName: group.name,
+      optionId: option.id,
+      optionName: option.name,
+      additionalPrice: option.additionalPrice,
+      isFreeOption: isFree,
+      finalPrice: isFree ? 0.0 : option.additionalPrice,
+    );
+  }
+
+  factory SelectedOptionEntity.fromMap(Map<String, dynamic> map) {
+    final addPrice = (map['additionalPrice'] as num?)?.toDouble() ?? 0.0;
+    final isFree = map['isFreeOption'] as bool? ?? (addPrice <= 0);
+    return SelectedOptionEntity(
+      optionGroupId: map['optionGroupId'] as String? ?? '',
+      optionGroupName: map['optionGroupName'] as String? ?? '',
+      optionId: map['optionId'] as String? ?? '',
+      optionName: map['optionName'] as String? ?? '',
+      additionalPrice: addPrice,
+      isFreeOption: isFree,
+      finalPrice: (map['finalPrice'] as num?)?.toDouble() ?? (isFree ? 0.0 : addPrice),
+    );
+  }
+
+  Map<String, dynamic> toMap() => {
+        'optionGroupId': optionGroupId,
+        'optionGroupName': optionGroupName,
+        'optionId': optionId,
+        'optionName': optionName,
+        'additionalPrice': additionalPrice,
+        'isFreeOption': isFreeOption,
+        'finalPrice': finalPrice,
+      };
 }
 
 class CategoryEntity {

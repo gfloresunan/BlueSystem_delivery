@@ -11,6 +11,7 @@ class BannerEntity {
   final String actionId;   // ID del producto/categoría/comercio o enlace externo
   final String targetUrl;
   final String businessId;
+  final String tenantId;
   final bool isActive;
   final int priority;
   final String backgroundColor;
@@ -30,6 +31,7 @@ class BannerEntity {
     this.actionId = '',
     this.targetUrl = '',
     this.businessId = '',
+    this.tenantId = '',
     this.isActive = true,
     this.priority = 0,
     this.backgroundColor = '#0D47A1',
@@ -71,6 +73,7 @@ class BannerEntity {
       actionId: effectiveDest,
       targetUrl: map['targetUrl'] as String? ?? '',
       businessId: map['businessId'] as String? ?? '',
+      tenantId: map['tenantId'] as String? ?? '',
       isActive: effectiveActive,
       priority: effectivePrio,
       backgroundColor: map['backgroundColor'] as String? ?? '#0D47A1',
@@ -89,6 +92,7 @@ class BannerEntity {
         'actionId': actionId,
         'targetUrl': targetUrl,
         'businessId': businessId,
+        'tenantId': tenantId,
         'isActive': isActive,
         'priority': priority,
         'backgroundColor': backgroundColor,

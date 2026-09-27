@@ -15,42 +15,65 @@ class BannerFirestoreService implements IBannerService {
       : _firestore = firestore ?? FirebaseFirestore.instance;
 
   @override
-  Stream<List<BannerEntity>> watchActiveBanners() {
+  Stream<List<BannerEntity>> watchActiveBanners({String? tenantId}) {
     return _firestore
         .collection('banners')
-        .where('isActive', isEqualTo: true)
-        .orderBy('priority', descending: false)
         .snapshots()
         .map((snapshot) {
           final banners = snapshot.docs
               .map((doc) => BannerEntity.fromMap(doc.data(), doc.id))
+              .where((b) {
+                // 1. In-memory Active Status Filter (1:1 Android parity Models.kt / SmartBannerEngine.kt)
+                if (!b.isActive) return false;
+
+                // 2. Multi-Tenant Scope Isolation (if tenant specified on banner)
+                if (tenantId != null &&
+                    tenantId.isNotEmpty &&
+                    b.tenantId.isNotEmpty &&
+                    b.tenantId != 'GLOBAL' &&
+                    b.tenantId != tenantId) {
+                  return false;
+                }
+                return true;
+              })
               .toList();
+
+          // 3. In-memory Priority Sorting (Ascending: 0 = Featured, 1 = Normal)
+          banners.sort((a, b) => a.priority.compareTo(b.priority));
           AppLogger.info('BannerFirestoreService', 'Active banners stream emitted ${banners.length} banners');
           return banners;
         })
         .handleError((error, st) {
           AppLogger.error('BannerFirestoreService', 'Error in watchActiveBanners stream', error, st);
-          // Fallback query without ordering if composite index is pending
-          return <BannerEntity>[];
+          throw error;
         });
   }
 
   @override
-  Future<List<BannerEntity>> getActiveBanners() async {
+  Future<List<BannerEntity>> getActiveBanners({String? tenantId}) async {
     try {
-      final snapshot = await _firestore
-          .collection('banners')
-          .where('isActive', isEqualTo: true)
-          .get();
+      final snapshot = await _firestore.collection('banners').get();
 
       final banners = snapshot.docs
           .map((doc) => BannerEntity.fromMap(doc.data(), doc.id))
+          .where((b) {
+            if (!b.isActive) return false;
+            if (tenantId != null &&
+                tenantId.isNotEmpty &&
+                b.tenantId.isNotEmpty &&
+                b.tenantId != 'GLOBAL' &&
+                b.tenantId != tenantId) {
+              return false;
+            }
+            return true;
+          })
           .toList();
+
       banners.sort((a, b) => a.priority.compareTo(b.priority));
       return banners;
     } catch (e, st) {
       AppLogger.error('BannerFirestoreService', 'Failed getting active banners', e, st);
-      return [];
+      rethrow;
     }
   }
 }

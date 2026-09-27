@@ -176,8 +176,11 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
             Text(
               _businessName,
               style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17, color: BrandColors.textPrimaryLight),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
             ),
             Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
                   width: 8,
@@ -188,12 +191,16 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
                   ),
                 ),
                 const SizedBox(width: 5),
-                Text(
-                  _isOpen ? 'ABIERTO AHORA' : 'CERRADO',
-                  style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: _isOpen ? BrandColors.statusSuccess : const Color(0xFFEF4444),
+                Flexible(
+                  child: Text(
+                    _isOpen ? 'ABIERTO AHORA' : 'CERRADO',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                      color: _isOpen ? BrandColors.statusSuccess : const Color(0xFFEF4444),
+                    ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
               ],
@@ -400,11 +407,17 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Pedidos Pendientes de Atención',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: BrandColors.textPrimaryLight),
+                    const Expanded(
+                      child: Text(
+                        'Pedidos Pendientes de Atención',
+                        key: Key('merchant_pending_orders_header_title'),
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: BrandColors.textPrimaryLight),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                      ),
                     ),
                     TextButton(
+                      key: const Key('merchant_pending_orders_view_all_button'),
                       onPressed: () => setState(() => _activeTabIndex = 1),
                       child: const Text('Ver todos'),
                     ),
@@ -466,7 +479,15 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(title, style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold)),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+              ),
+              const SizedBox(width: 4),
               Icon(icon, color: color, size: 20),
             ],
           ),
@@ -767,6 +788,12 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
                       ],
                     ),
                   ),
+                  IconButton(
+                    key: Key('quick_edit_btn_${p.productId}'),
+                    icon: const Icon(Icons.edit_outlined, size: 20, color: BrandColors.bluePrimary),
+                    tooltip: 'Edición Rápida',
+                    onPressed: () => _showQuickEditProductDialog(p),
+                  ),
                   Column(
                     children: [
                       Text(
@@ -790,6 +817,142 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
           },
         );
       },
+    );
+  }
+
+  void _showQuickEditProductDialog(ProductEntity product) {
+    final nameController = TextEditingController(text: product.name);
+    final priceController = TextEditingController(
+      text: product.price % 1 == 0 ? product.price.toInt().toString() : product.price.toString(),
+    );
+    final formKey = GlobalKey<FormState>();
+    bool isSaving = false;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogCtx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Row(
+            children: [
+              Icon(Icons.edit_note, color: BrandColors.bluePrimary),
+              SizedBox(width: 8),
+              Text('Edición Rápida', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Form(
+            key: formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Modifica nombre y precio para el menú móvil (GAP-MER-01)',
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    key: const Key('quick_edit_name_field'),
+                    controller: nameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Nombre del Producto *',
+                      border: OutlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'El nombre no puede estar vacío';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    key: const Key('quick_edit_price_field'),
+                    controller: priceController,
+                    keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                    decoration: const InputDecoration(
+                      labelText: 'Precio (C\$) *',
+                      border: OutlineInputBorder(),
+                      prefixText: 'C\$ ',
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'El precio es requerido';
+                      }
+                      final parsed = double.tryParse(val.trim());
+                      if (parsed == null || parsed < 0) {
+                        return 'Ingresa un precio válido mayor o igual a 0';
+                      }
+                      return null;
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: isSaving ? null : () => Navigator.pop(dialogCtx),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              key: const Key('quick_edit_save_btn'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: BrandColors.bluePrimary,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: isSaving
+                  ? null
+                  : () async {
+                      if (!formKey.currentState!.validate()) return;
+                      setDialogState(() => isSaving = true);
+                      final newName = nameController.text.trim();
+                      final newPrice = double.parse(priceController.text.trim());
+
+                      try {
+                        await widget.merchantService.updateProductQuick(
+                          product.productId,
+                          name: newName,
+                          price: newPrice,
+                        );
+                        if (mounted) {
+                          Navigator.pop(dialogCtx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('✅ Producto "$newName" actualizado a C\$ ${newPrice.toInt()}'),
+                              behavior: SnackBarBehavior.floating,
+                              duration: const Duration(seconds: 2),
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        setDialogState(() => isSaving = false);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('❌ Error al actualizar: $e'),
+                              backgroundColor: Colors.red,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      }
+                    },
+              child: isSaving
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                    )
+                  : const Text('Guardar'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

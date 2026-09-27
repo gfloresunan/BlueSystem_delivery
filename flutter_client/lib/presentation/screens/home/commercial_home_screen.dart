@@ -30,6 +30,7 @@ class CommercialHomeScreen extends StatefulWidget {
   final Function(ProductEntity product, String businessName)? onAddToCart;
   final VoidCallback? onCartClick;
   final VoidCallback? onNotificationsClick;
+  final VoidCallback? onOpenExpress;
 
   const CommercialHomeScreen({
     super.key,
@@ -40,6 +41,7 @@ class CommercialHomeScreen extends StatefulWidget {
     this.onAddToCart,
     this.onCartClick,
     this.onNotificationsClick,
+    this.onOpenExpress,
   });
 
   @override
@@ -68,11 +70,12 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
     });
   }
 
-  void _openMerchantDetail(BusinessEntity business) {
+  void _openMerchantById(String businessId, {String? businessName}) {
+    if (widget.merchantService == null) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => MerchantDetailScreen(
-          businessId: business.businessId,
+          businessId: businessId,
           merchantService: widget.merchantService!,
           onAddToCart: (prod, bizName) {
             if (widget.onAddToCart != null) {
@@ -83,6 +86,10 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
         ),
       ),
     );
+  }
+
+  void _openMerchantDetail(BusinessEntity business) {
+    _openMerchantById(business.businessId, businessName: business.name);
   }
 
   @override
@@ -122,7 +129,11 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
 
               // ─── 2. PROMOTIONAL BANNERS CAROUSEL ──────────────────────────
               const SizedBox(height: 16),
-              _buildBannersSection(),
+              _buildBannersSection(tenantId),
+
+              // ─── 2.5 EXPRESS X→Y DIRECT BANNER (GAP-HOM-01) ───────────────
+              const SizedBox(height: 14),
+              _buildExpressDeliveryBanner(),
 
               // ─── 3. CATEGORIES HORIZONTAL PILLS ───────────────────────────
               const SizedBox(height: 18),
@@ -379,12 +390,15 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   // ═══════════════════════════════════════════════════════════════════════════
   // 2. PROMOTIONAL BANNERS CAROUSEL (Streaming Firestore /banners)
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildBannersSection() {
+  Widget _buildBannersSection(String tenantId) {
     if (widget.bannerService == null) return const SizedBox.shrink();
 
     return StreamBuilder<List<BannerEntity>>(
-      stream: widget.bannerService!.watchActiveBanners(),
+      stream: widget.bannerService!.watchActiveBanners(tenantId: tenantId),
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const SizedBox.shrink();
+        }
         final banners = snapshot.data ?? [];
         if (banners.isEmpty) return const SizedBox.shrink();
 
@@ -397,67 +411,79 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
             separatorBuilder: (_, __) => const SizedBox(width: 12),
             itemBuilder: (context, index) {
               final b = banners[index];
-              return Container(
-                width: 300,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                  image: b.effectiveImageUrl.isNotEmpty
-                      ? DecorationImage(
-                          image: NetworkImage(b.effectiveImageUrl),
-                          fit: BoxFit.cover,
-                        )
-                      : null,
-                  gradient: b.effectiveImageUrl.isEmpty
-                      ? const LinearGradient(
-                          colors: [BrandColors.bluePrimary, BrandColors.blueSecondary],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        )
-                      : null,
-                ),
+              return InkWell(
+                onTap: () {
+                  final actionType = b.effectiveActionType.toUpperCase();
+                  final actionId = b.effectiveActionId;
+                  if ((actionType == 'BUSINESS' || actionType == 'COMERCIO') && actionId.isNotEmpty) {
+                    _openMerchantById(actionId, businessName: b.effectiveTitle);
+                  }
+                },
+                borderRadius: BorderRadius.circular(18),
                 child: Container(
-                  padding: const EdgeInsets.all(16),
+                  width: 300,
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(18),
-                    gradient: LinearGradient(
-                      colors: [Colors.black.withOpacity(0.65), Colors.transparent],
-                      begin: Alignment.bottomCenter,
-                      end: Alignment.topCenter,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        b.effectiveTitle,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        b.subtitle,
-                        style: TextStyle(
-                          color: Colors.white.withOpacity(0.88),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
                       ),
                     ],
+                    image: b.effectiveImageUrl.isNotEmpty
+                        ? DecorationImage(
+                            image: NetworkImage(b.effectiveImageUrl),
+                            fit: BoxFit.cover,
+                          )
+                        : null,
+                    gradient: b.effectiveImageUrl.isEmpty
+                        ? const LinearGradient(
+                            colors: [BrandColors.bluePrimary, BrandColors.blueSecondary],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
+                        : null,
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(18),
+                      gradient: LinearGradient(
+                        colors: [Colors.black.withOpacity(0.65), Colors.transparent],
+                        begin: Alignment.bottomCenter,
+                        end: Alignment.topCenter,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text(
+                          b.effectiveTitle,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w900,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (b.subtitle.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            b.subtitle,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.88),
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -465,6 +491,147 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
           ),
         );
       },
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 2.5 EXPRESS X→Y DIRECT PROMOTIONAL BANNER (GAP-HOM-01 / ADR-015 / ADR-026)
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildExpressDeliveryBanner() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          key: const Key('home_express_delivery_card'),
+          borderRadius: BorderRadius.circular(18),
+          onTap: () {
+            if (widget.onOpenExpress != null) {
+              widget.onOpenExpress!();
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('🚚 Envíos Express X→Y: Base C\$35 + C\$10/km con rastreo en vivo.'),
+                  duration: Duration(seconds: 3),
+                ),
+              );
+            }
+          },
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(18),
+              gradient: const LinearGradient(
+                colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.12),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+              border: Border.all(color: const Color(0xFF334155), width: 1.2),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF0EA5E9).withOpacity(0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(color: const Color(0xFF0EA5E9), width: 1.5),
+                  ),
+                  child: const Icon(
+                    Icons.two_wheeler_rounded,
+                    color: Color(0xFF38BDF8),
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          const Text(
+                            'Envíos Express X→Y',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF10B981),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              'DIRECTO',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 9,
+                                fontWeight: FontWeight.w900,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        'Punto a punto: paquetes y encomiendas',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.8),
+                          fontSize: 11,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      const Text(
+                        'Tarifa: Base C\$35 + C\$10/km',
+                        style: TextStyle(
+                          color: Color(0xFF38BDF8),
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton(
+                  key: const Key('home_express_delivery_button'),
+                  style: IconButton.styleFrom(
+                    backgroundColor: const Color(0xFF0EA5E9),
+                    foregroundColor: Colors.white,
+                  ),
+                  icon: const Icon(Icons.arrow_forward_rounded, size: 20),
+                  onPressed: () {
+                    if (widget.onOpenExpress != null) {
+                      widget.onOpenExpress!();
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('🚚 Envíos Express X→Y: Base C\$35 + C\$10/km con rastreo en vivo.'),
+                          duration: Duration(seconds: 3),
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -694,8 +861,11 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
     if (widget.merchantService == null) return const SizedBox.shrink();
 
     return StreamBuilder<List<ProductEntity>>(
-      stream: widget.merchantService!.watchAllActiveProducts(tenantId: tenantId),
+      stream: widget.merchantService!.watchFeaturedProducts(tenantId: tenantId),
       builder: (context, snapshot) {
+        if (snapshot.hasError) {
+          return const SizedBox.shrink();
+        }
         final products = snapshot.data ?? [];
         if (products.isEmpty) return const SizedBox.shrink();
 
@@ -968,22 +1138,25 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   // COMPONENT: STAR PRODUCT CARD (160dp Width - 1:1 StarProductCard.kt)
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildStarProductCard(ProductEntity p) {
-    return Container(
-      width: 160,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: BrandColors.outlineVariantLight),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Column(
+    return InkWell(
+      onTap: () => _openMerchantById(p.businessId, businessName: p.businessName),
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        width: 160,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: BrandColors.outlineVariantLight),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 4,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Stack(
@@ -1050,7 +1223,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
                     InkWell(
                       onTap: () {
                         if (widget.onAddToCart != null) {
-                          widget.onAddToCart!(p, p.categoryName);
+                          widget.onAddToCart!(p, p.businessName.isNotEmpty ? p.businessName : 'Comercio');
                         }
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
@@ -1076,6 +1249,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
           ),
         ],
       ),
+    ),
     );
   }
 
