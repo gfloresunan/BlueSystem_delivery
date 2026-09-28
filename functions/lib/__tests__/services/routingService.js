@@ -100,7 +100,6 @@ function clearPricingConfigCache() {
  * Sigue principio SSOT con separación estricta de X→Y.
  */
 async function getCommerceDeliveryPricingConfig(failClosed = false) {
-    var _a;
     const now = Date.now();
     if (cachedCommercePricingConfig && cachedCommercePricingConfigExpiresAt > now) {
         return cachedCommercePricingConfig;
@@ -109,25 +108,25 @@ async function getCommerceDeliveryPricingConfig(failClosed = false) {
         const doc = await admin.firestore().collection("system_config").doc("global").get();
         if (doc.exists) {
             const data = doc.data();
-            const cfg = data === null || data === void 0 ? void 0 : data.commerceDeliveryPricing;
-            const customerRate = typeof (cfg === null || cfg === void 0 ? void 0 : cfg.customerPricePerKm) === "number" && cfg.customerPricePerKm >= 0
+            const cfg = data?.commerceDeliveryPricing;
+            const customerRate = typeof cfg?.customerPricePerKm === "number" && cfg.customerPricePerKm >= 0
                 ? cfg.customerPricePerKm
-                : (typeof (data === null || data === void 0 ? void 0 : data.customerDeliveryRatePerKm) === "number" && data.customerDeliveryRatePerKm >= 0 ? data.customerDeliveryRatePerKm : null);
-            const courierRate = typeof (cfg === null || cfg === void 0 ? void 0 : cfg.courierPricePerKm) === "number" && cfg.courierPricePerKm >= 0
+                : (typeof data?.customerDeliveryRatePerKm === "number" && data.customerDeliveryRatePerKm >= 0 ? data.customerDeliveryRatePerKm : null);
+            const courierRate = typeof cfg?.courierPricePerKm === "number" && cfg.courierPricePerKm >= 0
                 ? cfg.courierPricePerKm
-                : (typeof (data === null || data === void 0 ? void 0 : data.courierRatePerKm) === "number" && data.courierRatePerKm >= 0 ? data.courierRatePerKm : null);
+                : (typeof data?.courierRatePerKm === "number" && data.courierRatePerKm >= 0 ? data.courierRatePerKm : null);
             if (failClosed && (customerRate === null || courierRate === null)) {
                 throw new Error("COMMERCE_PRICING_CONFIG_INVALID: /system_config/global carece de 'commerceDeliveryPricing.customerPricePerKm' o 'courierPricePerKm' válidos.");
             }
             cachedCommercePricingConfig = {
-                enabled: (_a = cfg === null || cfg === void 0 ? void 0 : cfg.enabled) !== null && _a !== void 0 ? _a : true,
-                customerPricePerKm: customerRate !== null && customerRate !== void 0 ? customerRate : exports.COMMERCE_DEFAULT_CUSTOMER_RATE_PER_KM,
-                courierPricePerKm: courierRate !== null && courierRate !== void 0 ? courierRate : exports.COMMERCE_DEFAULT_COURIER_RATE_PER_KM,
-                minimumCustomerDeliveryFee: typeof (cfg === null || cfg === void 0 ? void 0 : cfg.minimumCustomerDeliveryFee) === "number" ? cfg.minimumCustomerDeliveryFee : undefined,
-                currency: (cfg === null || cfg === void 0 ? void 0 : cfg.currency) || "NIO",
-                roundingPrecision: (cfg === null || cfg === void 0 ? void 0 : cfg.roundingPrecision) || "KM_BLOCK_2DEC",
-                roundingMode: (cfg === null || cfg === void 0 ? void 0 : cfg.roundingMode) || "HALF_UP",
-                pricingVersion: (cfg === null || cfg === void 0 ? void 0 : cfg.pricingVersion) || "v2.2-commerce",
+                enabled: cfg?.enabled ?? true,
+                customerPricePerKm: customerRate ?? exports.COMMERCE_DEFAULT_CUSTOMER_RATE_PER_KM,
+                courierPricePerKm: courierRate ?? exports.COMMERCE_DEFAULT_COURIER_RATE_PER_KM,
+                minimumCustomerDeliveryFee: typeof cfg?.minimumCustomerDeliveryFee === "number" ? cfg.minimumCustomerDeliveryFee : undefined,
+                currency: cfg?.currency || "NIO",
+                roundingPrecision: cfg?.roundingPrecision || "KM_BLOCK_2DEC",
+                roundingMode: cfg?.roundingMode || "HALF_UP",
+                pricingVersion: cfg?.pricingVersion || "v2.2-commerce",
             };
             cachedCommercePricingConfigExpiresAt = now + 60 * 1000;
             return cachedCommercePricingConfig;
@@ -139,7 +138,7 @@ async function getCommerceDeliveryPricingConfig(failClosed = false) {
     catch (err) {
         functions.logger.error("[COMMERCE_ROUTING_PRICING] Error al obtener /system_config/global.commerceDeliveryPricing:", err);
         if (failClosed) {
-            throw new Error(`COMMERCE_PRICING_SSOT_UNAVAILABLE: (${(err === null || err === void 0 ? void 0 : err.message) || err})`);
+            throw new Error(`COMMERCE_PRICING_SSOT_UNAVAILABLE: (${err?.message || err})`);
         }
     }
     return {
@@ -158,7 +157,6 @@ async function getCommerceDeliveryPricingConfig(failClosed = false) {
  * sin recurrir a fallbacks silenciosos con tarifas divergentes.
  */
 async function getXToYPricingConfig(failClosed = true) {
-    var _a;
     const now = Date.now();
     if (cachedPricingConfig && cachedPricingConfigExpiresAt > now) {
         return cachedPricingConfig;
@@ -167,7 +165,7 @@ async function getXToYPricingConfig(failClosed = true) {
         const doc = await admin.firestore().collection("system_config").doc("global").get();
         if (doc.exists) {
             const data = doc.data();
-            const cfg = data === null || data === void 0 ? void 0 : data.xToYPricing;
+            const cfg = data?.xToYPricing;
             if (!cfg) {
                 if (failClosed) {
                     throw new Error("PRICING_CONFIG_MISSING: /system_config/global no contiene configuración 'xToYPricing'.");
@@ -182,12 +180,12 @@ async function getXToYPricingConfig(failClosed = true) {
                     throw new Error("PRICING_CONFIG_INVALID: /system_config/global.xToYPricing carece de 'baseFee' o 'pricePerKm' válidos.");
                 }
                 cachedPricingConfig = {
-                    enabled: (_a = cfg.enabled) !== null && _a !== void 0 ? _a : true,
-                    baseFee: resolvedBaseFee !== null && resolvedBaseFee !== void 0 ? resolvedBaseFee : exports.TARIFA_BASE_NIO,
+                    enabled: cfg.enabled ?? true,
+                    baseFee: resolvedBaseFee ?? exports.TARIFA_BASE_NIO,
                     // Canónico Master: pricePerKm | Alias Legacy Compatible: perKmRate
-                    pricePerKm: resolvedPricePerKm !== null && resolvedPricePerKm !== void 0 ? resolvedPricePerKm : exports.COSTO_POR_KM_NIO,
+                    pricePerKm: resolvedPricePerKm ?? exports.COSTO_POR_KM_NIO,
                     currency: cfg.currency || "NIO",
-                    minimumFee: typeof cfg.minimumFee === "number" ? cfg.minimumFee : (resolvedBaseFee !== null && resolvedBaseFee !== void 0 ? resolvedBaseFee : exports.TARIFA_BASE_NIO),
+                    minimumFee: typeof cfg.minimumFee === "number" ? cfg.minimumFee : (resolvedBaseFee ?? exports.TARIFA_BASE_NIO),
                     maximumDistanceKm: typeof cfg.maximumDistanceKm === "number" ? cfg.maximumDistanceKm : 100,
                     roundingPrecision: cfg.roundingPrecision || "KM_BLOCK_2DEC",
                     roundingMode: cfg.roundingMode || "HALF_UP",
@@ -203,7 +201,7 @@ async function getXToYPricingConfig(failClosed = true) {
     catch (err) {
         functions.logger.error("[ROUTING_PRICING] Error crítico al obtener /system_config/global.xToYPricing:", err);
         if (failClosed) {
-            throw new Error(`PRICING_SSOT_UNAVAILABLE: No fue posible resolver tarifas autoritativas de Firestore (${(err === null || err === void 0 ? void 0 : err.message) || err})`);
+            throw new Error(`PRICING_SSOT_UNAVAILABLE: No fue posible resolver tarifas autoritativas de Firestore (${err?.message || err})`);
         }
     }
     // Fallback defensivo únicamente para tests o mocks que lo soliciten explícitamente
@@ -224,11 +222,10 @@ async function getXToYPricingConfig(failClosed = true) {
  * Política METRIC_EXACT: Precisión interna basada en metros exactos antes de redondear el importe final.
  */
 function buildPricingSnapshot(distanceMeters, config) {
-    var _a, _b, _c;
-    const baseFee = (_a = config === null || config === void 0 ? void 0 : config.baseFee) !== null && _a !== void 0 ? _a : exports.TARIFA_BASE_NIO;
-    const pricePerKm = (_b = config === null || config === void 0 ? void 0 : config.pricePerKm) !== null && _b !== void 0 ? _b : exports.COSTO_POR_KM_NIO;
-    const minFee = (_c = config === null || config === void 0 ? void 0 : config.minimumFee) !== null && _c !== void 0 ? _c : baseFee;
-    const policy = (config === null || config === void 0 ? void 0 : config.roundingPrecision) || "KM_BLOCK_2DEC";
+    const baseFee = config?.baseFee ?? exports.TARIFA_BASE_NIO;
+    const pricePerKm = config?.pricePerKm ?? exports.COSTO_POR_KM_NIO;
+    const minFee = config?.minimumFee ?? baseFee;
+    const policy = config?.roundingPrecision || "KM_BLOCK_2DEC";
     const displayKm = Math.round((distanceMeters / 1000.0) * 100) / 100;
     let courierEarnings;
     if (distanceMeters <= 0) {
@@ -257,7 +254,7 @@ function buildPricingSnapshot(distanceMeters, config) {
         roundingAdjustment,
         courierEarnings,
         platformRevenue,
-        currency: (config === null || config === void 0 ? void 0 : config.currency) || "NIO",
+        currency: config?.currency || "NIO",
         pricingPolicy: policy,
         pricingVersion: "v2.0",
         calculatedAt: new Date().toISOString(),
@@ -278,7 +275,6 @@ function getCacheKey(origin, dest, profile) {
  * Intenta resolver la ruta usando Google Routes API v2 (Compute Routes).
  */
 async function computeWithGoogleRoutes(origin, dest, profile, apiKey) {
-    var _a;
     const url = "https://routes.googleapis.com/directions/v2:computeRoutes";
     const travelMode = profile === "TWO_WHEELER" ? "TWO_WHEELER" : "DRIVE";
     const requestBody = {
@@ -337,12 +333,12 @@ async function computeWithGoogleRoutes(origin, dest, profile, apiKey) {
         const distanceMeters = Number(route.distanceMeters || 0);
         // duration viene en formato "1234s"
         const durationSeconds = parseInt((route.duration || "0s").replace("s", ""), 10) || 0;
-        const polyline = (_a = route.polyline) === null || _a === void 0 ? void 0 : _a.encodedPolyline;
+        const polyline = route.polyline?.encodedPolyline;
         return { distanceMeters, durationSeconds, polyline };
     }
     catch (e) {
         clearTimeout(timeoutId);
-        functions.logger.warn(`[ROUTING_ENGINE] Error al invocar Google Routes API: ${(e === null || e === void 0 ? void 0 : e.message) || e}`);
+        functions.logger.warn(`[ROUTING_ENGINE] Error al invocar Google Routes API: ${e?.message || e}`);
         return null;
     }
 }
@@ -379,7 +375,7 @@ async function computeWithOsrm(origin, dest) {
     }
     catch (e) {
         clearTimeout(timeoutId);
-        functions.logger.warn(`[ROUTING_ENGINE] Error al invocar OSRM Engine: ${(e === null || e === void 0 ? void 0 : e.message) || e}`);
+        functions.logger.warn(`[ROUTING_ENGINE] Error al invocar OSRM Engine: ${e?.message || e}`);
         return null;
     }
 }
@@ -485,10 +481,9 @@ async function calculateDeliveryRoute(options) {
  * Courier: distanceKm * courierPricePerKm
  */
 function buildCommercePricingSnapshot(distanceMeters, config) {
-    var _a, _b;
-    const customerRate = (_a = config === null || config === void 0 ? void 0 : config.customerPricePerKm) !== null && _a !== void 0 ? _a : exports.COMMERCE_DEFAULT_CUSTOMER_RATE_PER_KM;
-    const courierRate = (_b = config === null || config === void 0 ? void 0 : config.courierPricePerKm) !== null && _b !== void 0 ? _b : exports.COMMERCE_DEFAULT_COURIER_RATE_PER_KM;
-    const policy = (config === null || config === void 0 ? void 0 : config.roundingPrecision) || "KM_BLOCK_2DEC";
+    const customerRate = config?.customerPricePerKm ?? exports.COMMERCE_DEFAULT_CUSTOMER_RATE_PER_KM;
+    const courierRate = config?.courierPricePerKm ?? exports.COMMERCE_DEFAULT_COURIER_RATE_PER_KM;
+    const policy = config?.roundingPrecision || "KM_BLOCK_2DEC";
     const displayKm = Math.round((distanceMeters / 1000.0) * 100) / 100;
     let rawDeliveryFee;
     let rawCourierEarnings;
@@ -506,7 +501,7 @@ function buildCommercePricingSnapshot(distanceMeters, config) {
         rawDeliveryFee = Math.round(displayKm * customerRate * 100) / 100;
         rawCourierEarnings = Math.round(displayKm * courierRate * 100) / 100;
     }
-    if (typeof (config === null || config === void 0 ? void 0 : config.minimumCustomerDeliveryFee) === "number" && rawDeliveryFee < config.minimumCustomerDeliveryFee && distanceMeters > 0) {
+    if (typeof config?.minimumCustomerDeliveryFee === "number" && rawDeliveryFee < config.minimumCustomerDeliveryFee && distanceMeters > 0) {
         rawDeliveryFee = config.minimumCustomerDeliveryFee;
     }
     const deliveryFee = Math.round(rawDeliveryFee * 100) / 100;
@@ -519,9 +514,9 @@ function buildCommercePricingSnapshot(distanceMeters, config) {
         distanceMeters,
         deliveryFee,
         courierEarnings,
-        currency: (config === null || config === void 0 ? void 0 : config.currency) || "NIO",
+        currency: config?.currency || "NIO",
         pricingPolicy: policy,
-        pricingVersion: (config === null || config === void 0 ? void 0 : config.pricingVersion) || "v2.2-commerce",
+        pricingVersion: config?.pricingVersion || "v2.2-commerce",
         calculatedAt: new Date().toISOString(),
     };
     return { deliveryFee, courierEarnings, pricingSnapshot };
@@ -628,4 +623,3 @@ async function calculateCommerceDeliveryRoute(options) {
     };
     return fallbackResult;
 }
-//# sourceMappingURL=routingService.js.map

@@ -37,11 +37,13 @@ fun CheckoutStepContent(
     onSelectPaymentMethod: (String) -> Unit,
     groupedBizCount: Int,
     subtotal: Double = 0.0,
-    totalDeliveryFees: Double = 0.0,
     additionalChargeAmount: Double = 0.0,
     tipAmount: Double = 0.0,
     discountAmount: Double = 0.0,
     grandTotal: Double,
+    commerceQuote: com.example.presentation.customer.CommerceDeliveryQuote? = null,
+    isCalculatingCommerceQuote: Boolean = false,
+    quoteErrorMessage: String? = null,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -231,6 +233,79 @@ fun CheckoutStepContent(
             }
         }
 
+        // ── RESUMEN DE ENVÍO DINÁMICO (CORE ROUTING A->B) ────────────────
+        if (isCalculatingCommerceQuote) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F9FF)),
+                border = BorderStroke(1.dp, Color(0xFF38BDF8))
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = BluePrimary)
+                    Text("Calculando distancia vial y tarifa oficial...", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = BluePrimary)
+                }
+            }
+        } else if (commerceQuote != null) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
+                border = BorderStroke(1.5.dp, Color(0xFF0284C7))
+            ) {
+                Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("🚚", fontSize = 15.sp)
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("RESUMEN DE ENVÍO", fontSize = 12.sp, fontWeight = FontWeight.Black, color = Color(0xFF0284C7))
+                        }
+                        Surface(
+                            color = Color(0xFFE0F2FE),
+                            shape = RoundedCornerShape(4.dp)
+                        ) {
+                            Text(
+                                text = "Ruta Vial Real",
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0369A1),
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                    HorizontalDivider(color = Color(0xFFE2E8F0))
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Distancia de entrega", fontSize = 12.sp, color = Color(0xFF475569))
+                        Text("${String.format(java.util.Locale.US, "%.2f", commerceQuote.routeDistanceKm)} km", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Tarifa por km", fontSize = 12.sp, color = Color(0xFF475569))
+                        Text("C$ ${String.format(java.util.Locale.US, "%.2f", commerceQuote.customerPricePerKm)}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Costo de envío", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+                        Text("C$ ${String.format(java.util.Locale.US, "%.2f", commerceQuote.deliveryFee)}", fontSize = 13.sp, fontWeight = FontWeight.Black, color = Color(0xFF0284C7))
+                    }
+                }
+            }
+        } else if (quoteErrorMessage != null) {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF2F2)),
+                border = BorderStroke(1.dp, Color(0xFFFCA5A5))
+            ) {
+                Row(modifier = Modifier.padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text("⚠️ $quoteErrorMessage", fontSize = 11.sp, color = Color(0xFFB91C1C), fontWeight = FontWeight.Medium)
+                }
+            }
+        }
+
         Spacer(modifier = Modifier.height(2.dp))
 
         // ── NOTA DE ENTREGA (OPCIONAL) ──────────────────────────────────
@@ -342,25 +417,49 @@ fun CheckoutStepContent(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Banner informativo y desglose consolidado
+        // Desglose consolidado del Paso 2
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F5F9))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         ) {
-            Column(modifier = Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Info, contentDescription = null, tint = BluePrimary, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Modelo B: $groupedBizCount pedido(s) por comercio.",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+            Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Subtotal productos", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("C$ ${String.format(java.util.Locale.US, "%.2f", subtotal)}", fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Total Final:", fontSize = 13.sp, fontWeight = FontWeight.Black, color = BluePrimary)
-                    Text("C$ ${String.format("%.2f", grandTotal)}", fontSize = 14.sp, fontWeight = FontWeight.Black, color = BluePrimary)
+                    Text("Envío", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (commerceQuote != null) {
+                        Text("C$ ${String.format(java.util.Locale.US, "%.2f", commerceQuote.deliveryFee)}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0284C7))
+                    } else if (isCalculatingCommerceQuote) {
+                        Text("Calculando...", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Color(0xFF64748B))
+                    } else {
+                        Text("Pendiente de ruta", fontSize = 12.sp, fontWeight = FontWeight.Medium, color = Color(0xFFD97706))
+                    }
+                }
+                if (additionalChargeAmount > 0) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Cargo de servicio", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("(+) C$ ${String.format(java.util.Locale.US, "%.2f", additionalChargeAmount)}", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
+                if (discountAmount > 0) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Descuento", fontSize = 12.sp, color = Color(0xFF10B981))
+                        Text("-C$ ${String.format(java.util.Locale.US, "%.2f", discountAmount)}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF10B981))
+                    }
+                }
+                if (tipAmount > 0) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text("Propina al repartidor", fontSize = 12.sp, color = Color(0xFFF59E0B))
+                        Text("(+) C$ ${String.format(java.util.Locale.US, "%.2f", tipAmount)}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFFF59E0B))
+                    }
+                }
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("TOTAL FINAL", fontSize = 14.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary)
+                    Text("C$ ${String.format(java.util.Locale.US, "%.2f", grandTotal)}", fontSize = 15.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary)
                 }
             }
         }

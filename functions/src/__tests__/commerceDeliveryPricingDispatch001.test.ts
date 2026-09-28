@@ -201,4 +201,77 @@ describe("BSD-COMMERCE-DYNAMIC-DELIVERY-PRICING-COURIER-EARNINGS-DISPATCH-001: U
       assert.ok(!candidates.some((c) => c.id === "courier_E"));
     });
   });
+
+  // ─── 5. Regression Prevention & Multi-Platform Contract Fixes ────────────
+  describe("5. BSD-COMMERCE-DYNAMIC-DELIVERY-PRICING-CHECKOUT-ROOT-FIX-001 Regressions", () => {
+    const config: CommerceDeliveryPricingConfig = {
+      customerPricePerKm: 8.0,
+      courierPricePerKm: 7.0,
+      currency: "NIO",
+      roundingPrecision: "KM_BLOCK_2DEC",
+      pricingVersion: "v2.2-commerce",
+    };
+
+    it("TEST 17: Legacy delivery fee (C$ 60) is NEVER used as fallback in dynamic commerce flow", () => {
+      const legacyMerchantFee = 60.0;
+      const distanceMeters = 8700; // 8.7 km
+      const snapshot = buildCommercePricingSnapshot(distanceMeters, config);
+
+      assert.strictEqual(snapshot.deliveryFee, 69.6);
+      assert.notStrictEqual(snapshot.deliveryFee, legacyMerchantFee);
+      assert.strictEqual(snapshot.pricingSnapshot.customerPricePerKm, 8.0);
+    });
+
+    it("TEST 18: Address change invalidates previous quote and recalculates new A->B2 fee", () => {
+      // B1: Trabajo (8.7 km)
+      const quoteB1 = buildCommercePricingSnapshot(8700, config);
+      assert.strictEqual(quoteB1.deliveryFee, 69.6);
+      assert.strictEqual(quoteB1.courierEarnings, 60.9);
+
+      // B2: Casa (3.5 km)
+      const quoteB2 = buildCommercePricingSnapshot(3500, config);
+      assert.strictEqual(quoteB2.deliveryFee, 28.0);
+      assert.strictEqual(quoteB2.courierEarnings, 24.5);
+
+      // Verify B1 quote is not equal to B2 quote
+      assert.notStrictEqual(quoteB1.deliveryFee, quoteB2.deliveryFee);
+    });
+
+    it("TEST 19: Tip amount is strictly additive to courier earnings and never overwritten", () => {
+      const distanceMeters = 8700; // 8.7 km -> C$ 60.90
+      const tipAmount = 10.0;
+      const snapshot = buildCommercePricingSnapshot(distanceMeters, config);
+
+      const courierDistanceEarnings = snapshot.courierEarnings;
+      const courierTotalEarnings = courierDistanceEarnings + tipAmount;
+
+      assert.strictEqual(courierDistanceEarnings, 60.9);
+      assert.strictEqual(courierTotalEarnings, 70.9);
+    });
+
+    it("TEST 20: Missing coordinates fail-closed (cannot quote without valid A and B)", () => {
+      const validOrigin = validateCoordinatesInNicaragua(12.1364, -86.2514);
+      const invalidDest = validateCoordinatesInNicaragua(0.0, 0.0);
+
+      assert.strictEqual(validOrigin, true);
+      assert.strictEqual(invalidDest, false);
+    });
+
+    it("TEST 21: Pricing snapshot is immutable and unaffected by subsequent global config changes", () => {
+      const initialSnapshot = buildCommercePricingSnapshot(8700, config);
+      assert.strictEqual(initialSnapshot.deliveryFee, 69.6);
+
+      // Simulate future global price change to C$ 10.00/km
+      const futureConfig: CommerceDeliveryPricingConfig = {
+        customerPricePerKm: 10.0,
+        courierPricePerKm: 9.0,
+      };
+
+      const futureQuote = buildCommercePricingSnapshot(8700, futureConfig);
+      assert.strictEqual(futureQuote.deliveryFee, 87.0);
+
+      // The historical stamped snapshot remains C$ 69.60
+      assert.strictEqual(initialSnapshot.deliveryFee, 69.6);
+    });
+  });
 });

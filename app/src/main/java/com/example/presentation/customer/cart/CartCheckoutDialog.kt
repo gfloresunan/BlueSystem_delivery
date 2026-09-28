@@ -55,6 +55,11 @@ fun CartCheckoutDialog(
     appliedCouponCode: String?,
     couponValidationMessage: String?,
     isValidatingCoupon: Boolean,
+    commerceQuote: com.example.presentation.customer.CommerceDeliveryQuote? = null,
+    isCalculatingCommerceQuote: Boolean = false,
+    quoteErrorMessage: String? = null,
+    onCalculateCommerceQuote: (bizId: String, branchId: String?, destLat: Double, destLng: Double) -> Unit = { _, _, _, _ -> },
+    onClearCommerceQuote: () -> Unit = {},
     onDismiss: () -> Unit,
     onStepChange: (Int) -> Unit,
     onIncrementQuantity: (String) -> Unit,
@@ -78,7 +83,8 @@ fun CartCheckoutDialog(
         additionalChargeAmount: Double,
         additionalChargePolicyId: String,
         additionalChargePolicyVersion: Int,
-        deliveryNote: String
+        deliveryNote: String,
+        commerceQuote: com.example.presentation.customer.CommerceDeliveryQuote?
     ) -> Unit,
     onGuestRedirectToAuth: () -> Unit,
     onInvalidAddressWarning: () -> Unit
@@ -89,14 +95,12 @@ fun CartCheckoutDialog(
         cartItems.groupBy { if (it.businessId.isNotBlank()) it.businessId else "general" }
     }
 
-    // Calcular costo de envío por comercio en el carrito (Modelo B)
     val bizDeliveryFees = remember(groupedByBiz, publicBusinesses) {
         groupedByBiz.keys.associateWith { bizId ->
             val bInfo = publicBusinesses.find { it.id == bizId }
             bInfo?.getEffectiveDeliveryFee() ?: 45.0
         }
     }
-    val totalDeliveryFees = bizDeliveryFees.values.sum()
 
     // Estados de Propina al Repartidor (100% voluntaria)
     var tipAmount by remember { mutableStateOf(0.0) }
@@ -107,9 +111,12 @@ fun CartCheckoutDialog(
     var deliveryNoteText by remember { mutableStateOf("") }
 
     // Cálculo Canónico Soberano:
-    // total = max(0.0, subtotal - discount + deliveryFee + additionalCharge + tip)
-    val baseGrandTotal = subtotal + totalDeliveryFees + additionalChargeAmount + tipAmount
-    val grandTotal = (baseGrandTotal - appliedCouponDiscount).coerceAtLeast(0.0)
+    // Paso 1: Sin delivery fee
+    val step1Total = (subtotal - appliedCouponDiscount + additionalChargeAmount + tipAmount).coerceAtLeast(0.0)
+    // Paso 2: Con delivery fee autoritativo
+    val effectiveDeliveryFee = commerceQuote?.deliveryFee ?: 0.0
+    val step2Total = (subtotal - appliedCouponDiscount + effectiveDeliveryFee + additionalChargeAmount + tipAmount).coerceAtLeast(0.0)
+    val grandTotal = if (cartModalStep == 1) step1Total else step2Total
 
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -208,6 +215,48 @@ fun CartCheckoutDialog(
         }
     }
 
+    // BSD-COMMERCE-DYNAMIC-DELIVERY-PRICING-CHECKOUT-ROOT-FIX-001: Recalcular cotización autoritativa A->B reactivamente
+    LaunchedEffect(
+        cartModalStep,
+        selectedSavedAddressId,
+        isCustomAddressSelected,
+        customLatitude,
+        customLongitude,
+        userAddresses,
+        cartItems
+    ) {
+        if (cartModalStep == 2 && cartItems.isNotEmpty()) {
+            val primaryBizId = cartItems.firstOrNull()?.businessId ?: ""
+            val primaryBranchId = cartItems.firstOrNull()?.branchId
+
+            val selAddress = if (!isCustomAddressSelected && userAddresses.isNotEmpty()) {
+                userAddresses.find { it.id == selectedSavedAddressId }
+            } else null
+
+            val targetLat = if (selAddress != null && selAddress.latitude != 0.0) {
+                selAddress.latitude
+            } else if (customLatitude != 0.0) {
+                customLatitude
+            } else {
+                0.0
+            }
+
+            val targetLng = if (selAddress != null && selAddress.longitude != 0.0) {
+                selAddress.longitude
+            } else if (customLongitude != 0.0) {
+                customLongitude
+            } else {
+                0.0
+            }
+
+            if (targetLat != 0.0 && targetLng != 0.0 && !targetLat.isNaN() && !targetLng.isNaN() && primaryBizId.isNotBlank()) {
+                onCalculateCommerceQuote(primaryBizId, primaryBranchId, targetLat, targetLng)
+            } else {
+                onClearCommerceQuote()
+            }
+        }
+    }
+
     // Inicializar dirección guardada seleccionada al abrir
     LaunchedEffect(showCartDialog, userAddresses, defaultAddressDoc) {
         if (selectedSavedAddressId == null && userAddresses.isNotEmpty()) {
@@ -270,7 +319,7 @@ fun CartCheckoutDialog(
                         bizDeliveryFees = bizDeliveryFees,
                         publicBusinesses = publicBusinesses,
                         subtotal = subtotal,
-                        totalDeliveryFees = totalDeliveryFees,
+                        totalDeliveryFees = 0.0,
                         additionalChargeAmount = additionalChargeAmount,
                         additionalChargeDescription = additionalChargeDescription,
                         tipAmount = tipAmount,
@@ -287,7 +336,7 @@ fun CartCheckoutDialog(
                         },
                         appliedCouponDiscount = appliedCouponDiscount,
                         appliedCouponCode = appliedCouponCode,
-                        grandTotal = grandTotal,
+                        grandTotal = step1Total,
                         couponCodeInput = couponCodeInput,
                         onCouponCodeChange = onCouponCodeChange,
                         isValidatingCoupon = isValidatingCoupon,
@@ -335,11 +384,13 @@ fun CartCheckoutDialog(
                         onSelectPaymentMethod = { selectedPaymentMethod = it },
                         groupedBizCount = groupedByBiz.size,
                         subtotal = subtotal,
-                        totalDeliveryFees = totalDeliveryFees,
                         additionalChargeAmount = additionalChargeAmount,
                         tipAmount = tipAmount,
                         discountAmount = appliedCouponDiscount,
-                        grandTotal = grandTotal
+                        grandTotal = step2Total,
+                        commerceQuote = commerceQuote,
+                        isCalculatingCommerceQuote = isCalculatingCommerceQuote,
+                        quoteErrorMessage = quoteErrorMessage
                     )
                 }
             }
@@ -349,7 +400,7 @@ fun CartCheckoutDialog(
                 if (cartModalStep == 1) {
                     Button(
                         onClick = {
-                            onProceedToCheckout(grandTotal, cartItems.sumOf { it.quantity })
+                            onProceedToCheckout(step1Total, cartItems.sumOf { it.quantity })
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = BluePrimary, contentColor = Color.White)
                     ) {
@@ -385,6 +436,7 @@ fun CartCheckoutDialog(
                     }
 
                     val hasValidCoordinates = resolvedLat != 0.0 && resolvedLng != 0.0 && !resolvedLat.isNaN() && !resolvedLng.isNaN()
+                    val hasValidQuote = commerceQuote != null && !isCalculatingCommerceQuote
 
                     Button(
                         onClick = {
@@ -404,10 +456,18 @@ fun CartCheckoutDialog(
                                 ).show()
                                 return@Button
                             }
+                            if (!hasValidQuote) {
+                                Toast.makeText(
+                                    context,
+                                    "⚠️ Calculando tarifa oficial de entrega. Por favor espera un momento.",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                return@Button
+                            }
 
                             onConfirmOrder(
                                 effectiveAddressToSubmit,
-                                totalDeliveryFees,
+                                effectiveDeliveryFee,
                                 selectedPaymentMethod,
                                 selAddress?.id,
                                 resolvedLat,
@@ -419,10 +479,11 @@ fun CartCheckoutDialog(
                                 additionalChargeAmount,
                                 additionalChargePolicyId,
                                 additionalChargePolicyVersion,
-                                deliveryNoteText
+                                deliveryNoteText,
+                                commerceQuote
                             )
                         },
-                        enabled = !isPlacingOrder && isAddressValid,
+                        enabled = !isPlacingOrder && isAddressValid && hasValidQuote,
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary

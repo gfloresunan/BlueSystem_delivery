@@ -38,7 +38,8 @@ const functions = __importStar(require("firebase-functions"));
 const routingService_1 = require("../services/routingService");
 /**
  * Callable HTTPS: calculateDeliveryRouteCallable
- * Punto de entrada autoritativo del backend para cotizar distancias reales y tarifas de entrega X→Y.
+ * Punto de entrada autoritativo del backend para cotizar distancias reales y tarifas de entrega.
+ * Soporta DOMINIO A (COMMERCE_DELIVERY) y DOMINIO B (X_TO_Y_DELIVERY) con contratos canónicos separados.
  */
 exports.calculateDeliveryRouteCallable = functions.https.onCall(async (data, context) => {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
@@ -50,6 +51,8 @@ exports.calculateDeliveryRouteCallable = functions.https.onCall(async (data, con
     const destLng = Number((_h = (_g = data === null || data === void 0 ? void 0 : data.destination) === null || _g === void 0 ? void 0 : _g.longitude) !== null && _h !== void 0 ? _h : data === null || data === void 0 ? void 0 : data.destLng);
     const transportProfile = ((data === null || data === void 0 ? void 0 : data.transportProfile) === "DRIVE" ? "DRIVE" : "TWO_WHEELER");
     const tenantId = (data === null || data === void 0 ? void 0 : data.tenantId) || ((_k = (_j = context.auth) === null || _j === void 0 ? void 0 : _j.token) === null || _k === void 0 ? void 0 : _k.tenantId) || "default";
+    const rawServiceType = ((data === null || data === void 0 ? void 0 : data.serviceType) || (data === null || data === void 0 ? void 0 : data.type) || "").toString().trim().toUpperCase();
+    const isCommerce = rawServiceType === "COMMERCE" || rawServiceType === "COMMERCE_DELIVERY" || rawServiceType === "COMMERCIAL";
     if (isNaN(originLat) || isNaN(originLng) || isNaN(destLat) || isNaN(destLng)) {
         throw new functions.https.HttpsError("invalid-argument", "MISSING_OR_INVALID_COORDINATES: Se requieren origin y destination con latitude y longitude válidas.");
     }
@@ -60,8 +63,10 @@ exports.calculateDeliveryRouteCallable = functions.https.onCall(async (data, con
             transportProfile,
             tenantId,
         };
-        const routingResult = await (0, routingService_1.calculateDeliveryRoute)(options);
-        functions.logger.info(`[ROUTING_CALLABLE] Rutas calculadas para caller=${callerUid}: dist=${routingResult.routeDistanceMeters}m, dur=${routingResult.routeDurationSeconds}s, fee=C$${routingResult.calculatedFee}, provider=${routingResult.routingProvider}`);
+        const routingResult = isCommerce
+            ? await (0, routingService_1.calculateCommerceDeliveryRoute)(options)
+            : await (0, routingService_1.calculateDeliveryRoute)(options);
+        functions.logger.info(`[ROUTING_CALLABLE] Rutas calculadas para caller=${callerUid} (service=${isCommerce ? "COMMERCE" : "X_TO_Y"}): dist=${routingResult.routeDistanceMeters}m, dur=${routingResult.routeDurationSeconds}s, fee=C$${routingResult.calculatedFee}, provider=${routingResult.routingProvider}`);
         return {
             success: true,
             data: routingResult,

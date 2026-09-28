@@ -120,12 +120,6 @@ fun CartItemsStepContent(
                                 fontSize = 14.sp,
                                 color = MaterialTheme.colorScheme.primary
                             )
-                            Text(
-                                text = "Envío: C$ ${fee.toInt()}",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
                         }
 
                         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
@@ -389,9 +383,19 @@ fun CartItemsStepContent(
                     Text("Subtotal Productos", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
                     Text("C$ ${String.format("%.2f", subtotal)}", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                 }
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Envío (${groupedByBiz.size} comercio${if (groupedByBiz.size > 1) "s" else ""})", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
-                    Text("C$ ${String.format("%.2f", totalDeliveryFees)}", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Envío", fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Medium)
+                    Text(
+                        "Se calculará al seleccionar\ntu dirección de entrega",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color(0xFF64748B),
+                        textAlign = TextAlign.End
+                    )
                 }
                 if (additionalChargeAmount > 0) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -413,7 +417,7 @@ fun CartItemsStepContent(
                 }
                 HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Total a Pagar", fontSize = 15.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary)
+                    Text("Total Parcial", fontSize = 15.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary)
                     Text("C$ ${String.format("%.2f", grandTotal)}", fontSize = 16.sp, fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.primary)
                 }
             }

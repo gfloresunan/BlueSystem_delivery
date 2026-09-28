@@ -96,17 +96,56 @@ class CartProvider extends ChangeNotifier {
 
   double? _dynamicDeliveryFee;
   double? get dynamicDeliveryFee => _dynamicDeliveryFee;
+  bool get hasAuthoritativeQuote => _dynamicDeliveryFee != null;
 
-  /// Dynamic delivery fee from Core Route Calculation or Business SSOT
-  /// Fallback: C$ 45.00 for Commerce Delivery. NEVER C$ 35.00 (which belongs strictly to X->Y package delivery).
-  double get deliveryFee {
-    if (_items.isEmpty) return 0.0;
-    return _dynamicDeliveryFee ?? _activeBusiness?.deliveryFee ?? 45.0;
-  }
+  double? _routeDistanceKm;
+  double? get routeDistanceKm => _routeDistanceKm;
+
+  double? _customerPricePerKm;
+  double? get customerPricePerKm => _customerPricePerKm;
+
+  double? _courierPricePerKm;
+  double? get courierPricePerKm => _courierPricePerKm;
+
+  double? _courierDistanceEarnings;
+  double? get courierDistanceEarnings => _courierDistanceEarnings;
+
+  Map<String, dynamic>? _pricingSnapshot;
+  Map<String, dynamic>? get pricingSnapshot => _pricingSnapshot;
+
+  /// In Paso 1 / Unquoted state, returns 0.0. In Paso 2 with active quote, returns the authoritative fee.
+  double get deliveryFee => _dynamicDeliveryFee ?? 0.0;
 
   double get total {
     if (_items.isEmpty) return 0.0;
     return subtotal + deliveryFee;
+  }
+
+  void setCommerceQuote({
+    required double deliveryFee,
+    required double routeDistanceKm,
+    required double customerPricePerKm,
+    required double courierPricePerKm,
+    required double courierDistanceEarnings,
+    required Map<String, dynamic> pricingSnapshot,
+  }) {
+    _dynamicDeliveryFee = deliveryFee;
+    _routeDistanceKm = routeDistanceKm;
+    _customerPricePerKm = customerPricePerKm;
+    _courierPricePerKm = courierPricePerKm;
+    _courierDistanceEarnings = courierDistanceEarnings;
+    _pricingSnapshot = pricingSnapshot;
+    notifyListeners();
+  }
+
+  void clearCommerceQuote() {
+    _dynamicDeliveryFee = null;
+    _routeDistanceKm = null;
+    _customerPricePerKm = null;
+    _courierPricePerKm = null;
+    _courierDistanceEarnings = null;
+    _pricingSnapshot = null;
+    notifyListeners();
   }
 
   void setDynamicDeliveryFee(double? fee) {

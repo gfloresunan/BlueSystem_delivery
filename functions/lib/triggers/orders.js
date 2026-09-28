@@ -279,12 +279,13 @@ exports.notifyNewOrder = functions.firestore
             if (bizData.commissionOverrideRate !== undefined && bizData.commissionOverrideRate !== null) {
                 commissionRate = Number(bizData.commissionOverrideRate);
             }
-            // Step 2: ALWAYS read system_config/global for courier rate AND commission defaults
-            // CR-003 CLOSED: This read is no longer conditional on commissionOverrideRate.
+            // Step 2: ALWAYS read system_config/global for commerce pricing, courier rate AND commission defaults
+            let customerRatePerKm = 8.0;
             try {
                 const globalCfgDoc = await db.collection("system_config").doc("global").get();
                 if (globalCfgDoc.exists) {
                     const gData = globalCfgDoc.data() || {};
+                    const commercePricing = gData.commerceDeliveryPricing || {};
                     // Merchant commission defaults (only if no override was set above)
                     if (bizData.commissionOverrideRate === undefined || bizData.commissionOverrideRate === null) {
                         if (gData.merchantCommissionRate != null) {
@@ -297,8 +298,18 @@ exports.notifyNewOrder = functions.firestore
                     if (gData.merchantCommissionPolicyVersion) {
                         policyVersion = Number(gData.merchantCommissionPolicyVersion);
                     }
-                    // Courier rate: ALWAYS from global config, NEVER from client payload
-                    if (gData.courierRatePerKm != null) {
+                    // Customer Commerce Rate:
+                    if (commercePricing.customerPricePerKm != null) {
+                        customerRatePerKm = Number(commercePricing.customerPricePerKm);
+                    }
+                    else if (gData.customerDeliveryRatePerKm != null) {
+                        customerRatePerKm = Number(gData.customerDeliveryRatePerKm);
+                    }
+                    // Courier rate: ALWAYS from global config (commerceDeliveryPricing or fallback to courierRatePerKm)
+                    if (commercePricing.courierPricePerKm != null) {
+                        courierRatePerKm = Number(commercePricing.courierPricePerKm);
+                    }
+                    else if (gData.courierRatePerKm != null) {
                         courierRatePerKm = Number(gData.courierRatePerKm);
                     }
                     if (gData.courierOrderBonus != null) {
@@ -401,6 +412,18 @@ exports.notifyNewOrder = functions.firestore
             const courierTotalEarningsFloat = Math.round(courierTotalEarningsCents) / 100;
             const courierDistanceEarningsFloat = Math.round(distanceEarningsCents) / 100;
             const courierBonusEarningsFloat = Math.round(bonusEarningsCents) / 100;
+            const pricingSnapshot = {
+                serviceType: "COMMERCE_DELIVERY",
+                customerPricePerKm: customerRatePerKm,
+                courierPricePerKm: effectiveCourierRate,
+                routeDistanceKm,
+                routeDistanceMeters,
+                deliveryFee: deliveryFeeVal,
+                courierEarnings: courierDistanceEarningsFloat,
+                currency: "NIO",
+                pricingVersion: "v2.2-commerce",
+                calculatedAt: new Date().toISOString(),
+            };
             const locationStamp = {
                 commercialMunicipalityId: muniId,
                 originMunicipalityId: muniId,
@@ -431,6 +454,10 @@ exports.notifyNewOrder = functions.firestore
                 distanceKm: routeDistanceKm,
                 distanceSource,
                 routingProvider,
+                customerPricePerKm: customerRatePerKm,
+                courierPricePerKm: effectiveCourierRate,
+                pricingVersion: "v2.2-commerce",
+                pricingSnapshot,
                 courierRatePerKmApplied: effectiveCourierRate,
                 courierOrderBonusApplied: courierOrderBonus,
                 courierDistanceEarnings: courierDistanceEarningsFloat,

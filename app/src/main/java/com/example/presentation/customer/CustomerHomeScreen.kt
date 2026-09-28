@@ -123,9 +123,12 @@ fun CustomerHomeScreen(
     val branches by viewModel.branches.collectAsState()
     val recommendedBusinesses by viewModel.recommendedBusinesses.collectAsState()
     val trendingBusinesses by viewModel.trendingBusinesses.collectAsState()
-    // PRODUCT CATEGORY DISCOVERY FIX — cargados por el ViewModel via listenToAllActiveProducts()
     val allProducts by viewModel.allProducts.collectAsState()
     val recentOrders by viewModel.recentOrders.collectAsState()
+
+    val commerceQuote by viewModel.commerceDeliveryQuote.collectAsState()
+    val isCalculatingCommerceQuote by viewModel.isCalculatingCommerceQuote.collectAsState()
+    val quoteErrorMessage by viewModel.quoteErrorMessage.collectAsState()
 
     val currentUserName = remember(userProfile, isGuest) {
         val profName = userProfile?.nombre?.ifBlank { userProfile?.name }
@@ -636,11 +639,26 @@ fun CustomerHomeScreen(
         appliedCouponCode = appliedCouponCode,
         couponValidationMessage = couponValidationMessage,
         isValidatingCoupon = isValidatingCoupon,
+        commerceQuote = commerceQuote,
+        isCalculatingCommerceQuote = isCalculatingCommerceQuote,
+        quoteErrorMessage = quoteErrorMessage,
+        onCalculateCommerceQuote = { bizId, branchId, destLat, destLng ->
+            viewModel.calculateCommerceDeliveryQuote(bizId, branchId, destLat, destLng)
+        },
+        onClearCommerceQuote = {
+            viewModel.clearCommerceQuote()
+        },
         onDismiss = {
             showCartDialog = false
             cartModalStep = 1
+            viewModel.clearCommerceQuote()
         },
-        onStepChange = { cartModalStep = it },
+        onStepChange = { step ->
+            cartModalStep = step
+            if (step == 1) {
+                viewModel.clearCommerceQuote()
+            }
+        },
         onIncrementQuantity = { CartManager.incrementQuantity(it) },
         onDecrementQuantity = { CartManager.decrementQuantity(it) },
         onRemoveItem = { CartManager.removeItem(it) },
@@ -657,7 +675,7 @@ fun CustomerHomeScreen(
                         rawCode = cleanCode,
                         businessId = targetBizId,
                         cartSubtotal = CartManager.subtotal,
-                        deliveryFee = 45.0,
+                        deliveryFee = 0.0,
                         customerId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid
                     )
                     if (result.isValid) {
@@ -691,7 +709,7 @@ fun CustomerHomeScreen(
             CartManager.beginCheckout(grandTotal, itemCount)
             cartModalStep = 2
         },
-        onConfirmOrder = { effectiveAddress, deliveryFee, paymentMethod, addressId, lat, lng, fullAddr, instr, tipAmt, tipType, addChargeAmt, addChargePolicyId, addChargePolicyVer, deliveryNote ->
+        onConfirmOrder = { effectiveAddress, deliveryFee, paymentMethod, addressId, lat, lng, fullAddr, instr, tipAmt, tipType, addChargeAmt, addChargePolicyId, addChargePolicyVer, deliveryNote, quote ->
             val primaryBizId = cartItems.firstOrNull()?.businessId ?: "general"
             val primaryBizName = cartItems.firstOrNull()?.businessName ?: "Comercio"
             DashboardAnalyticsTracker.logEvent(
@@ -720,7 +738,8 @@ fun CustomerHomeScreen(
                 additionalChargeAmount = addChargeAmt,
                 additionalChargePolicyId = addChargePolicyId,
                 additionalChargePolicyVersion = addChargePolicyVer,
-                deliveryNote = deliveryNote
+                deliveryNote = deliveryNote,
+                commerceQuote = quote
             )
         },
         onGuestRedirectToAuth = {

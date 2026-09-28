@@ -18,6 +18,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
+data class CommerceDeliveryQuote(
+    val routeDistanceKm: Double = 0.0,
+    val customerPricePerKm: Double = 8.0,
+    val deliveryFee: Double = 0.0,
+    val courierPricePerKm: Double = 7.0,
+    val courierDistanceEarnings: Double = 0.0,
+    val pricingVersion: String = "v2.2-commerce",
+    val quotedAt: String = "",
+    val pricingSnapshot: Map<String, Any?> = emptyMap(),
+    val isFallback: Boolean = false
+)
+
 class CustomerHomeViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
     private val auth = FirebaseAuth.getInstance()
@@ -53,6 +65,16 @@ class CustomerHomeViewModel : ViewModel() {
 
     private val _isPlacingOrder = MutableStateFlow(false)
     val isPlacingOrder: StateFlow<Boolean> = _isPlacingOrder.asStateFlow()
+
+    // ── ESTADO REACTIVO DE COTIZACIÓN COMERCIO (BSD-COMMERCE-DYNAMIC-DELIVERY-PRICING-CHECKOUT-ROOT-FIX-001) ──
+    private val _commerceDeliveryQuote = MutableStateFlow<CommerceDeliveryQuote?>(null)
+    val commerceDeliveryQuote: StateFlow<CommerceDeliveryQuote?> = _commerceDeliveryQuote.asStateFlow()
+
+    private val _isCalculatingCommerceQuote = MutableStateFlow(false)
+    val isCalculatingCommerceQuote: StateFlow<Boolean> = _isCalculatingCommerceQuote.asStateFlow()
+
+    private val _quoteErrorMessage = MutableStateFlow<String?>(null)
+    val quoteErrorMessage: StateFlow<String?> = _quoteErrorMessage.asStateFlow()
 
     private var favoritesListener: com.google.firebase.firestore.ListenerRegistration? = null
     private var profileListener: com.google.firebase.firestore.ListenerRegistration? = null
@@ -503,7 +525,87 @@ class CustomerHomeViewModel : ViewModel() {
         }
     }
 
-    // ─── Creación de Pedido en Firestore (CRÍTICO #1) ─────────────────────
+    // ─── Cotización y Creación de Pedido en Firestore (CRÍTICO #1) ─────────────────────
+
+    fun clearCommerceQuote() {
+        _commerceDeliveryQuote.value = null
+        _quoteErrorMessage.value = null
+        _isCalculatingCommerceQuote.value = false
+    }
+
+    fun calculateCommerceDeliveryQuote(
+        bizId: String,
+        branchId: String?,
+        destLat: Double,
+        destLng: Double
+    ) {
+        if (destLat == 0.0 || destLng == 0.0 || destLat.isNaN() || destLng.isNaN()) {
+            _commerceDeliveryQuote.value = null
+            return
+        }
+
+        val bizInfo = publicBusinesses.value.find { it.id == bizId }
+        val branchInfo = branches.value.find { it.id == branchId }
+        val originLat = if (branchInfo != null && branchInfo.latitude != 0.0) branchInfo.latitude else (bizInfo?.latitude ?: 0.0)
+        val originLng = if (branchInfo != null && branchInfo.longitude != 0.0) branchInfo.longitude else (bizInfo?.longitude ?: 0.0)
+
+        if (originLat == 0.0 || originLng == 0.0 || originLat.isNaN() || originLng.isNaN()) {
+            _commerceDeliveryQuote.value = null
+            _quoteErrorMessage.value = "Ubicación del comercio no disponible para calcular la ruta."
+            return
+        }
+
+        viewModelScope.launch {
+            _isCalculatingCommerceQuote.value = true
+            _quoteErrorMessage.value = null
+            try {
+                val routeSnapshot = com.example.domain.engine.RealRoutingEngine.resolveCommerceRoute(
+                    originLat = originLat,
+                    originLng = originLng,
+                    destLat = destLat,
+                    destLng = destLng
+                )
+                val pSnap = routeSnapshot.pricingSnapshot
+                val distKm = pSnap?.distanceKm ?: (kotlin.math.round((routeSnapshot.routeDistanceMeters / 1000.0) * 100.0) / 100.0)
+                val customerRate = pSnap?.pricePerKm ?: 8.0
+                val authoritativeFee = routeSnapshot.calculatedFee
+                val courierRate = 7.0
+                val courierDistEarnings = pSnap?.courierEarnings ?: (kotlin.math.round(distKm * courierRate * 100.0) / 100.0)
+
+                val snapMap = mapOf(
+                    "serviceType" to "COMMERCE_DELIVERY",
+                    "routeDistanceKm" to distKm,
+                    "routeDistanceMeters" to routeSnapshot.routeDistanceMeters,
+                    "customerPricePerKm" to customerRate,
+                    "deliveryFee" to authoritativeFee,
+                    "courierPricePerKm" to courierRate,
+                    "courierDistanceEarnings" to courierDistEarnings,
+                    "pricingPolicy" to (pSnap?.pricingPolicy ?: "KM_BLOCK_2DEC"),
+                    "pricingVersion" to (pSnap?.pricingVersion ?: "v2.2-commerce"),
+                    "routingProvider" to routeSnapshot.routingProvider,
+                    "calculatedAt" to routeSnapshot.calculatedAt
+                )
+
+                _commerceDeliveryQuote.value = CommerceDeliveryQuote(
+                    routeDistanceKm = distKm,
+                    customerPricePerKm = customerRate,
+                    deliveryFee = authoritativeFee,
+                    courierPricePerKm = courierRate,
+                    courierDistanceEarnings = courierDistEarnings,
+                    pricingVersion = pSnap?.pricingVersion ?: "v2.2-commerce",
+                    quotedAt = routeSnapshot.calculatedAt,
+                    pricingSnapshot = snapMap,
+                    isFallback = routeSnapshot.isFallback
+                )
+            } catch (e: Exception) {
+                android.util.Log.e("COMMERCE_PRICING", "Error calculando cotización Commerce A->B", e)
+                _commerceDeliveryQuote.value = null
+                _quoteErrorMessage.value = "Error al calcular la ruta de entrega: ${e.message ?: "Servidor no disponible"}"
+            } finally {
+                _isCalculatingCommerceQuote.value = false
+            }
+        }
+    }
 
     fun placeOrder(
         deliveryAddress: String,
@@ -523,11 +625,12 @@ class CustomerHomeViewModel : ViewModel() {
         additionalChargeAmount: Double = 0.0,
         additionalChargePolicyId: String = "global_delivery_charge",
         additionalChargePolicyVersion: Int = 1,
-        deliveryNote: String = ""
+        deliveryNote: String = "",
+        commerceQuote: CommerceDeliveryQuote? = null
     ) {
         val uid = auth.currentUser?.uid
         val items = CartManager.cartItems.value
-        android.util.Log.d("ORDER_DEBUG", "[ORDER_DEBUG] CONFIRM_CLICK | uid=$uid | itemsCount=${items.size} | address='$deliveryAddress' | coupon=$couponCode | discount=$couponDiscount | tip=$tipAmount | addCharge=$additionalChargeAmount | note='$deliveryNote'")
+        android.util.Log.d("ORDER_DEBUG", "[ORDER_DEBUG] CONFIRM_CLICK | uid=$uid | itemsCount=${items.size} | address='$deliveryAddress' | coupon=$couponCode | discount=$couponDiscount | tip=$tipAmount | addCharge=$additionalChargeAmount | note='$deliveryNote' | quoteFee=${commerceQuote?.deliveryFee}")
         if (uid == null || items.isEmpty()) {
             android.util.Log.w("ORDER_DEBUG", "[ORDER_DEBUG] placeOrder() BLOCKED: uid=$uid, itemsIsEmpty=${items.isEmpty()}")
             return
@@ -593,7 +696,7 @@ class CustomerHomeViewModel : ViewModel() {
                     val bizInfo: BusinessInfo? = publicBusinesses.value.find { it.id == bizId }
                         ?: runCatching { db.collection("businesses").document(bizId).get().await().toBusinessInfoSafely() }.getOrNull()
                     val bizName = bizItems.firstOrNull { it.businessName.isNotBlank() }?.businessName ?: bizInfo?.getEffectiveName() ?: CartManager.currentBusinessName
-                    val bizDeliveryFee = bizInfo?.getEffectiveDeliveryFee() ?: deliveryFee
+                    val effectiveDeliveryFee = commerceQuote?.deliveryFee ?: deliveryFee
                     val branchId = bizItems.firstOrNull { it.branchId.isNotBlank() }?.branchId ?: ""
                     val branchInfo = branches.value.find { it.id == branchId }
 
@@ -625,7 +728,27 @@ class CustomerHomeViewModel : ViewModel() {
 
                     val subtotal = bizItems.sumOf { it.unitPriceWithExtras * it.quantity }
                     val totalDiscount = couponDiscount + promotionDiscount
-                    val total = kotlin.math.max(0.0, subtotal - totalDiscount + bizDeliveryFee + additionalChargeAmount + tipAmount)
+
+                    val bizLat = if (branchInfo != null && branchInfo.latitude != 0.0) branchInfo.latitude else (bizInfo?.latitude ?: 0.0)
+                    val bizLng = if (branchInfo != null && branchInfo.longitude != 0.0) branchInfo.longitude else (bizInfo?.longitude ?: 0.0)
+                    val bizAddr = if (branchInfo != null && branchInfo.address.isNotBlank()) branchInfo.address else (bizInfo?.getEffectiveAddress() ?: "")
+
+                    val calculatedDistanceMeters = if (bizLat != 0.0 && bizLng != 0.0 && effectiveLat != 0.0 && effectiveLng != 0.0) {
+                        val straightLineKm = com.example.GeoUtils.calculateDistance(bizLat, bizLng, effectiveLat, effectiveLng)
+                        kotlin.math.round(straightLineKm * 1.28 * 1000.0).toLong()
+                    } else {
+                        0L
+                    }
+                    val calculatedDistanceKm = kotlin.math.round((calculatedDistanceMeters / 1000.0) * 100.0) / 100.0
+
+                    val effectiveRouteKm = commerceQuote?.routeDistanceKm ?: calculatedDistanceKm
+                    val effectiveCustomerRate = commerceQuote?.customerPricePerKm ?: 8.0
+                    val effectiveCourierRate = commerceQuote?.courierPricePerKm ?: 7.0
+                    val effectiveCourierDistEarnings = commerceQuote?.courierDistanceEarnings ?: (kotlin.math.round(effectiveRouteKm * effectiveCourierRate * 100.0) / 100.0)
+                    val effectivePricingSnapshot = commerceQuote?.pricingSnapshot ?: emptyMap()
+                    val effectivePricingVersion = commerceQuote?.pricingVersion ?: "v2.2-commerce"
+
+                    val total = kotlin.math.max(0.0, subtotal - totalDiscount + effectiveDeliveryFee + additionalChargeAmount + tipAmount)
 
                     val orderItems = bizItems.map { item ->
                         mapOf(
@@ -651,25 +774,10 @@ class CustomerHomeViewModel : ViewModel() {
                     }
 
                     val orderRef = db.collection("orders").document()
-                    android.util.Log.d("ORDER_DEBUG", "[ORDER_DEBUG] ORDER_CREATE | orderId=${orderRef.id} | businessId=$bizId | branchId=$branchId | muni=$effectiveOriginMuni | subtotal=$subtotal | couponDisc=$couponDiscount | tip=$tipAmount | addCharge=$additionalChargeAmount | total=$total | lat=$effectiveLat | lng=$effectiveLng")
+                    android.util.Log.d("ORDER_DEBUG", "[ORDER_DEBUG] ORDER_CREATE | orderId=${orderRef.id} | businessId=$bizId | branchId=$branchId | muni=$effectiveOriginMuni | subtotal=$subtotal | fee=$effectiveDeliveryFee | tip=$tipAmount | addCharge=$additionalChargeAmount | total=$total | lat=$effectiveLat | lng=$effectiveLng")
 
                     val canonicalMethod = if (paymentMethod.isBlank()) "efectivo" else paymentMethod
                     val merchantGross = maxOf(0.0, subtotal - totalDiscount)
-                    val bizLat = if (branchInfo != null && branchInfo.latitude != 0.0) branchInfo.latitude else (bizInfo?.latitude ?: 0.0)
-                    val bizLng = if (branchInfo != null && branchInfo.longitude != 0.0) branchInfo.longitude else (bizInfo?.longitude ?: 0.0)
-                    val bizAddr = if (branchInfo != null && branchInfo.address.isNotBlank()) branchInfo.address else (bizInfo?.getEffectiveAddress() ?: "")
-
-                    // BSD-COURIER-EARNINGS-DISTANCE-FORENSIC-001: Estimación canónica de distancia al crear orden
-                    // COURIER-RATE-SSOT-REMEDIATION-004: Distance estimation only (geometric, NOT financial authority).
-                    // Courier financial fields (courierRatePerKmApplied, courierDistanceEarnings, courierTotalEarnings)
-                    // are NO LONGER sent by the client. The backend is the sole authority via system_config/global.
-                    val calculatedDistanceMeters = if (bizLat != 0.0 && bizLng != 0.0 && effectiveLat != 0.0 && effectiveLng != 0.0) {
-                        val straightLineKm = com.example.GeoUtils.calculateDistance(bizLat, bizLng, effectiveLat, effectiveLng)
-                        kotlin.math.round(straightLineKm * 1.28 * 1000.0).toLong()
-                    } else {
-                        0L
-                    }
-                    val calculatedDistanceKm = kotlin.math.round((calculatedDistanceMeters / 1000.0) * 100.0) / 100.0
                     val words = bizName.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }
                     val cleanPrefix = when {
                         words.size >= 3 -> words.take(3).map { it.first().uppercaseChar() }.joinToString("")
@@ -694,6 +802,7 @@ class CustomerHomeViewModel : ViewModel() {
                         "businessId" to bizId,
                         "businessName" to bizName,
                         "branchId" to branchId,
+                        "serviceType" to "COMMERCE_DELIVERY",
                         "commercialMunicipalityId" to effectiveOriginMuni,
                         "originMunicipalityId" to effectiveOriginMuni,
                         "originBranchId" to branchId.ifBlank { null },
@@ -707,17 +816,21 @@ class CustomerHomeViewModel : ViewModel() {
                         "cityId" to effectiveOriginMuni,
                         "city" to effectiveMuniName,
                         "cityName" to effectiveMuniName,
-                        "routeDistanceMeters" to calculatedDistanceMeters,
-                        "routeDistanceKm" to calculatedDistanceKm,
-                        "distanceKm" to calculatedDistanceKm,
-                        "distanceSource" to "FALLBACK_ESTIMATED",
-                        "routingProvider" to "FALLBACK_ESTIMATED",
-                        // CR-001 CLOSED: No courier financial fields sent by client.
-                        // Backend stamps authoritative values from system_config/global.
+                        "routeDistanceMeters" to (if (commerceQuote != null) (effectiveRouteKm * 1000.0).toLong() else calculatedDistanceMeters),
+                        "routeDistanceKm" to effectiveRouteKm,
+                        "distanceKm" to effectiveRouteKm,
+                        "distanceSource" to (if (commerceQuote != null) "CORE_ROUTING_AUTHORITATIVE" else "FALLBACK_ESTIMATED"),
+                        "routingProvider" to (if (commerceQuote != null) (effectivePricingSnapshot["routingProvider"] ?: "GOOGLE_ROUTES_V2") else "FALLBACK_ESTIMATED"),
+                        "customerPricePerKm" to effectiveCustomerRate,
+                        "courierPricePerKm" to effectiveCourierRate,
+                        "courierDistanceEarnings" to effectiveCourierDistEarnings,
+                        "courierTotalEarnings" to (effectiveCourierDistEarnings + tipAmount),
+                        "pricingSnapshot" to effectivePricingSnapshot,
+                        "pricingVersion" to effectivePricingVersion,
                         "items" to orderItems,
                         "subtotal" to subtotal,
                         "merchantGrossSales" to merchantGross,
-                        "deliveryFee" to bizDeliveryFee,
+                        "deliveryFee" to effectiveDeliveryFee,
                         "discountAmount" to totalDiscount,
                         "couponCode" to (couponCode ?: ""),
                         "couponDiscount" to couponDiscount,
@@ -740,7 +853,7 @@ class CustomerHomeViewModel : ViewModel() {
                         "valoresMonetarios" to mapOf(
                             "subtotal" to subtotal,
                             "merchantGrossSales" to merchantGross,
-                            "costoEnvio" to bizDeliveryFee,
+                            "costoEnvio" to effectiveDeliveryFee,
                             "cargoAdicional" to additionalChargeAmount,
                             "propina" to tipAmount,
                             "descuento" to totalDiscount,
