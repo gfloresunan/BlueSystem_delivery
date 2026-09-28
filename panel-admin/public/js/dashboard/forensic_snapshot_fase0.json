@@ -1,0 +1,797 @@
+{
+  "timestamp": "2026-09-07T15:36:25.621Z",
+  "businesses": [
+    {
+      "id": "62d10f82-bad6-4ad6-adf2-a1595473d700",
+      "data": {
+        "businessId": "62d10f82-bad6-4ad6-adf2-a1595473d700",
+        "tenantId": "ten_bluesystem_core",
+        "orgId": "9bf6e701-9469-4ba5-865a-1d5d9056af9f",
+        "ownerUid": "EBRcd7WUjkMtyBhbpay7nDOA6GK2",
+        "name": "Comercio Certificado E2E",
+        "legalName": "Sociedad Certificación 1788461163436 S.A.",
+        "ruc": "J031163436",
+        "category": "restaurante",
+        "departmentId": "MANAGUA",
+        "departmentName": "Managua",
+        "municipalityId": "MANAGUA",
+        "municipalityName": "Managua",
+        "address": "Plaza Central 2c al lago",
+        "city": "Managua",
+        "zone": "",
+        "location": null,
+        "phone": "88889999",
+        "email": "afiliado.comercio.e2e@gmail.com",
+        "documentUrls": [],
+        "wizardCompleted": false,
+        "onboardingStep": 0,
+        "applicationId": "kGYJpNMcw9lyOnIcVmRx",
+        "isOpen": false,
+        "branchIds": [
+          "81baa144-e52f-48b9-a15a-cf16365efaf0"
+        ],
+        "createdAt": {
+          "_seconds": 1788461173,
+          "_nanoseconds": 767000000
+        },
+        "deletedAt": {
+          "_seconds": 1788467126,
+          "_nanoseconds": 855000000
+        },
+        "isDeleted": true,
+        "lifecycleStatus": "DEPROVISIONED",
+        "active": false,
+        "isActive": false,
+        "status": "DELETED",
+        "updatedAt": {
+          "_seconds": 1788467126,
+          "_nanoseconds": 855000000
+        }
+      }
+    },
+    {
+      "id": "7a3315a4-1288-41b1-adba-131130f7aa36",
+      "data": {
+        "businessId": "7a3315a4-1288-41b1-adba-131130f7aa36",
+        "tenantId": "ten_bluesystem_core",
+        "orgId": "9a6a28fc-622f-4e49-a60c-03ab3ea80ccf",
+        "ownerUid": "pCl8QPhEcdW0ImOF7NyLovym3Y83",
+        "name": "Comercio Certificación E2E 1788461012094",
+        "legalName": "Sociedad Certificación 1788461012094 S.A.",
+        "ruc": "J031012094",
+        "category": "restaurante",
+        "departmentId": "MANAGUA",
+        "departmentName": "Managua",
+        "municipalityId": "MANAGUA",
+        "municipalityName": "Managua",
+        "address": "Plaza Central 2c al lago",
+        "city": "Managua",
+        "zone": "",
+        "location": null,
+        "phone": "88889999",
+        "email": "comercio.cert.1788461012094@bluesystemdelivery.com",
+        "documentUrls": [],
+        "wizardCompleted": false,
+        "onboardingStep": 0,
+        "applicationId": "vuVmYSoRKcitJHnUQgbl",
+        "isOpen": false,
+        "branchIds": [
+          "5c1cd1d3-543c-4299-bbb9-055c07b95042"
+        ],
+        "createdAt": {
+          "_seconds": 1788461028,
+          "_nanoseconds": 790000000
+        },
+        "deletedAt": {
+          "_seconds": 1788467135,
+          "_nanoseconds": 573000000
+        },
+        "isDeleted": true,
+        "lifecycleStatus": "DEPROVISIONED",
+        "active": false,
+        "isActive": false,
+        "status": "DELETED",
+        "updatedAt": {
+          "_seconds": 1788467135,
+          "_nanoseconds": 573000000
+        }
+      }
+    },
+    {
+      "id": "9f8acbcf-45c7-4870-80d1-de1241c1871e",
+      "data": {
+        "businessId": "9f8acbcf-45c7-4870-80d1-de1241c1871e",
+        "tenantId": "ten_bluesystem_core",
+        "orgId": "027503ba-3632-4c81-9cb1-2daeb06c71eb",
+        "ownerUid": "s70TqbvhFHMN51tIYEUSZldIt7y2",
+        "name": "JB Porcinos",
+        "legalName": "Grupo Jeremy",
+        "ruc": "J24244",
+        "category": "tienda",
+        "departmentId": "JINOTEGA",
+        "departmentName": "Jinotega",
+        "municipalityId": "JINOTEGA",
+        "municipalityName": "Jinotega",
+        "address": "Banpro 2c al este",
+        "city": "Jinotega",
+        "zone": "Bo. Jinotega",
+        "location": {
+          "_latitude": 12.136389,
+          "_longitude": -86.251389
+        },
+        "phone": "85134195",
+        "email": "jbporcinos@bluesystemdelivery.com",
+        "documentUrls": [],
+        "wizardCompleted": false,
+        "onboardingStep": 0,
+        "applicationId": "Rsp7AV1zWz5X8H3GAw4g",
+        "isOpen": false,
+        "branchIds": [
+          "1809d6d5-e26b-4238-a5e4-3557f93cc8cb"
+        ],
+        "createdAt": {
+          "_seconds": 1788463276,
+          "_nanoseconds": 962000000
+        },
+        "deletedAt": {
+          "_seconds": 1788467145,
+          "_nanoseconds": 72000000
+        },
+        "isDeleted": true,
+        "lifecycleStatus": "DEPROVISIONED",
+        "active": false,
+        "isActive": false,
+        "status": "DELETED",
+        "updatedAt": {
+          "_seconds": 1788467145,
+          "_nanoseconds": 72000000
+        }
+      }
+    },
+    {
+      "id": "baf45f11-c9b1-45ef-a099-7a9b486d0d47",
+      "data": {
+        "businessId": "baf45f11-c9b1-45ef-a099-7a9b486d0d47",
+        "tenantId": "ten_bluesystem_core",
+        "ownerUid": "s70TqbvhFHMN51tIYEUSZldIt7y2",
+        "name": "JB Porcinos",
+        "legalName": "Grupo Jeremy",
+        "ruc": "J24244",
+        "departmentId": "JINOTEGA",
+        "departmentName": "Jinotega",
+        "municipalityId": "JINOTEGA",
+        "municipalityName": "Jinotega",
+        "address": "Banpro 2c al este",
+        "city": "Jinotega",
+        "phone": "85134195",
+        "email": "jbporcinos@bluesystemdelivery.com",
+        "documentUrls": [],
+        "status": "ACTIVE",
+        "onboardingStep": 0,
+        "applicationId": "Rsp7AV1zWz5X8H3GAw4g",
+        "isActive": true,
+        "active": true,
+        "branchIds": [
+          "bd298aa3-f1fe-4d87-906c-bb66115cb034"
+        ],
+        "createdAt": {
+          "_seconds": 1788464106,
+          "_nanoseconds": 472000000
+        },
+        "onboardingCompletedAt": {
+          "_seconds": 1788467036,
+          "_nanoseconds": 719000000
+        },
+        "lifecycleStatus": "ACTIVE",
+        "bannerUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2Fbaf45f11-c9b1-45ef-a099-7a9b486d0d47%2FcoverUrl_1788466792036_cerdor.jpg?alt=media&token=ff540b97-4965-48b7-9dd1-a31f4763206d",
+        "direccion": "Banpro 2c al este",
+        "portadaUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2Fbaf45f11-c9b1-45ef-a099-7a9b486d0d47%2FcoverUrl_1788466792036_cerdor.jpg?alt=media&token=ff540b97-4965-48b7-9dd1-a31f4763206d",
+        "nombre": "JB Porcinos",
+        "logoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2Fbaf45f11-c9b1-45ef-a099-7a9b486d0d47%2FlogoUrl_1788466781366_logo_cerdo.jpg?alt=media&token=8a2b19a5-e57a-49c7-8de1-81edb472d113",
+        "coverUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2Fbaf45f11-c9b1-45ef-a099-7a9b486d0d47%2FcoverUrl_1788466792036_cerdor.jpg?alt=media&token=ff540b97-4965-48b7-9dd1-a31f4763206d",
+        "onboardingStatus": "COMPLETED",
+        "photoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2Fbaf45f11-c9b1-45ef-a099-7a9b486d0d47%2FlogoUrl_1788466781366_logo_cerdo.jpg?alt=media&token=8a2b19a5-e57a-49c7-8de1-81edb472d113",
+        "wizardCompleted": true,
+        "comercioNombre": "JB Porcinos",
+        "isOpen": true,
+        "telefono": "85134195",
+        "abierto": true,
+        "descripcion": "Experto en Porcinos en Nicaragua",
+        "taxId": "J24244",
+        "description": "Experto en Porcinos en Nicaragua",
+        "deliveryFee": 70,
+        "costoEnvioBase": 70,
+        "featured": false,
+        "latitude": 12.136389,
+        "municipality": "Jinotega",
+        "placeId": "",
+        "cityId": "JINOTEGA",
+        "orgId": "org_1787895553815",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=12.136389,-86.251389",
+        "formattedAddress": "Banpro 2c al este",
+        "zone": "",
+        "id": "baf45f11-c9b1-45ef-a099-7a9b486d0d47",
+        "isFeatured": false,
+        "department": "Jinotega",
+        "destacado": false,
+        "lat": 12.136389,
+        "longitude": -86.251389,
+        "lng": -86.251389,
+        "avgPrepTimeMinutes": 15,
+        "municipio": "Jinotega",
+        "tiempoEstimadoMinutos": 15,
+        "ciudad": "Jinotega",
+        "departamento": "Jinotega",
+        "location": {
+          "latitude": 12.136389,
+          "longitude": -86.251389
+        },
+        "categoria": "Otro",
+        "category": "Otro",
+        "updatedAt": {
+          "_seconds": 1788791237,
+          "_nanoseconds": 359000000
+        }
+      }
+    },
+    {
+      "id": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "data": {
+        "businessId": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+        "ownerUid": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+        "name": "El Chanchito",
+        "legalName": "Grupo Flores",
+        "ruc": "J031003403434",
+        "city": "Managua",
+        "zone": "Amwericas #2",
+        "documentUrls": [],
+        "onboardingStep": 0,
+        "applicationId": "McIq7vqVMwDlcLiw4q36",
+        "isActive": true,
+        "branchIds": [
+          "30945c9c-3aee-4e45-b35d-a998b57cf2fa"
+        ],
+        "createdAt": {
+          "_seconds": 1786841737,
+          "_nanoseconds": 569000000
+        },
+        "active": true,
+        "source": "ADR_011",
+        "status": "ACTIVE",
+        "featured": true,
+        "lifecycleStatus": "ACTIVE",
+        "avgPrepTimeMinutes": 15,
+        "categoria": "Restaurante",
+        "nombre": "El Chanchito",
+        "tiempoEstimadoMinutos": 15,
+        "comercioNombre": "El Chanchito",
+        "deliveryFee": 35,
+        "isOpen": true,
+        "costoEnvioBase": 35,
+        "id": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+        "isFeatured": true,
+        "category": "Restaurante",
+        "abierto": true,
+        "deliveryTime": "15 min",
+        "averageRating": 4.8,
+        "rating": 4.8,
+        "ratingCount": 15,
+        "coverUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786910976029_banner_chanchito.jpg?alt=media&token=e834f149-8466-4f18-ac5b-ccfa828a5dde",
+        "photoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786910970071_chanchito.jpg?alt=media&token=c36c8000-10e7-4b78-b22a-b76ac2aeeb7a",
+        "bannerUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786910976029_banner_chanchito.jpg?alt=media&token=e834f149-8466-4f18-ac5b-ccfa828a5dde",
+        "portadaUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786910976029_banner_chanchito.jpg?alt=media&token=e834f149-8466-4f18-ac5b-ccfa828a5dde",
+        "logoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786910970071_chanchito.jpg?alt=media&token=c36c8000-10e7-4b78-b22a-b76ac2aeeb7a",
+        "onboardingStatus": "COMPLETED",
+        "wizardCompleted": true,
+        "onboardingCompletedAt": {
+          "_seconds": 1786997871,
+          "_nanoseconds": 2000000
+        },
+        "coordinates": {
+          "latitude": 12.1158,
+          "longitude": -86.2628
+        },
+        "geolocationMetadata": {
+          "confidence": "ROOFTOP",
+          "verifiedAt": "2026-08-21T05:19:19.076Z",
+          "source": "GEOCODED_VERIFIED_ADDRESS"
+        },
+        "locationGPS": {
+          "lng": -86.2628,
+          "lat": 12.1158
+        },
+        "descripcion": "",
+        "address": "",
+        "phone": "",
+        "direccion": "",
+        "description": "",
+        "telefono": "",
+        "orgId": "org_1787895553815",
+        "email": "",
+        "departmentName": "Managua",
+        "municipalityId": "MANAGUA",
+        "lng": 0,
+        "departmentId": "MANAGUA",
+        "latitude": 0,
+        "placeId": "",
+        "cityId": "MANAGUA",
+        "municipalityName": "Managua",
+        "googleMapsUrl": "",
+        "location": null,
+        "destacado": true,
+        "lat": 0,
+        "longitude": 0,
+        "updatedAt": {
+          "_seconds": 1788366956,
+          "_nanoseconds": 590000000
+        }
+      }
+    },
+    {
+      "id": "biz_canonical_tecnostore",
+      "data": {
+        "id": "biz_canonical_tecnostore",
+        "businessId": "biz_canonical_tecnostore",
+        "tenantId": "ten_bluesystem_core",
+        "ownerUid": "04JAKPrmXjg7s2CDiT3kUPOhBwn2",
+        "name": "TECNOSTORE",
+        "legalName": "Grupo Flores",
+        "ruc": "J03100002372737",
+        "departmentName": "Managua",
+        "municipalityName": "Managua",
+        "address": "De le entrada principal del residencial 3c al lago y 2c abajo",
+        "city": "Managua",
+        "phone": "82397401",
+        "email": "tecnostore@bluesystemdelivery.com",
+        "documentUrls": [],
+        "onboardingStep": 0,
+        "applicationId": "icmP7k8O9gbqIvEa1ZWY",
+        "isActive": true,
+        "branchIds": [
+          "br_canonical_tecnostore_main"
+        ],
+        "createdAt": {
+          "_seconds": 1788026291,
+          "_nanoseconds": 234000000
+        },
+        "descripcion": "Lo Mejor en Tecnología a tu Alcance",
+        "municipalityId": "MANAGUA",
+        "lifecycleStatus": "ACTIVE",
+        "departmentId": "MANAGUA",
+        "latitude": 12.161876331999524,
+        "municipality": "Managua",
+        "placeId": "",
+        "description": "Lo Mejor en Tecnología a tu Alcance",
+        "cityId": "MANAGUA",
+        "nombre": "TECNOSTORE",
+        "orgId": "org_1787895553815",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=12.161876331999524,-86.18354544469628",
+        "formattedAddress": "De le entrada principal del residencial 3c al lago y 2c abajo",
+        "telefono": "82397401",
+        "department": "Managua",
+        "lat": 12.161876331999524,
+        "longitude": -86.18354544469628,
+        "lng": -86.18354544469628,
+        "avgPrepTimeMinutes": 15,
+        "municipio": "Managua",
+        "categoria": "Tecnología",
+        "direccion": "De le entrada principal del residencial 3c al lago y 2c abajo",
+        "active": true,
+        "tiempoEstimadoMinutos": 15,
+        "comercioNombre": "TECNOSTORE",
+        "isOpen": true,
+        "deliveryFee": 60,
+        "costoEnvioBase": 60,
+        "ciudad": "Managua",
+        "departamento": "Managua",
+        "location": {
+          "latitude": 12.161876331999524,
+          "longitude": -86.18354544469628
+        },
+        "category": "Tecnología",
+        "abierto": true,
+        "status": "ACTIVE",
+        "coverUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1788030013672_banner_store.png?alt=media&token=d02e5d33-5c79-4b94-8d1e-4bbf5cef9bc1",
+        "photoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1788030020751_429648178_122132904140092761_1747509007878456766_n.jpg?alt=media&token=fbbeece6-aea1-46bb-b446-6f8d6f44b217",
+        "bannerUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1788030013672_banner_store.png?alt=media&token=d02e5d33-5c79-4b94-8d1e-4bbf5cef9bc1",
+        "portadaUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1788030013672_banner_store.png?alt=media&token=d02e5d33-5c79-4b94-8d1e-4bbf5cef9bc1",
+        "logoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1788030020751_429648178_122132904140092761_1747509007878456766_n.jpg?alt=media&token=fbbeece6-aea1-46bb-b446-6f8d6f44b217",
+        "onboardingStatus": "COMPLETED",
+        "wizardCompleted": true,
+        "onboardingCompletedAt": {
+          "_seconds": 1788031759,
+          "_nanoseconds": 942000000
+        },
+        "featured": true,
+        "zone": "",
+        "isFeatured": true,
+        "destacado": true,
+        "updatedAt": {
+          "_seconds": 1788663058,
+          "_nanoseconds": 681000000
+        }
+      }
+    },
+    {
+      "id": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "data": {
+        "businessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+        "ownerUid": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+        "name": "Variedades TECNOHOME",
+        "legalName": "Grupo Flores",
+        "ruc": "J031000000",
+        "city": "Managua",
+        "documentUrls": [],
+        "onboardingStep": 0,
+        "applicationId": "rkul8qqr6ljKyf8W7eXW",
+        "isActive": true,
+        "branchIds": [
+          "794f7c02-8077-40a8-b260-2fdd27a6f35d"
+        ],
+        "createdAt": {
+          "_seconds": 1786719549,
+          "_nanoseconds": 817000000
+        },
+        "active": true,
+        "source": "ADR_011",
+        "status": "ACTIVE",
+        "photoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786913811532_log_tecnohomeo.jpg?alt=media&token=daa889db-4384-4804-94ca-c3c2a4baa6d2",
+        "logoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786913811532_log_tecnohomeo.jpg?alt=media&token=daa889db-4384-4804-94ca-c3c2a4baa6d2",
+        "coverUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786913869746_Mesa_de_trabajo_42.png?alt=media&token=e99cd0aa-1124-4892-87a9-96951cd00795",
+        "bannerUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786913869746_Mesa_de_trabajo_42.png?alt=media&token=e99cd0aa-1124-4892-87a9-96951cd00795",
+        "portadaUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786913869746_Mesa_de_trabajo_42.png?alt=media&token=e99cd0aa-1124-4892-87a9-96951cd00795",
+        "lifecycleStatus": "ACTIVE",
+        "avgPrepTimeMinutes": 15,
+        "nombre": "Variedades TECNOHOME",
+        "tiempoEstimadoMinutos": 15,
+        "comercioNombre": "Variedades TECNOHOME",
+        "isOpen": true,
+        "id": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+        "abierto": true,
+        "deliveryTime": "15 min",
+        "averageRating": 4.8,
+        "rating": 4.8,
+        "ratingCount": 15,
+        "categoria": "Tecnología",
+        "category": "Tecnología",
+        "onboardingStatus": "COMPLETED",
+        "wizardCompleted": true,
+        "onboardingCompletedAt": {
+          "_seconds": 1786997871,
+          "_nanoseconds": 947000000
+        },
+        "coordinates": {
+          "latitude": 12.1456,
+          "longitude": -86.1852
+        },
+        "geolocationMetadata": {
+          "confidence": "ROOFTOP",
+          "verifiedAt": "2026-08-21T05:19:19.076Z",
+          "source": "GEOCODED_VERIFIED_ADDRESS"
+        },
+        "locationGPS": {
+          "lng": -86.1852,
+          "lat": 12.1456
+        },
+        "orgId": "org_1787895553815",
+        "address": "Residencial Las Delicias Casa Q529",
+        "deliveryFee": 60,
+        "costoEnvioBase": 60,
+        "phone": "+50582397401",
+        "direccion": "Residencial Las Delicias Casa Q529",
+        "telefono": "+50582397401",
+        "email": "tecnohome@gmail.com",
+        "descripcion": "Todo para el Hogar",
+        "description": "Todo para el Hogar",
+        "departmentName": "Managua",
+        "municipalityId": "MANAGUA",
+        "departmentId": "MANAGUA",
+        "placeId": "",
+        "cityId": "MANAGUA",
+        "municipalityName": "Managua",
+        "lng": -86.251389,
+        "municipio": "Managua",
+        "latitude": 12.136389,
+        "municipality": "Managua",
+        "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=12.136389,-86.251389",
+        "formattedAddress": "Residencial Las Delicias Casa Q529",
+        "zone": "",
+        "ciudad": "Managua",
+        "departamento": "Managua",
+        "location": {
+          "latitude": 12.136389,
+          "longitude": -86.251389
+        },
+        "department": "Managua",
+        "lat": 12.136389,
+        "longitude": -86.251389,
+        "featured": false,
+        "isFeatured": false,
+        "destacado": false,
+        "updatedAt": {
+          "_seconds": 1788791953,
+          "_nanoseconds": 332000000
+        }
+      }
+    }
+  ],
+  "fritoniUser": {
+    "id": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+    "data": {
+      "uid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "fechaRegistro": "1785473846992",
+      "name": "FRITONI",
+      "active": true,
+      "isActive": true,
+      "nombre": "FRITONI",
+      "role": "business",
+      "rol": "business",
+      "requestedRole": "",
+      "coverUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028783659_607421313_122094264237204960_3693436955939460644_n.jpg?alt=media&token=e17dbcf9-b7b5-4663-b5a8-4e1578683f40",
+      "bannerUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+      "portadaUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+      "logoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028783659_607421313_122094264237204960_3693436955939460644_n.jpg?alt=media&token=e17dbcf9-b7b5-4663-b5a8-4e1578683f40",
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "tiempoEstimadoMinutos": 15,
+      "comercioNombre": "FRITONI",
+      "isOpen": true,
+      "userType": "business",
+      "category": "Restaurante",
+      "isFeatured": true,
+      "abierto": true,
+      "originEvidence": "Merchant business account fritonic@gmail.com linked to commerce dlRY2ZVUqPR2Fxoc3cazcOxxRJg2 (FRITONI)",
+      "createdVia": "MERCHANT_AFFILIATION",
+      "originClassification": "AFFILIATION",
+      "identityOrigin": "AFFILIATION",
+      "deliveryFee": 35,
+      "costoEnvioBase": 35,
+      "branches": [
+        {
+          "branchId": "br_1786988052589",
+          "createdAt": {
+            "_seconds": 1786988053,
+            "_nanoseconds": 996000000
+          },
+          "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+          "status": "OPERATIONAL",
+          "deliveryRadiusKm": 5,
+          "locationGPS": {
+            "lng": -86.251389,
+            "lat": 12.136389
+          },
+          "isActive": true,
+          "direccion": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+          "longitude": -86.251389,
+          "phone": "",
+          "address": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+          "lng": 0,
+          "prepTimeMinutes": 15,
+          "abierto": true,
+          "active": true,
+          "telefono": "",
+          "latitude": 12.136389,
+          "isOpen": true,
+          "branchName": "Fritoni Boer",
+          "lat": 0,
+          "id": "br_1786988052589",
+          "radioCoberturaKm": 5,
+          "rating": 4.8,
+          "name": "Fritoni Boer",
+          "nombre": "Fritoni Boer",
+          "businessName": "FRITONI",
+          "updatedAt": {
+            "_seconds": 1786988057,
+            "_nanoseconds": 78000000
+          }
+        },
+        {
+          "branchId": "br_1786993038705",
+          "id": "br_1786993038705",
+          "name": "Fritoni Carrtera Masaya",
+          "nombre": "Fritoni Carrtera Masaya",
+          "direccion": "Km 12.5 Contiguo a Restaurante Cantera",
+          "telefono": "88888888",
+          "locationGPS": {
+            "lat": 12.136389,
+            "lng": -86.251389
+          },
+          "active": true,
+          "createdAt": "2026-08-17T18:57:18.707Z"
+        }
+      ],
+      "eiamRoleLevel": 6,
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "assignedUsers": [
+        {
+          "uid": "fritoni@gmail.com",
+          "email": "fritoni@gmail.com",
+          "assignedAt": "2026-08-17T20:31:13.468Z"
+        }
+      ],
+      "branchId": "br_1786988052589",
+      "eiamRole": "MERCHANT_OWNER",
+      "orgId": "org_default_bluesystem",
+      "status": "ACTIVE",
+      "displayName": "FRITONI",
+      "fullName": "FRITONI",
+      "descripcion": "Especialista en Comida Nica",
+      "departmentName": "Managua",
+      "featured": true,
+      "municipalityId": "MANAGUA",
+      "address": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+      "lng": -86.251389,
+      "city": "Managua",
+      "departmentId": "MANAGUA",
+      "latitude": 12.136389,
+      "placeId": "",
+      "direccion": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+      "description": "Especialista en Comida Nica",
+      "municipalityName": "Managua",
+      "googleMapsUrl": "https://www.google.com/maps/search/?api=1&query=12.136389,-86.251389",
+      "phone": "82397401",
+      "location": {
+        "latitude": 12.136389,
+        "longitude": -86.251389
+      },
+      "telefono": "82397401",
+      "destacado": true,
+      "email": "fritonic@gmail.com",
+      "lat": 12.136389,
+      "longitude": -86.251389,
+      "updatedAt": {
+        "_seconds": 1788793174,
+        "_nanoseconds": 956000000
+      }
+    }
+  },
+  "fritoniBranches": [
+    {
+      "id": "br_1786988052589",
+      "data": {
+        "branchId": "br_1786988052589",
+        "id": "br_1786988052589",
+        "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+        "businessName": "FRITONI",
+        "name": "Fritoni Boer",
+        "nombre": "Fritoni Boer",
+        "branchName": "Fritoni Boer",
+        "address": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+        "direccion": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+        "telefono": "",
+        "deliveryRadiusKm": 5,
+        "radioCoberturaKm": 5,
+        "prepTimeMinutes": 15,
+        "isOpen": true,
+        "abierto": true,
+        "active": true,
+        "isActive": true,
+        "status": "OPERATIONAL",
+        "createdAt": {
+          "_seconds": 1786988053,
+          "_nanoseconds": 996000000
+        },
+        "rating": 4.8,
+        "isPrimary": true,
+        "orgId": "org_default_bluesystem",
+        "deliveryFee": 35,
+        "coverageRadiusKm": 5,
+        "city": "Managua",
+        "zone": "",
+        "location": {
+          "latitude": 12.136389,
+          "longitude": -86.251389
+        },
+        "latitude": 12.1482,
+        "coordinates": {
+          "latitude": 12.1482,
+          "longitude": -86.2755
+        },
+        "geolocationMetadata": {
+          "confidence": "ROOFTOP",
+          "verifiedAt": "2026-08-21T05:19:19.076Z",
+          "source": "GEOCODED_VERIFIED_ADDRESS"
+        },
+        "locationGPS": {
+          "lng": -86.2755,
+          "lat": 12.1482
+        },
+        "longitude": -86.2755,
+        "lng": -86.251389,
+        "phone": "",
+        "lat": 12.136389,
+        "updatedAt": {
+          "_seconds": 1787895569,
+          "_nanoseconds": 389000000
+        }
+      }
+    },
+    {
+      "id": "br_1786993038705",
+      "data": {
+        "branchId": "br_1786993038705",
+        "id": "br_1786993038705",
+        "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+        "businessName": "FRITONI",
+        "nombre": "Fritoni Carrtera Masaya",
+        "address": "Km 12.5 Contiguo a Restaurante Cantera",
+        "direccion": "Km 12.5 Contiguo a Restaurante Cantera",
+        "phone": "88888888",
+        "telefono": "88888888",
+        "deliveryRadiusKm": 5,
+        "radioCoberturaKm": 5,
+        "prepTimeMinutes": 15,
+        "isOpen": true,
+        "abierto": true,
+        "active": true,
+        "isActive": true,
+        "status": "OPERATIONAL",
+        "createdAt": {
+          "_seconds": 1786993039,
+          "_nanoseconds": 957000000
+        },
+        "rating": 4.8,
+        "latitude": 12.0985,
+        "coordinates": {
+          "latitude": 12.0985,
+          "longitude": -86.2312
+        },
+        "geolocationMetadata": {
+          "confidence": "ROOFTOP",
+          "verifiedAt": "2026-08-21T05:19:19.076Z",
+          "source": "GEOCODED_VERIFIED_ADDRESS"
+        },
+        "locationGPS": {
+          "lng": -86.2312,
+          "lat": 12.0985
+        },
+        "longitude": -86.2312,
+        "lng": 0,
+        "name": "Fritoni Carrtera Masaya",
+        "branchName": "Fritoni Carrtera Masaya",
+        "lat": 0,
+        "orgId": "org_default_bluesystem",
+        "updatedAt": {
+          "_seconds": 1787895569,
+          "_nanoseconds": 389000000
+        }
+      }
+    }
+  ],
+  "fritoniMemberships": [
+    {
+      "id": "mem_fritoni_dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "data": {
+        "id": "mem_fritoni_dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+        "uid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+        "email": "fritonic@gmail.com",
+        "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+        "orgId": "org_default_bluesystem",
+        "branchId": "br_1786988052589",
+        "role": "MERCHANT_OWNER",
+        "status": "ACTIVE",
+        "permissions": [
+          "VIEW_ORDERS",
+          "MANAGE_ORDERS",
+          "VIEW_MENU",
+          "MANAGE_MENU",
+          "VIEW_FINANCE",
+          "EXPORT_REPORT",
+          "MANAGE_EMPLOYEES",
+          "MANAGE_SETTINGS",
+          "VIEW_ANALYTICS",
+          "CLOSE_CASH_REGISTER"
+        ],
+        "createdAt": {
+          "_seconds": 1786999027,
+          "_nanoseconds": 260000000
+        },
+        "updatedAt": {
+          "_seconds": 1788452633,
+          "_nanoseconds": 297000000
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "appId": "UEltaH08PPauMnMczNTa",
+  "businessName": "El Dariano",
+  "legalName": "Grupo Flores",
+  "ruc": "J0312002092323",
+  "address": "DDF el Funde 1 1/2 al este",
+  "city": "Ciudad Darío",
+  "zone": "San Antonio",
+  "category": "tienda",
+  "contactName": "Vicenta Gutierrez",
+  "phone": "27763934",
+  "email": "vicenta@tecnocomp.com.ni",
+  "location": {
+    "_latitude": 12.136389,
+    "_longitude": -86.251389
+  },
+  "documents": [
+    {
+      "name": "banner_fritoni.jpg",
+      "documentType": "RUC",
+      "storagePath": "merchant_applications_docs/APP-MTAHVL7Y-F3U84/ruc_1787773092754_banner_fritoni.jpg",
+      "contentType": "image/jpeg",
+      "size": 167560,
+      "uploadedAt": "2026-08-26T19:38:14.066Z",
+      "status": "PENDING_REVIEW"
+    },
+    {
+      "name": "envio_email.png",
+      "documentType": "SANITY_PERMIT",
+      "storagePath": "merchant_applications_docs/APP-MTAHVL7Y-F3U84/sanity_permit_1787773099502_envio_email.png",
+      "contentType": "image/png",
+      "size": 199013,
+      "uploadedAt": "2026-08-26T19:38:20.610Z",
+      "status": "PENDING_REVIEW"
+    },
+    {
+      "name": "WhatsApp Image 2026-08-24 at 21.28.30.jpeg",
+      "documentType": "ID_CARD",
+      "storagePath": "merchant_applications_docs/APP-MTAHVL7Y-F3U84/id_card_1787773107144_WhatsApp_Image_2026-08-24_at_21.28.30.jpeg",
+      "contentType": "image/jpeg",
+      "size": 83139,
+      "uploadedAt": "2026-08-26T19:38:28.247Z",
+      "status": "PENDING_REVIEW"
+    }
+  ],
+  "documentUrls": [],
+  "rejectionReason": null,
+  "createdAt": {
+    "_seconds": 1787773132,
+    "_nanoseconds": 240000000
+  },
+  "docsRequestedNote": "100",
+  "reviewedBy": "XWsjzZe8lsfthRQ5PgbDzlqA2nX2",
+  "reviewedAt": {
+    "_seconds": 1787773886,
+    "_nanoseconds": 825000000
+  },
+  "provisioningError": "sgMail.setApiKey is not a function",
+  "provisionedBusinessId": "e1a38f36-d88b-488c-94f3-b2072005bcc9",
+  "provisionedUid": "TLqvYnvalFamyousPg5N34sT94q2",
+  "provisioningErrorAt": {
+    "_seconds": 1787775711,
+    "_nanoseconds": 76000000
+  },
+  "status": "APPROVED",
+  "updatedAt": {
+    "_seconds": 1787775711,
+    "_nanoseconds": 76000000
+  }
+}

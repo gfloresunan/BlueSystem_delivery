@@ -1,0 +1,288 @@
+﻿
+08-20 09:49:04.494  3004  3653 D PowerManagerService: [api] userActivityFromNative : touch displayId=0 
+eventTime=43074752
+08-20 09:49:04.494  3004  3653 D PowerManagerService: UserActivityStateListenerState: 1
+08-20 09:49:04.588  4351  4415 V WindowManagerShell: Transition requested (#349): android.os.BinderProxy@26a7b16 
+TransitionRequestInfo { type = CLOSE, triggerTask = null, pipChange = null, remoteTransitionInfo = null, displayChange 
+= null, requestedLocation = null, userChange = null, windowingLayerChange = null, flags = 0, debugId = 349 }
+08-20 09:49:04.596  5813  5813 I UserConsentManager: onPermissionsChanged: 10708
+08-20 09:49:04.596  5813  5813 I UserConsentManager: onPermissionsChanged: 10708
+08-20 09:49:04.596  5813  5813 I UserConsentManager: onPermissionsChanged: 10708
+08-20 09:49:04.597  5813  5813 I UserConsentManager: onPermissionsChanged: 10708
+08-20 09:49:04.598  5813  5813 I UserConsentManager: onPermissionsChanged: 10708
+08-20 09:49:04.605  3004  4883 V WindowManager:         {m=CLOSE 
+f=TRANSLUCENT|FILLS_TASK|IS_ACTIVITY|EDGE_EXTENSION_RESTRICTION leash=Surface(name=ActivityRecord{236168399 u0 
+com.google.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsActivity 
+t10166}#4452)/@0x8fabd86 sb=Rect(0, 0 - 904, 2316) eb=Rect(0, 0 - 904, 2316) epz=Point(904, 2316) d=0 bc=ff252528 
+activity=ActivityTransitionInfo { component = ComponentInfo{com.google.android.permissioncontroller/com.android.permiss
+ioncontroller.permission.ui.GrantPermissionsActivity}, taskId = 10166, appCompatTransitionInfo = null } 
+opt={t=FROM_STYLE mUserId=0} inset=Rect(0, 0 - 0, 0) taskIdForActivity=10166}
+08-20 09:49:04.608  4351  4415 V WindowManagerShell:         {m=CLOSE 
+f=TRANSLUCENT|FILLS_TASK|IS_ACTIVITY|EDGE_EXTENSION_RESTRICTION leash=Surface(name=ActivityRecord{236168399 u0 
+com.google.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsActivity 
+t10166}#4452)/@0x1db4c97 sb=Rect(0, 0 - 904, 2316) eb=Rect(0, 0 - 904, 2316) epz=Point(904, 2316) d=0 bc=ff252528 
+activity=ActivityTransitionInfo { component = ComponentInfo{com.google.android.permissioncontroller/com.android.permiss
+ioncontroller.permission.ui.GrantPermissionsActivity}, taskId = 10166, appCompatTransitionInfo = null } 
+opt={t=FROM_STYLE mUserId=0} inset=Rect(0, 0 - 0, 0) taskIdForActivity=10166}
+08-20 09:49:04.609  4351  4415 V WindowManagerShell: Transition doesn't have explicit remote, search filters for match 
+for {id=349 t=CLOSE f=0x0 trk=0 r=[0@Point(0, 0)] c=[{m=CLOSE 
+f=TRANSLUCENT|FILLS_TASK|IS_ACTIVITY|EDGE_EXTENSION_RESTRICTION leash=Surface(name=ActivityRecord{236168399 u0 
+com.google.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsActivity 
+t10166}#4452)/@0x1db4c97 sb=Rect(0, 0 - 904, 2316) eb=Rect(0, 0 - 904, 2316) epz=Point(904, 2316) d=0 bc=ff252528 
+activity=ActivityTransitionInfo { component = ComponentInfo{com.google.android.permissioncontroller/com.android.permiss
+ioncontroller.permission.ui.GrantPermissionsActivity}, taskId = 10166, appCompatTransitionInfo = null } 
+opt={t=FROM_STYLE mUserId=0} inset=Rect(0, 0 - 0, 0) taskIdForActivity=10166}]}
+08-20 09:49:04.609  3004  3088 V WindowManager: Sent Transition (#349) createdAt=08-20 09:49:04.585 via 
+request=TransitionRequestInfo { type = CLOSE, triggerTask = null, pipChange = null, remoteTransitionInfo = null, 
+displayChange = null, requestedLocation = null, userChange = null, windowingLayerChange = null, flags = 0, debugId = 
+349 }
+08-20 09:49:04.609  3004  3088 V WindowManager:         {m=CLOSE 
+f=TRANSLUCENT|FILLS_TASK|IS_ACTIVITY|EDGE_EXTENSION_RESTRICTION leash=Surface(name=ActivityRecord{236168399 u0 
+com.google.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsActivity 
+t10166}#4452)/@0x8fabd86 sb=Rect(0, 0 - 904, 2316) eb=Rect(0, 0 - 904, 2316) epz=Point(904, 2316) d=0 bc=ff252528 
+activity=ActivityTransitionInfo { component = ComponentInfo{com.google.android.permissioncontroller/com.android.permiss
+ioncontroller.permission.ui.GrantPermissionsActivity}, taskId = 10166, appCompatTransitionInfo = null } 
+opt={t=FROM_STYLE mUserId=0} inset=Rect(0, 0 - 0, 0) taskIdForActivity=10166}
+08-20 09:49:04.609  4351  4415 V WindowManagerShell: start default transition animation, info = {id=349 t=CLOSE f=0x0 
+trk=0 r=[0@Point(0, 0)] c=[{m=CLOSE f=TRANSLUCENT|FILLS_TASK|IS_ACTIVITY|EDGE_EXTENSION_RESTRICTION 
+leash=Surface(name=ActivityRecord{236168399 u0 
+com.google.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsActivity 
+t10166}#4452)/@0x1db4c97 sb=Rect(0, 0 - 904, 2316) eb=Rect(0, 0 - 904, 2316) epz=Point(904, 2316) d=0 bc=ff252528 
+activity=ActivityTransitionInfo { component = ComponentInfo{com.google.android.permissioncontroller/com.android.permiss
+ioncontroller.permission.ui.GrantPermissionsActivity}, taskId = 10166, appCompatTransitionInfo = null } 
+opt={t=FROM_STYLE mUserId=0} inset=Rect(0, 0 - 0, 0) taskIdForActivity=10166}]}
+08-20 09:49:04.609  4351  4415 V WindowManagerShell:    change={m=CLOSE 
+f=TRANSLUCENT|FILLS_TASK|IS_ACTIVITY|EDGE_EXTENSION_RESTRICTION leash=Surface(name=ActivityRecord{236168399 u0 
+com.google.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsActivity 
+t10166}#4452)/@0x1db4c97 sb=Rect(0, 0 - 904, 2316) eb=Rect(0, 0 - 904, 2316) epz=Point(904, 2316) d=0 bc=ff252528 
+activity=ActivityTransitionInfo { component = ComponentInfo{com.google.android.permissioncontroller/com.android.permiss
+ioncontroller.permission.ui.GrantPermissionsActivity}, taskId = 10166, appCompatTransitionInfo = null } 
+opt={t=FROM_STYLE mUserId=0} inset=Rect(0, 0 - 0, 0) taskIdForActivity=10166}
+08-20 09:49:04.613  3004  3091 D SGM:FgCheckThread: notePauseComponent(), received pkgName: 
+com.google.android.permissioncontroller, userId: 0
+08-20 09:49:04.632  6830  7295 I SDHMS:k : handleResumeComponent : put = com.aistudio.delivery.djweq, userid = 0 
+instanceid =174205651
+08-20 09:49:04.633  3004  3091 D SGM:FgCheckThread: noteResumeComponent(), received pkgName: 
+com.aistudio.delivery.djweq, userId: 0
+08-20 09:49:04.633  3004  3679 D SGM:FgCheckThread: onLooperPrepared(), msg: MSG_APP_RESUME, pkgName: 
+com.aistudio.delivery.djweq, userid: 0
+08-20 09:49:04.633  3004  3679 D SGM:FgCheckThread: sendFocusOutConditionally() - mPrevNotiPkg: (unknown), userId: 0
+08-20 09:49:04.633  3004  3679 D SGM:FgCheckThread:   handleResume(). pkgName: com.aistudio.delivery.djweq, userId: 0, 
+category: non-game
+08-20 09:49:04.633  3004  3679 D SGM:FgCheckThread: notifyFocusInOut(). of pkg: com.aistudio.delivery.djweq, type: 4, 
+isSecGameFamily: false, userId: 0
+08-20 09:49:04.634  3004  3091 I DisplayDeviceRepository: Display device same: DisplayDeviceInfo{"Pantalla integrada": 
+uniqueId="local:4630946481096930692", 904 x 2316, modeId 10, renderFrameRate 60.000004, hasArrSupport false, 
+frameRateCategoryRate FrameRateCategoryRate {normal=60.0, high=90.0}, supportedRefreshRates [120.00001, 96.00001, 
+60.000004, 48.000004, 30.000002, 24.000002], defaultModeId 8, userPreferredModeId -1, supportedModes [{id=8, 
+parentModeId=-1, flags=, width=904, height=2316, fps=120.00001, vsync=120.00001, alternativeRefreshRates=[24.000002, 
+30.000002, 48.000004, 60.000004, 96.00001], supportedHdrTypes=[2, 3, 4]}, {id=9, parentModeId=-1, flags=, width=904, 
+height=2316, fps=96.00001, vsync=96.00001, alternativeRefreshRates=[24.000002, 30.000002, 48.000004, 60.000004, 
+120.00001], supportedHdrTypes=[2, 3, 4]}, {id=10, parentModeId=-1, flags=, width=904, height=2316, fps=60.000004, 
+vsync=60.000004, alternativeRefreshRates=[24.000002, 30.000002, 48.000004, 96.00001, 120.00001], supportedHdrTypes=[2, 
+3, 4]}, {id=11, parentModeId=-1, flags=, width=904, height=2316, fps=48.000004, vsync=48.000004, 
+alternativeRefreshRates=[24.000002, 30.000002, 60.000004, 96.00001, 120.00001], supportedHdrTypes=[2, 3, 4]}, {id=12, 
+parentModeId=-1, flags=, width=904, height=2316, fps=30.000002, vsync=30.000002, alternativeRefreshRates=[24.000002, 
+48.000004, 60.000004, 96.00001, 120.00001], supportedHdrTypes=[2, 3, 4]}, {id=13, parentModeId=-1, flags=, width=904, 
+height=2316, fps=24.000002, vsync=24.000002, alternativeRefreshRates=[30.000002, 48.000004, 60.000004, 96.00001, 
+120.00001], supportedHdrTypes=[2, 3, 4]}], colorMode 0, supportedColorModes [0, 7, 9], hdrCapabilities 
+HdrCapabilities{mSupportedHdrTypes=[2, 3, 4], mMaxLuminance=450.0, mMaxAverageLuminance=225.00024, 
+mMinLuminance=5.0E-4}, isForceSdr false, allmSupported false, gameContentTypeSupported false, density 420, 402.835 x 
+402.92 dpi, appVsyncOff 0, presDeadline 17666666, cutout DisplayCutout{insets=Rect(0, 85 - 0, 0) 
+waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(423, 0 - 482, 85), 
+Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=904 displayHeight=2316 
+physicalDisplayWidth=904 physicalDisplayHeight=2316 density={2.625} cutoutSpec={M 0,0 H -11.23809523809524 V 
+32.38095238095238 H 11.23809523809524 V 0 H 0 Z @dp} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}} 
+sideOverrides={}}, touch INTERNAL, rotation 0, type INTERNAL, address {port=132, model=0x40446d49eba0b5}, 
+deviceProductInfo DeviceProductInfo{name=, manufacturerPnpId=QCM, productId=1, modelYear=null, 
+manufactureDate=ManufactureDate{week=27, year=2006}, connectionToSinkType=1, 
+edidStructureMetadata=EdidStructureMetadata{version=0, revision=0}, videoInputType=0}, state ON, committedState ON, 
+frameRateOverride , brightnessMinimum 0.0, brightnessMaximum 3.0, brightnessDefault 0.5019608, brightnessDim 
+0.047058824, hdrSdrRatio NaN, roundedCorners RoundedCorners{[RoundedCorner{position=TopLeft, radius=68, 
+center=Point(68, 68)}, RoundedCorner{position=TopRight, radius=68, center=Point(836, 68)}, 
+RoundedCorner{position=BottomRight, radius=68, center=Point(836, 2248)}, RoundedCorner{position=BottomLeft, radius=68, 
+center=Point(68, 2248)}]}, FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY, FLAG_ROTATES_WITH_CONTENT, FLAG_SECURE, 
+FLAG_SUPPORTS_PROTECTED_BUFFERS, FLAG_PRESENTATION, FLAG_OWN_CONTENT_ONLY, FLAG_TRUSTED, FLAG_EXTRA_BUILT_IN_DISPLAY, 
+installOrientation 0, displayShape DisplayShape{ spec=-311912193 displayWidth=904 displayHeight=2316 
+physicalPixelDisplaySizeRatio=1.0 rotation=0 offsetX=0 offsetY=0 scale=1.0}}
+08-20 09:49:04.637  3004  3091 I DisplayDeviceRepository: Display device same: DisplayDeviceInfo{"Pantalla integrada": 
+uniqueId="local:4630946481096930692", 904 x 2316, modeId 10, renderFrameRate 60.000004, hasArrSupport false, 
+frameRateCategoryRate FrameRateCategoryRate {normal=60.0, high=90.0}, supportedRefreshRates [120.00001, 96.00001, 
+60.000004, 48.000004, 30.000002, 24.000002], defaultModeId 8, userPreferredModeId -1, supportedModes [{id=8, 
+parentModeId=-1, flags=, width=904, height=2316, fps=120.00001, vsync=120.00001, alternativeRefreshRates=[24.000002, 
+30.000002, 48.000004, 60.000004, 96.00001], supportedHdrTypes=[2, 3, 4]}, {id=9, parentModeId=-1, flags=, width=904, 
+height=2316, fps=96.00001, vsync=96.00001, alternativeRefreshRates=[24.000002, 30.000002, 48.000004, 60.000004, 
+120.00001], supportedHdrTypes=[2, 3, 4]}, {id=10, parentModeId=-1, flags=, width=904, height=2316, fps=60.000004, 
+vsync=60.000004, alternativeRefreshRates=[24.000002, 30.000002, 48.000004, 96.00001, 120.00001], supportedHdrTypes=[2, 
+3, 4]}, {id=11, parentModeId=-1, flags=, width=904, height=2316, fps=48.000004, vsync=48.000004, 
+alternativeRefreshRates=[24.000002, 30.000002, 60.000004, 96.00001, 120.00001], supportedHdrTypes=[2, 3, 4]}, {id=12, 
+parentModeId=-1, flags=, width=904, height=2316, fps=30.000002, vsync=30.000002, alternativeRefreshRates=[24.000002, 
+48.000004, 60.000004, 96.00001, 120.00001], supportedHdrTypes=[2, 3, 4]}, {id=13, parentModeId=-1, flags=, width=904, 
+height=2316, fps=24.000002, vsync=24.000002, alternativeRefreshRates=[30.000002, 48.000004, 60.000004, 96.00001, 
+120.00001], supportedHdrTypes=[2, 3, 4]}], colorMode 0, supportedColorModes [0, 7, 9], hdrCapabilities 
+HdrCapabilities{mSupportedHdrTypes=[2, 3, 4], mMaxLuminance=450.0, mMaxAverageLuminance=225.00024, 
+mMinLuminance=5.0E-4}, isForceSdr false, allmSupported false, gameContentTypeSupported false, density 420, 402.835 x 
+402.92 dpi, appVsyncOff 0, presDeadline 17666666, cutout DisplayCutout{insets=Rect(0, 85 - 0, 0) 
+waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(423, 0 - 482, 85), 
+Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=904 displayHeight=2316 
+physicalDisplayWidth=904 physicalDisplayHeight=2316 density={2.625} cutoutSpec={M 0,0 H -11.23809523809524 V 
+32.38095238095238 H 11.23809523809524 V 0 H 0 Z @dp} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}} 
+sideOverrides={}}, touch INTERNAL, rotation 0, type INTERNAL, address {port=132, model=0x40446d49eba0b5}, 
+deviceProductInfo DeviceProductInfo{name=, manufacturerPnpId=QCM, productId=1, modelYear=null, 
+manufactureDate=ManufactureDate{week=27, year=2006}, connectionToSinkType=1, 
+edidStructureMetadata=EdidStructureMetadata{version=0, revision=0}, videoInputType=0}, state ON, committedState ON, 
+frameRateOverride , brightnessMinimum 0.0, brightnessMaximum 3.0, brightnessDefault 0.5019608, brightnessDim 
+0.047058824, hdrSdrRatio NaN, roundedCorners RoundedCorners{[RoundedCorner{position=TopLeft, radius=68, 
+center=Point(68, 68)}, RoundedCorner{position=TopRight, radius=68, center=Point(836, 68)}, 
+RoundedCorner{position=BottomRight, radius=68, center=Point(836, 2248)}, RoundedCorner{position=BottomLeft, radius=68, 
+center=Point(68, 2248)}]}, FLAG_ALLOWED_TO_BE_DEFAULT_DISPLAY, FLAG_ROTATES_WITH_CONTENT, FLAG_SECURE, 
+FLAG_SUPPORTS_PROTECTED_BUFFERS, FLAG_PRESENTATION, FLAG_OWN_CONTENT_ONLY, FLAG_TRUSTED, FLAG_EXTRA_BUILT_IN_DISPLAY, 
+installOrientation 0, displayShape DisplayShape{ spec=-311912193 displayWidth=904 displayHeight=2316 
+physicalPixelDisplaySizeRatio=1.0 rotation=0 offsetX=0 offsetY=0 scale=1.0}}
+08-20 09:49:04.638  3004  3089 D SGM:GameManager: identifyForegroundApp. com.aistudio.delivery.djweq, mCurrentUserId: 
+0, callerUserId: 0
+08-20 09:49:04.641  3004  3089 D SGM:GameManager: identifyForegroundApp. com.aistudio.delivery.djweq, mCurrentUserId: 
+0, callerUserId: 0
+08-20 09:49:04.642 16227 17225 I SAMSUNGWALLET: [Hint_PayHintService] mIsLauncherPortraitOnlyMode: false, mIsUserLock: 
+false
+08-20 09:49:04.646  3004  3042 D RestrictionPolicy: isScreenCaptureEnabled : ret=true userId=0
+08-20 09:49:04.648  3004  3671 V InputMethodManagerService: startInputOrWindowGainedFocus: userId=0 callingUserId=0 
+editorInfo=android.view.inputmethod.EditorInfo@3fcefb6
+08-20 09:49:04.650  3004  3042 I ImeTracker: system_server:176d1cd2: onRequestHide at ORIGIN_SERVER reason 
+IME_REQUESTED_CHANGED_LISTENER fromUser false
+08-20 09:49:04.652  3004  3671 I ImeTracker: com.aistudio.delivery.djweq:91235754: onRequestHide at ORIGIN_SERVER 
+reason HIDE_UNSPECIFIED_WINDOW fromUser false
+08-20 09:49:04.654  3004  3671 V InputMethodManagerService: Disabling: SessionState{uid=10272 pid=9784 method=855bcca 
+session=6b4f3b7 channel=ClientState{f7c5b78 mUid=10272 mPid=9784 mSelfReportedDisplayId=0} userId=0}
+08-20 09:49:04.654  3004  3671 V InputMethodManagerService: Enabling: SessionState{uid=10708 pid=32026 method=855bcca 
+session=7d093d7 channel=ClientState{d010ff8 mUid=10708 mPid=32026 mSelfReportedDisplayId=0} userId=0}
+08-20 09:49:04.655  3004  3041 D RestrictionPolicy: isScreenCaptureEnabled : ret=true userId=0
+08-20 09:49:04.655  3004  3091 D SGM:FgCheckThread: noteStopComponent(), received pkgName: 
+com.google.android.permissioncontroller, focusedPkgName: com.aistudio.delivery.djweq, userId: 0
+08-20 09:49:04.655  6767  6767 W HBD     : java.lang.Exception
+08-20 09:49:04.658  3004  3041 I ImeTracker: system_server:80fe10d4: onRequestHide at ORIGIN_SERVER reason 
+IME_REQUESTED_CHANGED_LISTENER fromUser false
+08-20 09:49:04.660  9848  9878 I SamsungAccount: [AccountManagerProvider] isChildAccount
+08-20 09:49:04.660  9848  9878 I SamsungAccount: [AccountContextResolverImpl] isWorkProfile: false 
+requestedAccountType:null targetUserId: null currentUserId: 0
+08-20 09:49:04.660  9848  9878 I SamsungAccount: [AccountManagerProvider] Calling package : android.honeyboard.
+08-20 09:49:04.662  9848  9878 I SamsungAccount: [SignatureInfoDbHelper] searchOnUser(fromDb) - 
+[10/lfgff][android.honeyboard.][64/3291d] => matched
+08-20 09:49:04.662  9848  9878 I SamsungAccount: [AccountManagerProvider] This is the access of the allowed application
+08-20 09:49:04.665  9848  9878 I SamsungAccount: [TelephonyManagerUtil] getMccFromUsim
+08-20 09:49:04.665  9848  9878 I SamsungAccount: [MccManager] saveMccToPreference Start
+08-20 09:49:04.665  9848  9878 I SamsungAccount: [MccManager] saveMccToPreference, mcc is same with previous mcc
+08-20 09:49:04.665  9848  9878 I SamsungAccount: [ChildAccountSupportedListManager] getSupportedListFromLocal from 
+cache
+08-20 09:49:04.665  9848  9878 E SamsungAccount: [FamilyGroupUtil] getCountryCodeListWithRegionMcc - no country code 
+with region mcc
+08-20 09:49:04.665  9848  9878 I SamsungAccount: [FamilyGroupUtil] isSupportFamilyService: false
+08-20 09:49:04.665  9848  9878 I SamsungAccount: [B2cAccountMethodExecutor] makeResultBundle - resultCode : 1
+08-20 09:49:04.666  3004  3041 D RestrictionPolicy: isSettingsChangesAllowedAsUser, userId 0 : true
+08-20 09:49:04.667  3004  3041 D RestrictionPolicy: isSettingsChangesAllowedAsUser, userId 0 : true
+08-20 09:49:04.669  6767  6767 I HBD     : g writeToFile path : 
+/data/user/0/com.samsung.android.honeyboard/files/fold_selected.json 
+08-20 09:49:04.672  6767   779 I HBD     : g writeToFile path : 
+/data/user_de/0/com.samsung.android.honeyboard/files/fold_selected.json 
+08-20 09:49:04.673  6767  6767 I HBD     : g writeToFile path : 
+/data/user/0/com.samsung.android.honeyboard/files/fold_selected.json 
+08-20 09:49:04.674  6767   780 I HBD     : g writeToFile path : 
+/data/user_de/0/com.samsung.android.honeyboard/files/fold_selected.json 
+08-20 09:49:04.675  6767  6767 I HBD     : g writeToFile path : 
+/data/user/0/com.samsung.android.honeyboard/files/fold_selected.json 
+08-20 09:49:04.677  6767   781 I HBD     : g writeToFile path : 
+/data/user_de/0/com.samsung.android.honeyboard/files/fold_selected.json 
+08-20 09:49:04.677  6767  6767 I HBD     : g writeToFile path : 
+/data/user/0/com.samsung.android.honeyboard/files/fold_selected.json 
+08-20 09:49:04.678  6767   782 I HBD     : g writeToFile path : 
+/data/user_de/0/com.samsung.android.honeyboard/files/fold_selected.json 
+08-20 09:49:04.678  6767  6767 I HBD     : g writeToFile path : 
+/data/user/0/com.samsung.android.honeyboard/files/fold_selected.json 
+08-20 09:49:04.679  3004  3042 D RestrictionPolicy: isSettingsChangesAllowedAsUser, userId 0 : true
+08-20 09:49:04.679  3004  3042 D RestrictionPolicy: isSettingsChangesAllowedAsUser, userId 0 : true
+08-20 09:49:04.680  6767   784 I HBD     : g writeToFile path : 
+/data/user_de/0/com.samsung.android.honeyboard/files/fold_selected.json 
+08-20 09:49:04.680  3004  4632 D RestrictionPolicy: isSettingsChangesAllowedAsUser, userId 0 : true
+08-20 09:49:04.680  3004  4632 D RestrictionPolicy: isSettingsChangesAllowedAsUser, userId 0 : true
+08-20 09:49:06.489  4675   482 W FlagUpdateListenerRegis: Unable to invoke IFlagUpdateListener.onFlagUpdate. App: 
+com.google.android.googlequicksearchbox. Process: com.google.android.googlequicksearchbox:search|74227946. Error: 
+android.os.DeadObjectException. [CONTEXT service_id=51 ]
+08-20 09:49:06.489  4675   482 W FlagUpdateListenerRegis: Unable to invoke IFlagUpdateListener.onFlagUpdate. App: 
+com.google.android.googlequicksearchbox. Process: com.google.android.googlequicksearchbox:googleapp|185890347. Error: 
+android.os.DeadObjectException. [CONTEXT service_id=51 ]
+08-20 09:49:06.490  4675   482 W FlagUpdateListenerRegis: Unable to invoke IFlagUpdateListener.onFlagUpdate. App: 
+com.google.android.googlequicksearchbox. Process: com.google.android.googlequicksearchbox:googleapp|94249609. Error: 
+android.os.DeadObjectException. [CONTEXT service_id=51 ]
+08-20 09:49:06.490  4675   482 W FlagUpdateListenerRegis: Unable to invoke IFlagUpdateListener.onFlagUpdate. App: 
+com.google.android.googlequicksearchbox. Process: com.google.android.googlequicksearchbox:search|97002597. Error: 
+android.os.DeadObjectException. [CONTEXT service_id=51 ]
+08-20 09:49:06.530  4675   482 W FlagUpdateListenerRegis: Unable to invoke IFlagUpdateListener.onFlagUpdate. App: 
+com.google.android.gms. Process: com.google.android.gms.unstable|63575476. Error: android.os.DeadObjectException. 
+[CONTEXT service_id=51 ]
+08-20 09:49:06.586  4675   482 W FlagUpdateListenerRegis: Unable to invoke IFlagUpdateListener.onFlagUpdate. App: 
+com.google.android.calendar. Process: com.google.android.calendar|63575476. Error: android.os.DeadObjectException. 
+[CONTEXT service_id=51 ]
+08-20 09:49:06.655  4675   825 I TapAndPay: No active account [CONTEXT service_id=79 ]
+08-20 09:49:06.761  3004  3041 D PackageManager: setEnabledSetting : userId = 0 packageName = 
+com.google.android.apps.messaging cmp = com.google.android.ims.binding.SystemBindingService newState = 1 
+callingPackage = com.google.android.apps.messaging
+08-20 09:49:06.761  3004  3041 D ApplicationPolicy: getApplicationStateEnabled : pkg = 
+com.google.android.apps.messaging userId : 0
+08-20 09:49:06.762  3004  3041 D ApplicationPolicy: getApplicationComponentState : pkg = 
+com.google.android.apps.messaging userId : 0
+08-20 09:49:06.779  3004  3041 D PackageManager: setEnabledSetting : userId = 0 packageName = 
+com.google.android.apps.messaging cmp = com.google.android.apps.messaging.auto.MessagingTemplateScreenServiceModule 
+newState = 1 callingPackage = com.google.android.apps.messaging
+08-20 09:49:06.780  3004  3041 D ApplicationPolicy: getApplicationStateEnabled : pkg = 
+com.google.android.apps.messaging userId : 0
+08-20 09:49:06.780  3004  3041 D ApplicationPolicy: getApplicationComponentState : pkg = 
+com.google.android.apps.messaging userId : 0
+08-20 09:49:06.807 10296 10360 I BugleRcsJibe: RcsServiceConnectionException was raised while waiting to connect to 
+RcsEngineLifecycleServiceV2
+08-20 09:49:06.823  5723   805 I FRP     : [FrpUpdateIntentOperation] No FRP data present in app restriction, using 
+current Google accounts. [CONTEXT service_id=341 ]
+08-20 09:49:06.829  3004  6052 D PackageManager: setEnabledSetting : userId = 0 packageName = com.google.android.gms 
+cmp = com.google.android.gms.nearby.sharing.filesync.FileSyncIntentOperation newState = 2 callingPackage = 
+com.google.android.gms
+08-20 09:49:06.832  5723   811 E Nearby  : java.lang.IllegalArgumentException: Component class 
+com.google.android.gms.nearby.sharing.filesync.FileSyncIntentOperation does not exist in com.google.android.gms
+08-20 09:49:06.832  5723   811 E Nearby  : 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3392)
+08-20 09:49:06.832  5723   811 E Nearby  : 	at android.os.Parcel.createException(Parcel.java:3372)
+08-20 09:49:06.832  5723   811 E Nearby  : 	at android.os.Parcel.readException(Parcel.java:3355)
+08-20 09:49:06.832  5723   811 E Nearby  : 	at android.os.Parcel.readException(Parcel.java:3297)
+08-20 09:49:06.832  5723   811 E Nearby  : Caused by: android.os.RemoteException: Remote stack trace:
+08-20 09:49:06.833  3004  3593 D RestrictionPolicy: isShareListAllowed : userId(0)
+08-20 09:49:06.835  5723   805 I FRP     : (REDACTED) [FactoryResetProtectionManager] Updating data block with %d 
+accounts (lockscreen sufficient = %b)
+08-20 09:49:06.835  5723   805 I FRP     : (REDACTED) [FactoryResetProtectionManager] Updating accounts on profile %d
+08-20 09:49:06.835  3004  3593 D RestrictionPolicy: isSettingsChangesAllowedAsUser, userId 0 : true
+08-20 09:49:06.850  5723 31908 I FraudProtectUtils: (REDACTED) No change in CallDetectionService state required. Bank 
+app installed: %b, user opted-in: %b, service enabled: %b, sim logging enabled with app: %b
+08-20 09:49:06.955  3004  3131 W UserManagerService: onShortcutChanged for another profile 0 from 150
+08-20 09:49:06.959  4720  4720 I HoneySpace.PackageOperationTracker: onShortcutsChanged com.google.android.gms - 0 
+UserHandle{0}
+08-20 09:49:07.207   839   839 I QuickShare: [Common][main] [UserHandleCompat] ownerMode is true
+08-20 09:49:07.208   839   892 I QuickShare: [Common][RxScheduler-5] [UserHandleCompat] ownerMode is true
+08-20 09:49:07.223   839   897 I QuickShare: [Common][RxScheduler-11] [UserHandleCompat] ownerMode is true
+08-20 09:49:07.228   839   894 I LinkSharing:QuickShare: [D2S][RxScheduler-8] [SamsungAccountSource] 
+AccountManagerProvider version: 1.8
+08-20 09:49:07.230  3004  8329 D RestrictionPolicy: isSettingsChangesAllowedAsUser, userId 0 : true
+08-20 09:49:07.232  9848  9878 I SamsungAccount: [AccountManagerProvider] getSamsungAccountId
+08-20 09:49:07.232  9848  9878 I SamsungAccount: [AccountContextResolverImpl] isWorkProfile: false 
+requestedAccountType:null targetUserId: null currentUserId: 0
+08-20 09:49:07.232  9848  9878 I SamsungAccount: [AccountManagerProvider] Calling package : app.sharelive.
+08-20 09:49:07.243   839   881 I LinkSharing:QuickShare: [D2S][RxScheduler-2] [AccountRepository] initializeCloud() 
+localAccountExpired=true, issuedTime=1784751484743, expiresAt=1784838347743, now=1787240947243
+08-20 09:49:07.249  9848  9878 I SamsungAccount: [SignatureInfoDbHelper] searchOnUser(fromDb) - 
+[10/62gyq][app.sharelive.][64/3291d] => matched
+08-20 09:49:07.249  9848  9878 I SamsungAccount: [AccountManagerProvider] This is the access of the allowed application
+08-20 09:49:07.249  9848  9878 I SamsungAccount: [B2cAccountMethodExecutor] makeResultBundle - resultCode : 0
+08-20 09:49:07.250   839   894 I LinkSharing:QuickShare: [D2S][RxScheduler-8] [SamsungAccountSource] isRegistered=true
+08-20 09:49:07.366   839   910 I Policy_13.1.01: [RxCachedThreadScheduler-2][SyncPolicyUseCase] requestSync : failed, 
+error=java.lang.Exception: requestSync : no need sync
+08-20 09:49:07.366   839   910 W ShareLive:QuickShare: [D2D][RxScheduler-2] [PolicyRepository] 
+requestSyncPolicyWithServer: java.lang.Exception: requestSync : no need sync
+08-20 09:49:07.495  3004  3211 D PowerManagerService: UserActivityStateListenerState: 0
+08-20 09:49:10.412  5269  5363 I RequestManager_FLP: onOpChanged, op=0 / packageName=com.osp.app.signin
+
+

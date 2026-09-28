@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlueSystem Admin - Banners</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="admin-header">
+        <div class="header-left">
+            <h2>Panel de Banners</h2>
+        </div>
+        <div class="header-right">
+            <span id="adminEmail">admin@bluesystem.com</span>
+            <button onclick="logout()" class="btn-logout">Salir</button>
+        </div>
+    </header>
+
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <a href="#" class="nav-item active">
+                <span class="icon">🖼️</span>
+                <span>Banners</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="icon">📊</span>
+                <span>Analytics</span>
+            </a>
+            <a href="#" class="nav-item">
+                <span class="icon">⚙️</span>
+                <span>Configuración</span>
+            </a>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Formulario de creación/edición -->
+            <section class="card form-section">
+                <h3>🆕 Nuevo Banner / Editar</h3>
+                
+                <form id="bannerForm">
+                    <input type="hidden" id="bannerId">
+                    
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Título *</label>
+                            <input type="text" id="bannerTitle" placeholder="Ej: 50% de descuento en pizzas" required>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Subtítulo</label>
+                            <input type="text" id="bannerSubtitle" placeholder="Ej: Válido solo hoy">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Imagen del Banner *</label>
+                            <div class="file-upload">
+                                <input type="file" id="bannerImage" accept="image/*" onchange="previewImage(this)">
+                                <div class="upload-placeholder" id="uploadPlaceholder">
+                                    <span class="upload-icon">📤</span>
+                                    <span>Tocá para subir imagen</span>
+                                    <small>Recomendado: 1200x600px, máx 2MB</small>
+                                </div>
+                                <img id="imagePreview" class="preview hidden">
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>URL de la imagen (si ya está subida)</label>
+                            <input type="url" id="imageUrl" placeholder="https://...">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Tipo de acción</label>
+                            <select id="actionType">
+                                <option value="NONE">Sin acción (solo visual)</option>
+                                <option value="PRODUCT">Abrir producto</option>
+                                <option value="CATEGORY">Abrir categoría</option>
+                                <option value="BUSINESS">Abrir comercio</option>
+                                <option value="URL">Abrir URL externa</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>ID de destino (producto/categoría/comercio/URL)</label>
+                            <input type="text" id="actionId" placeholder="Ej: producto_123">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Fecha de inicio</label>
+                            <input type="datetime-local" id="startDate">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label>Fecha de fin</label>
+                            <input type="datetime-local" id="endDate">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label>Color de fondo</label>
+                            <input type="color" id="bgColor" value="#0D47A1">
+                        </div>
+                        
+                        <div class="input-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="isActive" checked>
+                                <span>Activo (visible en la app)</span>
+                            </label>
+                        </div>
+                        
+                        <div class="input-group checkbox-group">
+                            <label>
+                                <input type="checkbox" id="isFeatured" checked>
+                                <span>Destacado (aparece primero)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="button" onclick="resetForm()" class="btn-secondary">Limpiar</button>
+                        <button type="submit" class="btn-primary" id="saveBtn">
+                            <span class="btn-text">💾 Guardar Banner</span>
+                            <span class="spinner hidden">⟳</span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Lista de banners existentes -->
+            <section class="card list-section">
+                <div class="section-header">
+                    <h3>📋 Banners Activos</h3>
+                    <span class="badge" id="bannerCount">0</span>
+                </div>
+                
+                <div id="bannersList" class="banners-grid">
+                    <!-- Se llena dinámicamente -->
+                    <div class="empty-state">
+                        <span class="empty-icon">🖼️</span>
+                        <p>No hay banners cargados</p>
+                        <small>Subí tu primera promoción arriba</small>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="js/firebase-config.js"></script>
+    <script src="js/utils/imageUtils.js?v=5.2.0"></script>
+    <script src="js/banners.js"></script>
+</body>
+</html>

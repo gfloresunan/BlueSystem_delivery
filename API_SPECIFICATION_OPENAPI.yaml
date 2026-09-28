@@ -1,0 +1,47 @@
+openapi: 3.0.3
+info:
+  title: BlueSystem Delivery Enterprise API
+  version: 2.0.0
+  description: Especificación OpenAPI Enterprise v2.0 para Gobernanza, Configuración y Observabilidad.
+paths:
+  /api/v2/config/{key}:
+    get:
+      summary: Obtener valor de configuración por clave y entorno
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: env
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [DEV, QA, STAGING, PRODUCTION]
+      responses:
+        '200':
+          description: Valor de configuración retornado exitosamente
+  /api/v2/feature-flags/{flagKey}:
+    get:
+      summary: Evaluar bandera de función por clave
+      parameters:
+        - name: flagKey
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Resultado de evaluación de la bandera de función
+  /api/v2/health/synthetic:
+    get:
+      summary: Diagnóstico sintético de salud del sistema
+      responses:
+        '200':
+          description: Reporte de salud técnico y de negocio

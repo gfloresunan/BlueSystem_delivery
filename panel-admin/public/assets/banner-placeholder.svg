@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="800" height="400">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#020617"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#1e1b4b"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="400" fill="url(#bgGrad)"/>
+  <circle cx="700" cy="80" r="180" fill="#4f46e5" opacity="0.08"/>
+  <circle cx="100" cy="320" r="140" fill="#06b6d4" opacity="0.06"/>
+  <g transform="translate(368, 140)">
+    <circle cx="32" cy="32" r="48" fill="#1e293b" stroke="#334155" stroke-width="2"/>
+    <path d="M16 22L8 10h48l-8 12H16z" fill="url(#accentGrad)"/>
+    <path d="M12 22v26a2 2 0 0 0 2 2h36a2 2 0 0 0 2-2V22" fill="none" stroke="#818cf8" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M26 50V34h12v16" fill="none" stroke="#a5b4fc" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="400" y="245" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="16" font-weight="800" fill="#e2e8f0" text-anchor="middle" letter-spacing="3">BLUESYSTEM ENTERPRISE</text>
+  <text x="400" y="270" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="12" font-weight="600" fill="#64748b" text-anchor="middle" letter-spacing="1">PORTADA DE COMERCIO</text>
+</svg>

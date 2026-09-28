@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  background-color: #020617;
+  color: #f8fafc;
+}
+
+/* ─── Leaflet Custom Markers Reset ────────────────────────────────────────── */
+.custom-courier-icon,
+.custom-customer-icon,
+.custom-store-icon,
+.leaflet-div-icon {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+

@@ -1,0 +1,18 @@
+﻿
+08-20 08:51:58.770  4351  4351 W Bundle  : Attempt to cast generated internal exception:
+08-20 08:51:58.770  4351  4351 W Bundle  : java.lang.ClassCastException: java.lang.Integer cannot be cast to 
+java.lang.String
+08-20 08:51:58.810  5358 29746 E BluetoothUtils: Need ACCESS_FINE_LOCATION permission for AttributionSource { uid = 
+1002, packageName = com.android.bluetooth, attributionTag = null, token = android.os.Binder@770bbd6, deviceId = 0, 
+next = AttributionSource { uid = 5006, packageName = com.samsung.android.beaconmanager, attributionTag = null, token = 
+android.os.BinderProxy@835f09a, deviceId = 0, next = null } }
+08-20 08:51:58.945  3004  3041 W PermissionService: getPermissionFlags: Unknown user -1
+08-20 08:51:58.945  3004  3041 W PermissionService: getPermissionFlags: Unknown user -1
+08-20 08:51:59.094  1944  5583 W libc    : Access denied finding property "vendor.mpctl.init.complete"
+08-20 08:51:59.690  6724 14764 I erkz    : (REDACTED) HDM. Ignoring irrelevant audio permission changes for package %s
+08-20 08:51:59.693  6724 14764 I erkz    : (REDACTED) HDM. Ignoring irrelevant audio permission changes for package %s
+08-20 08:51:59.742  6724  6751 I erkz    : (REDACTED) HDM. Ignoring irrelevant audio permission changes for package %s
+08-20 08:51:59.742  6724  6751 I erkz    : (REDACTED) HDM. Ignoring irrelevant audio permission changes for package %s
+08-20 08:52:00.208  6724  6751 I erkz    : (REDACTED) HDM. Ignoring irrelevant audio permission changes for package %s
+
+

@@ -1,0 +1,210 @@
+rules_version = '2';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BLUESYSTEM DELIVERY ENTERPRISE — Firebase Storage Security Rules
+// Sprint 17.1 Infrastructure Foundation & App Check Hardening
+// ═══════════════════════════════════════════════════════════════════════════════
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isPlatformAdmin() {
+      return isAuthenticated() && (
+        request.auth.token.get("role", "") in ["SUPER_ADMIN", "ADMIN", "AUDITOR", "SUPPORT", "super_admin", "admin", "auditor", "support"] ||
+        request.auth.token.get("eiamRole", "") in ["SUPER_ADMIN", "ADMIN", "AUDITOR", "SUPPORT", "super_admin", "admin", "auditor", "support"] ||
+        request.auth.token.get("admin", false) == true ||
+        request.auth.token.get("isSuperAdmin", false) == true
+      );
+    }
+
+    function isMerchantOwnerOrManager(targetBusinessId) {
+      return isAuthenticated() && (
+        (
+          (request.auth.token.get("businessId", "") == targetBusinessId || request.auth.token.get("eiamBusinessId", "") == targetBusinessId) &&
+          (request.auth.token.get("role", "") in ["OWNER", "MANAGER", "owner", "manager"] || request.auth.token.get("eiamRole", "") in ["OWNER", "MANAGER", "owner", "manager"])
+        ) ||
+        isPlatformAdmin()
+      );
+    }
+
+    function isValidCommerceImage() {
+      return request.resource.contentType.matches('image/.*')
+        && request.resource.size <= 5 * 1024 * 1024;
+    }
+
+    // ─── /banners/{fileName} ──────────────────────────────────────────────
+    match /banners/{fileName} {
+      allow read: if true;
+      allow write: if isPlatformAdmin();
+    }
+
+    // ─── /campaign_images/{fileName} (Admin Notification Banners - Sprint 18.2) ──
+    // Escritura: solo Platform Admin autenticado + MIME image + límite 1MB (Sprint 18.2).
+    // Lectura pública: la URL es consumida por Android (downloadBitmap via HttpURLConnection
+    // sin token de auth), por lo que debe ser descargable sin credenciales.
+    match /campaign_images/{fileName} {
+      allow read: if true;
+      allow create, update: if isPlatformAdmin()
+                            && request.resource.size <= 1 * 1024 * 1024
+                            && request.resource.contentType.matches('image/(jpeg|jpg|png|webp)');
+      allow delete: if isPlatformAdmin();
+    }
+
+    // ─── /app_update_assets/{allPaths=**} (App Update Center - Remote Config Assets) ───
+    match /app_update_assets/{allPaths=**} {
+      allow read: if true;
+      // GATE-002: Restricción estricta a formatos raster seguros (JPEG, PNG, WebP). Prohibido SVG sin sanitización backend.
+      allow create, update: if isPlatformAdmin()
+                            && request.resource.size <= 2 * 1024 * 1024
+                            && request.resource.contentType.matches('image/(jpeg|jpg|png|webp)');
+      allow delete: if isPlatformAdmin();
+    }
+
+    // ─── /brands/{brandId}/{fileName} (Brand Management Assets - Actividad #21) ─
+    match /brands/{brandId}/{fileName} {
+      allow read: if true;
+      allow create, update: if isPlatformAdmin() && isValidCommerceImage();
+      allow delete: if isPlatformAdmin();
+    }
+
+    // ─── /commerce_assets/{fileName} (Global Admin Assets) ─────────────────
+    match /commerce_assets/{fileName} {
+      allow read: if true;
+      allow create, update: if isPlatformAdmin() && isValidCommerceImage();
+    }
+
+    // ─── /commerce_assets/{businessId}/{fileName} (Tenant Merchant Assets) ─
+    match /commerce_assets/{businessId}/{fileName} {
+      allow read: if true;
+      allow create, update: if isMerchantOwnerOrManager(businessId) && isValidCommerceImage();
+      allow delete: if isMerchantOwnerOrManager(businessId);
+    }
+
+    // ─── /commerce_assets/{businessId}/announcements/{announcementId}/{fileName} (BSD-COMMERCE-ANNOUNCEMENT-CARD-ENTERPRISE-001) ─
+    match /commerce_assets/{businessId}/announcements/{announcementId}/{fileName} {
+      allow read: if true;
+      allow create, update: if (isMerchantOwnerOrManager(businessId) || isPlatformAdmin()) && isValidCommerceImage();
+      allow delete: if isMerchantOwnerOrManager(businessId) || isPlatformAdmin();
+    }
+
+    // ─── /media/{allPaths=**} & /products/{allPaths=**} ─────────────────
+    match /media/{allPaths=**} {
+      allow read, write: if true;
+    }
+
+    match /products/{allPaths=**} {
+      allow read, write: if true;
+    }
+
+    // ─── /vouchers/{orderId}/{fileName} (Comprobantes de Transferencia Bancaria) ──
+    match /vouchers/{orderId}/{fileName} {
+      // Inmutabilidad estricta: solo crear si no existe previamente y cumple validaciones raster/pdf
+      allow create: if isAuthenticated() &&
+                    resource == null &&
+                    request.resource.size <= 5 * 1024 * 1024 &&
+                    request.resource.contentType.matches('image/(jpeg|jpg|png|webp)|application/pdf');
+
+      // Lectura privada restringida: Solo el Cliente dueño de la orden o Administrador de Plataforma
+      allow read: if isAuthenticated() && (
+        isPlatformAdmin() ||
+        (resource != null && resource.metadata != null && resource.metadata.userId == request.auth.uid) ||
+        (firestore.exists(/databases/(default)/documents/deliveryTrips/$(orderId)) &&
+         (firestore.get(/databases/(default)/documents/deliveryTrips/$(orderId)).data.customerId == request.auth.uid ||
+          firestore.get(/databases/(default)/documents/deliveryTrips/$(orderId)).data.clienteId == request.auth.uid)) ||
+        (firestore.exists(/databases/(default)/documents/orders/$(orderId)) &&
+         (firestore.get(/databases/(default)/documents/orders/$(orderId)).data.customerId == request.auth.uid ||
+          firestore.get(/databases/(default)/documents/orders/$(orderId)).data.clienteId == request.auth.uid))
+      );
+
+      // Inmutabilidad financiera: prohibido sobrescribir o borrar vouchers post-creación excepto por auditoría
+      allow update, delete: if isPlatformAdmin();
+    }
+
+    // ─── /avatars/{userId}/{fileName} ──────────────────────────────────────
+    match /avatars/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if isOwner(userId);
+    }
+
+    // ─── /merchant_applications_docs/{applicationId}/{fileName} (ADR-011 Enterprise) ─
+    match /merchant_applications_docs/{applicationId}/{fileName} {
+      // Permitir la creación desde el Portal de Onboarding (Público) con inmutabilidad estricta (resource == null evita sobrescrituras)
+      allow create: if resource == null
+                    && request.resource.size <= 10 * 1024 * 1024
+                    && request.resource.contentType.matches('image/(jpeg|jpg|png|webp)|application/pdf');
+
+      // Privacidad absoluta: prohibir lectura, actualización y eliminación pública
+      // Solo la plataforma Admin (Governance Center / Cloud Functions) tiene acceso mediante Claims/Admin SDK
+      allow read, update, delete: if request.auth != null &&
+                                    (request.auth.token.get("role", "") in ["SUPER_ADMIN", "ADMIN", "AUDITOR"]);
+    }
+
+    // ─── /courier_applications_docs/{applicationId}/{fileName} (Courier Onboarding Enterprise) ─
+    match /courier_applications_docs/{applicationId}/{fileName} {
+      // Permitir la creación desde el Portal de Onboarding de Motorizados (Público) con inmutabilidad estricta
+      allow create: if resource == null
+                    && request.resource.size <= 10 * 1024 * 1024
+                    && request.resource.contentType.matches('image/(jpeg|jpg|png|webp)|application/pdf');
+
+      // Privacidad absoluta: lectura, actualización y eliminación restringida a administradores de plataforma autorizados
+      allow read, update, delete: if request.auth != null &&
+                                    (request.auth.token.get("role", "") in ["SUPER_ADMIN", "ADMIN", "AUDITOR"]);
+    }
+
+    // ─── /courier_closures/{courierId}/{closureId}/{fileName} (Vouchers de Depósito Bancario) ─
+    match /courier_closures/{courierId}/{closureId}/{fileName} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == courierId ||
+        isPlatformAdmin()
+      );
+      allow create: if isAuthenticated() &&
+                    request.auth.uid == courierId &&
+                    request.resource.size <= 10 * 1024 * 1024 &&
+                    request.resource.contentType.matches('image/(jpeg|jpg|png|webp)|application/pdf');
+      allow update, delete: if isPlatformAdmin();
+    }
+
+    // ─── /courier_profile_docs/{courierId}/{fileName} (Documentos de Modificación de Perfil) ─
+    match /courier_profile_docs/{courierId}/{fileName} {
+      allow read: if isAuthenticated() && (
+        request.auth.uid == courierId ||
+        isPlatformAdmin()
+      );
+      allow create: if isAuthenticated() &&
+                    request.auth.uid == courierId &&
+                    request.resource.size <= 10 * 1024 * 1024 &&
+                    request.resource.contentType.matches('image/(jpeg|jpg|png|webp)|application/pdf');
+      allow update, delete: if isPlatformAdmin();
+    }
+
+    // ─── /settlement_receipts/{businessId}/{settlementId}/{fileName} (BSD-FINANCE-MERCHANT-SETTLEMENT-001) ───
+    // Comprobantes oficiales de transferencia bancaria de liquidaciones comerciales
+    match /settlement_receipts/{businessId}/{settlementId}/{fileName} {
+      allow read: if isAuthenticated() && (
+        isPlatformAdmin() ||
+        isMerchantOwnerOrManager(businessId)
+      );
+      // Inmutabilidad estricta: Solo Platform Admin, resource == null impide sobrescritura de evidencia
+      allow create: if isPlatformAdmin() &&
+                    resource == null &&
+                    request.resource.size <= 10 * 1024 * 1024 &&
+                    request.resource.contentType.matches('image/(jpeg|jpg|png|webp)|application/pdf');
+      // Prohibido sobrescribir o eliminar evidencia financiera directamente desde el cliente
+      allow update, delete: if false;
+    }
+
+    // ─── Denegar todo lo demás ──────────────────────────────────────────────
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+

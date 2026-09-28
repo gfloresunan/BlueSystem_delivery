@@ -1,0 +1,3212 @@
+{
+  "summary": {
+    "totalIdentities": 54,
+    "authUsersCount": 16,
+    "firestoreUsersCount": 47,
+    "matchedCount": 9,
+    "authOnlyCount": 7,
+    "fsOnlyCount": 38,
+    "canonicalRoleClean": 29,
+    "roleLegacyCompatible": 15,
+    "roleConflicts": 3,
+    "unknownRoles": 0,
+    "statusConsistent": 48,
+    "statusConflicts": 6,
+    "authDisabledConflicts": 6,
+    "claimsSynced": 6,
+    "claimsStale": 3,
+    "claimsMissing": 7,
+    "claimsCritical": 0,
+    "membershipsCount": 3,
+    "employeesCount": 0,
+    "businessesCount": 8,
+    "branchesCount": 4,
+    "userDevicesCount": 7,
+    "legacyDevicesCount": 0,
+    "totalClean": 0,
+    "totalLegacyCompat": 35,
+    "totalMigRequired": 13,
+    "totalCritical": 6,
+    "migrationReadiness": "64.81%"
+  },
+  "superAdmins": [],
+  "identityAuditList": [
+    {
+      "uid": "3Wt0XdzeOTfG1OXn72ApIhVbE5i1",
+      "email": "familiaflorescenteno@gmail.com",
+      "nombre": "Kimberly Flores Centeno",
+      "inAuth": true,
+      "inFs": true,
+      "userType": "customer",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R2",
+      "roleConflictDesc": "MISSING_CANONICAL_ROLE",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {
+        "role": "CLIENT",
+        "businessId": null,
+        "branchId": null,
+        "orgId": null,
+        "tenantId": null
+      },
+      "claimsClass": "C0",
+      "claimsResult": "CLAIMS_SYNCED",
+      "membershipCount": 0,
+      "deviceCount": 1,
+      "businessId": null,
+      "branchId": null,
+      "severity": "MIGRATION_REQUIRED"
+    },
+    {
+      "uid": "8O8hJe5kSzNQxUkLwwkCsipGmAI3",
+      "email": "kim@gmail.com",
+      "nombre": "kimberly Flores",
+      "inAuth": true,
+      "inFs": true,
+      "role": "business",
+      "rol": "business",
+      "userType": "customer",
+      "resolvedRole": "OWNER",
+      "roleClass": "R1",
+      "roleConflictDesc": "LEGACY_STRING (business) -> OWNER",
+      "status": "DELETED",
+      "isActive": false,
+      "authDisabled": true,
+      "resolvedStatus": "BLOCKED",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {
+        "role": "OWNER",
+        "businessId": null,
+        "branchId": null,
+        "orgId": null,
+        "tenantId": null
+      },
+      "claimsClass": "C0",
+      "claimsResult": "CLAIMS_SYNCED",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "9QHYGkSa3nWiJ7KfPkccjjuIaYp2",
+      "email": "hpaz@gmail.com",
+      "nombre": "Henry Paz",
+      "inAuth": true,
+      "inFs": true,
+      "role": "courier",
+      "rol": "courier",
+      "userType": "driver",
+      "resolvedRole": "DRIVER",
+      "roleClass": "R1",
+      "roleConflictDesc": "LEGACY_STRING (courier) -> DRIVER",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {
+        "role": "DRIVER",
+        "businessId": null,
+        "branchId": null,
+        "orgId": null,
+        "tenantId": null
+      },
+      "claimsClass": "C0",
+      "claimsResult": "CLAIMS_SYNCED",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "G5HO4FxxW8f4s3JkeEB60wyWfdY2",
+      "email": "admin@tecnocomp.com.ni",
+      "nombre": "N/A",
+      "inAuth": true,
+      "inFs": false,
+      "role": "N/A",
+      "eiamRole": "N/A",
+      "rol": "N/A",
+      "userType": "N/A",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R6",
+      "roleConflictDesc": "AUTH_ONLY_IDENTITY",
+      "status": "N/A",
+      "isActive": "N/A",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C6",
+      "claimsResult": "CLAIMS_MISSING",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "MIGRATION_REQUIRED"
+    },
+    {
+      "uid": "IAjm32V7rXNY1beBc4yKv9zgtIC3",
+      "email": "junior@gmail.com",
+      "nombre": "N/A",
+      "inAuth": true,
+      "inFs": false,
+      "role": "N/A",
+      "eiamRole": "N/A",
+      "rol": "N/A",
+      "userType": "N/A",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R6",
+      "roleConflictDesc": "AUTH_ONLY_IDENTITY",
+      "status": "N/A",
+      "isActive": "N/A",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C6",
+      "claimsResult": "CLAIMS_MISSING",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "MIGRATION_REQUIRED"
+    },
+    {
+      "uid": "O6DSYllEA1fPMkueKWrF4MxkSP93",
+      "email": "admin@ecnocomp.com.ni",
+      "nombre": "N/A",
+      "inAuth": true,
+      "inFs": false,
+      "role": "N/A",
+      "eiamRole": "N/A",
+      "rol": "N/A",
+      "userType": "N/A",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R6",
+      "roleConflictDesc": "AUTH_ONLY_IDENTITY",
+      "status": "N/A",
+      "isActive": "N/A",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C6",
+      "claimsResult": "CLAIMS_MISSING",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "MIGRATION_REQUIRED"
+    },
+    {
+      "uid": "PDziWizeJIO83ZUcsrgznmod7vz2",
+      "email": "pcenteno@gmail.com",
+      "nombre": "N/A",
+      "inAuth": true,
+      "inFs": false,
+      "role": "N/A",
+      "eiamRole": "N/A",
+      "rol": "N/A",
+      "userType": "N/A",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R6",
+      "roleConflictDesc": "AUTH_ONLY_IDENTITY",
+      "status": "N/A",
+      "isActive": "N/A",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C6",
+      "claimsResult": "CLAIMS_MISSING",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "MIGRATION_REQUIRED"
+    },
+    {
+      "uid": "QjvtPl3SMfetU7RuYunTzJIM4My1",
+      "email": "moises@gmail.com",
+      "nombre": "N/A",
+      "inAuth": true,
+      "inFs": false,
+      "role": "N/A",
+      "eiamRole": "N/A",
+      "rol": "N/A",
+      "userType": "N/A",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R6",
+      "roleConflictDesc": "AUTH_ONLY_IDENTITY",
+      "status": "N/A",
+      "isActive": "N/A",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C6",
+      "claimsResult": "CLAIMS_MISSING",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "MIGRATION_REQUIRED"
+    },
+    {
+      "uid": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "email": "gflores@unan.edu.ni",
+      "nombre": "Junior Flores",
+      "inAuth": true,
+      "inFs": true,
+      "role": "business",
+      "eiamRole": "MERCHANT_OWNER",
+      "rol": "business",
+      "userType": "business",
+      "resolvedRole": "OWNER",
+      "roleClass": "R1",
+      "roleConflictDesc": "LEGACY_STRING (business) -> OWNER",
+      "status": "DELETED",
+      "isActive": true,
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {
+        "role": "MERCHANT_OWNER",
+        "businessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+        "orgId": "75b145e5-17ec-4248-a085-c962a408db86",
+        "branchId": "794f7c02-8077-40a8-b260-2fdd27a6f35d",
+        "tenantId": null
+      },
+      "claimsClass": "C1",
+      "claimsResult": "ROLE_CLAIM_STALE (Claims: MERCHANT_OWNER vs Exp: OWNER)",
+      "membershipCount": 1,
+      "deviceCount": 0,
+      "businessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "branchId": "794f7c02-8077-40a8-b260-2fdd27a6f35d",
+      "severity": "MIGRATION_REQUIRED"
+    },
+    {
+      "uid": "XWsjzZe8lsfthRQ5PgbDzlqA2nX2",
+      "email": "geraldflores07@gmail.com",
+      "nombre": "Gerald Flores",
+      "inAuth": true,
+      "inFs": true,
+      "role": "admin",
+      "rol": "admin",
+      "userType": "admin",
+      "resolvedRole": "ADMIN",
+      "roleClass": "R1",
+      "roleConflictDesc": "LEGACY_STRING (admin) -> ADMIN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {
+        "role": "ADMIN",
+        "businessId": null,
+        "branchId": null,
+        "orgId": null,
+        "tenantId": null
+      },
+      "claimsClass": "C0",
+      "claimsResult": "CLAIMS_SYNCED",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "YFpQsfuTS3PLMggjR4wXMcmxvuq1",
+      "email": "aldrich@gmail.com",
+      "nombre": "N/A",
+      "inAuth": true,
+      "inFs": false,
+      "role": "N/A",
+      "eiamRole": "N/A",
+      "rol": "N/A",
+      "userType": "N/A",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R6",
+      "roleConflictDesc": "AUTH_ONLY_IDENTITY",
+      "status": "N/A",
+      "isActive": "N/A",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C6",
+      "claimsResult": "CLAIMS_MISSING",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "MIGRATION_REQUIRED"
+    },
+    {
+      "uid": "dKZf5tyzpUMNPk1Wy92BQgp4aMF3",
+      "email": "fritoni@gmail.com",
+      "nombre": "N/A",
+      "inAuth": true,
+      "inFs": false,
+      "role": "N/A",
+      "eiamRole": "N/A",
+      "rol": "N/A",
+      "userType": "N/A",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R6",
+      "roleConflictDesc": "AUTH_ONLY_IDENTITY",
+      "status": "N/A",
+      "isActive": "N/A",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C6",
+      "claimsResult": "CLAIMS_MISSING",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "MIGRATION_REQUIRED"
+    },
+    {
+      "uid": "dbX1tvV2WNdFv4KWMbWNW8lngDI2",
+      "email": "N/A",
+      "nombre": "Gerald Jose Flores Gutierrez",
+      "inAuth": true,
+      "inFs": true,
+      "userType": "customer",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R2",
+      "roleConflictDesc": "MISSING_CANONICAL_ROLE",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {
+        "role": "CLIENT",
+        "businessId": null,
+        "branchId": null,
+        "orgId": null,
+        "tenantId": null
+      },
+      "claimsClass": "C0",
+      "claimsResult": "CLAIMS_SYNCED",
+      "membershipCount": 0,
+      "deviceCount": 1,
+      "businessId": null,
+      "branchId": null,
+      "severity": "MIGRATION_REQUIRED"
+    },
+    {
+      "uid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "email": "fritoni@gmail.com",
+      "nombre": "FRITONI",
+      "inAuth": true,
+      "inFs": true,
+      "role": "business",
+      "eiamRole": "MERCHANT_OWNER",
+      "rol": "business",
+      "userType": "business",
+      "resolvedRole": "OWNER",
+      "roleClass": "R1",
+      "roleConflictDesc": "LEGACY_STRING (business) -> OWNER",
+      "status": "ACTIVE",
+      "isActive": true,
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {
+        "role": "MERCHANT_OWNER",
+        "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+        "orgId": "org_default_bluesystem",
+        "branchId": "br_1786988052589",
+        "tenantId": null
+      },
+      "claimsClass": "C1",
+      "claimsResult": "ROLE_CLAIM_STALE (Claims: MERCHANT_OWNER vs Exp: OWNER)",
+      "membershipCount": 1,
+      "deviceCount": 2,
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "branchId": "br_1786988052589",
+      "severity": "MIGRATION_REQUIRED"
+    },
+    {
+      "uid": "h00PIZpMgxSaqSVnYpRLPq0DYGC3",
+      "email": "itedvirtual@gmail.com",
+      "nombre": "ITED Virtual",
+      "inAuth": true,
+      "inFs": true,
+      "userType": "customer",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R2",
+      "roleConflictDesc": "MISSING_CANONICAL_ROLE",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {
+        "role": "CLIENT",
+        "businessId": null,
+        "branchId": null,
+        "orgId": null,
+        "tenantId": null
+      },
+      "claimsClass": "C0",
+      "claimsResult": "CLAIMS_SYNCED",
+      "membershipCount": 0,
+      "deviceCount": 1,
+      "businessId": null,
+      "branchId": null,
+      "severity": "MIGRATION_REQUIRED"
+    },
+    {
+      "uid": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "email": "ventas@tecnocomp.com.ni",
+      "nombre": "Aldrich Flores",
+      "inAuth": true,
+      "inFs": true,
+      "role": "business",
+      "eiamRole": "MERCHANT_OWNER",
+      "rol": "business",
+      "userType": "business",
+      "resolvedRole": "OWNER",
+      "roleClass": "R1",
+      "roleConflictDesc": "LEGACY_STRING (business) -> OWNER",
+      "status": "DELETED",
+      "isActive": true,
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {
+        "role": "MERCHANT_OWNER",
+        "businessId": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+        "orgId": "1b485c29-b7e3-4173-a4fd-36f8bb4ec1e8",
+        "branchId": "30945c9c-3aee-4e45-b35d-a998b57cf2fa",
+        "tenantId": null
+      },
+      "claimsClass": "C1",
+      "claimsResult": "ROLE_CLAIM_STALE (Claims: MERCHANT_OWNER vs Exp: OWNER)",
+      "membershipCount": 1,
+      "deviceCount": 0,
+      "businessId": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "branchId": "30945c9c-3aee-4e45-b35d-a998b57cf2fa",
+      "severity": "MIGRATION_REQUIRED"
+    },
+    {
+      "uid": "1768226535785",
+      "email": "N/A",
+      "nombre": "Gerald José  Flores Gutiérrez",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "1768243841542",
+      "email": "N/A",
+      "nombre": "Kim",
+      "inAuth": false,
+      "inFs": true,
+      "role": "business",
+      "rol": "business",
+      "resolvedRole": "OWNER",
+      "roleClass": "R1",
+      "roleConflictDesc": "LEGACY_STRING (business) -> OWNER",
+      "status": "DELETED",
+      "isActive": false,
+      "authDisabled": false,
+      "resolvedStatus": "BLOCKED",
+      "statusClass": "S2",
+      "statusConflictDesc": "FIRESTORE_BLOCKED_BUT_AUTH_ENABLED",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "CRITICAL"
+    },
+    {
+      "uid": "1768878763084",
+      "email": "N/A",
+      "nombre": "Henry Paz",
+      "inAuth": false,
+      "inFs": true,
+      "role": "SELLER",
+      "resolvedRole": "CASHIER",
+      "roleClass": "R1",
+      "roleConflictDesc": "LEGACY_STRING (SELLER) -> CASHIER",
+      "status": "DELETED",
+      "isActive": false,
+      "authDisabled": false,
+      "resolvedStatus": "BLOCKED",
+      "statusClass": "S2",
+      "statusConflictDesc": "FIRESTORE_BLOCKED_BUT_AUTH_ENABLED",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "CRITICAL"
+    },
+    {
+      "uid": "1769029559449",
+      "email": "N/A",
+      "nombre": "Chepita",
+      "inAuth": false,
+      "inFs": true,
+      "role": "SELLER",
+      "resolvedRole": "CASHIER",
+      "roleClass": "R1",
+      "roleConflictDesc": "LEGACY_STRING (SELLER) -> CASHIER",
+      "status": "DELETED",
+      "isActive": false,
+      "authDisabled": false,
+      "resolvedStatus": "BLOCKED",
+      "statusClass": "S2",
+      "statusConflictDesc": "FIRESTORE_BLOCKED_BUT_AUTH_ENABLED",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "branchId": "br_1786029236396",
+      "severity": "CRITICAL"
+    },
+    {
+      "uid": "USR-1768621181014",
+      "email": "N/A",
+      "nombre": "Zamir Ocornor",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-1769025804680",
+      "email": "N/A",
+      "nombre": "Omar Altamirano ",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-1769029685895",
+      "email": "N/A",
+      "nombre": "Richard centeno",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-1769098535884",
+      "email": "N/A",
+      "nombre": "Adolfo Urbina",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-1769190932815",
+      "email": "N/A",
+      "nombre": "vicenta gutirrrez",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-1769194803657",
+      "email": "N/A",
+      "nombre": "adolfo  urbina",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-1769465117595",
+      "email": "N/A",
+      "nombre": "andy flores",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-1769487243198",
+      "email": "N/A",
+      "nombre": "Helo Jdkdk",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-1769620170492",
+      "email": "N/A",
+      "nombre": "pepe flores",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-1769633352410",
+      "email": "N/A",
+      "nombre": "Gggg Ghh",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-1769711990359",
+      "email": "N/A",
+      "nombre": "venus flores",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-1770060240159",
+      "email": "N/A",
+      "nombre": "Jairo  AldNa",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-1771428610412",
+      "email": "N/A",
+      "nombre": "Nelson Busto",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-1772377026947",
+      "email": "N/A",
+      "nombre": "Luciana  Aldana ",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-CL-1768337682525",
+      "email": "N/A",
+      "nombre": "allan mendoza",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-CL-1768342901776",
+      "email": "N/A",
+      "nombre": "zoe flores",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-CL-1768365031013",
+      "email": "N/A",
+      "nombre": "maria chavez",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "USR-CL-1768422839897",
+      "email": "N/A",
+      "nombre": "denis flores",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "admin_initial",
+      "email": "admin@blue.com",
+      "nombre": "Admin Gerald Flores",
+      "inAuth": false,
+      "inFs": true,
+      "role": "ADMIN",
+      "resolvedRole": "ADMIN",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "email": "elchanchito@gmail.com",
+      "nombre": "El Chanchito",
+      "inAuth": false,
+      "inFs": true,
+      "role": "business",
+      "rol": "business",
+      "userType": "business",
+      "resolvedRole": "OWNER",
+      "roleClass": "R1",
+      "roleConflictDesc": "LEGACY_STRING (business) -> OWNER",
+      "isActive": true,
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "email": "tecnohome@gmail.com",
+      "nombre": "Variedades TECNOHOME",
+      "inAuth": false,
+      "inFs": true,
+      "role": "business",
+      "rol": "business",
+      "userType": "business",
+      "resolvedRole": "OWNER",
+      "roleClass": "R1",
+      "roleConflictDesc": "LEGACY_STRING (business) -> OWNER",
+      "isActive": true,
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "test_auth_fs_1786904851220",
+      "email": "N/A",
+      "nombre": "Test Both",
+      "inAuth": false,
+      "inFs": true,
+      "resolvedRole": "CLIENT",
+      "roleClass": "R6",
+      "roleConflictDesc": "DEFAULT_FALLBACK_CLIENT",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "test_sync_1786906621837",
+      "email": "synctest@bluesystem.com",
+      "nombre": "SYNC_TEST_COMMERCE_EDITED",
+      "inAuth": false,
+      "inFs": true,
+      "role": "business",
+      "resolvedRole": "OWNER",
+      "roleClass": "R1",
+      "roleConflictDesc": "LEGACY_STRING (business) -> OWNER",
+      "status": "DELETED",
+      "isActive": false,
+      "authDisabled": false,
+      "resolvedStatus": "BLOCKED",
+      "statusClass": "S2",
+      "statusConflictDesc": "FIRESTORE_BLOCKED_BUT_AUTH_ENABLED",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "CRITICAL"
+    },
+    {
+      "uid": "test_sync_1786906691350",
+      "email": "synctest@bluesystem.com",
+      "nombre": "SYNC_TEST_COMMERCE_EDITED",
+      "inAuth": false,
+      "inFs": true,
+      "role": "business",
+      "resolvedRole": "OWNER",
+      "roleClass": "R1",
+      "roleConflictDesc": "LEGACY_STRING (business) -> OWNER",
+      "status": "DELETED",
+      "isActive": false,
+      "authDisabled": false,
+      "resolvedStatus": "BLOCKED",
+      "statusClass": "S2",
+      "statusConflictDesc": "FIRESTORE_BLOCKED_BUT_AUTH_ENABLED",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "CRITICAL"
+    },
+    {
+      "uid": "test_sync_1786906712177",
+      "email": "synctest@bluesystem.com",
+      "nombre": "SYNC_TEST_COMMERCE_EDITED",
+      "inAuth": false,
+      "inFs": true,
+      "role": "business",
+      "resolvedRole": "OWNER",
+      "roleClass": "R1",
+      "roleConflictDesc": "LEGACY_STRING (business) -> OWNER",
+      "status": "DELETED",
+      "isActive": false,
+      "authDisabled": false,
+      "resolvedStatus": "BLOCKED",
+      "statusClass": "S2",
+      "statusConflictDesc": "FIRESTORE_BLOCKED_BUT_AUTH_ENABLED",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "CRITICAL"
+    },
+    {
+      "uid": "user_cli_1768237897386",
+      "email": "N/A",
+      "nombre": "Aldrich  Flores",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "user_cli_1768240170991",
+      "email": "N/A",
+      "nombre": "venus flores",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "user_cliente0002_2026",
+      "email": "N/A",
+      "nombre": "Perla  Centeno",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "user_cliente0008_2026",
+      "email": "N/A",
+      "nombre": "Junior Flores",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "user_cliente0009_2026",
+      "email": "N/A",
+      "nombre": "hola oooo",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "user_cliente0010_2026",
+      "email": "N/A",
+      "nombre": "maria ramos",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "user_cliente0011_2026",
+      "email": "N/A",
+      "nombre": "sonia matamoros",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "user_cliente1768275049139",
+      "email": "N/A",
+      "nombre": "eva morales",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    },
+    {
+      "uid": "user_cliente1768278375844",
+      "email": "N/A",
+      "nombre": "xoci ruiz",
+      "inAuth": false,
+      "inFs": true,
+      "role": "CLIENT",
+      "resolvedRole": "CLIENT",
+      "roleClass": "R0",
+      "roleConflictDesc": "CLEAN",
+      "authDisabled": false,
+      "resolvedStatus": "ACTIVE",
+      "statusClass": "S0",
+      "statusConflictDesc": "CONSISTENT",
+      "claims": {},
+      "claimsClass": "C7",
+      "claimsResult": "NO_AUTH_RECORD",
+      "membershipCount": 0,
+      "deviceCount": 0,
+      "businessId": null,
+      "branchId": null,
+      "severity": "LEGACY_COMPATIBLE"
+    }
+  ],
+  "proposals": [
+    {
+      "uid": "3Wt0XdzeOTfG1OXn72ApIhVbE5i1",
+      "email": "familiaflorescenteno@gmail.com",
+      "severity": "MIGRATION_REQUIRED",
+      "roleProposal": {
+        "current": {
+          "userType": "customer"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null,
+          "tenantId": null
+        },
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "8O8hJe5kSzNQxUkLwwkCsipGmAI3",
+      "email": "kim@gmail.com",
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "business",
+          "rol": "business",
+          "userType": "customer"
+        },
+        "proposed": {
+          "role": "OWNER"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": "DELETED",
+          "isActive": false,
+          "authDisabled": true
+        },
+        "proposed": {
+          "status": "BLOCKED",
+          "authDisabled": true
+        }
+      },
+      "claimsProposal": {
+        "current": {
+          "role": "OWNER",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null,
+          "tenantId": null
+        },
+        "proposed": {
+          "role": "OWNER",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "9QHYGkSa3nWiJ7KfPkccjjuIaYp2",
+      "email": "hpaz@gmail.com",
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "courier",
+          "rol": "courier",
+          "userType": "driver"
+        },
+        "proposed": {
+          "role": "DRIVER"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": {
+          "role": "DRIVER",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null,
+          "tenantId": null
+        },
+        "proposed": {
+          "role": "DRIVER",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "G5HO4FxxW8f4s3JkeEB60wyWfdY2",
+      "email": "admin@tecnocomp.com.ni",
+      "severity": "MIGRATION_REQUIRED",
+      "roleProposal": {
+        "current": {
+          "role": null,
+          "eiamRole": null,
+          "rol": null,
+          "userType": null
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": null,
+          "isActive": null,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": {},
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "IAjm32V7rXNY1beBc4yKv9zgtIC3",
+      "email": "junior@gmail.com",
+      "severity": "MIGRATION_REQUIRED",
+      "roleProposal": {
+        "current": {
+          "role": null,
+          "eiamRole": null,
+          "rol": null,
+          "userType": null
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": null,
+          "isActive": null,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": {},
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "O6DSYllEA1fPMkueKWrF4MxkSP93",
+      "email": "admin@ecnocomp.com.ni",
+      "severity": "MIGRATION_REQUIRED",
+      "roleProposal": {
+        "current": {
+          "role": null,
+          "eiamRole": null,
+          "rol": null,
+          "userType": null
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": null,
+          "isActive": null,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": {},
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "PDziWizeJIO83ZUcsrgznmod7vz2",
+      "email": "pcenteno@gmail.com",
+      "severity": "MIGRATION_REQUIRED",
+      "roleProposal": {
+        "current": {
+          "role": null,
+          "eiamRole": null,
+          "rol": null,
+          "userType": null
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": null,
+          "isActive": null,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": {},
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "QjvtPl3SMfetU7RuYunTzJIM4My1",
+      "email": "moises@gmail.com",
+      "severity": "MIGRATION_REQUIRED",
+      "roleProposal": {
+        "current": {
+          "role": null,
+          "eiamRole": null,
+          "rol": null,
+          "userType": null
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": null,
+          "isActive": null,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": {},
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "email": "gflores@unan.edu.ni",
+      "severity": "MIGRATION_REQUIRED",
+      "roleProposal": {
+        "current": {
+          "role": "business",
+          "eiamRole": "MERCHANT_OWNER",
+          "rol": "business",
+          "userType": "business"
+        },
+        "proposed": {
+          "role": "OWNER"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": "DELETED",
+          "isActive": true,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": {
+          "role": "MERCHANT_OWNER",
+          "businessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+          "orgId": "75b145e5-17ec-4248-a085-c962a408db86",
+          "branchId": "794f7c02-8077-40a8-b260-2fdd27a6f35d",
+          "tenantId": null
+        },
+        "proposed": {
+          "role": "OWNER",
+          "businessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+          "branchId": "794f7c02-8077-40a8-b260-2fdd27a6f35d",
+          "orgId": "75b145e5-17ec-4248-a085-c962a408db86"
+        }
+      }
+    },
+    {
+      "uid": "XWsjzZe8lsfthRQ5PgbDzlqA2nX2",
+      "email": "geraldflores07@gmail.com",
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "admin",
+          "rol": "admin",
+          "userType": "admin"
+        },
+        "proposed": {
+          "role": "ADMIN"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": {
+          "role": "ADMIN",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null,
+          "tenantId": null
+        },
+        "proposed": {
+          "role": "ADMIN",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "YFpQsfuTS3PLMggjR4wXMcmxvuq1",
+      "email": "aldrich@gmail.com",
+      "severity": "MIGRATION_REQUIRED",
+      "roleProposal": {
+        "current": {
+          "role": null,
+          "eiamRole": null,
+          "rol": null,
+          "userType": null
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": null,
+          "isActive": null,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": {},
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "dKZf5tyzpUMNPk1Wy92BQgp4aMF3",
+      "email": "fritoni@gmail.com",
+      "severity": "MIGRATION_REQUIRED",
+      "roleProposal": {
+        "current": {
+          "role": null,
+          "eiamRole": null,
+          "rol": null,
+          "userType": null
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": null,
+          "isActive": null,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": {},
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "dbX1tvV2WNdFv4KWMbWNW8lngDI2",
+      "email": null,
+      "severity": "MIGRATION_REQUIRED",
+      "roleProposal": {
+        "current": {
+          "userType": "customer"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null,
+          "tenantId": null
+        },
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "email": "fritoni@gmail.com",
+      "severity": "MIGRATION_REQUIRED",
+      "roleProposal": {
+        "current": {
+          "role": "business",
+          "eiamRole": "MERCHANT_OWNER",
+          "rol": "business",
+          "userType": "business"
+        },
+        "proposed": {
+          "role": "OWNER"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": "ACTIVE",
+          "isActive": true,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": {
+          "role": "MERCHANT_OWNER",
+          "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+          "orgId": "org_default_bluesystem",
+          "branchId": "br_1786988052589",
+          "tenantId": null
+        },
+        "proposed": {
+          "role": "OWNER",
+          "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+          "branchId": "br_1786988052589",
+          "orgId": "org_default_bluesystem"
+        }
+      }
+    },
+    {
+      "uid": "h00PIZpMgxSaqSVnYpRLPq0DYGC3",
+      "email": "itedvirtual@gmail.com",
+      "severity": "MIGRATION_REQUIRED",
+      "roleProposal": {
+        "current": {
+          "userType": "customer"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null,
+          "tenantId": null
+        },
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "email": "ventas@tecnocomp.com.ni",
+      "severity": "MIGRATION_REQUIRED",
+      "roleProposal": {
+        "current": {
+          "role": "business",
+          "eiamRole": "MERCHANT_OWNER",
+          "rol": "business",
+          "userType": "business"
+        },
+        "proposed": {
+          "role": "OWNER"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": "DELETED",
+          "isActive": true,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": {
+          "role": "MERCHANT_OWNER",
+          "businessId": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+          "orgId": "1b485c29-b7e3-4173-a4fd-36f8bb4ec1e8",
+          "branchId": "30945c9c-3aee-4e45-b35d-a998b57cf2fa",
+          "tenantId": null
+        },
+        "proposed": {
+          "role": "OWNER",
+          "businessId": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+          "branchId": "30945c9c-3aee-4e45-b35d-a998b57cf2fa",
+          "orgId": "1b485c29-b7e3-4173-a4fd-36f8bb4ec1e8"
+        }
+      }
+    },
+    {
+      "uid": "1768226535785",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "1768243841542",
+      "email": null,
+      "severity": "CRITICAL",
+      "roleProposal": {
+        "current": {
+          "role": "business",
+          "rol": "business"
+        },
+        "proposed": {
+          "role": "OWNER"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": "DELETED",
+          "isActive": false,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "BLOCKED",
+          "authDisabled": true
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "OWNER",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "1768878763084",
+      "email": null,
+      "severity": "CRITICAL",
+      "roleProposal": {
+        "current": {
+          "role": "SELLER"
+        },
+        "proposed": {
+          "role": "CASHIER"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": "DELETED",
+          "isActive": false,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "BLOCKED",
+          "authDisabled": true
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CASHIER",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "1769029559449",
+      "email": null,
+      "severity": "CRITICAL",
+      "roleProposal": {
+        "current": {
+          "role": "SELLER"
+        },
+        "proposed": {
+          "role": "CASHIER"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": "DELETED",
+          "isActive": false,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "BLOCKED",
+          "authDisabled": true
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CASHIER",
+          "businessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+          "branchId": "br_1786029236396",
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-1768621181014",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-1769025804680",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-1769029685895",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-1769098535884",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-1769190932815",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-1769194803657",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-1769465117595",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-1769487243198",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-1769620170492",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-1769633352410",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-1769711990359",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-1770060240159",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-1771428610412",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-1772377026947",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-CL-1768337682525",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-CL-1768342901776",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-CL-1768365031013",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "USR-CL-1768422839897",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "admin_initial",
+      "email": "admin@blue.com",
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "ADMIN"
+        },
+        "proposed": {
+          "role": "ADMIN"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "ADMIN",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "email": "elchanchito@gmail.com",
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "business",
+          "rol": "business",
+          "userType": "business"
+        },
+        "proposed": {
+          "role": "OWNER"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "isActive": true,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "OWNER",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "email": "tecnohome@gmail.com",
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "business",
+          "rol": "business",
+          "userType": "business"
+        },
+        "proposed": {
+          "role": "OWNER"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "isActive": true,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "OWNER",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "test_auth_fs_1786904851220",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {},
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "test_sync_1786906621837",
+      "email": "synctest@bluesystem.com",
+      "severity": "CRITICAL",
+      "roleProposal": {
+        "current": {
+          "role": "business"
+        },
+        "proposed": {
+          "role": "OWNER"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": "DELETED",
+          "isActive": false,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "BLOCKED",
+          "authDisabled": true
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "OWNER",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "test_sync_1786906691350",
+      "email": "synctest@bluesystem.com",
+      "severity": "CRITICAL",
+      "roleProposal": {
+        "current": {
+          "role": "business"
+        },
+        "proposed": {
+          "role": "OWNER"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": "DELETED",
+          "isActive": false,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "BLOCKED",
+          "authDisabled": true
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "OWNER",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "test_sync_1786906712177",
+      "email": "synctest@bluesystem.com",
+      "severity": "CRITICAL",
+      "roleProposal": {
+        "current": {
+          "role": "business"
+        },
+        "proposed": {
+          "role": "OWNER"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "status": "DELETED",
+          "isActive": false,
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "BLOCKED",
+          "authDisabled": true
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "OWNER",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "user_cli_1768237897386",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "user_cli_1768240170991",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "user_cliente0002_2026",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "user_cliente0008_2026",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "user_cliente0009_2026",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "user_cliente0010_2026",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "user_cliente0011_2026",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "user_cliente1768275049139",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    },
+    {
+      "uid": "user_cliente1768278375844",
+      "email": null,
+      "severity": "LEGACY_COMPATIBLE",
+      "roleProposal": {
+        "current": {
+          "role": "CLIENT"
+        },
+        "proposed": {
+          "role": "CLIENT"
+        }
+      },
+      "statusProposal": {
+        "current": {
+          "authDisabled": false
+        },
+        "proposed": {
+          "status": "ACTIVE",
+          "authDisabled": false
+        }
+      },
+      "claimsProposal": {
+        "current": null,
+        "proposed": {
+          "role": "CLIENT",
+          "businessId": null,
+          "branchId": null,
+          "orgId": null
+        }
+      }
+    }
+  ]
+}

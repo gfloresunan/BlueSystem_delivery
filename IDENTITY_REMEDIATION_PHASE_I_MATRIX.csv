@@ -1,0 +1,42 @@
+Index,UID,EffectiveName,CurrentState,ProposedAction,Risk,Dependencies,Reason,ApprovalRequired
+1,"1768226535785","Gerald José  Flores Gutiérrez","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+2,"1768243841542","Kim","BUSINESS","REMEDIATE",LOW,OPERATIONAL,"Dry-run audit evaluation",TRUE
+3,"1768878763084","Henry Paz","SELLER","REMEDIATE",LOW,OPERATIONAL,"Dry-run audit evaluation",TRUE
+4,"1769029559449","Chepita","SELLER","REMEDIATE",LOW,OPERATIONAL,"Dry-run audit evaluation",TRUE
+5,"3Wt0XdzeOTfG1OXn72ApIhVbE5i1","Kimberly Flores Centeno","UNKNOWN","KEEP",LOW,OPERATIONAL,"Dry-run audit evaluation",TRUE
+6,"8O8hJe5kSzNQxUkLwwkCsipGmAI3","kimberly Flores","BUSINESS","LINK",LOW,NONE,"Dry-run audit evaluation",TRUE
+7,"9QHYGkSa3nWiJ7KfPkccjjuIaYp2","Henry Paz","COURIER","LINK",LOW,NONE,"Dry-run audit evaluation",TRUE
+8,"USR-1768621181014","Zamir Ocornor","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+9,"USR-1769025804680","Omar Altamirano","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+10,"USR-1769029685895","Richard centeno","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+11,"USR-1769098535884","Adolfo Urbina","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+12,"USR-1769190932815","vicenta gutirrrez","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+13,"USR-1769194803657","adolfo  urbina","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+14,"USR-1769465117595","andy flores","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+15,"USR-1769487243198","Helo Jdkdk","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+16,"USR-1769620170492","pepe flores","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+17,"USR-1769633352410","Gggg Ghh","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+18,"USR-1769711990359","venus flores","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+19,"USR-1770060240159","Jairo  AldNa","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+20,"USR-1771428610412","Nelson Busto","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+21,"USR-1772377026947","Luciana  Aldana","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+22,"USR-CL-1768337682525","allan mendoza","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+23,"USR-CL-1768342901776","zoe flores","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+24,"USR-CL-1768365031013","maria chavez","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+25,"USR-CL-1768422839897","denis flores","GUEST","REMEDIATE",LOW,NONE,"Dry-run audit evaluation",TRUE
+26,"XWNzPT5p6fbf7reFdFBNTZoQrY42","Junior Flores","BUSINESS","LINK",LOW,OPERATIONAL,"Dry-run audit evaluation",TRUE
+27,"XWsjzZe8lsfthRQ5PgbDzlqA2nX2","Gerald Flores","ADMIN","KEEP",LOW,OPERATIONAL,"Dry-run audit evaluation",TRUE
+28,"admin_initial","Admin Gerald Flores","ADMIN","REMEDIATE",LOW,OPERATIONAL,"Dry-run audit evaluation",TRUE
+29,"dbX1tvV2WNdFv4KWMbWNW8lngDI2","Gerald Jose Flores Gutierrez","UNKNOWN","KEEP",LOW,NONE,"Dry-run audit evaluation",TRUE
+30,"dlRY2ZVUqPR2Fxoc3cazcOxxRJg2","FRITONI","BUSINESS","LINK",LOW,NONE,"Dry-run audit evaluation",TRUE
+31,"h00PIZpMgxSaqSVnYpRLPq0DYGC3","ITED Virtual","UNKNOWN","KEEP",LOW,OPERATIONAL,"Dry-run audit evaluation",TRUE
+32,"qtlV8m8wj0ed0tQFXKzjfXKzQ5g2","Aldrich Flores","BUSINESS","LINK",LOW,OPERATIONAL,"Dry-run audit evaluation",TRUE
+33,"user_cli_1768237897386","Aldrich  Flores","LEGACY_POS","REVIEW",LOW,NONE,"Dry-run audit evaluation",TRUE
+34,"user_cli_1768240170991","venus flores","LEGACY_POS","REVIEW",LOW,NONE,"Dry-run audit evaluation",TRUE
+35,"user_cliente0002_2026","Perla  Centeno","LEGACY_POS","REVIEW",LOW,NONE,"Dry-run audit evaluation",TRUE
+36,"user_cliente0008_2026","Junior Flores","LEGACY_POS","REVIEW",LOW,NONE,"Dry-run audit evaluation",TRUE
+37,"user_cliente0009_2026","hola oooo","LEGACY_POS","REVIEW",LOW,NONE,"Dry-run audit evaluation",TRUE
+38,"user_cliente0010_2026","maria ramos","LEGACY_POS","REVIEW",LOW,NONE,"Dry-run audit evaluation",TRUE
+39,"user_cliente0011_2026","sonia matamoros","LEGACY_POS","REVIEW",LOW,NONE,"Dry-run audit evaluation",TRUE
+40,"user_cliente1768275049139","eva morales","LEGACY_POS","REVIEW",LOW,NONE,"Dry-run audit evaluation",TRUE
+41,"user_cliente1768278375844","xoci ruiz","LEGACY_POS","REVIEW",LOW,NONE,"Dry-run audit evaluation",TRUE

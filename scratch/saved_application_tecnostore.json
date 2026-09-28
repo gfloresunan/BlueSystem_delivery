@@ -1,0 +1,70 @@
+{
+  "appId": "icmP7k8O9gbqIvEa1ZWY",
+  "businessName": "TECNOSTORE",
+  "legalName": "Grupo Flores",
+  "ruc": "J03100002372737",
+  "address": "De le entrada principal del residencial 3c al lago y 2c abajo",
+  "city": "Managua",
+  "zone": "Residencial Las Delicias",
+  "category": "tienda",
+  "contactName": "Admin Tecnostore",
+  "phone": "82397401",
+  "email": "tecnostore@bluesystemdelivery.com",
+  "location": {
+    "_latitude": 12.161876331999524,
+    "_longitude": -86.18354544469628
+  },
+  "documents": [
+    {
+      "name": "banner_fritoni.jpg",
+      "documentType": "RUC",
+      "storagePath": "merchant_applications_docs/APP-MTEN7F6N-MLFTB/ruc_1788023952558_banner_fritoni.jpg",
+      "contentType": "image/jpeg",
+      "size": 167560,
+      "uploadedAt": "2026-08-29T17:19:15.917Z",
+      "status": "PENDING_REVIEW"
+    },
+    {
+      "name": "Propuesta Comercial Fritoni _ eRestaurant by INOVACOM.pdf",
+      "documentType": "SANITY_PERMIT",
+      "storagePath": "merchant_applications_docs/APP-MTEN7F6N-MLFTB/sanity_permit_1788023966011_Propuesta_Comercial_Fritoni___eRestaurant_by_INOVACOM.pdf",
+      "contentType": "application/pdf",
+      "size": 97844,
+      "uploadedAt": "2026-08-29T17:19:33.293Z",
+      "status": "PENDING_REVIEW"
+    },
+    {
+      "name": "FORMATO PLAN FAMILIAR.pdf",
+      "documentType": "ID_CARD",
+      "storagePath": "merchant_applications_docs/APP-MTEN7F6N-MLFTB/id_card_1788023984184_FORMATO_PLAN_FAMILIAR.pdf",
+      "contentType": "application/pdf",
+      "size": 262110,
+      "uploadedAt": "2026-08-29T17:19:45.165Z",
+      "status": "PENDING_REVIEW"
+    }
+  ],
+  "documentUrls": [],
+  "rejectionReason": null,
+  "createdAt": {
+    "_seconds": 1788024020,
+    "_nanoseconds": 994000000
+  },
+  "docsRequestedNote": "licencia de policia",
+  "reviewedBy": "XWsjzZe8lsfthRQ5PgbDzlqA2nX2",
+  "reviewedAt": {
+    "_seconds": 1788024378,
+    "_nanoseconds": 592000000
+  },
+  "provisioningError": "sgMail.setApiKey is not a function",
+  "provisioningErrorAt": {
+    "_seconds": 1788026132,
+    "_nanoseconds": 838000000
+  },
+  "provisionedBusinessId": "d829b32e-aee3-42ef-b60d-914f8853c470",
+  "provisionedUid": "GI26lm2mW0VecGi6xbpZfp7ESqr1",
+  "status": "ONBOARDING",
+  "updatedAt": {
+    "_seconds": 1788026133,
+    "_nanoseconds": 187000000
+  }
+}

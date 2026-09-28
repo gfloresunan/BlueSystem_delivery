@@ -1,0 +1,353 @@
+﻿
+08-20 12:14:39.384 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : EXCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 12:14:39.384 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterModelName - option : ALL / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 12:14:39.384 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : INCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.skt.prod.together","component_name":"","
+sales_code_option":"include","sales_codes":["SKC","KOO"],"model_names":[],"orders":{"SKC":100}} / PackageName : 
+com.skt.prod.together / ComponentName :  / SalesCodeOption : include / SalesCodes : [SKC, KOO] / ModelNameOption : 
+null / ModelNames : [] / Orders : {SKC=100} / Order : 1000
+08-20 12:14:39.533 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : EXCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 12:14:39.533 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterModelName - option : ALL / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 12:14:39.533 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : INCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.skt.prod.together","component_name":"","
+sales_code_option":"include","sales_codes":["SKC","KOO"],"model_names":[],"orders":{"SKC":100}} / PackageName : 
+com.skt.prod.together / ComponentName :  / SalesCodeOption : include / SalesCodes : [SKC, KOO] / ModelNameOption : 
+null / ModelNames : [] / Orders : {SKC=100} / Order : 1000
+08-20 12:21:17.754 D/DeliveryFCM(11711): Canales de notificaci├│n registrados: new_orders_channel_v2, 
+order_status_channel
+08-20 12:22:04.360 I/AuditLogger(11711): [SEVERITY: INFO] [EVENT: AUTH_LOGIN_SUCCESS] SessionId: 
+17aa2d25-43ee-4c56-9fb6-1310fd634306 | Details: {sessionId=17aa2d25-43ee-4c56-9fb6-1310fd634306, severity=INFO, 
+timestamp=1787250124360, uid=9QHYGkSa3nWiJ7KfPkccjjuIaYp2, role=courier}
+08-20 12:22:04.390 D/FLOTA_DEBUG(11711): LOGIN_OK: Usuario registrado con correo hpaz@gmail.com
+08-20 12:22:04.490 D/FLOTA_DEBUG(11711): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 12:22:04.496 D/FLOTA_DEBUG(11711): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 12:22:05.141 D/FLOTA_DEBUG(11711): CARGANDO_PEDIDOS_ACTIVOS: Consultando Firestore por pedidos del courier
+08-20 12:22:05.143 D/COURIER_QUERY(11711): Starting targeted listeners for motorizadoId=9QHYGkSa3nWiJ7KfPkccjjuIaYp2
+08-20 12:22:05.245 D/FLOTA_DEBUG(11711): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 12:22:05.246 D/FLOTA_DEBUG(11711): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 12:22:08.407 W/Firestore(11711): (26.4.0) [Firestore]: Listen for QueryWrapper(query=Query(target=Query(orders 
+order by __name__);limitType=LIMIT_TO_FIRST)) failed: Status{code=PERMISSION_DENIED, description=Missing or 
+insufficient permissions., cause=null}
+08-20 12:22:08.410 W/Firestore(11711): (26.4.0) [Firestore]: Listen for QueryWrapper(query=Query(target=Query(orders 
+where statusin[ready,READY,listo,LISTO,delivering,DELIVERING,preparing,PREPARING] order by 
+__name__);limitType=LIMIT_TO_FIRST)) failed: Status{code=PERMISSION_DENIED, description=Missing or insufficient 
+permissions., cause=null}
+08-20 12:22:08.419 E/FirebaseManager(11711): [COURIER_QUERY] listenerPool error: PERMISSION_DENIED: Missing or 
+insufficient permissions.
+08-20 12:22:08.419 E/FirebaseManager(11711): com.google.firebase.firestore.FirebaseFirestoreException: 
+PERMISSION_DENIED: Missing or insufficient permissions.
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+com.google.firebase.firestore.util.Util.exceptionFromStatus(Util.java:152)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+com.google.firebase.firestore.core.EventManager.onError(EventManager.java:251)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+com.google.firebase.firestore.core.SyncEngine.removeAndCleanupTarget(SyncEngine.java:642)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+com.google.firebase.firestore.core.SyncEngine.handleRejectedListen(SyncEngine.java:478)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at com.google.firebase.firestore.core.MemoryComponentProvider$RemoteStore
+Callback.handleRejectedListen(MemoryComponentProvider.java:125)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+com.google.firebase.firestore.remote.RemoteStore.processTargetError(RemoteStore.java:598)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+com.google.firebase.firestore.remote.RemoteStore.handleWatchChange(RemoteStore.java:481)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+com.google.firebase.firestore.remote.RemoteStore.access$100(RemoteStore.java:62)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+com.google.firebase.firestore.remote.RemoteStore$1.onWatchChange(RemoteStore.java:190)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+com.google.firebase.firestore.remote.WatchStream.onNext(WatchStream.java:114)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+com.google.firebase.firestore.remote.WatchStream.onNext(WatchStream.java:38)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at com.google.firebase.firestore.remote.AbstractStream$StreamObserver.lam
+bda$onNext$1$com-google-firebase-firestore-remote-AbstractStream$StreamObserver(AbstractStream.java:126)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+com.google.firebase.firestore.remote.AbstractStream$StreamObserver$$ExternalSyntheticLambda0.run(D8$$SyntheticClass:0)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+com.google.firebase.firestore.remote.AbstractStream$CloseGuardedRunner.run(AbstractStream.java:67)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+com.google.firebase.firestore.remote.AbstractStream$StreamObserver.onNext(AbstractStream.java:113)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+com.google.firebase.firestore.remote.FirestoreChannel$1.onMessage(FirestoreChannel.java:162)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+io.grpc.internal.ClientCallImpl$ClientStreamListenerImpl$1MessagesAvailable.runInternal(ClientCallImpl.java:667)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+io.grpc.internal.ClientCallImpl$ClientStreamListenerImpl$1MessagesAvailable.runInContext(ClientCallImpl.java:654)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at io.grpc.internal.ContextRunnable.run(ContextRunnable.java:37)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at io.grpc.internal.SerializingExecutor.run(SerializingExecutor.java:133)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:520)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at java.util.concurrent.FutureTask.run(FutureTask.java:328)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+java.util.concurrent.ScheduledThreadPoolExecutor$ScheduledFutureTask.run(ScheduledThreadPoolExecutor.java:323)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1100)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:624)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at com.google.firebase.firestore.util.AsyncQueue$SynchronizedShutdownAwar
+eExecutor$DelayedStartFactory.run(AsyncQueue.java:235)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at java.lang.Thread.run(Thread.java:1572)
+08-20 12:22:08.419 E/FirebaseManager(11711): Caused by: io.grpc.StatusException: PERMISSION_DENIED: Missing or 
+insufficient permissions.
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at io.grpc.Status.asException(Status.java:541)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	at 
+com.google.firebase.firestore.util.Util.exceptionFromStatus(Util.java:150)
+08-20 12:22:08.419 E/FirebaseManager(11711): 	... 26 more
+08-20 12:22:08.491 D/FLOTA_DEBUG(11711): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 12:22:08.504 D/FLOTA_DEBUG(11711): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 12:22:08.518 D/FLOTA_DEBUG(11711): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 12:22:08.519 D/FLOTA_DEBUG(11711): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 12:22:08.588 D/COURIER_QUERY(11711): Starting targeted listeners for motorizadoId=9QHYGkSa3nWiJ7KfPkccjjuIaYp2
+08-20 12:22:08.635 D/FLOTA_DEBUG(11711): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 12:22:08.654 D/FLOTA_DEBUG(11711): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 12:22:08.678 D/FLOTA_DEBUG(11711): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 12:22:08.699 D/FLOTA_DEBUG(11711): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 12:22:08.700 D/FLOTA_DEBUG(11711): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 12:22:11.737 E/AndroidRuntime(11711): FATAL EXCEPTION: main
+08-20 12:22:11.737 E/AndroidRuntime(11711): Process: com.aistudio.delivery.djweq, PID: 11711
+08-20 12:22:11.737 E/AndroidRuntime(11711): java.lang.SecurityException: vibrate: Neither user 10711 nor current 
+process has android.permission.VIBRATE.
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3388)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at android.os.Parcel.createException(Parcel.java:3372)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at android.os.Parcel.readException(Parcel.java:3355)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at android.os.Parcel.readException(Parcel.java:3297)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at 
+android.os.IVibratorManagerService$Stub$Proxy.vibrate(IVibratorManagerService.java:582)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at 
+android.os.SystemVibratorManager.vibrate(SystemVibratorManager.java:157)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at android.os.SystemVibrator.vibrate(SystemVibrator.java:226)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at android.os.Vibrator.vibrate(Vibrator.java:637)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at android.os.Vibrator.vibrate(Vibrator.java:617)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at android.os.Vibrator.vibrate(Vibrator.java:568)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at com.example.presentation.courier.CourierMainDashboardScreenKt$CourierMa
+inDashboardScreen$1$1.invokeSuspend(CourierMainDashboardScreen.kt:62)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at 
+kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at 
+androidx.compose.ui.platform.AndroidUiDispatcher.performTrampolineDispatch(AndroidUiDispatcher.android.kt:81)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at 
+androidx.compose.ui.platform.AndroidUiDispatcher.access$performTrampolineDispatch(AndroidUiDispatcher.android.kt:41)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at 
+androidx.compose.ui.platform.AndroidUiDispatcher$dispatchCallback$1.run(AndroidUiDispatcher.android.kt:57)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at android.os.Handler.handleCallback(Handler.java:1070)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at android.os.Handler.dispatchMessage(Handler.java:125)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at android.os.Looper.dispatchMessage(Looper.java:358)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at android.os.Looper.loopOnce(Looper.java:288)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at android.os.Looper.loop(Looper.java:392)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at android.app.ActivityThread.main(ActivityThread.java:10346)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at java.lang.reflect.Method.invoke(Native Method)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at 
+com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:638)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:972)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	Suppressed: 
+kotlinx.coroutines.internal.DiagnosticCoroutineContextException: 
+[androidx.compose.ui.platform.MotionDurationScaleImpl@27a66d9, androidx.compose.runtime.BroadcastFrameClock@e4a189e, 
+StandaloneCoroutine{Cancelling}@140cf7f, AndroidUiDispatcher@30b3b4c]
+08-20 12:22:11.737 E/AndroidRuntime(11711): Caused by: android.os.RemoteException: Remote stack trace:
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at android.app.ContextImpl.enforce(ContextImpl.java:2649)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at 
+android.app.ContextImpl.enforceCallingOrSelfPermission(ContextImpl.java:2677)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at 
+com.android.server.vibrator.VibratorManagerService.vibrateWithPermissionCheck(qb/111893043 
+c31cb9fef47fd35236d93481d913521f0dc8e1a473022687d19d763ddbde429d:13)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at 
+com.android.server.vibrator.VibratorManagerService.vibrate(qb/111893043 
+c31cb9fef47fd35236d93481d913521f0dc8e1a473022687d19d763ddbde429d:10)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 	at 
+android.os.IVibratorManagerService$Stub.onTransact(IVibratorManagerService.java:309)
+08-20 12:22:11.737 E/AndroidRuntime(11711): 
+08-20 12:22:15.640 D/AUDIT_LOG(12978): SPLASH_FINISHED | UID: 9QHYGkSa3nWiJ7KfPkccjjuIaYp2 | Thread: main | Time: 
+1787250135640 | Destination: biometric_unlock/courier
+08-20 12:22:15.651 D/AUDIT_LOG(12978): NAVIGATION_COMPLETED | Route: biometric_unlock/courier | UID: 
+9QHYGkSa3nWiJ7KfPkccjjuIaYp2 | Thread: main | Time: 1787250135651
+08-20 12:22:15.752 D/PERMISSION_MANAGER(12978): Matriz RBAC aplicada para rol 'courier': totalPermisos=5
+08-20 12:22:15.752 D/UserProfileRepo(12978): UserProfile updated for 9QHYGkSa3nWiJ7KfPkccjjuIaYp2: role=courier, 
+active=true
+08-20 12:22:30.253 D/FLOTA_DEBUG(12978): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 12:22:30.259 D/FLOTA_DEBUG(12978): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 12:22:30.702 D/FLOTA_DEBUG(12978): CARGANDO_PEDIDOS_ACTIVOS: Consultando Firestore por pedidos del courier
+08-20 12:22:30.704 D/COURIER_QUERY(12978): Starting targeted listeners for motorizadoId=9QHYGkSa3nWiJ7KfPkccjjuIaYp2
+08-20 12:22:30.807 D/FLOTA_DEBUG(12978): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 12:22:30.808 D/FLOTA_DEBUG(12978): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 12:22:30.831 D/FLOTA_DEBUG(12978): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 12:22:30.844 D/FLOTA_DEBUG(12978): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 12:22:30.847 D/FLOTA_DEBUG(12978): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 12:22:30.926 D/FLOTA_DEBUG(12978): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 12:22:30.928 D/COURIER_QUERY(12978): Starting targeted listeners for motorizadoId=9QHYGkSa3nWiJ7KfPkccjjuIaYp2
+08-20 12:22:31.020 D/FLOTA_DEBUG(12978): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 12:22:31.052 D/FLOTA_DEBUG(12978): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 12:22:31.094 D/FLOTA_DEBUG(12978): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 12:22:31.114 D/FLOTA_DEBUG(12978): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 12:22:31.117 D/FLOTA_DEBUG(12978): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 12:22:31.347 E/AndroidRuntime(12978): FATAL EXCEPTION: main
+08-20 12:22:31.347 E/AndroidRuntime(12978): Process: com.aistudio.delivery.djweq, PID: 12978
+08-20 12:22:31.347 E/AndroidRuntime(12978): java.lang.SecurityException: vibrate: Neither user 10711 nor current 
+process has android.permission.VIBRATE.
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3388)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at android.os.Parcel.createException(Parcel.java:3372)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at android.os.Parcel.readException(Parcel.java:3355)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at android.os.Parcel.readException(Parcel.java:3297)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at 
+android.os.IVibratorManagerService$Stub$Proxy.vibrate(IVibratorManagerService.java:582)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at 
+android.os.SystemVibratorManager.vibrate(SystemVibratorManager.java:157)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at android.os.SystemVibrator.vibrate(SystemVibrator.java:226)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at android.os.Vibrator.vibrate(Vibrator.java:637)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at android.os.Vibrator.vibrate(Vibrator.java:617)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at android.os.Vibrator.vibrate(Vibrator.java:568)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at com.example.presentation.courier.CourierMainDashboardScreenKt$CourierMa
+inDashboardScreen$1$1.invokeSuspend(CourierMainDashboardScreen.kt:62)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at 
+kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at 
+androidx.compose.ui.platform.AndroidUiDispatcher.performTrampolineDispatch(AndroidUiDispatcher.android.kt:81)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at 
+androidx.compose.ui.platform.AndroidUiDispatcher.access$performTrampolineDispatch(AndroidUiDispatcher.android.kt:41)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at 
+androidx.compose.ui.platform.AndroidUiDispatcher$dispatchCallback$1.run(AndroidUiDispatcher.android.kt:57)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at android.os.Handler.handleCallback(Handler.java:1070)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at android.os.Handler.dispatchMessage(Handler.java:125)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at android.os.Looper.dispatchMessage(Looper.java:358)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at android.os.Looper.loopOnce(Looper.java:288)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at android.os.Looper.loop(Looper.java:392)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at android.app.ActivityThread.main(ActivityThread.java:10346)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at java.lang.reflect.Method.invoke(Native Method)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at 
+com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:638)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:972)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	Suppressed: 
+kotlinx.coroutines.internal.DiagnosticCoroutineContextException: 
+[androidx.compose.ui.platform.MotionDurationScaleImpl@8642a03, androidx.compose.runtime.BroadcastFrameClock@8c4fd80, 
+StandaloneCoroutine{Cancelling}@21d1fb9, AndroidUiDispatcher@8270ffe]
+08-20 12:22:31.347 E/AndroidRuntime(12978): Caused by: android.os.RemoteException: Remote stack trace:
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at android.app.ContextImpl.enforce(ContextImpl.java:2649)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at 
+android.app.ContextImpl.enforceCallingOrSelfPermission(ContextImpl.java:2677)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at 
+com.android.server.vibrator.VibratorManagerService.vibrateWithPermissionCheck(qb/111893043 
+c31cb9fef47fd35236d93481d913521f0dc8e1a473022687d19d763ddbde429d:13)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at 
+com.android.server.vibrator.VibratorManagerService.vibrate(qb/111893043 
+c31cb9fef47fd35236d93481d913521f0dc8e1a473022687d19d763ddbde429d:10)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 	at 
+android.os.IVibratorManagerService$Stub.onTransact(IVibratorManagerService.java:309)
+08-20 12:22:31.347 E/AndroidRuntime(12978): 
+08-20 12:22:52.247 D/AUDIT_LOG(13838): SPLASH_FINISHED | UID: 9QHYGkSa3nWiJ7KfPkccjjuIaYp2 | Thread: main | Time: 
+1787250172247 | Destination: biometric_unlock/courier
+08-20 12:22:52.259 D/AUDIT_LOG(13838): NAVIGATION_COMPLETED | Route: biometric_unlock/courier | UID: 
+9QHYGkSa3nWiJ7KfPkccjjuIaYp2 | Thread: main | Time: 1787250172259
+08-20 12:22:52.373 D/PERMISSION_MANAGER(13838): Matriz RBAC aplicada para rol 'courier': totalPermisos=5
+08-20 12:22:52.373 D/UserProfileRepo(13838): UserProfile updated for 9QHYGkSa3nWiJ7KfPkccjjuIaYp2: role=courier, 
+active=true
+08-20 12:22:54.232 D/FLOTA_DEBUG(13838): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 12:22:54.237 D/FLOTA_DEBUG(13838): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 12:22:54.654 D/FLOTA_DEBUG(13838): CARGANDO_PEDIDOS_ACTIVOS: Consultando Firestore por pedidos del courier
+08-20 12:22:54.656 D/COURIER_QUERY(13838): Starting targeted listeners for motorizadoId=9QHYGkSa3nWiJ7KfPkccjjuIaYp2
+08-20 12:22:54.768 D/FLOTA_DEBUG(13838): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 12:22:54.769 D/FLOTA_DEBUG(13838): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 12:22:54.784 D/FLOTA_DEBUG(13838): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 12:22:54.790 D/FLOTA_DEBUG(13838): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 12:22:54.794 D/FLOTA_DEBUG(13838): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 12:22:54.795 D/FLOTA_DEBUG(13838): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 12:22:54.834 D/COURIER_QUERY(13838): Starting targeted listeners for motorizadoId=9QHYGkSa3nWiJ7KfPkccjjuIaYp2
+08-20 12:22:54.955 D/FLOTA_DEBUG(13838): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 12:22:54.978 D/FLOTA_DEBUG(13838): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 12:22:55.013 D/FLOTA_DEBUG(13838): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 12:22:55.030 D/FLOTA_DEBUG(13838): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 12:22:55.032 D/FLOTA_DEBUG(13838): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 12:22:55.066 W/Firestore(13838): (26.4.0) [Firestore]: Listen for QueryWrapper(query=Query(target=Query(orders 
+where statusin[ready,READY,listo,LISTO,delivering,DELIVERING,preparing,PREPARING] order by 
+__name__);limitType=LIMIT_TO_FIRST)) failed: Status{code=PERMISSION_DENIED, description=Missing or insufficient 
+permissions., cause=null}
+08-20 12:22:55.307 E/AndroidRuntime(13838): FATAL EXCEPTION: main
+08-20 12:22:55.307 E/AndroidRuntime(13838): Process: com.aistudio.delivery.djweq, PID: 13838
+08-20 12:22:55.307 E/AndroidRuntime(13838): java.lang.SecurityException: vibrate: Neither user 10711 nor current 
+process has android.permission.VIBRATE.
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at android.os.Parcel.createExceptionOrNull(Parcel.java:3388)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at android.os.Parcel.createException(Parcel.java:3372)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at android.os.Parcel.readException(Parcel.java:3355)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at android.os.Parcel.readException(Parcel.java:3297)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at 
+android.os.IVibratorManagerService$Stub$Proxy.vibrate(IVibratorManagerService.java:582)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at 
+android.os.SystemVibratorManager.vibrate(SystemVibratorManager.java:157)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at android.os.SystemVibrator.vibrate(SystemVibrator.java:226)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at android.os.Vibrator.vibrate(Vibrator.java:637)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at android.os.Vibrator.vibrate(Vibrator.java:617)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at android.os.Vibrator.vibrate(Vibrator.java:568)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at com.example.presentation.courier.CourierMainDashboardScreenKt$CourierMa
+inDashboardScreen$1$1.invokeSuspend(CourierMainDashboardScreen.kt:62)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at 
+kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:100)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at 
+androidx.compose.ui.platform.AndroidUiDispatcher.performTrampolineDispatch(AndroidUiDispatcher.android.kt:81)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at 
+androidx.compose.ui.platform.AndroidUiDispatcher.access$performTrampolineDispatch(AndroidUiDispatcher.android.kt:41)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at 
+androidx.compose.ui.platform.AndroidUiDispatcher$dispatchCallback$1.run(AndroidUiDispatcher.android.kt:57)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at android.os.Handler.handleCallback(Handler.java:1070)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at android.os.Handler.dispatchMessage(Handler.java:125)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at android.os.Looper.dispatchMessage(Looper.java:358)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at android.os.Looper.loopOnce(Looper.java:288)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at android.os.Looper.loop(Looper.java:392)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at android.app.ActivityThread.main(ActivityThread.java:10346)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at java.lang.reflect.Method.invoke(Native Method)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at 
+com.android.internal.os.RuntimeInit$MethodAndArgsCaller.run(RuntimeInit.java:638)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at com.android.internal.os.ZygoteInit.main(ZygoteInit.java:972)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	Suppressed: 
+kotlinx.coroutines.internal.DiagnosticCoroutineContextException: 
+[androidx.compose.ui.platform.MotionDurationScaleImpl@5677f9f, androidx.compose.runtime.BroadcastFrameClock@9edf8ec, 
+StandaloneCoroutine{Cancelling}@eb314b5, AndroidUiDispatcher@b8d274a]
+08-20 12:22:55.307 E/AndroidRuntime(13838): Caused by: android.os.RemoteException: Remote stack trace:
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at android.app.ContextImpl.enforce(ContextImpl.java:2649)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at 
+android.app.ContextImpl.enforceCallingOrSelfPermission(ContextImpl.java:2677)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at 
+com.android.server.vibrator.VibratorManagerService.vibrateWithPermissionCheck(qb/111893043 
+c31cb9fef47fd35236d93481d913521f0dc8e1a473022687d19d763ddbde429d:13)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at 
+com.android.server.vibrator.VibratorManagerService.vibrate(qb/111893043 
+c31cb9fef47fd35236d93481d913521f0dc8e1a473022687d19d763ddbde429d:10)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 	at 
+android.os.IVibratorManagerService$Stub.onTransact(IVibratorManagerService.java:309)
+08-20 12:22:55.307 E/AndroidRuntime(13838): 
+
+

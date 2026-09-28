@@ -1,0 +1,28 @@
+[
+  {
+    "origin": [
+      "https://bluesystemdelivery.com",
+      "https://www.bluesystemdelivery.com",
+      "https://admin.bluesystemdelivery.com",
+      "https://comercio.bluesystemdelivery.com",
+      "https://registro.bluesystemdelivery.com",
+      "https://merchant.bluesystemdelivery.com",
+      "https://onboarding.bluesystemdelivery.com",
+      "https://bluesystem-7c9af-apply.web.app",
+      "https://bluesystem-7c9af.web.app",
+      "https://bluesystem-7c9af-merchant.web.app",
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "http://localhost:8089"
+    ],
+    "method": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
+    "responseHeader": [
+      "Content-Type",
+      "Authorization",
+      "Content-Length",
+      "User-Agent",
+      "x-goog-resumable"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]

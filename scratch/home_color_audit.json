@@ -1,0 +1,934 @@
+[
+  {
+    "line": 38,
+    "text": "import com.example.ui.theme.BgLightApp"
+  },
+  {
+    "line": 269,
+    "text": ".background(BgLightApp)"
+  },
+  {
+    "line": 320,
+    "text": ".background("
+  },
+  {
+    "line": 347,
+    "text": ".background(Color.White, CircleShape)"
+  },
+  {
+    "line": 348,
+    "text": ".border(2.dp, Color.White.copy(alpha = 0.6f), CircleShape),"
+  },
+  {
+    "line": 363,
+    "text": "color = Color.White"
+  },
+  {
+    "line": 369,
+    "text": "color = Color.White.copy(alpha = 0.9f)"
+  },
+  {
+    "line": 374,
+    "text": "color = Color.White.copy(alpha = 0.75f)"
+  },
+  {
+    "line": 387,
+    "text": "color = Color.White.copy(alpha = 0.2f),"
+  },
+  {
+    "line": 393,
+    "text": "Icon(Icons.Outlined.Notifications, contentDescription = \"Notificaciones\", tint = Color.White, modifier = Modifier.size(22.dp))"
+  },
+  {
+    "line": 396,
+    "text": "Icon(Icons.Outlined.Notifications, contentDescription = \"Notificaciones\", tint = Color.White, modifier = Modifier.size(22.dp))"
+  },
+  {
+    "line": 404,
+    "text": "color = Color.White.copy(alpha = 0.2f),"
+  },
+  {
+    "line": 412,
+    "text": "BadgedBox(badge = { Badge(containerColor = Color(0xFFEF4444)) { Text(cartItemCount.toString(), fontSize = 9.sp, color = Color.White) } }) {"
+  },
+  {
+    "line": 413,
+    "text": "Icon(Icons.Default.ShoppingCart, contentDescription = \"Carrito\", tint = Color.White, modifier = Modifier.size(22.dp))"
+  },
+  {
+    "line": 416,
+    "text": "Icon(Icons.Default.ShoppingCart, contentDescription = \"Carrito\", tint = Color.White, modifier = Modifier.size(22.dp))"
+  },
+  {
+    "line": 433,
+    "text": "Icon(Icons.Default.LocationOn, contentDescription = \"Ubicación\", tint = Color.White, modifier = Modifier.size(18.dp))"
+  },
+  {
+    "line": 435,
+    "text": "Text(\"Entregar en: \", fontSize = 11.sp, color = Color.White.copy(alpha = 0.85f))"
+  },
+  {
+    "line": 436,
+    "text": "Text(deliveryAddressForOrder, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color.White)"
+  },
+  {
+    "line": 437,
+    "text": "Icon(Icons.Default.KeyboardArrowDown, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))"
+  },
+  {
+    "line": 448,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color.White),"
+  },
+  {
+    "line": 458,
+    "text": "Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray)"
+  },
+  {
+    "line": 469,
+    "text": "focusedContainerColor = Color.Transparent,"
+  },
+  {
+    "line": 470,
+    "text": "unfocusedContainerColor = Color.Transparent,"
+  },
+  {
+    "line": 471,
+    "text": "focusedIndicatorColor = Color.Transparent,"
+  },
+  {
+    "line": 472,
+    "text": "unfocusedIndicatorColor = Color.Transparent"
+  },
+  {
+    "line": 481,
+    "text": "Icon(Icons.Default.Close, contentDescription = \"Limpiar\", tint = Color.Gray)"
+  },
+  {
+    "line": 493,
+    "text": "Icon(Icons.Default.Mic, contentDescription = \"Voz\", tint = BlueSecondary)"
+  },
+  {
+    "line": 503,
+    "text": "Icon(Icons.Default.Search, contentDescription = \"Buscar\", tint = Color.Gray)"
+  },
+  {
+    "line": 507,
+    "text": "color = if (searchQueryText.isEmpty()) Color.Gray else Color.Black,"
+  },
+  {
+    "line": 511,
+    "text": "Icon(Icons.Default.Mic, contentDescription = \"Micrófono\", tint = BlueSecondary, modifier = Modifier.size(24.dp).clickable {"
+  },
+  {
+    "line": 548,
+    "text": "val cStr = if (cat.bgColor.startsWith(\"#\")) cat.bgColor else \"#EFF6FF\""
+  },
+  {
+    "line": 549,
+    "text": "Color(android.graphics.Color.parseColor(cStr))"
+  },
+  {
+    "line": 551,
+    "text": "Color(0xFFEFF6FF)"
+  },
+  {
+    "line": 567,
+    "text": "Triple(mockCat, emoji, Color(0xFFEFF6FF))"
+  },
+  {
+    "line": 576,
+    "text": "color = Color(0xFF0F172A),"
+  },
+  {
+    "line": 591,
+    "text": "border = BorderStroke(1.dp, if (isSelected) BluePrimary else Color(0xFFE2E8F0)),"
+  },
+  {
+    "line": 608,
+    "text": "color = if (isSelected) Color.White else Color(0xFF0F172A)"
+  },
+  {
+    "line": 649,
+    "text": "color = Color(0xFF0F172A)"
+  },
+  {
+    "line": 681,
+    "text": "color = if (isSelected) BluePrimary else Color(0xFFF1F5F9),"
+  },
+  {
+    "line": 682,
+    "text": "border = BorderStroke(1.dp, if (isSelected) BluePrimary else Color(0xFFE2E8F0)),"
+  },
+  {
+    "line": 687,
+    "text": "color = if (isSelected) Color.White else Color(0xFF334155),"
+  },
+  {
+    "line": 704,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color.White),"
+  },
+  {
+    "line": 705,
+    "text": "border = BorderStroke(1.dp, Color(0xFFE2E8F0))"
+  },
+  {
+    "line": 716,
+    "text": "tint = Color.LightGray,"
+  },
+  {
+    "line": 724,
+    "text": "color = Color(0xFF0F172A),"
+  },
+  {
+    "line": 731,
+    "text": "color = Color.Gray,"
+  },
+  {
+    "line": 742,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color.White),"
+  },
+  {
+    "line": 743,
+    "text": "border = BorderStroke(1.dp, Color(0xFFE2E8F0))"
+  },
+  {
+    "line": 754,
+    "text": "color = Color.Gray,"
+  },
+  {
+    "line": 801,
+    "text": "color = Color(0xFF0F172A),"
+  },
+  {
+    "line": 811,
+    "text": "Icon(Icons.Default.SearchOff, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(48.dp))"
+  },
+  {
+    "line": 813,
+    "text": "Text(\"Sin resultados para esta categoría\", color = Color.Gray, fontSize = 14.sp)"
+  },
+  {
+    "line": 839,
+    "text": "color = Color(0xFF0F172A),"
+  },
+  {
+    "line": 848,
+    "text": "color = Color.Gray,"
+  },
+  {
+    "line": 880,
+    "text": "color = Color(0xFF1E293B),"
+  },
+  {
+    "line": 888,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F5F9)),"
+  },
+  {
+    "line": 893,
+    "text": "color = Color.Gray,"
+  },
+  {
+    "line": 922,
+    "text": "color = Color(0xFF0F172A),"
+  },
+  {
+    "line": 936,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),"
+  },
+  {
+    "line": 938,
+    "text": "border = BorderStroke(1.dp, Color(0xFFE2E8F0))"
+  },
+  {
+    "line": 942,
+    "text": "color = Color.Gray,"
+  },
+  {
+    "line": 973,
+    "text": "color = Color(0xFFD97706),"
+  },
+  {
+    "line": 987,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),"
+  },
+  {
+    "line": 989,
+    "text": "border = BorderStroke(1.dp, Color(0xFFE2E8F0))"
+  },
+  {
+    "line": 993,
+    "text": "color = Color.Gray,"
+  },
+  {
+    "line": 1022,
+    "text": "color = Color(0xFF1E293B),"
+  },
+  {
+    "line": 1036,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),"
+  },
+  {
+    "line": 1038,
+    "text": "border = BorderStroke(1.dp, Color(0xFFE2E8F0))"
+  },
+  {
+    "line": 1042,
+    "text": "color = Color.Gray,"
+  },
+  {
+    "line": 1096,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color.Transparent)"
+  },
+  {
+    "line": 1101,
+    "text": ".background("
+  },
+  {
+    "line": 1104,
+    "text": "Color(0xFF0F172A),"
+  },
+  {
+    "line": 1105,
+    "text": "Color(0xFF1E293B),"
+  },
+  {
+    "line": 1106,
+    "text": "Color(0xFF1E3A8A)"
+  },
+  {
+    "line": 1113,
+    "text": "listOf(Color(0xFF38BDF8).copy(alpha = 0.6f), Color(0xFF6366F1).copy(alpha = 0.3f))"
+  },
+  {
+    "line": 1128,
+    "text": "color = Color(0xFF38BDF8).copy(alpha = 0.15f),"
+  },
+  {
+    "line": 1140,
+    "text": "color = Color.White,"
+  },
+  {
+    "line": 1147,
+    "text": "color = Color(0xFF38BDF8)"
+  },
+  {
+    "line": 1157,
+    "text": "color = Color(0xFFCBD5E1),"
+  },
+  {
+    "line": 1172,
+    "text": "containerColor = Color(0xFF38BDF8)"
+  },
+  {
+    "line": 1184,
+    "text": "color = Color(0xFF0F172A),"
+  },
+  {
+    "line": 1191,
+    "text": "tint = Color(0xFF0F172A),"
+  },
+  {
+    "line": 1318,
+    "text": "tint = BluePrimary,"
+  },
+  {
+    "line": 1326,
+    "text": "color = Color(0xFF0F172A)"
+  },
+  {
+    "line": 1334,
+    "text": "color = Color(0xFF475569)"
+  },
+  {
+    "line": 1355,
+    "text": "Icon(Icons.Default.ShoppingCart, contentDescription = null, tint = Color.LightGray, modifier = Modifier.size(48.dp))"
+  },
+  {
+    "line": 1361,
+    "text": "color = Color(0xFF475569)"
+  },
+  {
+    "line": 1366,
+    "text": "color = Color(0xFF64748B),"
+  },
+  {
+    "line": 1381,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),"
+  },
+  {
+    "line": 1382,
+    "text": "border = BorderStroke(1.dp, Color(0xFFE2E8F0))"
+  },
+  {
+    "line": 1400,
+    "text": "color = Color(0xFF475569)"
+  },
+  {
+    "line": 1404,
+    "text": "HorizontalDivider(color = Color(0xFFE2E8F0))"
+  },
+  {
+    "line": 1413,
+    "text": "Text(item.productName, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFF0F172A))"
+  },
+  {
+    "line": 1414,
+    "text": "Text(\"C$ ${String.format(\"%.2f\", item.price)} c/u\", fontSize = 11.sp, color = Color(0xFF64748B))"
+  },
+  {
+    "line": 1425,
+    "text": "Icon(Icons.Default.RemoveCircleOutline, contentDescription = \"Menos\", tint = Color(0xFF64748B), modifier = Modifier.size(20.dp))"
+  },
+  {
+    "line": 1432,
+    "text": "color = Color(0xFF0F172A),"
+  },
+  {
+    "line": 1440,
+    "text": "Icon(Icons.Default.AddCircle, contentDescription = \"Más\", tint = BluePrimary, modifier = Modifier.size(20.dp))"
+  },
+  {
+    "line": 1447,
+    "text": "Icon(Icons.Default.DeleteOutline, contentDescription = \"Eliminar\", tint = Color(0xFFEF4444), modifier = Modifier.size(20.dp))"
+  },
+  {
+    "line": 1461,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),"
+  },
+  {
+    "line": 1462,
+    "text": "border = BorderStroke(1.dp, Color(0xFFE2E8F0))"
+  },
+  {
+    "line": 1474,
+    "text": "placeholder = { Text(\"Ej: BIENVENIDA10\", fontSize = 12.sp, color = Color(0xFF94A3B8)) },"
+  },
+  {
+    "line": 1480,
+    "text": "unfocusedBorderColor = Color(0xFFCBD5E1),"
+  },
+  {
+    "line": 1481,
+    "text": "focusedTextColor = Color(0xFF0F172A),"
+  },
+  {
+    "line": 1482,
+    "text": "unfocusedTextColor = Color(0xFF0F172A)"
+  },
+  {
+    "line": 1487,
+    "text": "colors = ButtonDefaults.buttonColors(containerColor = BluePrimary, contentColor = Color.White),"
+  },
+  {
+    "line": 1492,
+    "text": "CircularProgressIndicator(color = Color.White, modifier = Modifier.size(16.dp), strokeWidth = 2.dp)"
+  },
+  {
+    "line": 1503,
+    "text": "color = if (appliedCouponCode != null) Color(0xFF10B981) else Color(0xFFEF4444)"
+  },
+  {
+    "line": 1515,
+    "text": ".background(Color(0xFFEFF6FF), RoundedCornerShape(12.dp))"
+  },
+  {
+    "line": 1520,
+    "text": "Text(\"Subtotal Productos\", fontSize = 13.sp, color = Color(0xFF475569), fontWeight = FontWeight.Medium)"
+  },
+  {
+    "line": 1521,
+    "text": "Text(\"C$ ${String.format(\"%.2f\", CartManager.subtotal)}\", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))"
+  },
+  {
+    "line": 1524,
+    "text": "Text(\"Envío (${groupedByBiz.size} comercio${if (groupedByBiz.size > 1) \"s\" else \"\"})\", fontSize = 13.sp, color = Color(0xFF475569), fontWeight = FontWeight.Medium)"
+  },
+  {
+    "line": 1525,
+    "text": "Text(\"C$ ${String.format(\"%.2f\", totalDeliveryFees)}\", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))"
+  },
+  {
+    "line": 1529,
+    "text": "Text(\"Descuento Cupón (${appliedCouponCode})\", fontSize = 13.sp, color = Color(0xFF10B981), fontWeight = FontWeight.Bold)"
+  },
+  {
+    "line": 1530,
+    "text": "Text(\"-C$ ${String.format(\"%.2f\", appliedCouponDiscount)}\", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF10B981))"
+  },
+  {
+    "line": 1533,
+    "text": "HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp), color = Color(0xFFBFDBFE))"
+  },
+  {
+    "line": 1561,
+    "text": "colors = CardDefaults.cardColors(containerColor = if (isSelected) Color(0xFFEFF6FF) else Color(0xFFF8FAFC)),"
+  },
+  {
+    "line": 1562,
+    "text": "border = BorderStroke(if (isSelected) 2.dp else 1.dp, if (isSelected) BluePrimary else Color(0xFFE2E8F0))"
+  },
+  {
+    "line": 1569,
+    "text": "Icon(iconVector, contentDescription = null, tint = if (isSelected) BluePrimary else Color(0xFF64748B), modifier = Modifier.size(22.dp))"
+  },
+  {
+    "line": 1571,
+    "text": "Text(addr.label.ifBlank { \"Dirección Guardada\" }, fontWeight = FontWeight.Black, fontSize = 13.sp, color = Color(0xFF0F172A))"
+  },
+  {
+    "line": 1572,
+    "text": "Text(addr.fullAddress, fontSize = 11.sp, color = Color(0xFF475569), maxLines = 2, overflow = TextOverflow.Ellipsis, fontWeight = FontWeight.Medium)"
+  },
+  {
+    "line": 1575,
+    "text": "Icon(Icons.Default.CheckCircle, contentDescription = \"Seleccionada\", tint = BluePrimary, modifier = Modifier.size(20.dp))"
+  },
+  {
+    "line": 1588,
+    "text": "colors = CardDefaults.cardColors(containerColor = if (isCustomAddressSelected) Color(0xFFEFF6FF) else Color(0xFFF8FAFC)),"
+  },
+  {
+    "line": 1589,
+    "text": "border = BorderStroke(if (isCustomAddressSelected) 2.dp else 1.dp, if (isCustomAddressSelected) BluePrimary else Color(0xFFE2E8F0))"
+  },
+  {
+    "line": 1596,
+    "text": "Icon(Icons.Default.AddLocation, contentDescription = null, tint = if (isCustomAddressSelected) BluePrimary else Color(0xFF64748B), modifier = Modifier.size(22.dp))"
+  },
+  {
+    "line": 1597,
+    "text": "Text(\"➕ Usar otra dirección\", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = if (isCustomAddressSelected) BluePrimary else Color(0xFF334155))"
+  },
+  {
+    "line": 1607,
+    "text": "placeholder = { Text(\"Ej: Semáforos UCA 2c al lago, Casa #45\", fontSize = 12.sp, color = Color(0xFF64748B)) },"
+  },
+  {
+    "line": 1608,
+    "text": "leadingIcon = { Icon(Icons.Default.LocationOn, contentDescription = null, tint = BluePrimary) },"
+  },
+  {
+    "line": 1614,
+    "text": "unfocusedBorderColor = Color(0xFFCBD5E1),"
+  },
+  {
+    "line": 1615,
+    "text": "focusedTextColor = Color(0xFF0F172A),"
+  },
+  {
+    "line": 1616,
+    "text": "unfocusedTextColor = Color(0xFF0F172A)"
+  },
+  {
+    "line": 1636,
+    "text": "colors = CardDefaults.cardColors(containerColor = if (isSelected) Color(0xFFEFF6FF) else Color(0xFFF8FAFC)),"
+  },
+  {
+    "line": 1637,
+    "text": "border = BorderStroke(if (isSelected) 2.dp else 1.dp, if (isSelected) BluePrimary else Color(0xFFE2E8F0))"
+  },
+  {
+    "line": 1640,
+    "text": "Text(label, fontWeight = FontWeight.Black, fontSize = 13.sp, color = if (isSelected) BluePrimary else Color(0xFF334155))"
+  },
+  {
+    "line": 1651,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color(0xFFF1F5F9))"
+  },
+  {
+    "line": 1654,
+    "text": "Icon(Icons.Default.Info, contentDescription = null, tint = BluePrimary, modifier = Modifier.size(18.dp))"
+  },
+  {
+    "line": 1660,
+    "text": "color = Color(0xFF334155)"
+  },
+  {
+    "line": 1675,
+    "text": "colors = ButtonDefaults.buttonColors(containerColor = BluePrimary, contentColor = Color.White)"
+  },
+  {
+    "line": 1677,
+    "text": "Text(\"Continuar al Checkout →\", fontWeight = FontWeight.Black, color = Color.White)"
+  },
+  {
+    "line": 1718,
+    "text": "colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1D4ED8), contentColor = Color.White)"
+  },
+  {
+    "line": 1721,
+    "text": "CircularProgressIndicator(color = Color.White, modifier = Modifier.size(20.dp), strokeWidth = 2.dp)"
+  },
+  {
+    "line": 1723,
+    "text": "Text(\"CONFIRMAR PEDIDO 🚀\", fontWeight = FontWeight.Black, fontSize = 14.sp, color = Color.White)"
+  },
+  {
+    "line": 1741,
+    "text": "Text(\"Vaciar\", color = Color.Red)"
+  },
+  {
+    "line": 1751,
+    "text": "containerColor = Color.White"
+  },
+  {
+    "line": 1762,
+    "text": "Icon(Icons.Default.NotificationsActive, contentDescription = null, tint = BlueSecondary)"
+  },
+  {
+    "line": 1769,
+    "text": "Text(\"No tienes notificaciones por el momento.\", color = Color.Gray, fontSize = 13.sp)"
+  },
+  {
+    "line": 1796,
+    "text": "Button(onClick = { showNotificationDialog = false }, colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)) {"
+  },
+  {
+    "line": 1801,
+    "text": "containerColor = Color.White"
+  },
+  {
+    "line": 1820,
+    "text": "colors = CardDefaults.cardColors(containerColor = bgColor)"
+  },
+  {
+    "line": 1833,
+    "text": "color = Color(0xFF1E293B),"
+  },
+  {
+    "line": 1839,
+    "text": "tint = iconColor,"
+  },
+  {
+    "line": 1862,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color.White)"
+  },
+  {
+    "line": 1870,
+    "text": ".background(Color(0xFFF1F5F9)),"
+  },
+  {
+    "line": 1884,
+    "text": ".background("
+  },
+  {
+    "line": 1894,
+    "text": "tint = BluePrimary.copy(alpha = 0.7f),"
+  },
+  {
+    "line": 1906,
+    "text": ".background(Color(0xFFFF2D55), RoundedCornerShape(6.dp))"
+  },
+  {
+    "line": 1909,
+    "text": "Text(discountTag, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 10.sp)"
+  },
+  {
+    "line": 1919,
+    "text": "color = Color(0xFF1E293B),"
+  },
+  {
+    "line": 1928,
+    "text": "color = Color(0xFFFF2D55),"
+  },
+  {
+    "line": 1935,
+    "text": "color = Color.Gray,"
+  },
+  {
+    "line": 1946,
+    "text": "colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),"
+  },
+  {
+    "line": 1978,
+    "text": ".background(Color(0xFFF8FAFC))"
+  },
+  {
+    "line": 1983,
+    "text": "color = Color.White,"
+  },
+  {
+    "line": 1990,
+    "text": "Icon(Icons.Default.Favorite, contentDescription = null, tint = Color(0xFFFF2D55), modifier = Modifier.size(24.dp))"
+  },
+  {
+    "line": 1992,
+    "text": "Text(\"Mis Favoritos\", fontWeight = FontWeight.Bold, fontSize = 20.sp, color = Color(0xFF1E293B))"
+  },
+  {
+    "line": 1995,
+    "text": "Text(\"${favoriteBusinesses.size} local(es)\", fontSize = 12.sp, color = Color.Gray)"
+  },
+  {
+    "line": 2007,
+    "text": "tint = Color(0xFFFF2D55).copy(alpha = 0.4f),"
+  },
+  {
+    "line": 2011,
+    "text": "Text(\"Aún no tienes favoritos\", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E293B))"
+  },
+  {
+    "line": 2016,
+    "text": "color = Color.Gray,"
+  },
+  {
+    "line": 2035,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color.White),"
+  },
+  {
+    "line": 2046,
+    "text": ".background("
+  },
+  {
+    "line": 2051,
+    "text": "Text(iniciales, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 16.sp)"
+  },
+  {
+    "line": 2055,
+    "text": "Text(business.nombre, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = Color(0xFF1E293B))"
+  },
+  {
+    "line": 2056,
+    "text": "Text(\"Toca para abrir el menú →\", fontSize = 12.sp, color = Color.Gray)"
+  },
+  {
+    "line": 2062,
+    "text": "tint = Color(0xFFFF2D55)"
+  },
+  {
+    "line": 2085,
+    "text": "colors = CardDefaults.cardColors("
+  },
+  {
+    "line": 2086,
+    "text": "containerColor = if (!isRead) Color(0xFFEFF6FF) else Color(0xFFF8FAFC)"
+  },
+  {
+    "line": 2089,
+    "text": "border = BorderStroke(1.dp, if (!isRead) Color(0xFF93C5FD) else Color(0xFFE2E8F0))"
+  },
+  {
+    "line": 2097,
+    "text": "Text(title, fontWeight = FontWeight.Bold, fontSize = 14.sp, color = Color(0xFF1E293B), modifier = Modifier.weight(1f))"
+  },
+  {
+    "line": 2102,
+    "text": ".background(Color.Red, CircleShape)"
+  },
+  {
+    "line": 2107,
+    "text": "Text(body, fontSize = 12.sp, color = Color.Gray)"
+  },
+  {
+    "line": 2133,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color.White),"
+  },
+  {
+    "line": 2141,
+    "text": ".background("
+  },
+  {
+    "line": 2158,
+    "text": "color = if (isOpen) Color(0xFF10B981) else Color(0xFF64748B),"
+  },
+  {
+    "line": 2165,
+    "text": "color = Color.White,"
+  },
+  {
+    "line": 2178,
+    "text": ".background(Color.Black.copy(alpha = 0.3f), CircleShape)"
+  },
+  {
+    "line": 2183,
+    "text": "tint = if (isFavorite) Color(0xFFFF2D55) else Color.White,"
+  },
+  {
+    "line": 2199,
+    "text": ".border(1.dp, Color(0xFFE2E8F0), CircleShape)"
+  },
+  {
+    "line": 2212,
+    "text": ".background(BluePrimary),"
+  },
+  {
+    "line": 2215,
+    "text": "Text(iniciales, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.sp)"
+  },
+  {
+    "line": 2225,
+    "text": "color = Color(0xFF0F172A),"
+  },
+  {
+    "line": 2243,
+    "text": "Icon(Icons.Default.LocationOn, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(13.dp))"
+  },
+  {
+    "line": 2248,
+    "text": "color = Color(0xFF64748B),"
+  },
+  {
+    "line": 2258,
+    "text": "color = Color(0xFFD97706)"
+  },
+  {
+    "line": 2281,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color.White),"
+  },
+  {
+    "line": 2292,
+    "text": "color = if (isOpen) Color(0xFFECFDF5) else Color(0xFFFFF1F2)"
+  },
+  {
+    "line": 2298,
+    "text": "color = if (isOpen) Color(0xFF10B981) else Color(0xFFE11938),"
+  },
+  {
+    "line": 2303,
+    "text": "Icon(Icons.Default.Star, contentDescription = null, tint = Color(0xFFF59E0B), modifier = Modifier.size(14.dp))"
+  },
+  {
+    "line": 2305,
+    "text": "Text(rating.toString(), fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color(0xFF1E293B))"
+  },
+  {
+    "line": 2310,
+    "text": "Text(businessName, fontWeight = FontWeight.Black, fontSize = 15.sp, color = Color(0xFF0F172A), maxLines = 1, overflow = TextOverflow.Ellipsis)"
+  },
+  {
+    "line": 2313,
+    "text": "Text(\"📍 $address\", fontSize = 10.sp, color = Color(0xFF64748B), maxLines = 1, overflow = TextOverflow.Ellipsis)"
+  },
+  {
+    "line": 2316,
+    "text": "Icon(Icons.Default.AccessTime, contentDescription = null, tint = Color(0xFF64748B), modifier = Modifier.size(12.dp))"
+  },
+  {
+    "line": 2318,
+    "text": "Text(\"$prepTime min • Delivery C$ 40\", fontSize = 10.sp, color = Color(0xFF475569), fontWeight = FontWeight.Medium)"
+  },
+  {
+    "line": 2338,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color.White),"
+  },
+  {
+    "line": 2346,
+    "text": ".background(Color(0xFFF1F5F9))"
+  },
+  {
+    "line": 2358,
+    "text": "color = Color(0xFFEF4444),"
+  },
+  {
+    "line": 2361,
+    "text": "Text(\"⭐ ESTRELLA\", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp))"
+  },
+  {
+    "line": 2365,
+    "text": "Text(name, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFF0F172A), maxLines = 1, overflow = TextOverflow.Ellipsis)"
+  },
+  {
+    "line": 2369,
+    "text": "Text(\"C$ ${String.format(\"%.0f\", price)}\", fontWeight = FontWeight.Black, fontSize = 14.sp, color = Color(0xFF0F172A))"
+  },
+  {
+    "line": 2372,
+    "text": "Text(\"C$ ${String.format(\"%.0f\", originalPrice)}\", fontSize = 10.sp, color = Color(0xFF94A3B8), textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough)"
+  },
+  {
+    "line": 2393,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color(0xFFFFFBEB)),"
+  },
+  {
+    "line": 2394,
+    "text": "border = BorderStroke(1.dp, Color(0xFFFDE68A)),"
+  },
+  {
+    "line": 2403,
+    "text": "Surface(shape = RoundedCornerShape(6.dp), color = Color(0xFFD97706)) {"
+  },
+  {
+    "line": 2404,
+    "text": "Text(discountTag, color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Black, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))"
+  },
+  {
+    "line": 2406,
+    "text": "Text(\"⚡ FLASH\", fontSize = 9.sp, fontWeight = FontWeight.ExtraBold, color = Color(0xFFD97706))"
+  },
+  {
+    "line": 2409,
+    "text": "Text(title, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFF78350F), maxLines = 1, overflow = TextOverflow.Ellipsis)"
+  },
+  {
+    "line": 2412,
+    "text": "Text(\"C$ ${String.format(\"%.0f\", price)}\", fontWeight = FontWeight.Black, fontSize = 15.sp, color = Color(0xFFB45309))"
+  },
+  {
+    "line": 2414,
+    "text": "Text(\"C$ ${String.format(\"%.0f\", originalPrice)}\", fontSize = 11.sp, color = Color(0xFF9CA3AF), textDecoration = androidx.compose.ui.text.style.TextDecoration.LineThrough)"
+  },
+  {
+    "line": 2427,
+    "text": "com.example.domain.engine.intelligence.CustomerSearchResultType.BUSINESS -> Color(0xFFEFF6FF) to Color(0xFF1D4ED8)"
+  },
+  {
+    "line": 2428,
+    "text": "com.example.domain.engine.intelligence.CustomerSearchResultType.PRODUCT -> Color(0xFFFFF7ED) to Color(0xFFC2410C)"
+  },
+  {
+    "line": 2429,
+    "text": "com.example.domain.engine.intelligence.CustomerSearchResultType.COMBO -> Color(0xFFFAF5FF) to Color(0xFF7E22CE)"
+  },
+  {
+    "line": 2430,
+    "text": "com.example.domain.engine.intelligence.CustomerSearchResultType.PROMOTION -> Color(0xFFFDF2F8) to Color(0xFFBE185D)"
+  },
+  {
+    "line": 2438,
+    "text": "colors = CardDefaults.cardColors(containerColor = Color.White),"
+  },
+  {
+    "line": 2439,
+    "text": "border = BorderStroke(1.dp, Color(0xFFF1F5F9)),"
+  },
+  {
+    "line": 2453,
+    "text": ".background(Color(0xFFF8FAFC)),"
+  },
+  {
+    "line": 2493,
+    "text": "color = Color(0xFFFEF2F2)"
+  },
+  {
+    "line": 2497,
+    "text": "color = Color(0xFFDC2626),"
+  },
+  {
+    "line": 2512,
+    "text": "color = Color(0xFF0F172A),"
+  },
+  {
+    "line": 2521,
+    "text": "color = Color(0xFF64748B),"
+  },
+  {
+    "line": 2531,
+    "text": "color = Color(0xFF94A3B8),"
+  },
+  {
+    "line": 2557,
+    "text": "color = Color(0xFF94A3B8),"
+  },
+  {
+    "line": 2571,
+    "text": "colors = ButtonDefaults.buttonColors(containerColor = BluePrimary),"
+  },
+  {
+    "line": 2574,
+    "text": "Icon(Icons.Default.Add, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))"
+  },
+  {
+    "line": 2582,
+    "text": "tint = Color(0xFF94A3B8),"
+  }
+]

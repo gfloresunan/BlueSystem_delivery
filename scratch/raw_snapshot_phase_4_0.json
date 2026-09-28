@@ -1,0 +1,2036 @@
+{
+  "timestamp": "2026-08-17T21:36:37.352Z",
+  "projectId": "bluesystem-7c9af",
+  "authUsers": [
+    {
+      "uid": "3Wt0XdzeOTfG1OXn72ApIhVbE5i1",
+      "email": "familiaflorescenteno@gmail.com",
+      "emailVerified": true,
+      "displayName": "Kimberly Flores Centeno",
+      "phoneNumber": null,
+      "disabled": false,
+      "providerData": [
+        "google.com"
+      ],
+      "createdAt": "1784922271677",
+      "lastLoginAt": "1786986780514",
+      "customClaims": {
+        "role": "CLIENT",
+        "businessId": null,
+        "branchId": null,
+        "orgId": null,
+        "tenantId": null
+      }
+    },
+    {
+      "uid": "8O8hJe5kSzNQxUkLwwkCsipGmAI3",
+      "email": "kim@gmail.com",
+      "emailVerified": false,
+      "displayName": null,
+      "phoneNumber": null,
+      "disabled": true,
+      "providerData": [
+        "password"
+      ],
+      "createdAt": "1784482573200",
+      "lastLoginAt": "1785543623081",
+      "customClaims": {
+        "role": "OWNER",
+        "businessId": null,
+        "branchId": null,
+        "orgId": null,
+        "tenantId": null
+      }
+    },
+    {
+      "uid": "9QHYGkSa3nWiJ7KfPkccjjuIaYp2",
+      "email": "hpaz@gmail.com",
+      "emailVerified": false,
+      "displayName": null,
+      "phoneNumber": null,
+      "disabled": false,
+      "providerData": [
+        "password"
+      ],
+      "createdAt": "1784482623446",
+      "lastLoginAt": "1785890544866",
+      "customClaims": {
+        "role": "DRIVER",
+        "businessId": null,
+        "branchId": null,
+        "orgId": null,
+        "tenantId": null
+      }
+    },
+    {
+      "uid": "G5HO4FxxW8f4s3JkeEB60wyWfdY2",
+      "email": "admin@tecnocomp.com.ni",
+      "emailVerified": false,
+      "displayName": null,
+      "phoneNumber": null,
+      "disabled": false,
+      "providerData": [
+        "password"
+      ],
+      "createdAt": "1785434002562",
+      "lastLoginAt": "1785434002562",
+      "customClaims": {}
+    },
+    {
+      "uid": "IAjm32V7rXNY1beBc4yKv9zgtIC3",
+      "email": "junior@gmail.com",
+      "emailVerified": false,
+      "displayName": null,
+      "phoneNumber": null,
+      "disabled": false,
+      "providerData": [
+        "password"
+      ],
+      "createdAt": "1784066732826",
+      "lastLoginAt": "1784066732826",
+      "customClaims": {}
+    },
+    {
+      "uid": "O6DSYllEA1fPMkueKWrF4MxkSP93",
+      "email": "admin@ecnocomp.com.ni",
+      "emailVerified": false,
+      "displayName": null,
+      "phoneNumber": null,
+      "disabled": false,
+      "providerData": [
+        "password"
+      ],
+      "createdAt": "1784942754718",
+      "lastLoginAt": "1784942754718",
+      "customClaims": {}
+    },
+    {
+      "uid": "PDziWizeJIO83ZUcsrgznmod7vz2",
+      "email": "pcenteno@gmail.com",
+      "emailVerified": false,
+      "displayName": null,
+      "phoneNumber": null,
+      "disabled": false,
+      "providerData": [
+        "password"
+      ],
+      "createdAt": "1784050120321",
+      "lastLoginAt": "1784159225225",
+      "customClaims": {}
+    },
+    {
+      "uid": "QjvtPl3SMfetU7RuYunTzJIM4My1",
+      "email": "moises@gmail.com",
+      "emailVerified": false,
+      "displayName": null,
+      "phoneNumber": null,
+      "disabled": false,
+      "providerData": [
+        "password"
+      ],
+      "createdAt": "1784154079719",
+      "lastLoginAt": "1784154079719",
+      "customClaims": {}
+    },
+    {
+      "uid": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "email": "gflores@unan.edu.ni",
+      "emailVerified": false,
+      "displayName": "Junior Flores",
+      "phoneNumber": null,
+      "disabled": false,
+      "providerData": [
+        "password"
+      ],
+      "createdAt": "1786719548324",
+      "lastLoginAt": null,
+      "customClaims": {
+        "role": "MERCHANT_OWNER",
+        "businessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+        "orgId": "75b145e5-17ec-4248-a085-c962a408db86",
+        "branchId": "794f7c02-8077-40a8-b260-2fdd27a6f35d",
+        "tenantId": null
+      }
+    },
+    {
+      "uid": "XWsjzZe8lsfthRQ5PgbDzlqA2nX2",
+      "email": "geraldflores07@gmail.com",
+      "emailVerified": true,
+      "displayName": "Gerald José Flores Gutiérrez",
+      "phoneNumber": null,
+      "disabled": false,
+      "providerData": [
+        "google.com",
+        "password"
+      ],
+      "createdAt": "1784041682241",
+      "lastLoginAt": "1786998622892",
+      "customClaims": {
+        "role": "ADMIN",
+        "businessId": null,
+        "branchId": null,
+        "orgId": null,
+        "tenantId": null
+      }
+    },
+    {
+      "uid": "YFpQsfuTS3PLMggjR4wXMcmxvuq1",
+      "email": "aldrich@gmail.com",
+      "emailVerified": false,
+      "displayName": null,
+      "phoneNumber": null,
+      "disabled": false,
+      "providerData": [
+        "password"
+      ],
+      "createdAt": "1784142109624",
+      "lastLoginAt": "1784142379284",
+      "customClaims": {}
+    },
+    {
+      "uid": "dKZf5tyzpUMNPk1Wy92BQgp4aMF3",
+      "email": "fritoni@gmail.com",
+      "emailVerified": true,
+      "displayName": null,
+      "phoneNumber": null,
+      "disabled": false,
+      "providerData": [
+        "password"
+      ],
+      "createdAt": "1784402691055",
+      "lastLoginAt": "1786998551110",
+      "customClaims": {}
+    },
+    {
+      "uid": "dbX1tvV2WNdFv4KWMbWNW8lngDI2",
+      "email": null,
+      "emailVerified": false,
+      "displayName": "Gerald Jose Flores Gutierrez",
+      "phoneNumber": null,
+      "disabled": false,
+      "providerData": [
+        "facebook.com"
+      ],
+      "createdAt": "1784922253251",
+      "lastLoginAt": "1786917527138",
+      "customClaims": {
+        "role": "CLIENT",
+        "businessId": null,
+        "branchId": null,
+        "orgId": null,
+        "tenantId": null
+      }
+    },
+    {
+      "uid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "email": "fritonic@gmail.com",
+      "emailVerified": false,
+      "displayName": null,
+      "phoneNumber": null,
+      "disabled": false,
+      "providerData": [
+        "password"
+      ],
+      "createdAt": "1785473846618",
+      "lastLoginAt": "1786993110221",
+      "customClaims": {
+        "role": "MERCHANT_OWNER",
+        "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+        "orgId": "org_default_bluesystem",
+        "branchId": "br_1786988052589",
+        "tenantId": null
+      }
+    },
+    {
+      "uid": "h00PIZpMgxSaqSVnYpRLPq0DYGC3",
+      "email": "itedvirtual@gmail.com",
+      "emailVerified": true,
+      "displayName": "ITED Virtual",
+      "phoneNumber": null,
+      "disabled": false,
+      "providerData": [
+        "google.com",
+        "password"
+      ],
+      "createdAt": "1784942569543",
+      "lastLoginAt": "1786985938940",
+      "customClaims": {
+        "role": "CLIENT",
+        "businessId": null,
+        "branchId": null,
+        "orgId": null,
+        "tenantId": null
+      }
+    },
+    {
+      "uid": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "email": "ventas@tecnocomp.com.ni",
+      "emailVerified": false,
+      "displayName": "Aldrich Flores",
+      "phoneNumber": null,
+      "disabled": false,
+      "providerData": [
+        "password"
+      ],
+      "createdAt": "1786841736616",
+      "lastLoginAt": null,
+      "customClaims": {
+        "role": "MERCHANT_OWNER",
+        "businessId": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+        "orgId": "1b485c29-b7e3-4173-a4fd-36f8bb4ec1e8",
+        "branchId": "30945c9c-3aee-4e45-b35d-a998b57cf2fa",
+        "tenantId": null
+      }
+    }
+  ],
+  "firestoreUsers": [
+    {
+      "id": "1768226535785",
+      "active": true,
+      "lastLogin": "2026-02-27T04:19:52.725Z",
+      "photoUrl": "data:image/jpeg;base64,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",
+      "name": "Gerald José  Flores Gutiérrez",
+      "username": "gflores26",
+      "role": "CLIENT",
+      "password": "123456",
+      "relatedClientId": "cliente0001_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "1768243841542",
+      "password": "123456",
+      "assignedCashBranchId": "BR-1769095943050",
+      "email": "",
+      "name": "Kim",
+      "username": "kflores",
+      "monthlySalesGoal": 1000,
+      "commissionRate": 0,
+      "lastLogin": "2026-02-24T16:09:56.717Z",
+      "role": "business",
+      "requestedRole": "",
+      "rol": "business",
+      "originEvidence": "Business merchant profile 1768243841542 with 27 registered sales (Kim)",
+      "createdVia": "MERCHANT_AFFILIATION",
+      "originClassification": "AFFILIATION",
+      "identityOrigin": "AFFILIATION",
+      "deletedAt": {
+        "_seconds": 1786911428,
+        "_nanoseconds": 127000000
+      },
+      "isDeleted": true,
+      "lifecycleStatus": "DEPROVISIONED",
+      "active": false,
+      "isActive": false,
+      "status": "DELETED",
+      "updatedAt": {
+        "_seconds": 1786911428,
+        "_nanoseconds": 723000000
+      }
+    },
+    {
+      "id": "1768878763084",
+      "lastLogin": "2026-03-02T23:17:51.062Z",
+      "assignedCashBranchId": "BR-1769095963385",
+      "password": "123456",
+      "email": "",
+      "role": "SELLER",
+      "username": "hpaz",
+      "commissionRate": 0,
+      "name": "Henry Paz",
+      "monthlySalesGoal": 0,
+      "isDeleted": true,
+      "lifecycleStatus": "DEPROVISIONED",
+      "active": false,
+      "isActive": false,
+      "status": "DELETED",
+      "deletedAt": {
+        "_seconds": 1786898076,
+        "_nanoseconds": 764000000
+      },
+      "originEvidence": "Merchant POS Seller profile 1768878763084 with 65 registered sales (Henry Paz)",
+      "createdVia": "MERCHANT_AFFILIATION",
+      "originClassification": "AFFILIATION",
+      "identityOrigin": "AFFILIATION",
+      "updatedAt": {
+        "_seconds": 1786906607,
+        "_nanoseconds": 576000000
+      }
+    },
+    {
+      "id": "1769029559449",
+      "password": "123456",
+      "name": "Chepita",
+      "email": "",
+      "role": "SELLER",
+      "username": "chepita",
+      "lastLogin": "2026-01-21T21:25:27.606Z",
+      "isDeleted": true,
+      "lifecycleStatus": "DEPROVISIONED",
+      "active": false,
+      "isActive": false,
+      "status": "DELETED",
+      "originEvidence": "Merchant POS Seller profile 1769029559449 with 8 registered sales (Chepita)",
+      "createdVia": "MERCHANT_AFFILIATION",
+      "originClassification": "AFFILIATION",
+      "identityOrigin": "AFFILIATION",
+      "branchId": "br_1786029236396",
+      "businessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "deletedAt": {
+        "_seconds": 1786985359,
+        "_nanoseconds": 577000000
+      },
+      "updatedAt": {
+        "_seconds": 1786985361,
+        "_nanoseconds": 826000000
+      }
+    },
+    {
+      "id": "3Wt0XdzeOTfG1OXn72ApIhVbE5i1",
+      "telefono": "",
+      "email": "familiaflorescenteno@gmail.com",
+      "userType": "customer",
+      "fechaRegistro": "1784922272308",
+      "nombre": "Kimberly Flores Centeno",
+      "uid": "3Wt0XdzeOTfG1OXn72ApIhVbE5i1",
+      "originEvidence": "App signup with registered Android device and 1 completed order (Kimberly Flores Centeno)",
+      "createdVia": "APP",
+      "originClassification": "APP",
+      "identityOrigin": "APP"
+    },
+    {
+      "id": "8O8hJe5kSzNQxUkLwwkCsipGmAI3",
+      "fechaRegistro": "2026-07-19T17:36:12.729307Z",
+      "telefono": "82397401",
+      "uid": "8O8hJe5kSzNQxUkLwwkCsipGmAI3",
+      "email": "kim@gmail.com",
+      "nombre": "kimberly Flores",
+      "userType": "customer",
+      "role": "business",
+      "rol": "business",
+      "isDeleted": true,
+      "lifecycleStatus": "DEPROVISIONED",
+      "active": false,
+      "isActive": false,
+      "status": "DELETED",
+      "originEvidence": "Merchant business account kim@gmail.com linked to commerce 8O8hJe5kSzNQxUkLwwkCsipGmAI3 (kimberly Flores)",
+      "createdVia": "MERCHANT_AFFILIATION",
+      "originClassification": "AFFILIATION",
+      "identityOrigin": "AFFILIATION",
+      "deletedAt": {
+        "_seconds": 1786908977,
+        "_nanoseconds": 62000000
+      },
+      "updatedAt": {
+        "_seconds": 1786908977,
+        "_nanoseconds": 657000000
+      }
+    },
+    {
+      "id": "9QHYGkSa3nWiJ7KfPkccjjuIaYp2",
+      "nombre": "Henry Paz",
+      "userType": "driver",
+      "email": "hpaz@gmail.com",
+      "telefono": "82397401",
+      "fechaRegistro": "2026-07-19T17:37:02.912249Z",
+      "uid": "9QHYGkSa3nWiJ7KfPkccjjuIaYp2",
+      "role": "courier",
+      "rol": "courier",
+      "updatedAt": {
+        "_seconds": 1785299925,
+        "_nanoseconds": 686000000
+      },
+      "originEvidence": "Courier app registration with phone 82397401 and device registration (Henry Paz)",
+      "createdVia": "APP",
+      "originClassification": "APP",
+      "identityOrigin": "APP"
+    },
+    {
+      "id": "USR-1768621181014",
+      "password": "123456",
+      "relatedClientId": "cliente3693_2026",
+      "username": "zocornor26",
+      "name": "Zamir Ocornor",
+      "active": true,
+      "role": "CLIENT",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-1769025804680",
+      "username": "oaltamirano26",
+      "password": "fbtxmmtp",
+      "name": "Omar Altamirano ",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente4375_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-1769029685895",
+      "username": "rcenteno26",
+      "password": "hhcsqctq",
+      "name": "Richard centeno",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente1852_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-1769098535884",
+      "username": "aurbina26",
+      "password": "vusufsxl",
+      "name": "Adolfo Urbina",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente2968_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-1769190932815",
+      "username": "vgutirrrez26",
+      "password": "rzwztaeg",
+      "name": "vicenta gutirrrez",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente3263_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-1769194803657",
+      "username": "aurbina26",
+      "password": "41cy3vp6",
+      "name": "adolfo  urbina",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente4376_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-1769465117595",
+      "username": "aflores26",
+      "password": "l4nqkurx",
+      "name": "andy flores",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente4377_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-1769487243198",
+      "username": "hjdkdk26",
+      "password": "dxq1u9wr",
+      "name": "Helo Jdkdk",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente0015_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-1769620170492",
+      "username": "pflores26",
+      "password": "bu2w4ff9",
+      "name": "pepe flores",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente4378_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-1769633352410",
+      "username": "gghh26",
+      "password": "12345",
+      "name": "Gggg Ghh",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente4379_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-1769711990359",
+      "username": "vflores26",
+      "password": "zxeq600h",
+      "name": "venus flores",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente0015_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-1770060240159",
+      "username": "jaldna26",
+      "password": "qhknm25n",
+      "name": "Jairo  AldNa",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente4380_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-1771428610412",
+      "username": "nbusto26",
+      "password": "123456",
+      "name": "Nelson Busto",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente4381_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-1772377026947",
+      "username": "laldana26",
+      "password": "bhte16xn",
+      "name": "Luciana  Aldana ",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente4382_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-CL-1768337682525",
+      "username": "amendoza26",
+      "password": "6e8jcq",
+      "name": "allan mendoza",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente0012_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-CL-1768342901776",
+      "username": "zflores26",
+      "password": "e3p97g",
+      "name": "zoe flores",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente0013_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-CL-1768365031013",
+      "username": "mchavez26",
+      "password": "ggu2k9",
+      "name": "maria chavez",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente0014_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "USR-CL-1768422839897",
+      "username": "dflores26",
+      "password": "xf45wt8d",
+      "name": "denis flores",
+      "role": "CLIENT",
+      "active": true,
+      "relatedClientId": "cliente0015_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "uid": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "nombre": "Junior Flores",
+      "name": "Junior Flores",
+      "email": "gflores@unan.edu.ni",
+      "telefono": "82397401",
+      "phone": "82397401",
+      "userType": "business",
+      "role": "business",
+      "rol": "business",
+      "eiamRole": "MERCHANT_OWNER",
+      "businessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "orgId": "75b145e5-17ec-4248-a085-c962a408db86",
+      "branchId": "794f7c02-8077-40a8-b260-2fdd27a6f35d",
+      "fechaRegistro": {
+        "_seconds": 1786719549,
+        "_nanoseconds": 817000000
+      },
+      "originEvidence": "Merchant application rkul8qqr6ljKyf8W7eXW & business e7dc911e-e587-4be9-a741-7d9d9828011f (Junior Flores)",
+      "createdVia": "MERCHANT_AFFILIATION",
+      "originClassification": "AFFILIATION",
+      "identityOrigin": "AFFILIATION",
+      "deletedAt": {
+        "_seconds": 1786911453,
+        "_nanoseconds": 530000000
+      },
+      "isDeleted": true,
+      "lifecycleStatus": "DEPROVISIONED",
+      "status": "DELETED",
+      "active": true,
+      "isActive": true,
+      "updatedAt": {
+        "_seconds": 1786997209,
+        "_nanoseconds": 535000000
+      }
+    },
+    {
+      "id": "XWsjzZe8lsfthRQ5PgbDzlqA2nX2",
+      "uid": "XWsjzZe8lsfthRQ5PgbDzlqA2nX2",
+      "role": "admin",
+      "fechaRegistro": "1785286186615",
+      "active": true,
+      "telefono": "",
+      "nombre": "Gerald Flores",
+      "email": "geraldflores07@gmail.com",
+      "rol": "admin",
+      "userType": "admin",
+      "originEvidence": "Admin Panel creation & administrative user credentials (Gerald Flores)",
+      "createdVia": "ADMIN_PANEL",
+      "originClassification": "ADMIN_PANEL",
+      "identityOrigin": "ADMIN_PANEL"
+    },
+    {
+      "id": "admin_initial",
+      "lastLogin": "2026-03-19T17:56:25.312Z",
+      "active": true,
+      "role": "ADMIN",
+      "username": "admin",
+      "email": "admin@blue.com",
+      "photoUrl": "data:image/jpeg;base64,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",
+      "name": "Admin Gerald Flores",
+      "password": "123",
+      "originEvidence": "Initial system admin account with 256 sales records (Admin Gerald Flores)",
+      "createdVia": "ADMIN_PANEL",
+      "originClassification": "ADMIN_PANEL",
+      "identityOrigin": "ADMIN_PANEL"
+    },
+    {
+      "id": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "role": "business",
+      "isActive": true,
+      "nombre": "El Chanchito",
+      "rol": "business",
+      "uid": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "isFeatured": true,
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "active": true,
+      "tiempoEstimadoMinutos": 15,
+      "comercioNombre": "El Chanchito",
+      "deliveryFee": 35,
+      "isOpen": true,
+      "costoEnvioBase": 35,
+      "name": "El Chanchito",
+      "userType": "business",
+      "category": "Restaurante",
+      "abierto": true,
+      "coverUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786910976029_banner_chanchito.jpg?alt=media&token=e834f149-8466-4f18-ac5b-ccfa828a5dde",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786910970071_chanchito.jpg?alt=media&token=c36c8000-10e7-4b78-b22a-b76ac2aeeb7a",
+      "bannerUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786910976029_banner_chanchito.jpg?alt=media&token=e834f149-8466-4f18-ac5b-ccfa828a5dde",
+      "portadaUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786910976029_banner_chanchito.jpg?alt=media&token=e834f149-8466-4f18-ac5b-ccfa828a5dde",
+      "logoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786910970071_chanchito.jpg?alt=media&token=c36c8000-10e7-4b78-b22a-b76ac2aeeb7a",
+      "descripcion": "Especialista en Cerdo",
+      "address": "Villa Fontna Norte Contiguoa Casa Cafe",
+      "phone": "82397401",
+      "direccion": "Villa Fontna Norte Contiguoa Casa Cafe",
+      "description": "Especialista en Cerdo",
+      "telefono": "82397401",
+      "email": "elchanchito@gmail.com",
+      "updatedAt": {
+        "_seconds": 1786986071,
+        "_nanoseconds": 636000000
+      }
+    },
+    {
+      "id": "dbX1tvV2WNdFv4KWMbWNW8lngDI2",
+      "telefono": "",
+      "nombre": "Gerald Jose Flores Gutierrez",
+      "userType": "customer",
+      "email": "",
+      "fechaRegistro": "1784922253965",
+      "uid": "dbX1tvV2WNdFv4KWMbWNW8lngDI2",
+      "originEvidence": "Android App registration with device record in user_devices (Gerald Jose Flores Gutierrez)",
+      "createdVia": "APP",
+      "originClassification": "APP",
+      "identityOrigin": "APP"
+    },
+    {
+      "id": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "uid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "fechaRegistro": "1785473846992",
+      "name": "FRITONI",
+      "active": true,
+      "isActive": true,
+      "nombre": "FRITONI",
+      "role": "business",
+      "rol": "business",
+      "requestedRole": "",
+      "coverUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028783659_607421313_122094264237204960_3693436955939460644_n.jpg?alt=media&token=e17dbcf9-b7b5-4663-b5a8-4e1578683f40",
+      "bannerUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+      "portadaUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+      "logoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028783659_607421313_122094264237204960_3693436955939460644_n.jpg?alt=media&token=e17dbcf9-b7b5-4663-b5a8-4e1578683f40",
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "tiempoEstimadoMinutos": 15,
+      "comercioNombre": "FRITONI",
+      "isOpen": true,
+      "userType": "business",
+      "category": "Restaurante",
+      "isFeatured": true,
+      "abierto": true,
+      "originEvidence": "Merchant business account fritonic@gmail.com linked to commerce dlRY2ZVUqPR2Fxoc3cazcOxxRJg2 (FRITONI)",
+      "createdVia": "MERCHANT_AFFILIATION",
+      "originClassification": "AFFILIATION",
+      "identityOrigin": "AFFILIATION",
+      "deliveryFee": 35,
+      "costoEnvioBase": 35,
+      "descripcion": "Especialista en Comida Nica",
+      "address": "Bo. Boer de TicaBus 2c al Sur",
+      "phone": "82397401",
+      "direccion": "Bo. Boer de TicaBus 2c al Sur",
+      "description": "Especialista en Comida Nica",
+      "telefono": "82397401",
+      "email": "fritoni@gmail.com",
+      "branches": [
+        {
+          "branchId": "br_1786988052589",
+          "createdAt": {
+            "_seconds": 1786988053,
+            "_nanoseconds": 996000000
+          },
+          "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+          "status": "OPERATIONAL",
+          "deliveryRadiusKm": 5,
+          "locationGPS": {
+            "lng": -86.251389,
+            "lat": 12.136389
+          },
+          "isActive": true,
+          "direccion": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+          "longitude": -86.251389,
+          "phone": "",
+          "address": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+          "lng": 0,
+          "prepTimeMinutes": 15,
+          "abierto": true,
+          "active": true,
+          "telefono": "",
+          "latitude": 12.136389,
+          "isOpen": true,
+          "branchName": "Fritoni Boer",
+          "lat": 0,
+          "id": "br_1786988052589",
+          "radioCoberturaKm": 5,
+          "rating": 4.8,
+          "name": "Fritoni Boer",
+          "nombre": "Fritoni Boer",
+          "businessName": "FRITONI",
+          "updatedAt": {
+            "_seconds": 1786988057,
+            "_nanoseconds": 78000000
+          }
+        },
+        {
+          "branchId": "br_1786993038705",
+          "id": "br_1786993038705",
+          "name": "Fritoni Carrtera Masaya",
+          "nombre": "Fritoni Carrtera Masaya",
+          "direccion": "Km 12.5 Contiguo a Restaurante Cantera",
+          "telefono": "88888888",
+          "locationGPS": {
+            "lat": 12.136389,
+            "lng": -86.251389
+          },
+          "active": true,
+          "createdAt": "2026-08-17T18:57:18.707Z"
+        }
+      ],
+      "eiamRoleLevel": 6,
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "assignedUsers": [
+        {
+          "uid": "fritoni@gmail.com",
+          "email": "fritoni@gmail.com",
+          "assignedAt": "2026-08-17T20:31:13.468Z"
+        }
+      ],
+      "branchId": "br_1786988052589",
+      "eiamRole": "MERCHANT_OWNER",
+      "orgId": "org_default_bluesystem",
+      "status": "ACTIVE",
+      "updatedAt": {
+        "_seconds": 1786999027,
+        "_nanoseconds": 260000000
+      }
+    },
+    {
+      "id": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786913811532_log_tecnohomeo.jpg?alt=media&token=daa889db-4384-4804-94ca-c3c2a4baa6d2",
+      "logoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786913811532_log_tecnohomeo.jpg?alt=media&token=daa889db-4384-4804-94ca-c3c2a4baa6d2",
+      "coverUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786913869746_Mesa_de_trabajo_42.png?alt=media&token=e99cd0aa-1124-4892-87a9-96951cd00795",
+      "bannerUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786913869746_Mesa_de_trabajo_42.png?alt=media&token=e99cd0aa-1124-4892-87a9-96951cd00795",
+      "portadaUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786913869746_Mesa_de_trabajo_42.png?alt=media&token=e99cd0aa-1124-4892-87a9-96951cd00795",
+      "role": "business",
+      "isActive": true,
+      "nombre": "Variedades TECNOHOME",
+      "rol": "business",
+      "uid": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "isFeatured": true,
+      "avgPrepTimeMinutes": 15,
+      "active": true,
+      "tiempoEstimadoMinutos": 15,
+      "comercioNombre": "Variedades TECNOHOME",
+      "deliveryFee": 35,
+      "isOpen": true,
+      "costoEnvioBase": 35,
+      "name": "Variedades TECNOHOME",
+      "userType": "business",
+      "abierto": true,
+      "descripcion": "Los mejor en Tecnología",
+      "address": "Residencial Las Delicias Casa Q529",
+      "phone": "82397401",
+      "categoria": "Tecnología",
+      "direccion": "Residencial Las Delicias Casa Q529",
+      "description": "Los mejor en Tecnología",
+      "telefono": "82397401",
+      "category": "Tecnología",
+      "email": "tecnohome@gmail.com",
+      "updatedAt": {
+        "_seconds": 1786985501,
+        "_nanoseconds": 209000000
+      }
+    },
+    {
+      "id": "h00PIZpMgxSaqSVnYpRLPq0DYGC3",
+      "email": "itedvirtual@gmail.com",
+      "uid": "h00PIZpMgxSaqSVnYpRLPq0DYGC3",
+      "telefono": "",
+      "nombre": "ITED Virtual",
+      "userType": "customer",
+      "fechaRegistro": "1784942570128",
+      "originEvidence": "Customer app account itedvirtual@gmail.com with 1 order (ITED Virtual)",
+      "createdVia": "APP",
+      "originClassification": "APP",
+      "identityOrigin": "APP"
+    },
+    {
+      "id": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "uid": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "nombre": "Aldrich Flores",
+      "name": "Aldrich Flores",
+      "email": "ventas@tecnocomp.com.ni",
+      "telefono": "+50582397401",
+      "phone": "+50582397401",
+      "userType": "business",
+      "role": "business",
+      "rol": "business",
+      "eiamRole": "MERCHANT_OWNER",
+      "businessId": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "orgId": "1b485c29-b7e3-4173-a4fd-36f8bb4ec1e8",
+      "branchId": "30945c9c-3aee-4e45-b35d-a998b57cf2fa",
+      "fechaRegistro": {
+        "_seconds": 1786841737,
+        "_nanoseconds": 569000000
+      },
+      "originEvidence": "Merchant application McIq7vqVMwDlcLiw4q36 & business bbb760d5-a8f3-4700-9a96-f58f11f345ac (Aldrich Flores)",
+      "createdVia": "MERCHANT_AFFILIATION",
+      "originClassification": "AFFILIATION",
+      "identityOrigin": "AFFILIATION",
+      "deletedAt": {
+        "_seconds": 1786909041,
+        "_nanoseconds": 901000000
+      },
+      "isDeleted": true,
+      "lifecycleStatus": "DEPROVISIONED",
+      "status": "DELETED",
+      "active": true,
+      "isActive": true,
+      "updatedAt": {
+        "_seconds": 1786997202,
+        "_nanoseconds": 196000000
+      }
+    },
+    {
+      "id": "test_auth_fs_1786904851220",
+      "nombre": "Test Both",
+      "active": true,
+      "originEvidence": "Synthetic/automation test user profile",
+      "createdVia": "TEST_SCRIPT",
+      "originClassification": "TEST",
+      "identityOrigin": "TEST"
+    },
+    {
+      "id": "test_sync_1786906621837",
+      "uid": "test_sync_1786906621837",
+      "role": "business",
+      "email": "synctest@bluesystem.com",
+      "comercioNombre": "SYNC_TEST_COMMERCE_EDITED",
+      "name": "SYNC_TEST_COMMERCE_EDITED",
+      "updatedAt": {
+        "_seconds": 1786906624,
+        "_nanoseconds": 390000000
+      },
+      "isDeleted": true,
+      "lifecycleStatus": "DEPROVISIONED",
+      "active": false,
+      "isActive": false,
+      "status": "DELETED"
+    },
+    {
+      "id": "test_sync_1786906691350",
+      "uid": "test_sync_1786906691350",
+      "role": "business",
+      "email": "synctest@bluesystem.com",
+      "comercioNombre": "SYNC_TEST_COMMERCE_EDITED",
+      "name": "SYNC_TEST_COMMERCE_EDITED",
+      "updatedAt": {
+        "_seconds": 1786906694,
+        "_nanoseconds": 654000000
+      },
+      "isDeleted": true,
+      "lifecycleStatus": "DEPROVISIONED",
+      "active": false,
+      "isActive": false,
+      "status": "DELETED"
+    },
+    {
+      "id": "test_sync_1786906712177",
+      "uid": "test_sync_1786906712177",
+      "role": "business",
+      "email": "synctest@bluesystem.com",
+      "comercioNombre": "SYNC_TEST_COMMERCE_EDITED",
+      "name": "SYNC_TEST_COMMERCE_EDITED",
+      "updatedAt": {
+        "_seconds": 1786906714,
+        "_nanoseconds": 955000000
+      },
+      "isDeleted": true,
+      "lifecycleStatus": "DEPROVISIONED",
+      "active": false,
+      "isActive": false,
+      "status": "DELETED"
+    },
+    {
+      "id": "user_cli_1768237897386",
+      "active": true,
+      "name": "Aldrich  Flores",
+      "relatedClientId": "cliente0003_2026",
+      "role": "CLIENT",
+      "password": "123457",
+      "username": "aflores26",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "user_cli_1768240170991",
+      "username": "cliente0007_2026",
+      "password": "3203",
+      "name": "venus flores",
+      "role": "CLIENT",
+      "active": true,
+      "email": "",
+      "relatedClientId": "cliente0007_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "user_cliente0002_2026",
+      "username": "pcenteno2026",
+      "password": "q8g606",
+      "name": "Perla  Centeno",
+      "role": "CLIENT",
+      "active": true,
+      "email": "",
+      "relatedClientId": "cliente0002_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "user_cliente0008_2026",
+      "username": "jflores26",
+      "password": "bdwni63b",
+      "name": "Junior Flores",
+      "role": "CLIENT",
+      "active": true,
+      "email": "",
+      "relatedClientId": "cliente0008_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "user_cliente0009_2026",
+      "username": "roooo26",
+      "password": "7ruem9wn",
+      "name": "hola oooo",
+      "role": "CLIENT",
+      "active": true,
+      "email": "",
+      "relatedClientId": "cliente0009_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "user_cliente0010_2026",
+      "username": "mramos26",
+      "password": "6ytaeqhv",
+      "name": "maria ramos",
+      "role": "CLIENT",
+      "active": true,
+      "email": "",
+      "relatedClientId": "cliente0010_2026",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "user_cliente0011_2026",
+      "username": "sts26",
+      "active": true,
+      "role": "CLIENT",
+      "password": "8v3gstwt",
+      "relatedClientId": "cliente0011_2026",
+      "name": "sonia matamoros",
+      "email": "",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "user_cliente1768275049139",
+      "username": "emorales26",
+      "password": "c8rs78tp",
+      "name": "eva morales",
+      "role": "CLIENT",
+      "active": true,
+      "email": "",
+      "relatedClientId": "cliente1768275049139",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    },
+    {
+      "id": "user_cliente1768278375844",
+      "email": "",
+      "active": true,
+      "name": "xoci ruiz",
+      "role": "CLIENT",
+      "password": "123456",
+      "username": "xruiz26",
+      "relatedClientId": "cliente1768278375844",
+      "originEvidence": "Legacy desktop POS record without auth or operational activity",
+      "createdVia": "POS_DESKTOP_LEGACY",
+      "originClassification": "LEGACY_PREEXISTING",
+      "identityOrigin": "LEGACY_PREEXISTING"
+    }
+  ],
+  "memberships": [
+    {
+      "id": "2ff139e2-de9e-4641-b881-89209dc4e447",
+      "membershipId": "2ff139e2-de9e-4641-b881-89209dc4e447",
+      "uid": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "businessId": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "orgId": "1b485c29-b7e3-4173-a4fd-36f8bb4ec1e8",
+      "branchId": "30945c9c-3aee-4e45-b35d-a998b57cf2fa",
+      "role": "MERCHANT_OWNER",
+      "status": "ACTIVE",
+      "permissions": [
+        "VIEW_ORDERS",
+        "MANAGE_ORDERS",
+        "VIEW_MENU",
+        "MANAGE_MENU",
+        "VIEW_FINANCE",
+        "EXPORT_REPORT",
+        "MANAGE_EMPLOYEES",
+        "MANAGE_SETTINGS",
+        "VIEW_ANALYTICS",
+        "CLOSE_CASH_REGISTER"
+      ],
+      "createdAt": {
+        "_seconds": 1786841737,
+        "_nanoseconds": 569000000
+      },
+      "updatedAt": {
+        "_seconds": 1786841737,
+        "_nanoseconds": 569000000
+      }
+    },
+    {
+      "id": "6ab91cdb-8116-45ac-97cd-acb1b3c4d112",
+      "membershipId": "6ab91cdb-8116-45ac-97cd-acb1b3c4d112",
+      "uid": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "businessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "orgId": "75b145e5-17ec-4248-a085-c962a408db86",
+      "branchId": "794f7c02-8077-40a8-b260-2fdd27a6f35d",
+      "role": "MERCHANT_OWNER",
+      "status": "ACTIVE",
+      "permissions": [
+        "VIEW_ORDERS",
+        "MANAGE_ORDERS",
+        "VIEW_MENU",
+        "MANAGE_MENU",
+        "VIEW_FINANCE",
+        "EXPORT_REPORT",
+        "MANAGE_EMPLOYEES",
+        "MANAGE_SETTINGS",
+        "VIEW_ANALYTICS",
+        "CLOSE_CASH_REGISTER"
+      ],
+      "createdAt": {
+        "_seconds": 1786719549,
+        "_nanoseconds": 817000000
+      },
+      "updatedAt": {
+        "_seconds": 1786719549,
+        "_nanoseconds": 817000000
+      }
+    },
+    {
+      "id": "mem_fritoni_dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "uid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "email": "fritonic@gmail.com",
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "orgId": "org_default_bluesystem",
+      "branchId": "br_1786988052589",
+      "role": "MERCHANT_OWNER",
+      "status": "ACTIVE",
+      "permissions": [
+        "VIEW_ORDERS",
+        "MANAGE_ORDERS",
+        "VIEW_MENU",
+        "MANAGE_MENU",
+        "VIEW_FINANCE",
+        "EXPORT_REPORT",
+        "MANAGE_EMPLOYEES",
+        "MANAGE_SETTINGS",
+        "VIEW_ANALYTICS",
+        "CLOSE_CASH_REGISTER"
+      ],
+      "createdAt": {
+        "_seconds": 1786999027,
+        "_nanoseconds": 260000000
+      },
+      "updatedAt": {
+        "_seconds": 1786999027,
+        "_nanoseconds": 260000000
+      }
+    }
+  ],
+  "employees": [],
+  "businesses": [
+    {
+      "id": "1768243841542",
+      "descripcion": "",
+      "deliveryTime": "15 min",
+      "bannerUrl": "",
+      "businessId": "1768243841542",
+      "rating": 4.8,
+      "description": "",
+      "nombre": "Kim",
+      "photoUrl": "",
+      "averageRating": 4.8,
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "portadaUrl": "",
+      "ratingCount": 15,
+      "tiempoEstimadoMinutos": 15,
+      "logoUrl": "",
+      "coverUrl": "",
+      "comercioNombre": "Kim",
+      "deliveryFee": 35,
+      "isOpen": false,
+      "costoEnvioBase": 35,
+      "name": "Kim",
+      "category": "Restaurante",
+      "abierto": false,
+      "isFeatured": false,
+      "source": "DIRECT_ADMIN",
+      "orgId": "org_default_bluesystem",
+      "deletedAt": {
+        "_seconds": 1786911428,
+        "_nanoseconds": 121000000
+      },
+      "isDeleted": true,
+      "lifecycleStatus": "DEPROVISIONED",
+      "active": false,
+      "isActive": false,
+      "status": "DELETED",
+      "updatedAt": {
+        "_seconds": 1786911429,
+        "_nanoseconds": 97000000
+      }
+    },
+    {
+      "id": "1769029559449",
+      "descripcion": "",
+      "deliveryTime": "15 min",
+      "bannerUrl": "",
+      "businessId": "1769029559449",
+      "rating": 4.8,
+      "description": "",
+      "isActive": false,
+      "nombre": "Chepita",
+      "photoUrl": "",
+      "averageRating": 4.8,
+      "isFeatured": false,
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "active": false,
+      "portadaUrl": "",
+      "ratingCount": 15,
+      "tiempoEstimadoMinutos": 15,
+      "logoUrl": "",
+      "coverUrl": "",
+      "comercioNombre": "Chepita",
+      "deliveryFee": 35,
+      "isOpen": false,
+      "costoEnvioBase": 35,
+      "name": "Chepita",
+      "category": "Restaurante",
+      "abierto": false,
+      "deletedAt": {
+        "_seconds": 1786985359,
+        "_nanoseconds": 742000000
+      },
+      "isDeleted": true,
+      "lifecycleStatus": "DEPROVISIONED",
+      "status": "DELETED",
+      "updatedAt": {
+        "_seconds": 1786985363,
+        "_nanoseconds": 832000000
+      }
+    },
+    {
+      "id": "8O8hJe5kSzNQxUkLwwkCsipGmAI3",
+      "descripcion": "",
+      "deliveryTime": "15 min",
+      "bannerUrl": "",
+      "businessId": "8O8hJe5kSzNQxUkLwwkCsipGmAI3",
+      "rating": 4.8,
+      "description": "",
+      "isActive": false,
+      "nombre": "kimberly Flores",
+      "photoUrl": "",
+      "averageRating": 4.8,
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "active": false,
+      "portadaUrl": "",
+      "ratingCount": 15,
+      "tiempoEstimadoMinutos": 15,
+      "logoUrl": "",
+      "coverUrl": "",
+      "comercioNombre": "kimberly Flores",
+      "deliveryFee": 35,
+      "isOpen": false,
+      "costoEnvioBase": 35,
+      "name": "kimberly Flores",
+      "category": "Restaurante",
+      "abierto": false,
+      "isFeatured": false,
+      "source": "DIRECT_ADMIN",
+      "orgId": "org_default_bluesystem",
+      "deletedAt": {
+        "_seconds": 1786908977,
+        "_nanoseconds": 55000000
+      },
+      "isDeleted": true,
+      "lifecycleStatus": "DEPROVISIONED",
+      "status": "DELETED",
+      "updatedAt": {
+        "_seconds": 1786908980,
+        "_nanoseconds": 101000000
+      }
+    },
+    {
+      "id": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "descripcion": "",
+      "deliveryTime": "15 min",
+      "bannerUrl": "",
+      "businessId": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "rating": 4.8,
+      "description": "",
+      "nombre": "Junior Flores",
+      "photoUrl": "",
+      "averageRating": 4.8,
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "portadaUrl": "",
+      "ratingCount": 15,
+      "tiempoEstimadoMinutos": 15,
+      "logoUrl": "",
+      "coverUrl": "",
+      "comercioNombre": "Junior Flores",
+      "deliveryFee": 35,
+      "isOpen": false,
+      "costoEnvioBase": 35,
+      "name": "Junior Flores",
+      "category": "Restaurante",
+      "abierto": false,
+      "isFeatured": false,
+      "source": "DIRECT_ADMIN",
+      "orgId": "org_default_bluesystem",
+      "deletedAt": {
+        "_seconds": 1786911453,
+        "_nanoseconds": 515000000
+      },
+      "isDeleted": true,
+      "lifecycleStatus": "DEPROVISIONED",
+      "status": "DELETED",
+      "active": true,
+      "isActive": true,
+      "updatedAt": {
+        "_seconds": 1786997210,
+        "_nanoseconds": 346000000
+      }
+    },
+    {
+      "id": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "businessId": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "orgId": "1b485c29-b7e3-4173-a4fd-36f8bb4ec1e8",
+      "ownerUid": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "name": "El Chanchito",
+      "legalName": "Grupo Flores",
+      "ruc": "J031003403434",
+      "city": "Managua",
+      "zone": "Amwericas #2",
+      "location": {
+        "_latitude": 12.16181980066395,
+        "_longitude": -86.18347525422485
+      },
+      "documentUrls": [],
+      "onboardingStep": 0,
+      "applicationId": "McIq7vqVMwDlcLiw4q36",
+      "isActive": true,
+      "branchIds": [
+        "30945c9c-3aee-4e45-b35d-a998b57cf2fa"
+      ],
+      "createdAt": {
+        "_seconds": 1786841737,
+        "_nanoseconds": 569000000
+      },
+      "active": true,
+      "source": "ADR_011",
+      "status": "ACTIVE",
+      "featured": true,
+      "lifecycleStatus": "ACTIVE",
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "nombre": "El Chanchito",
+      "tiempoEstimadoMinutos": 15,
+      "comercioNombre": "El Chanchito",
+      "deliveryFee": 35,
+      "isOpen": true,
+      "costoEnvioBase": 35,
+      "isFeatured": true,
+      "category": "Restaurante",
+      "abierto": true,
+      "deliveryTime": "15 min",
+      "averageRating": 4.8,
+      "rating": 4.8,
+      "ratingCount": 15,
+      "coverUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786910976029_banner_chanchito.jpg?alt=media&token=e834f149-8466-4f18-ac5b-ccfa828a5dde",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786910970071_chanchito.jpg?alt=media&token=c36c8000-10e7-4b78-b22a-b76ac2aeeb7a",
+      "bannerUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786910976029_banner_chanchito.jpg?alt=media&token=e834f149-8466-4f18-ac5b-ccfa828a5dde",
+      "portadaUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786910976029_banner_chanchito.jpg?alt=media&token=e834f149-8466-4f18-ac5b-ccfa828a5dde",
+      "logoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786910970071_chanchito.jpg?alt=media&token=c36c8000-10e7-4b78-b22a-b76ac2aeeb7a",
+      "phone": "82397401",
+      "telefono": "82397401",
+      "email": "elchanchito@gmail.com",
+      "descripcion": "Especialista en Cerdo Asado y Comida Típica Nicaragüense",
+      "onboardingStatus": "COMPLETED",
+      "wizardCompleted": true,
+      "onboardingCompletedAt": {
+        "_seconds": 1786997871,
+        "_nanoseconds": 2000000
+      },
+      "address": "Villa Fontana Norte Contiguo a Casa Cafe",
+      "direccion": "Villa Fontana Norte Contiguo a Casa Cafe",
+      "description": "Especialista en Cerdo Asado y Comida Típica Nicaragüense",
+      "updatedAt": {
+        "_seconds": 1786997871,
+        "_nanoseconds": 2000000
+      }
+    },
+    {
+      "id": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "deliveryTime": "15 min",
+      "bannerUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "rating": 4.8,
+      "isActive": true,
+      "nombre": "FRITONI",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028783659_607421313_122094264237204960_3693436955939460644_n.jpg?alt=media&token=e17dbcf9-b7b5-4663-b5a8-4e1578683f40",
+      "averageRating": 4.8,
+      "isFeatured": true,
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "active": true,
+      "portadaUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+      "ratingCount": 15,
+      "tiempoEstimadoMinutos": 15,
+      "logoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028783659_607421313_122094264237204960_3693436955939460644_n.jpg?alt=media&token=e17dbcf9-b7b5-4663-b5a8-4e1578683f40",
+      "coverUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+      "comercioNombre": "FRITONI",
+      "isOpen": true,
+      "name": "FRITONI",
+      "category": "Restaurante",
+      "abierto": true,
+      "lifecycleStatus": "ACTIVE",
+      "source": "DIRECT_ADMIN",
+      "orgId": "org_default_bluesystem",
+      "status": "ACTIVE",
+      "featured": true,
+      "deliveryFee": 35,
+      "costoEnvioBase": 35,
+      "descripcion": "Especialista en Comida Nica",
+      "address": "Bo. Boer de TicaBus 2c al Sur",
+      "phone": "82397401",
+      "direccion": "Bo. Boer de TicaBus 2c al Sur",
+      "description": "Especialista en Comida Nica",
+      "telefono": "82397401",
+      "email": "fritoni@gmail.com",
+      "branchIds": [
+        "br_1786988052589",
+        "br_1786993038705"
+      ],
+      "ownerUid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "updatedAt": {
+        "_seconds": 1786999028,
+        "_nanoseconds": 168000000
+      }
+    },
+    {
+      "id": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "businessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "orgId": "75b145e5-17ec-4248-a085-c962a408db86",
+      "ownerUid": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "name": "Variedades TECNOHOME",
+      "legalName": "Grupo Flores",
+      "ruc": "J031000000",
+      "city": "Managua",
+      "zone": "Americas #2",
+      "location": {
+        "_latitude": 12.136389,
+        "_longitude": -86.251389
+      },
+      "documentUrls": [],
+      "onboardingStep": 0,
+      "applicationId": "rkul8qqr6ljKyf8W7eXW",
+      "isActive": true,
+      "branchIds": [
+        "794f7c02-8077-40a8-b260-2fdd27a6f35d"
+      ],
+      "createdAt": {
+        "_seconds": 1786719549,
+        "_nanoseconds": 817000000
+      },
+      "active": true,
+      "source": "ADR_011",
+      "status": "ACTIVE",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786913811532_log_tecnohomeo.jpg?alt=media&token=daa889db-4384-4804-94ca-c3c2a4baa6d2",
+      "logoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786913811532_log_tecnohomeo.jpg?alt=media&token=daa889db-4384-4804-94ca-c3c2a4baa6d2",
+      "coverUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786913869746_Mesa_de_trabajo_42.png?alt=media&token=e99cd0aa-1124-4892-87a9-96951cd00795",
+      "bannerUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786913869746_Mesa_de_trabajo_42.png?alt=media&token=e99cd0aa-1124-4892-87a9-96951cd00795",
+      "portadaUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786913869746_Mesa_de_trabajo_42.png?alt=media&token=e99cd0aa-1124-4892-87a9-96951cd00795",
+      "featured": true,
+      "lifecycleStatus": "ACTIVE",
+      "avgPrepTimeMinutes": 15,
+      "nombre": "Variedades TECNOHOME",
+      "tiempoEstimadoMinutos": 15,
+      "comercioNombre": "Variedades TECNOHOME",
+      "deliveryFee": 35,
+      "isOpen": true,
+      "costoEnvioBase": 35,
+      "isFeatured": true,
+      "abierto": true,
+      "deliveryTime": "15 min",
+      "averageRating": 4.8,
+      "rating": 4.8,
+      "ratingCount": 15,
+      "descripcion": "Los mejor en Tecnología",
+      "address": "Residencial Las Delicias Casa Q529",
+      "phone": "82397401",
+      "categoria": "Tecnología",
+      "direccion": "Residencial Las Delicias Casa Q529",
+      "description": "Los mejor en Tecnología",
+      "telefono": "82397401",
+      "category": "Tecnología",
+      "email": "tecnohome@gmail.com",
+      "onboardingStatus": "COMPLETED",
+      "wizardCompleted": true,
+      "onboardingCompletedAt": {
+        "_seconds": 1786997871,
+        "_nanoseconds": 947000000
+      },
+      "updatedAt": {
+        "_seconds": 1786997871,
+        "_nanoseconds": 947000000
+      }
+    },
+    {
+      "id": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "descripcion": "",
+      "deliveryTime": "15 min",
+      "bannerUrl": "",
+      "businessId": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "rating": 4.8,
+      "description": "",
+      "nombre": "Aldrich Flores",
+      "photoUrl": "",
+      "averageRating": 4.8,
+      "isFeatured": false,
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "portadaUrl": "",
+      "ratingCount": 15,
+      "tiempoEstimadoMinutos": 15,
+      "logoUrl": "",
+      "coverUrl": "",
+      "comercioNombre": "Aldrich Flores",
+      "deliveryFee": 35,
+      "isOpen": false,
+      "costoEnvioBase": 35,
+      "name": "Aldrich Flores",
+      "category": "Restaurante",
+      "abierto": false,
+      "source": "DIRECT_ADMIN",
+      "orgId": "org_default_bluesystem",
+      "deletedAt": {
+        "_seconds": 1786909041,
+        "_nanoseconds": 911000000
+      },
+      "isDeleted": true,
+      "lifecycleStatus": "DEPROVISIONED",
+      "status": "DELETED",
+      "active": true,
+      "isActive": true,
+      "updatedAt": {
+        "_seconds": 1786997205,
+        "_nanoseconds": 83000000
+      }
+    }
+  ],
+  "branches": [
+    {
+      "id": "30945c9c-3aee-4e45-b35d-a998b57cf2fa",
+      "branchId": "30945c9c-3aee-4e45-b35d-a998b57cf2fa",
+      "address": "Villa Fontana Norte Contiguo a Casa Cafe",
+      "city": "Managua",
+      "businessId": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "active": true,
+      "isActive": true,
+      "orgId": "1b485c29-b7e3-4173-a4fd-36f8bb4ec1e8",
+      "deliveryFee": 35,
+      "coverageRadiusKm": 5,
+      "phone": "82397401",
+      "zone": "Amwericas #2",
+      "isPrimary": true,
+      "name": "Sucursal Principal",
+      "location": {
+        "latitude": 12.16181980066395,
+        "longitude": -86.18347525422485
+      },
+      "updatedAt": {
+        "_seconds": 1786997871,
+        "_nanoseconds": 2000000
+      }
+    },
+    {
+      "id": "794f7c02-8077-40a8-b260-2fdd27a6f35d",
+      "branchId": "794f7c02-8077-40a8-b260-2fdd27a6f35d",
+      "address": "Residencial Las Delicias Casa Q529",
+      "city": "Managua",
+      "businessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "active": true,
+      "isActive": true,
+      "orgId": "75b145e5-17ec-4248-a085-c962a408db86",
+      "deliveryFee": 35,
+      "coverageRadiusKm": 10,
+      "phone": "82397401",
+      "zone": "Americas #2",
+      "isPrimary": true,
+      "name": "Sucursal Principal Las Delicias",
+      "location": {
+        "latitude": 12.136389,
+        "longitude": -86.251389
+      },
+      "updatedAt": {
+        "_seconds": 1786997871,
+        "_nanoseconds": 947000000
+      }
+    },
+    {
+      "id": "br_1786988052589",
+      "branchId": "br_1786988052589",
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "businessName": "FRITONI",
+      "name": "Fritoni Boer",
+      "nombre": "Fritoni Boer",
+      "branchName": "Fritoni Boer",
+      "address": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+      "direccion": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+      "phone": "",
+      "telefono": "",
+      "locationGPS": {
+        "lat": 12.136389,
+        "lng": -86.251389
+      },
+      "latitude": 12.136389,
+      "longitude": -86.251389,
+      "deliveryRadiusKm": 5,
+      "radioCoberturaKm": 5,
+      "prepTimeMinutes": 15,
+      "isOpen": true,
+      "abierto": true,
+      "active": true,
+      "isActive": true,
+      "status": "OPERATIONAL",
+      "createdAt": {
+        "_seconds": 1786988053,
+        "_nanoseconds": 996000000
+      },
+      "rating": 4.8,
+      "lng": -86.251389,
+      "lat": 12.136389,
+      "isPrimary": true,
+      "orgId": "org_default_bluesystem",
+      "updatedAt": {
+        "_seconds": 1786999028,
+        "_nanoseconds": 343000000
+      }
+    },
+    {
+      "id": "br_1786993038705",
+      "branchId": "br_1786993038705",
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "businessName": "FRITONI",
+      "name": "Fritoni Carrtera Masaya",
+      "nombre": "Fritoni Carrtera Masaya",
+      "branchName": "Fritoni Carrtera Masaya",
+      "address": "Km 12.5 Contiguo a Restaurante Cantera",
+      "direccion": "Km 12.5 Contiguo a Restaurante Cantera",
+      "phone": "88888888",
+      "telefono": "88888888",
+      "locationGPS": {
+        "lat": 12.136389,
+        "lng": -86.251389
+      },
+      "latitude": 12.136389,
+      "longitude": -86.251389,
+      "deliveryRadiusKm": 5,
+      "radioCoberturaKm": 5,
+      "prepTimeMinutes": 15,
+      "isOpen": true,
+      "abierto": true,
+      "active": true,
+      "isActive": true,
+      "status": "OPERATIONAL",
+      "createdAt": {
+        "_seconds": 1786993039,
+        "_nanoseconds": 957000000
+      },
+      "lng": 0,
+      "rating": 4.8,
+      "lat": 0,
+      "updatedAt": {
+        "_seconds": 1786999028,
+        "_nanoseconds": 343000000
+      }
+    }
+  ],
+  "userDevices": [
+    {
+      "id": "3Wt0XdzeOTfG1OXn72ApIhVbE5i1_bd6fa724ce05f994",
+      "deviceType": "Smartphone",
+      "country": "NI",
+      "appVersion": "1.0",
+      "role": "customer",
+      "language": "es",
+      "deviceId": "bd6fa724ce05f994",
+      "platform": "Android",
+      "manufacturer": "samsung",
+      "uid": "3Wt0XdzeOTfG1OXn72ApIhVbE5i1",
+      "androidVersion": "16",
+      "model": "SM-F946U1",
+      "isTokenValid": true,
+      "email": "familiaflorescenteno@gmail.com",
+      "tokenStatus": "invalid",
+      "lastCleanedAt": {
+        "_seconds": 1786901669,
+        "_nanoseconds": 108000000
+      },
+      "isActive": true,
+      "fcmToken": "fQKv20olQwyX6BysCB3-tL:APA91bHSH8UOk8GZdywPlg5idMuXuYgLZRUTcUSxUKlxGmgGwfZr6rF8K17WGIMDrtJ54vV-JvCXcSFX71ZUeuOBGLNZepCjhBTB9PUHyHMa999cOp1D7mQ",
+      "lastActiveAt": {
+        "_seconds": 1786986785,
+        "_nanoseconds": 503000000
+      },
+      "lastTokenUpdate": {
+        "_seconds": 1786986785,
+        "_nanoseconds": 503000000
+      },
+      "updatedAt": {
+        "_seconds": 1786986785,
+        "_nanoseconds": 503000000
+      }
+    },
+    {
+      "id": "dbX1tvV2WNdFv4KWMbWNW8lngDI2_bd6fa724ce05f994",
+      "deviceType": "Smartphone",
+      "country": "NI",
+      "appVersion": "1.0",
+      "role": "customer",
+      "language": "es",
+      "isActive": true,
+      "deviceId": "bd6fa724ce05f994",
+      "platform": "Android",
+      "manufacturer": "samsung",
+      "uid": "dbX1tvV2WNdFv4KWMbWNW8lngDI2",
+      "androidVersion": "16",
+      "model": "SM-F946U1",
+      "fcmToken": "frp0DCIsS96jkcK6eT-CzU:APA91bGg2S0M8F1r9zgeLvgpekcNUGyT6ikxWFfnyx-B9WmSg80Vvo-YJ_Oi-eDpYOJVfCpUchkrDH-UJcDD0FMEoUJljrF2xTNbT12gxOqWjVdevrfFpX0",
+      "isTokenValid": true,
+      "email": "",
+      "lastActiveAt": {
+        "_seconds": 1786917528,
+        "_nanoseconds": 832000000
+      },
+      "lastTokenUpdate": {
+        "_seconds": 1786917528,
+        "_nanoseconds": 832000000
+      },
+      "updatedAt": {
+        "_seconds": 1786917528,
+        "_nanoseconds": 832000000
+      }
+    },
+    {
+      "id": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2_6889cf61cdcf450c",
+      "deviceType": "Smartphone",
+      "country": "NI",
+      "appVersion": "1.0",
+      "language": "es",
+      "isActive": true,
+      "deviceId": "6889cf61cdcf450c",
+      "platform": "Android",
+      "manufacturer": "HONOR",
+      "uid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "androidVersion": "14",
+      "model": "WDY-LX3",
+      "isTokenValid": true,
+      "fcmToken": "efmw3yDmSz2WsmqrthUxOL:APA91bFd7CoRCLMih60t91hmyT5lJw5y7i3tOpsy5_3rD1wcA45DSKOjc70ETHXyJfG8uxMoetXjTx7NKDOjgFPkedCqENgZC44VEL2faRAL6_tKaZon1Ps",
+      "email": "fritonic@gmail.com",
+      "lastActiveAt": {
+        "_seconds": 1786849356,
+        "_nanoseconds": 385000000
+      },
+      "role": "business",
+      "lastTokenUpdate": {
+        "_seconds": 1786849356,
+        "_nanoseconds": 385000000
+      },
+      "updatedAt": {
+        "_seconds": 1786849356,
+        "_nanoseconds": 385000000
+      }
+    },
+    {
+      "id": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2_bd6fa724ce05f994",
+      "deviceType": "Smartphone",
+      "country": "NI",
+      "appVersion": "1.0",
+      "language": "es",
+      "deviceId": "bd6fa724ce05f994",
+      "platform": "Android",
+      "manufacturer": "samsung",
+      "uid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "androidVersion": "16",
+      "model": "SM-F946U1",
+      "isTokenValid": true,
+      "email": "fritonic@gmail.com",
+      "tokenStatus": "invalid",
+      "lastCleanedAt": {
+        "_seconds": 1786901669,
+        "_nanoseconds": 108000000
+      },
+      "isActive": true,
+      "fcmToken": "frp0DCIsS96jkcK6eT-CzU:APA91bGg2S0M8F1r9zgeLvgpekcNUGyT6ikxWFfnyx-B9WmSg80Vvo-YJ_Oi-eDpYOJVfCpUchkrDH-UJcDD0FMEoUJljrF2xTNbT12gxOqWjVdevrfFpX0",
+      "role": "business",
+      "lastActiveAt": {
+        "_seconds": 1786917385,
+        "_nanoseconds": 943000000
+      },
+      "lastTokenUpdate": {
+        "_seconds": 1786917385,
+        "_nanoseconds": 943000000
+      },
+      "updatedAt": {
+        "_seconds": 1786917385,
+        "_nanoseconds": 943000000
+      }
+    },
+    {
+      "id": "h00PIZpMgxSaqSVnYpRLPq0DYGC3_bd6fa724ce05f994",
+      "deviceType": "Smartphone",
+      "country": "NI",
+      "appVersion": "1.0",
+      "role": "customer",
+      "language": "es",
+      "isActive": true,
+      "deviceId": "bd6fa724ce05f994",
+      "platform": "Android",
+      "manufacturer": "samsung",
+      "uid": "h00PIZpMgxSaqSVnYpRLPq0DYGC3",
+      "androidVersion": "16",
+      "model": "SM-F946U1",
+      "isTokenValid": true,
+      "email": "itedvirtual@gmail.com",
+      "fcmToken": "eMu_7eU3S1-vpnU-BW9q1F:APA91bE-MIccWRQ7HFDzzTTuxfZH2ap5S7akZM15MQMzdyxDv1v0EnP_unegv0ci40PdtsvvBfWc8ktIYfjmVJDqliNEddr31lseiEDPkMKnVv54OZUh7oU",
+      "lastActiveAt": {
+        "_seconds": 1786985941,
+        "_nanoseconds": 179000000
+      },
+      "lastTokenUpdate": {
+        "_seconds": 1786985941,
+        "_nanoseconds": 179000000
+      },
+      "updatedAt": {
+        "_seconds": 1786985941,
+        "_nanoseconds": 179000000
+      }
+    },
+    {
+      "id": "user_smoke_phase3_2_dev1",
+      "uid": "user_smoke_phase3_2",
+      "deviceId": "dev1",
+      "fcmToken": "token_smoke_test_dev1_12345678901234567890",
+      "isActive": true,
+      "role": "customer"
+    },
+    {
+      "id": "user_smoke_phase3_2_dev2",
+      "uid": "user_smoke_phase3_2",
+      "deviceId": "dev2",
+      "fcmToken": "token_smoke_test_dev2_12345678901234567890",
+      "isActive": true,
+      "role": "customer"
+    }
+  ],
+  "legacyDevices": [],
+  "organizations": [
+    {
+      "id": "1b485c29-b7e3-4173-a4fd-36f8bb4ec1e8",
+      "orgId": "1b485c29-b7e3-4173-a4fd-36f8bb4ec1e8",
+      "name": "Grupo Flores",
+      "legalName": "Grupo Flores",
+      "ruc": "J031003403434",
+      "ownerUid": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "businessIds": [
+        "bbb760d5-a8f3-4700-9a96-f58f11f345ac"
+      ],
+      "status": "ACTIVE",
+      "createdAt": {
+        "_seconds": 1786841737,
+        "_nanoseconds": 569000000
+      },
+      "updatedAt": {
+        "_seconds": 1786841737,
+        "_nanoseconds": 569000000
+      }
+    },
+    {
+      "id": "75b145e5-17ec-4248-a085-c962a408db86",
+      "orgId": "75b145e5-17ec-4248-a085-c962a408db86",
+      "name": "Grupo Flores",
+      "legalName": "Grupo Flores",
+      "ruc": "J031000000",
+      "ownerUid": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "businessIds": [
+        "e7dc911e-e587-4be9-a741-7d9d9828011f"
+      ],
+      "status": "ACTIVE",
+      "createdAt": {
+        "_seconds": 1786719549,
+        "_nanoseconds": 817000000
+      },
+      "updatedAt": {
+        "_seconds": 1786719549,
+        "_nanoseconds": 817000000
+      }
+    },
+    {
+      "id": "org_default_bluesystem",
+      "legalName": "FRITONI S.A.",
+      "name": "FRITONI Holding",
+      "ownerUid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "orgId": "org_default_bluesystem",
+      "businessIds": [
+        "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2"
+      ],
+      "status": "ACTIVE",
+      "updatedAt": {
+        "_seconds": 1786999027,
+        "_nanoseconds": 260000000
+      }
+    }
+  ]
+}

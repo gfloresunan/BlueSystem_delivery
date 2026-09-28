@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-08-16T17:33:39.583Z",
+  "mode": "STRICT_READ_ONLY_DRY_RUN",
+  "totalIdentities": 41,
+  "authStatus": "BLOCKED",
+  "breakdown": {
+    "KEEP": 4,
+    "REMEDIATE": 23,
+    "LINK": 5,
+    "REVIEW": 9,
+    "ARCHIVE_CANDIDATE": 0,
+    "DELETE_CANDIDATE": 0
+  },
+  "proposedNormalizations": 32,
+  "proposedLinks": 2,
+  "blockedChanges": 0,
+  "protectedIdentities": 41,
+  "mutationsSummary": {
+    "firestoreWrites": 0,
+    "firestoreDeletes": 0,
+    "authMutations": 0,
+    "storageMutations": 0
+  }
+}

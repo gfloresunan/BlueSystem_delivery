@@ -1,0 +1,4 @@
+<resources>
+    <!-- Flavor Enterprise Fitoni: Tenant 01 Reference Commercial Identity -->
+    <string name="flavor_profile">enterpriseFitoni</string>
+</resources>

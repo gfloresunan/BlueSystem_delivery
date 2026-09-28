@@ -41,3 +41,19 @@ flutter_client/ios/Flutter/Flutter.framework
 flutter_client/ios/Flutter/Flutter.podspec
 flutter_client/ios/Flutter/ephemeral/
 flutter_client/ios/Flutter/flutter_export_environment.sh
+# Ignorar dependencias y compilados en CUALQUIER nivel
+**/node_modules/
+**/build/
+**/.dart_tool/
+**/.gradle/
+**/android/.gradle/
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/ephemeral/
+**/.idea/
+**/.vscode/
+
+# Archivos de entorno y logs
+**/*.log
+**/.env*
+functions/.runtimeconfig.json

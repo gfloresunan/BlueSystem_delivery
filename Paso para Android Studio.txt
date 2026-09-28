@@ -1,0 +1,29 @@
+Paso para Android Studio
+1)File
+   ↓
+Sync Project with Gradle Files
+2)Build → Clean Project
+3)Selecciona app
+4)Pulsa ▶ Run
+
+npx firebase-tools deploy --only hosting
+package_name:com.aistudio.delivery.djweq
+
+Sprint 13B.6 (Promociones Dinámicas, Descuentos & Cross-Selling Engine)
+
+Sprint 14.5
+
+Enterprise SDK
+
+Empaquetar toda la infraestructura creada:
+
+Configuration Registry
+Event Bus
+Feature Flags
+Policy Engine
+Health Monitor
+Observability
+Enterprise Communication Platform
+
+como un SDK reutilizable.
+

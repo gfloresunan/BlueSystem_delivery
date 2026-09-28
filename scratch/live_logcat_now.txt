@@ -1,0 +1,18 @@
+﻿
+08-20 10:27:59.591 22604 22622 D InputTransport: Input channel destroyed: 'ClientS', fd=206
+08-20 10:28:03.737  3004  3653 I InputDispatcher: Delivering touch to (22604): action: 0x0, f=0x0, d=0, 'de15ab1', t=1 
+08-20 10:28:03.740 22604 22604 I VRI[MainActivity]@4c99e22: ViewPostIme pointer 0
+08-20 10:28:03.747 22604 22604 I VRI[MainActivity]@4c99e22: call setFrameRateCategory for touch hint category=high 
+hint, reason=touch, vri=VRI[MainActivity]@4c99e22
+08-20 10:28:03.755  1944  1944 I SurfaceFlinger: [com.aistudio.delivery.djweq/com.example.MainActivity$_22604#5066] 
+setFrameRateCategory: HighHint
+08-20 10:28:03.852  3004  3653 I InputDispatcher: Delivering touch to (22604): action: 0x1, f=0x0, d=0, 'de15ab1', t=1 
+08-20 10:28:03.856 22604 22604 I VRI[MainActivity]@4c99e22: ViewPostIme pointer 1
+08-20 10:28:06.866 22604 22604 I VRI[MainActivity]@4c99e22: call setFrameRateCategory for touch hint category=no 
+preference, reason=boost timeout, vri=VRI[MainActivity]@4c99e22
+08-20 10:28:06.875  1944  1944 I SurfaceFlinger: [com.aistudio.delivery.djweq/com.example.MainActivity$_22604#5066] 
+setFrameRateCategory: NoPreference
+08-20 10:28:11.176 22604 22663 I TRuntime.CctTransportBackend: Making request to: 
+https://firebaselogging-pa.googleapis.com/v1/firelog/legacy/batchlog
+
+

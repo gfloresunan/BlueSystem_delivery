@@ -1,0 +1,50 @@
+{
+  "operationId": "op_reconcile_fritoni_1787013877616",
+  "timestamp": "2026-08-18T00:44:41.170Z",
+  "targetUid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+  "before": {
+    "uid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+    "email": "fritoni@gmail.com",
+    "firestore": {
+      "role": "business",
+      "status": "ACTIVE",
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "branchId": "br_1786988052589",
+      "orgId": "org_default_bluesystem",
+      "tenantId": null
+    },
+    "auth": {
+      "disabled": false,
+      "customClaims": {
+        "role": "MERCHANT_OWNER",
+        "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+        "orgId": "org_default_bluesystem",
+        "branchId": "br_1786988052589",
+        "tenantId": null
+      }
+    }
+  },
+  "after": {
+    "uid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+    "email": "fritoni@gmail.com",
+    "firestore": {
+      "role": "business",
+      "status": "ACTIVE",
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "branchId": "br_1786988052589",
+      "orgId": "org_default_bluesystem",
+      "tenantId": null
+    },
+    "auth": {
+      "disabled": false,
+      "customClaims": {
+        "role": "OWNER",
+        "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+        "branchId": "br_1786988052589",
+        "orgId": "org_default_bluesystem",
+        "tenantId": null
+      }
+    }
+  },
+  "result": "PASS"
+}

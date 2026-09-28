@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BlueSystem Delivery Enterprise — Plataforma Omnicanal de Delivery, Flotas y Comercio</title>
+  <meta name="description" content="Plataforma Omnicanal de Delivery, Gestión de Flotas y Control Tower Enterprise. Arquitectura Multi-Tenant, White-Label y SSOT en la nube." />
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2338BDF8'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" />
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#F0F9FF',
+              100: '#E0F2FE',
+              400: '#38BDF8',
+              500: '#0EA5E9',
+              600: '#0284C7',
+              700: '#0369A1',
+              900: '#0C4A6E',
+            },
+            dark: {
+              950: '#070B14',
+              900: '#0B0F19',
+              850: '#0F172A',
+              800: '#1E293B',
+              700: '#334155',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #070B14;
+      color: #E2E8F0;
+      font-family: 'Inter', sans-serif;
+    }
+    .glow-blue {
+      box-shadow: 0 0 50px -10px rgba(56, 189, 248, 0.25);
+    }
+    .glow-indigo {
+      box-shadow: 0 0 50px -10px rgba(99, 102, 241, 0.25);
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card-hover:hover {
+      border-color: rgba(56, 189, 248, 0.35);
+      transform: translateY(-4px);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #FFFFFF 0%, #38BDF8 50%, #818CF8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+</head>
+<body class="bg-dark-950 text-slate-200 antialiased selection:bg-brand-500 selection:text-white">
+
+  <!-- BACKGROUND DECORATIONS -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-brand-500/10 rounded-full blur-[140px]"></div>
+    <div class="absolute top-[40%] -left-40 w-[600px] h-[600px] bg-indigo-600/10 rounded-full blur-[160px]"></div>
+    <div class="absolute bottom-20 -right-40 w-[600px] h-[600px] bg-cyan-500/10 rounded-full blur-[160px]"></div>
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b08_1px,transparent_1px),linear-gradient(to_bottom,#1e293b08_1px,transparent_1px)] bg-[size:4rem_4rem]"></div>
+  </div>
+
+  <!-- NAVIGATION HEADER -->
+  <header class="fixed top-0 inset-x-0 z-50 bg-dark-950/80 backdrop-blur-xl border-b border-white/5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <!-- Logo -->
+      <a href="/" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-brand-500/20 group-hover:scale-105 transition">
+          <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <div>
+          <span class="font-display font-extrabold text-xl tracking-tight text-white flex items-center gap-2">
+            BlueSystem <span class="text-brand-400 font-medium">Delivery</span>
+          </span>
+          <span class="text-[10px] font-mono text-slate-400 uppercase tracking-widest block -mt-1">Enterprise Platform v2.2</span>
+        </div>
+      </a>
+
+      <!-- Desktop Nav Links -->
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
+        <a href="#soluciones" class="hover:text-brand-400 transition">Soluciones</a>
+        <a href="#caracteristicas" class="hover:text-brand-400 transition">Control Tower</a>
+        <a href="#whitelabel" class="hover:text-brand-400 transition">Multi-Tenant</a>
+        <a href="#planes" class="hover:text-brand-400 transition">Planes</a>
+        <a href="#contacto" class="hover:text-brand-400 transition">Contacto</a>
+      </nav>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-3">
+        <a href="https://comercio.bluesystemdelivery.com" class="hidden sm:inline-flex text-xs font-bold text-slate-200 bg-dark-800 hover:bg-dark-700 px-4 py-2.5 rounded-xl border border-white/10 transition shadow">
+          Portal Comercio
+        </a>
+        <a href="https://registro.bluesystemdelivery.com" class="text-xs font-bold text-dark-950 bg-gradient-to-r from-brand-400 to-cyan-300 hover:brightness-110 px-4 py-2.5 rounded-xl shadow-lg shadow-brand-500/20 transition flex items-center gap-1.5">
+          <span>Afiliar mi Negocio</span>
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="relative z-10 pt-28">
+
+    <!-- HERO SECTION -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center">
+      <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-semibold mb-8 animate-pulse">
+        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+        Arquitectura Canónica Enterprise 2026 · Zero Regressions
+      </div>
+
+      <h1 class="font-display text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight max-w-5xl mx-auto leading-[1.1]">
+        La Infraestructura Definitiva de <span class="gradient-text">Delivery, Flotas y Comercio</span>
+      </h1>
+
+      <p class="mt-6 text-lg sm:text-xl text-slate-400 max-w-3xl mx-auto leading-relaxed">
+        Plataforma unificada <strong class="text-slate-200">One Core / Multi-Tenant / White-Label</strong> para despachos inmediatos X→Y, gestión de catálogos comerciales, ruteo GPS de motorizados y torre de control en tiempo real.
+      </p>
+
+      <!-- Hero Action CTAs -->
+      <div class="mt-10 flex flex-wrap justify-center gap-4">
+        <a href="https://registro.bluesystemdelivery.com" class="px-8 py-4 rounded-2xl bg-gradient-to-r from-brand-500 to-indigo-600 text-white font-bold text-sm shadow-xl shadow-brand-500/25 hover:scale-[1.02] transition flex items-center gap-2">
+          <span>Afiliar Comercio o Restaurante</span>
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </a>
+        <a href="https://registro.bluesystemdelivery.com/courier" class="px-8 py-4 rounded-2xl bg-dark-800 hover:bg-dark-700 text-slate-100 font-bold text-sm border border-white/10 hover:border-brand-500/30 transition flex items-center gap-2">
+          <span>Registrarse como Repartidor</span>
+        </a>
+        <a href="https://comercio.bluesystemdelivery.com" class="px-8 py-4 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-sm border border-emerald-500/20 transition flex items-center gap-2">
+          <span>Ingreso a Comercio Web</span>
+        </a>
+      </div>
+
+      <!-- Quick Metrics Bar -->
+      <div class="mt-16 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+        <div class="glass-card p-5 rounded-2xl text-center">
+          <p class="text-3xl font-display font-extrabold text-white">0 ms</p>
+          <p class="text-xs font-medium text-slate-400 mt-1">Costo de APIs de Mapas (0 Map Cost)</p>
+        </div>
+        <div class="glass-card p-5 rounded-2xl text-center">
+          <p class="text-3xl font-display font-extrabold text-brand-400">100%</p>
+          <p class="text-xs font-medium text-slate-400 mt-1">Aislamiento Multi-Tenant EIAM</p>
+        </div>
+        <div class="glass-card p-5 rounded-2xl text-center">
+          <p class="text-3xl font-display font-extrabold text-emerald-400">5 seg</p>
+          <p class="text-xs font-medium text-slate-400 mt-1">Frescura de Telemetría GPS</p>
+        </div>
+        <div class="glass-card p-5 rounded-2xl text-center">
+          <p class="text-3xl font-display font-extrabold text-indigo-400">SSOT</p>
+          <p class="text-xs font-medium text-slate-400 mt-1">Firestore Cloud Native Backend</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ENTRY POINTS CANONICAL OVERVIEW -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <span class="text-xs font-bold text-brand-400 uppercase tracking-widest">Ecosistema Canónico Oficial</span>
+        <h2 class="text-3xl font-display font-black text-white mt-2">Puntos de Acceso Canónicos</h2>
+        <p class="text-slate-400 text-sm mt-2">Múltiples interfaces operativas especializadas gobernadas por un único núcleo transaccional en la nube.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Card 1: Comercio -->
+        <div class="glass-card glass-card-hover p-8 rounded-3xl relative overflow-hidden flex flex-col justify-between">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-brand-500/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div>
+            <div class="w-12 h-12 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-400 flex items-center justify-center text-2xl mb-6">
+              🏪
+            </div>
+            <span class="text-[10px] font-mono font-bold text-brand-400 uppercase tracking-wider bg-brand-500/10 px-2.5 py-1 rounded-md border border-brand-500/20">comercio.bluesystemdelivery.com</span>
+            <h3 class="text-xl font-display font-bold text-white mt-3">Portal de Comercio (Merchant Web)</h3>
+            <p class="text-slate-400 text-xs mt-3 leading-relaxed">
+              Centro operativo para restaurantes y comercios: recepción de pedidos en tiempo real, gestión de catálogo dinámico, promociones, liquidación financiera diaria y torre de control de despachos.
+            </p>
+          </div>
+          <div class="mt-8 pt-6 border-t border-white/5">
+            <a href="https://comercio.bluesystemdelivery.com" class="inline-flex items-center gap-2 text-xs font-bold text-brand-400 hover:text-brand-300">
+              <span>Abrir Portal de Comercio</span>
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 2: Registro -->
+        <div class="glass-card glass-card-hover p-8 rounded-3xl relative overflow-hidden flex flex-col justify-between">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-cyan-500/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div>
+            <div class="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center text-2xl mb-6">
+              📝
+            </div>
+            <span class="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider bg-cyan-500/10 px-2.5 py-1 rounded-md border border-cyan-500/20">registro.bluesystemdelivery.com</span>
+            <h3 class="text-xl font-display font-bold text-white mt-3">Portal de Registro & Onboarding</h3>
+            <p class="text-slate-400 text-xs mt-3 leading-relaxed">
+              Flujo unificado y sin fricción de solicitud de afiliación comercial y postulación de motorizados. Carga segura de documentos legales, georreferenciación y validación automática de identidad.
+            </p>
+          </div>
+          <div class="mt-8 pt-6 border-t border-white/5">
+            <a href="https://registro.bluesystemdelivery.com" class="inline-flex items-center gap-2 text-xs font-bold text-cyan-400 hover:text-cyan-300">
+              <span>Iniciar Solicitud de Registro</span>
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 3: Admin -->
+        <div class="glass-card glass-card-hover p-8 rounded-3xl relative overflow-hidden flex flex-col justify-between">
+          <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div>
+            <div class="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-2xl mb-6">
+              🔐
+            </div>
+            <span class="text-[10px] font-mono font-bold text-indigo-400 uppercase tracking-wider bg-indigo-500/10 px-2.5 py-1 rounded-md border border-indigo-500/20">admin.bluesystemdelivery.com</span>
+            <h3 class="text-xl font-display font-bold text-white mt-3">Administración Enterprise</h3>
+            <p class="text-slate-400 text-xs mt-3 leading-relaxed">
+              Consola maestra de gobernanza, aprobación de solicitudes comerciales, gestión de roles EIAM v2.1/v3, auditoría financiera inmutable, mapa global en vivo 4K y configuración de White-Label.
+            </p>
+          </div>
+          <div class="mt-8 pt-6 border-t border-white/5">
+            <a href="https://admin.bluesystemdelivery.com" class="inline-flex items-center gap-2 text-xs font-bold text-indigo-400 hover:text-indigo-300">
+              <span>Acceso Administrativo</span>
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CORE FEATURES & SOLUTIONS -->
+    <section id="soluciones" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-bold text-brand-400 uppercase tracking-widest">Capacidades de Vanguardia</span>
+        <h2 class="text-3xl sm:text-4xl font-display font-black text-white mt-2">Módulos Operacionales Integrados</h2>
+        <p class="text-slate-400 text-sm mt-3">Cada módulo responde a un estándar de ingeniería blindado y libre de mutaciones imprevistas.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Feature 1 -->
+        <div class="glass-card p-6 rounded-3xl">
+          <div class="text-3xl mb-4">📍</div>
+          <h3 class="text-lg font-bold text-white">Despacho Dinámico X→Y</h3>
+          <p class="text-slate-400 text-xs mt-2 leading-relaxed">
+            Motor de cotización Haversine con geocodificación nativa Android sin Places SDK redundante. Tarifa base automatizada con desglose de distancia real y verificación de Safe Area.
+          </p>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="glass-card p-6 rounded-3xl">
+          <div class="text-3xl mb-4">🛰️</div>
+          <h3 class="text-lg font-bold text-white">Control Tower Leaflet Voyager</h3>
+          <p class="text-slate-400 text-xs mt-2 leading-relaxed">
+            Cartografía web inmutable sin costo recurrente de API. Diffing GPS de couriers con suscripciones individuales acotadas e historial de ruta en tiempo real.
+          </p>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="glass-card p-6 rounded-3xl">
+          <div class="text-3xl mb-4">🛡️</div>
+          <h3 class="text-lg font-bold text-white">Seguridad EIAM v2.1/v3</h3>
+          <p class="text-slate-400 text-xs mt-2 leading-relaxed">
+            Claims criptográficos JWT verificados a nivel de Firestore Rules. Bloqueo estricto de accesos cruzados y aislamiento atómico por Tenant, Empresa y Sucursal.
+          </p>
+        </div>
+
+        <!-- Feature 4 -->
+        <div class="glass-card p-6 rounded-3xl">
+          <div class="text-3xl mb-4">💵</div>
+          <h3 class="text-lg font-bold text-white">Control de Caja y Liquidación Courier</h3>
+          <p class="text-slate-400 text-xs mt-2 leading-relaxed">
+            Arqueo de efectivo diario, libro mayor inmutable, retención de comisiones de plataforma y exportación de recibos PDF con hash de verificación.
+          </p>
+        </div>
+
+        <!-- Feature 5 -->
+        <div class="glass-card p-6 rounded-3xl">
+          <div class="text-3xl mb-4">🎨</div>
+          <h3 class="text-lg font-bold text-white">White-Label & Branding Dinámico</h3>
+          <p class="text-slate-400 text-xs mt-2 leading-relaxed">
+            Capacidad de asociar subdominios de tenant (`empresa.bluesystemdelivery.com`) o dominios propios (`empresa.com`) con temas visuales y logos personalizados sin bifurcar código.
+          </p>
+        </div>
+
+        <!-- Feature 6 -->
+        <div class="glass-card p-6 rounded-3xl">
+          <div class="text-3xl mb-4">⚡</div>
+          <h3 class="text-lg font-bold text-white">Offline-First & Transacciones Atómicas</h3>
+          <p class="text-slate-400 text-xs mt-2 leading-relaxed">
+            Lógica resiliente ante pérdida de conectividad, sincronización segura en reconexión y transacciones `runTransaction` que impiden dobles asignaciones.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PLANS & PRICING -->
+    <section id="planes" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 border-t border-white/5">
+      <div class="text-center max-w-3xl mx-auto mb-16">
+        <span class="text-xs font-bold text-brand-400 uppercase tracking-widest">Suscripciones y Despliegue</span>
+        <h2 class="text-3xl sm:text-4xl font-display font-black text-white mt-2">Planes Diseñados para Escalar</h2>
+        <p class="text-slate-400 text-sm mt-3">Desde comercios independientes hasta franquicias regionales multiciudad.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Starter Plan -->
+        <div class="glass-card p-8 rounded-3xl border border-white/10 flex flex-col justify-between">
+          <div>
+            <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Plan Inicial</span>
+            <h3 class="text-2xl font-display font-black text-white mt-1">Comercio Starter</h3>
+            <p class="text-slate-400 text-xs mt-2">Para restaurantes y tiendas locales que inician su operación de delivery.</p>
+            <div class="mt-6 flex items-baseline gap-1">
+              <span class="text-4xl font-display font-black text-white">$29</span>
+              <span class="text-xs text-slate-400">/mes</span>
+            </div>
+            <ul class="mt-6 space-y-3 text-xs text-slate-300">
+              <li class="flex items-center gap-2">✓ Portal Merchant Web en tiempo real</li>
+              <li class="flex items-center gap-2">✓ Catálogo digital y promociones</li>
+              <li class="flex items-center gap-2">✓ Flota compartida BlueSystem Courier</li>
+              <li class="flex items-center gap-2">✓ Reportes básicos de ventas</li>
+            </ul>
+          </div>
+          <div class="mt-8 pt-6 border-t border-white/5">
+            <a href="https://registro.bluesystemdelivery.com" class="block text-center w-full py-3 rounded-xl bg-dark-800 hover:bg-dark-700 text-white font-bold text-xs border border-white/10 transition">
+              Afiliar Comercio
+            </a>
+          </div>
+        </div>
+
+        <!-- Professional Plan (Featured) -->
+        <div class="glass-card p-8 rounded-3xl border-2 border-brand-500 glow-blue flex flex-col justify-between relative">
+          <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-brand-500 text-dark-950 text-[10px] font-black uppercase tracking-wider px-3.5 py-1 rounded-full shadow-lg">
+            Recomendado
+          </div>
+          <div>
+            <span class="text-xs font-bold text-brand-400 uppercase tracking-wider">Plan Profesional</span>
+            <h3 class="text-2xl font-display font-black text-white mt-1">Multi-Sucursal Pro</h3>
+            <p class="text-slate-400 text-xs mt-2">Para cadenas y comercios con múltiples sucursales y flota propia.</p>
+            <div class="mt-6 flex items-baseline gap-1">
+              <span class="text-4xl font-display font-black text-white">$89</span>
+              <span class="text-xs text-slate-400">/mes</span>
+            </div>
+            <ul class="mt-6 space-y-3 text-xs text-slate-200">
+              <li class="flex items-center gap-2">✓ Todo lo del plan Starter</li>
+              <li class="flex items-center gap-2">✓ Subdominio personalizado de marca</li>
+              <li class="flex items-center gap-2">✓ Control Tower de Flotas & Telemetría</li>
+              <li class="flex items-center gap-2">✓ Despacho X→Y automatizado</li>
+              <li class="flex items-center gap-2">✓ Centro de liquidación financiera diario</li>
+            </ul>
+          </div>
+          <div class="mt-8 pt-6 border-t border-white/5">
+            <a href="https://registro.bluesystemdelivery.com" class="block text-center w-full py-3 rounded-xl bg-brand-500 hover:bg-brand-400 text-dark-950 font-black text-xs shadow-lg shadow-brand-500/25 transition">
+              Comenzar Ahora
+            </a>
+          </div>
+        </div>
+
+        <!-- Enterprise Plan -->
+        <div class="glass-card p-8 rounded-3xl border border-white/10 flex flex-col justify-between">
+          <div>
+            <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider">Plan Corporativo</span>
+            <h3 class="text-2xl font-display font-black text-white mt-1">White-Label Enterprise</h3>
+            <p class="text-slate-400 text-xs mt-2">Para franquicias y operadores logísticos que requieren su propio ecosistema.</p>
+            <div class="mt-6 flex items-baseline gap-1">
+              <span class="text-4xl font-display font-black text-white">$249</span>
+              <span class="text-xs text-slate-400">/mes</span>
+            </div>
+            <ul class="mt-6 space-y-3 text-xs text-slate-300">
+              <li class="flex items-center gap-2">✓ Dominio FQDN propio (ej. delivery.tumarca.com)</li>
+              <li class="flex items-center gap-2">✓ Aplicaciones Customer y Courier con branding</li>
+              <li class="flex items-center gap-2">✓ Aislamiento multi-tenant garantizado</li>
+              <li class="flex items-center gap-2">✓ Soporte prioritario y SLA 99.9%</li>
+              <li class="flex items-center gap-2">✓ Integración con pasarelas de pago bancarias</li>
+            </ul>
+          </div>
+          <div class="mt-8 pt-6 border-t border-white/5">
+            <a href="#contacto" class="block text-center w-full py-3 rounded-xl bg-dark-800 hover:bg-dark-700 text-white font-bold text-xs border border-white/10 transition">
+              Solicitar Demo
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTACT & DEMO -->
+    <section id="contacto" class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+      <div class="glass-card p-8 sm:p-12 rounded-3xl border border-brand-500/20 text-center relative overflow-hidden">
+        <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-brand-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <h2 class="text-3xl font-display font-black text-white">¿Listo para transformar tu operación de delivery?</h2>
+        <p class="text-slate-400 text-sm mt-3 max-w-xl mx-auto">
+          Contacta a nuestro equipo de consultores enterprise para una demostración guiada del Control Tower y el ecosistema omnicanal.
+        </p>
+
+        <div class="mt-8 flex flex-wrap justify-center gap-4">
+          <a href="mailto:soporte@bluesystemdelivery.com?subject=Solicitud%20de%20Demo%20BlueSystem%20Delivery" class="px-8 py-4 rounded-2xl bg-brand-500 hover:bg-brand-400 text-dark-950 font-black text-xs shadow-lg shadow-brand-500/20 transition flex items-center gap-2">
+            <span>Contactar al Equipo Comercial</span>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <a href="https://registro.bluesystemdelivery.com" class="px-8 py-4 rounded-2xl bg-dark-800 hover:bg-dark-700 text-white font-bold text-xs border border-white/10 transition">
+            Crear Cuenta de Comercio
+          </a>
+        </div>
+        <p class="text-[11px] text-slate-500 mt-6">Email de soporte y gobernanza: soporte@bluesystemdelivery.com</p>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-white/5 bg-dark-950 relative z-10 py-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
+        <div>
+          <span class="font-display font-extrabold text-lg text-white">BlueSystem <span class="text-brand-400">Delivery</span></span>
+          <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+            Plataforma Enterprise de Delivery, Gestión de Flotas y Despacho en Tiempo Real.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider mb-3">Accesos Canónicos</h4>
+          <ul class="space-y-2 text-xs text-slate-400">
+            <li><a href="https://comercio.bluesystemdelivery.com" class="hover:text-brand-400 transition">Portal de Comercio</a></li>
+            <li><a href="https://registro.bluesystemdelivery.com" class="hover:text-brand-400 transition">Registro Comercios</a></li>
+            <li><a href="https://registro.bluesystemdelivery.com/courier" class="hover:text-brand-400 transition">Registro Repartidores</a></li>
+            <li><a href="https://admin.bluesystemdelivery.com" class="hover:text-brand-400 transition">Panel de Administración</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider mb-3">Plataforma</h4>
+          <ul class="space-y-2 text-xs text-slate-400">
+            <li><a href="#soluciones" class="hover:text-brand-400 transition">Despacho X→Y</a></li>
+            <li><a href="#caracteristicas" class="hover:text-brand-400 transition">Torre de Control</a></li>
+            <li><a href="#whitelabel" class="hover:text-brand-400 transition">White-Label & Multi-Tenant</a></li>
+            <li><a href="#planes" class="hover:text-brand-400 transition">Planes Comerciales</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="text-xs font-bold text-slate-200 uppercase tracking-wider mb-3">Gobernanza & Legal</h4>
+          <ul class="space-y-2 text-xs text-slate-400">
+            <li><a href="mailto:soporte@bluesystemdelivery.com" class="hover:text-brand-400 transition">Soporte Técnico</a></li>
+            <li><span class="text-slate-500">Términos de Servicio</span></li>
+            <li><span class="text-slate-500">Política de Privacidad</span></li>
+            <li><span class="text-slate-500">Seguridad EIAM v2.1</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="pt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        <p>© 2026 BlueSystem Delivery Enterprise. Todos los derechos reservados.</p>
+        <p class="font-mono text-[11px]">Canonical Baseline v2.2 · Zero Regressions</p>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,4 @@
+<resources>
+    <!-- Flavor Core: BlueSystem Delivery Baseline Identity -->
+    <string name="flavor_profile">core</string>
+</resources>

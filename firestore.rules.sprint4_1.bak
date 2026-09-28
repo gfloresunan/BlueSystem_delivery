@@ -1,0 +1,415 @@
+rules_version = '2';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BLUESYSTEM DELIVERY ENTERPRISE — Firestore Security Rules (EIAM v2.1)
+// Enterprise Identity & Access Management
+//
+// Estrategia de seguridad EIAM v2.1:
+//   1. Custom Claims (role, businessId, branchId, orgId) del token JWT
+//   2. Validación estricta: resource.data.businessId == request.auth.token.businessId
+//   3. Soporte para estructura de Holding: /organizations/{orgId}
+//   4. Ningún usuario puede leer o escribir datos de otro tenant
+//   5. Plataforma ADMIN tiene acceso de lectura/auditoría global
+//
+// DESPLIEGUE: firebase deploy --only firestore:rules
+// ═══════════════════════════════════════════════════════════════════════════════
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helpers ─────────────────────────────────────────────────────────────
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAppCheckVerified() {
+      // App Check token validation (Play Integrity / reCAPTCHA Enterprise)
+      return request.auth != null && (request.auth.token.firebase.get("app_check", false) == true || request.auth.token.get("app_check", false) == true);
+    }
+
+    function currentUid() {
+      return request.auth.uid;
+    }
+
+    function getRole() {
+      return request.auth.token.get("role", "GUEST");
+    }
+
+    function getBusinessId() {
+      return request.auth.token.get("businessId", null);
+    }
+
+    function getBranchId() {
+      return request.auth.token.get("branchId", null);
+    }
+
+    function getOrgId() {
+      return request.auth.token.get("orgId", null);
+    }
+
+    // Roles de plataforma con acceso global
+    function isPlatformAdmin() {
+      return isAuthenticated() && (
+        getRole() in ["SUPER_ADMIN", "ADMIN", "AUDITOR", "SUPPORT", "super_admin", "admin", "auditor", "support"] ||
+        request.auth.token.get("admin", false) == true ||
+        request.auth.token.get("isSuperAdmin", false) == true
+      );
+    }
+
+    function isSuperAdmin() {
+      return getRole() in ["SUPER_ADMIN", "super_admin"];
+    }
+
+    // Roles con capacidad de gestionar empleados/sucursales
+    function isBusinessAdmin() {
+      return getRole() in ["OWNER", "MANAGER"];
+    }
+
+    // Cualquier staff del comercio
+    function isBusinessStaff() {
+      return getRole() in ["OWNER", "MANAGER", "SUPERVISOR", "CASHIER", "COOK"];
+    }
+
+    // Valida que el businessId del claim coincide exactamente con el recurso
+    function ownsBusiness(resourceBusinessId) {
+      return isPlatformAdmin() || (getBusinessId() != null && getBusinessId() == resourceBusinessId);
+    }
+
+    // Valida que los escrituras tengan businessId coherente con el token JWT
+    function isWritingOwnBusinessId() {
+      return isPlatformAdmin() || (request.resource.data.businessId == getBusinessId());
+    }
+
+    // ─── /organizations/{orgId} (EIAM v2.1) ─────────────────────────────────
+    match /organizations/{orgId} {
+      allow read: if isAuthenticated() &&
+                     (isPlatformAdmin() || getOrgId() == orgId || resource.data.ownerUid == currentUid());
+
+      allow create, update: if isAuthenticated() &&
+                               (isPlatformAdmin() || resource.data.ownerUid == currentUid());
+
+      allow delete: if isSuperAdmin();
+    }
+
+    // ─── /users/{uid} ────────────────────────────────────────────────────────
+    match /users/{uid} {
+      allow read: if isAuthenticated() &&
+                     (currentUid() == uid || isPlatformAdmin());
+
+      allow update: if isAuthenticated() &&
+                       currentUid() == uid &&
+                       !request.resource.data.diff(resource.data).affectedKeys()
+                         .hasAny(["role", "userType", "rol", "eiamRole", "isActive"]);
+
+      allow create: if isAuthenticated() && currentUid() == uid;
+      allow delete: if isSuperAdmin();
+
+      match /role_history/{historyId} {
+        allow read: if isAuthenticated() &&
+                       (currentUid() == uid || isPlatformAdmin());
+        allow write: if isPlatformAdmin();
+      }
+
+      match /preferences/{doc} {
+        allow read, write: if isAuthenticated() && currentUid() == uid;
+      }
+
+      match /notificationSettings/{doc} {
+        allow read, write: if isAuthenticated() && currentUid() == uid;
+      }
+
+      match /shoppingCart/{doc} {
+        allow read, write: if isAuthenticated() && currentUid() == uid;
+      }
+
+      match /favorites/{doc} {
+        allow read, write: if isAuthenticated() && currentUid() == uid;
+      }
+
+      match /addresses/{addressId} {
+        allow read, write: if isAuthenticated() && currentUid() == uid;
+      }
+
+      match /devices/{deviceId} {
+        allow read, write: if isAuthenticated() && currentUid() == uid;
+      }
+    }
+
+    // ─── /businesses/{businessId} ────────────────────────────────────────────
+    match /businesses/{businessId} {
+      allow read: if isAuthenticated() &&
+                     (isPlatformAdmin() || ownsBusiness(businessId));
+
+      allow write: if isAuthenticated() &&
+                      isWritingOwnBusinessId() &&
+                      (isPlatformAdmin() || isBusinessAdmin());
+
+      allow delete: if isSuperAdmin();
+    }
+
+    // ─── /branches/{branchId} ────────────────────────────────────────────────
+    match /branches/{branchId} {
+      allow read: if isAuthenticated() &&
+                     (isPlatformAdmin() ||
+                      (isBusinessStaff() && resource.data.businessId == getBusinessId()));
+
+      allow write: if isAuthenticated() &&
+                      isWritingOwnBusinessId() &&
+                      (isPlatformAdmin() || isBusinessAdmin());
+
+      allow delete: if isAuthenticated() &&
+                       (isSuperAdmin() || getRole() == "OWNER");
+    }
+
+    // ─── /membership/{membershipId} ──────────────────────────────────────────
+    match /membership/{membershipId} {
+      allow read: if isAuthenticated() &&
+                     (currentUid() == resource.data.uid ||
+                      ownsBusiness(resource.data.businessId) ||
+                      isPlatformAdmin());
+
+      allow create, update: if isAuthenticated() &&
+                                isWritingOwnBusinessId() &&
+                                (isPlatformAdmin() || isBusinessAdmin());
+
+      allow delete: if isAuthenticated() &&
+                       (isSuperAdmin() || getRole() == "OWNER");
+    }
+
+    // ─── /employees/{employeeId} ─────────────────────────────────────────────
+    match /employees/{employeeId} {
+      allow read: if isAuthenticated() &&
+                     (currentUid() == resource.data.uid ||
+                      ownsBusiness(resource.data.businessId) ||
+                      isPlatformAdmin());
+
+      allow create, update: if isAuthenticated() &&
+                               isWritingOwnBusinessId() &&
+                               (isPlatformAdmin() || isBusinessAdmin());
+
+      allow delete: if isAuthenticated() &&
+                       (isSuperAdmin() || getRole() in ["OWNER", "ADMIN"]);
+    }
+
+    // ─── /invitations/{token} ────────────────────────────────────────────────
+    match /invitations/{token} {
+      // Permitir lectura individual (get) por token ID para el flujo público de validación de invitación (accept-invite)
+      allow get: if true;
+
+      // Restringir el escaneo coleccional (list) exclusivamente a Platform Admin y Business Admin de su propio tenant
+      allow list: if isAuthenticated() &&
+                     (isPlatformAdmin() ||
+                      (isBusinessAdmin() && resource.data.businessId == getBusinessId()));
+
+      allow create: if isAuthenticated() && isBusinessAdmin() && isWritingOwnBusinessId();
+
+      allow update: if isAuthenticated() && (
+                       // Business Admin de plataforma o tenant para gestionar la invitación
+                       (isWritingOwnBusinessId() && (isPlatformAdmin() || isBusinessAdmin())) ||
+                       // Usuario que acepta la invitación: debe estar PENDING, acceptedByUid debe ser el currentUid(), el estado pasa a ACCEPTED
+                       // Y SOLO se permite modificar los campos de aceptación legítimos (acceptedByUid, status, acceptedAt) mediante lista blanca
+                       (resource.data.status == "PENDING" &&
+                        request.resource.data.get("acceptedByUid", "") == currentUid() &&
+                        request.resource.data.get("status", "") == "ACCEPTED" &&
+                        request.resource.data.diff(resource.data).affectedKeys()
+                          .hasOnly(["acceptedByUid", "status", "acceptedAt"]))
+                     );
+
+      allow delete: if isAuthenticated() && (isPlatformAdmin() || isBusinessAdmin());
+    }
+
+    // ─── /sessions/{sessionId} ───────────────────────────────────────────────
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated() &&
+                     (currentUid() == resource.data.uid || isPlatformAdmin());
+
+      allow write: if isAuthenticated() && currentUid() == resource.data.uid;
+
+      allow update: if isAuthenticated() && isPlatformAdmin();
+    }
+
+    // ─── /devices/{deviceId} ─────────────────────────────────────────────────
+    match /devices/{deviceId} {
+      allow read: if isAuthenticated() &&
+                     (resource == null || resource.data.uid == currentUid() || isPlatformAdmin());
+
+      allow create, update: if isAuthenticated() &&
+                               (request.resource.data.uid == currentUid() || isPlatformAdmin());
+
+      allow delete: if isAuthenticated() &&
+                       (resource.data.uid == currentUid() || isSuperAdmin());
+    }
+
+    // ─── /user_devices/{deviceDocId} ─────────────────────────────────────────
+    match /user_devices/{deviceDocId} {
+      allow read: if isAuthenticated() &&
+                     (resource == null || resource.data.uid == currentUid() || isPlatformAdmin());
+
+      allow create, update: if isAuthenticated() &&
+                               (request.resource.data.uid == currentUid() || isPlatformAdmin());
+
+      allow delete: if isAuthenticated() &&
+                       (resource.data.uid == currentUid() || isPlatformAdmin());
+    }
+
+    // ─── /orders/{orderId} ───────────────────────────────────────────────────
+    match /orders/{orderId} {
+      allow read: if isAuthenticated() &&
+                     (currentUid() == resource.data.customerId ||
+                      currentUid() == resource.data.clienteId ||
+                      ownsBusiness(resource.data.businessId) ||
+                      currentUid() == resource.data.assignedCourierId ||
+                      currentUid() == resource.data.motorizadoId ||
+                      isPlatformAdmin());
+
+      allow create: if isAuthenticated() && (
+                       // Cliente creando pedido para sí mismo con estado inicial válido (sin inyección de campos del servidor/financieros)
+                       (((request.resource.data.get("customerId", "") == currentUid() ||
+                          request.resource.data.get("clienteId", "") == currentUid())) &&
+                        request.resource.data.get("status", "pending") in ["pending", "draft", "created"] &&
+                        !request.resource.data.keys().hasAny(["assignedCourierId", "motorizadoId", "deliveredAt", "completedAt", "paymentStatus", "commission", "deliveryFee"])) ||
+                       // Personal de comercio creando pedido manual para su propio negocio
+                       (isWritingOwnBusinessId() && (isBusinessAdmin() || isBusinessStaff())) ||
+                       // Platform Admin
+                       isPlatformAdmin()
+                     );
+
+      allow update: if isAuthenticated() && (
+                       // Platform Admin: Modificación completa
+                       isPlatformAdmin() ||
+                       // Merchant Admin (OWNER/MANAGER): Puede modificar campos operativos pero NO campos de identidad ni financieros (customerId, clienteId, businessId, createdAt, subtotal, total, commission, deliveryFee, paymentStatus)
+                       (ownsBusiness(resource.data.businessId) && isBusinessAdmin() &&
+                        !request.resource.data.diff(resource.data).affectedKeys().hasAny(["customerId", "clienteId", "businessId", "createdAt", "subtotal", "total", "commission", "deliveryFee", "paymentStatus"])) ||
+                       // Personal de comercio (CASHIER, COOK, SUPERVISOR): Solo puede actualizar estado, historial y notas de cocina
+                       (ownsBusiness(resource.data.businessId) && isBusinessStaff() &&
+                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "estado", "historialEstados", "notasCocina", "preparadoAt"])) ||
+                       // Repartidor/Motorizado: Solo puede actualizar estado de entrega, ubicación y timestamp de entrega
+                       ((currentUid() == resource.data.assignedCourierId || currentUid() == resource.data.motorizadoId) &&
+                        request.resource.data.diff(resource.data).affectedKeys().hasOnly(["status", "estado", "historialEstados", "ubicacionRepartidor", "deliveredAt", "entregadoAt"]))
+                     );
+
+      allow delete: if isSuperAdmin();
+    }
+
+    // ─── /products/{productId} ───────────────────────────────────────────────
+    match /products/{productId} {
+      allow read: if true; // Public by design for Marketplace e-Commerce catalog access
+
+      allow create: if isAuthenticated() &&
+                       isWritingOwnBusinessId() &&
+                       (isPlatformAdmin() || isBusinessAdmin());
+
+      allow update: if isAuthenticated() &&
+                       isWritingOwnBusinessId() &&
+                       (isPlatformAdmin() || isBusinessAdmin() ||
+                        (isBusinessStaff() &&
+                         request.resource.data.diff(resource.data).affectedKeys()
+                           .hasOnly(["isAvailable", "available", "active", "stockStatus", "stock", "updatedAt"])));
+
+      allow delete: if isAuthenticated() &&
+                       (ownsBusiness(resource.data.businessId) && isBusinessAdmin() || isPlatformAdmin());
+    }
+
+    // ─── /audit_events/{eventId} ─────────────────────────────────────────────
+    match /audit_events/{eventId} {
+      allow read: if isAuthenticated() &&
+                     (currentUid() == resource.data.uid ||
+                      ownsBusiness(resource.data.businessId) ||
+                      isPlatformAdmin());
+
+      allow create: if isAuthenticated() && (
+                       // Audit Event Actor Role validation: actorRole passed in request data MUST match real user JWT role getRole()
+                       isPlatformAdmin() ||
+                       (request.resource.data.uid == currentUid() &&
+                        request.resource.data.get("actorRole", getRole()) == getRole() &&
+                        (!request.resource.data.keys().hasAny(["businessId"]) ||
+                         request.resource.data.businessId == null ||
+                         request.resource.data.businessId == getBusinessId()))
+                     );
+
+      allow update, delete: if isPlatformAdmin();
+    }
+
+    // ─── /roles/{roleId} (EIAM v2.2) ──────────────────────────────────────────
+    match /roles/{roleId} {
+      allow read: if isAuthenticated() && (isPlatformAdmin() || isBusinessAdmin());
+      allow write: if isPlatformAdmin();
+    }
+
+    // ─── /permissions/{docId} (EIAM v2.2) ────────────────────────────────────
+    match /permissions/{docId} {
+      allow read: if isAuthenticated() && (isPlatformAdmin() || isBusinessAdmin());
+      allow write: if isPlatformAdmin();
+    }
+
+    // ─── /merchant_applications/{appId} (ADR-011) ─────────────────────────
+    match /merchant_applications/{appId} {
+      // Las creaciones públicas se procesan exclusivamente vía Cloud Function (Admin SDK)
+      // para garantizar validación de negocio, formato e idempotencia (control de duplicados).
+      allow create: if isPlatformAdmin();
+
+      // El solicitante puede consultar su solicitud por correo o el admin global
+      allow read: if isPlatformAdmin() ||
+                     (isAuthenticated() && request.auth.token.email == resource.data.email);
+
+      // Solo administradores de plataforma pueden actualizar estado de solicitud
+      allow update: if isPlatformAdmin();
+
+      // Ninguna solicitud se elimina (auditabilidad permanente)
+      allow delete: if false;
+    }
+
+    // ─── /restaurant_settings/{restaurantId} (SSOT-01 Compliance) ────────────
+    match /restaurant_settings/{restaurantId} {
+      allow read: if isAuthenticated() &&
+                     (isPlatformAdmin() || ownsBusiness(restaurantId));
+
+      allow write: if isAuthenticated() &&
+                      (ownsBusiness(restaurantId) || isPlatformAdmin());
+    }
+
+    // ─── /dashboard_summary/{merchantId} (ADR-003 Aggregated Dashboard) ──────
+    match /dashboard_summary/{merchantId} {
+      allow read: if isAuthenticated() &&
+                     (isPlatformAdmin() || ownsBusiness(merchantId));
+
+      allow create, update, delete: if isPlatformAdmin();
+    }
+
+    // ─── /financial_events/{eventId} (Phase 5 Finance Integration) ──────────
+    // Inmutables: solo el Admin SDK (Cloud Functions) puede escribirlos.
+    // Ningún cliente puede crear, modificar o eliminar eventos financieros.
+    match /financial_events/{eventId} {
+      allow read: if isAuthenticated() &&
+                     (ownsBusiness(resource.data.businessId) || isPlatformAdmin());
+
+      // Solo escritura desde Admin SDK (Cloud Functions bypassa reglas).
+      // Prevenimos escrituras directas desde cualquier cliente:
+      allow create, update, delete: if isPlatformAdmin();
+    }
+
+    // ─── /merchant_summaries/{businessId} (Phase 5 Finance Integration) ─────
+    // Documento de solo lectura para el comercio. Solo actualizable via Admin SDK.
+    match /merchant_summaries/{businessId} {
+      allow read: if isAuthenticated() &&
+                     (ownsBusiness(businessId) || isPlatformAdmin());
+
+      // Escritura solo desde Admin SDK (Cloud Functions con FieldValue.increment):
+      allow create, update: if isPlatformAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // ─── /platform_config/{docId} (configuración global de plataforma) ───────
+    match /platform_config/{docId} {
+      allow read: if isPlatformAdmin();
+      allow write: if isSuperAdmin();
+    }
+
+    // ─── Denegar todo lo demás ────────────────────────────────────────────────
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

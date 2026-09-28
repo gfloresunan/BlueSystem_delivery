@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">BlueSystem Delivery</string>
+    <string name="facebook_app_id">979190771774021</string>
+    <string name="facebook_client_token">c7e523ccb773536e68d60e83d26e23a8</string>
+    <string name="fb_login_protocol_scheme">fb979190771774021</string>
+</resources>

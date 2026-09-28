@@ -1,0 +1,4 @@
+<resources>
+    <!-- Flavor WhiteLabel: Generic Commercial Identity -->
+    <string name="flavor_profile">whitelabel</string>
+</resources>

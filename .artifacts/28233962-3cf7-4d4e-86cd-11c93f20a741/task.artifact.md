@@ -1,0 +1,3 @@
+- [x] Remove redundant/incorrect Firestore write in `SolicitarEnvioScreen.kt`
+- [x] Add try-catch in `FirebaseManager.kt` for robust deserialization
+- [x] Verify build and startup

@@ -1,0 +1,66 @@
+﻿
+08-20 10:02:59.999  4351  4447 D AppOpsPrivacyItemMonitor: showLocationSystemApps  AppOpItem(Op code=1, UID=10708, 
+AttributionTag=null, Package name=com.aistudio.delivery.djweq, Paused=false)
+08-20 10:03:00.009  4351  4447 D AppOpsPrivacyItemMonitor: showLocationSystemApps  AppOpItem(Op code=1, UID=10708, 
+AttributionTag=null, Package name=com.aistudio.delivery.djweq, Paused=false)false)
+08-20 10:03:00.181 16227 17225 I SAMSUNGWALLET: [Hint_SimpleHintProcessMonitor] isHomePackageRunning topPkgName = 
+com.aistudio.delivery.djweq, topClsName = com.example.MainActivity, return false , se : false
+08-20 10:03:00.200  3004  3594 D WindowManager: Changing focus from Window{37cdc73 u0 NotificationShade} to 
+Window{1fa59d2 u0 com.aistudio.delivery.djweq/com.example.MainActivity} displayId=0 
+Callers=com.android.server.wm.WindowManagerService.relayoutWindow:1402 com.android.server.wm.Session.relayout:30 
+com.android.server.wm.Session.relayoutAsync:16 android.view.IWindowSession$Stub.onTransact:866 
+08-20 10:03:00.202  3004  3594 D InsetsSourceProvider: updateControlForTarget: control=InsetsSourceControl: {409d0001 
+mType=navigationBars initiallyVisible mSurfacePosition=Point(0, 2190) mInsetsHint=Insets{left=0, top=0, right=0, 
+bottom=126}}, target=Window{1fa59d2 u0 com.aistudio.delivery.djweq/com.example.MainActivity}, 
+from=com.android.server.wm.InsetsStateController.onControlTargetChanged:82 
+com.android.server.wm.InsetsPolicy.updateBarControlTarget:216 
+com.android.server.wm.DisplayPolicy.updateSystemBarAttributes:439 
+com.android.server.wm.WindowManagerService.updateFocusedWindowLocked:358 
+com.android.server.wm.WindowManagerService.relayoutWindow:1402 
+08-20 10:03:00.204  3004  3594 D InsetsSourceProvider: updateControlForTarget: control=InsetsSourceControl: {e2c40000 
+mType=statusBars initiallyVisible mSurfacePosition=Point(0, 0) mInsetsHint=Insets{left=0, top=85, right=0, bottom=0}}, 
+target=Window{1fa59d2 u0 com.aistudio.delivery.djweq/com.example.MainActivity}, 
+from=com.android.server.wm.InsetsStateController.onControlTargetChanged:82 
+com.android.server.wm.InsetsPolicy.updateBarControlTarget:203 
+com.android.server.wm.DisplayPolicy.updateSystemBarAttributes:439 
+com.android.server.wm.WindowManagerService.updateFocusedWindowLocked:358 
+com.android.server.wm.WindowManagerService.relayoutWindow:1402 
+08-20 10:03:00.204  3004  3594 D WindowManager: updateSystemBarAttributes: displayId=0, focusedCanBeNavColorWin=false, 
+win=Window{1fa59d2 u0 com.aistudio.delivery.djweq/com.example.MainActivity}, navColorWin=Window{1fa59d2 u0 
+com.aistudio.delivery.djweq/com.example.MainActivity}, 
+caller=com.android.server.wm.WindowManagerService.updateFocusedWindowLocked:358 
+com.android.server.wm.WindowManagerService.relayoutWindow:1402 com.android.server.wm.Session.relayout:30 
+08-20 10:03:00.205  3004  3594 V SystemKeyManager: updateFocusedWindow() is called, 
+com.aistudio.delivery.djweq/com.example.MainActivity
+08-20 10:03:00.206  3004  3092 I SurfaceControl: apply, lowDebugName=Focus request: 1fa59d2 
+com.aistudio.delivery.djweq/com.example.MainActivity, caller=android.view.SurfaceControl$Transaction.apply:3569 
+android.view.SurfaceControl$Transaction.apply:3519 com.android.server.wm.WindowAnimator.animate:468 
+com.android.server.wm.WindowAnimator$$ExternalSyntheticLambda1.doFrame:14 
+android.view.Choreographer$CallbackRecord.run:1959 android.view.Choreographer$CallbackRecord.run:1970 
+08-20 10:03:00.221  1944  2244 D SurfaceFlinger: [input] setFocusedWindow: 1fa59d2 
+com.aistudio.delivery.djweq/com.example.MainActivity
+08-20 10:03:00.221  3004  5703 D InputDispatcher: Once focus requested (0): 1fa59d2 
+com.aistudio.delivery.djweq/com.example.MainActivity
+08-20 10:03:00.221  3004  5703 D InputDispatcher: Focus entered window (0): 1fa59d2 
+com.aistudio.delivery.djweq/com.example.MainActivity
+08-20 10:03:00.230  9787  9787 I InsetsSourceConsumer: applyRequestedVisibilityToControl: visible=true, 
+type=navigationBars, host=com.aistudio.delivery.djweq/com.example.MainActivity
+08-20 10:03:00.231  9787  9787 I InsetsSourceConsumer: applyRequestedVisibilityToControl: visible=true, 
+type=statusBars, host=com.aistudio.delivery.djweq/com.example.MainActivity
+08-20 10:03:00.234  3004  3671 I ImeTracker: com.aistudio.delivery.djweq:8a598609: onRequestHide at ORIGIN_SERVER 
+reason HIDE_SAME_WINDOW_FOCUSED_WITHOUT_EDITOR fromUser false
+08-20 10:03:00.234  9787  9787 I ImeTracker: com.aistudio.delivery.djweq:8a598609: onCancelled at 
+PHASE_CLIENT_ALREADY_HIDDEN
+08-20 10:03:00.238  1944  1944 D SurfaceFlinger:        DEVICE |           42034844925981 | 00002102 | RGBA_8888    |  
+  0.0    0.0  904.0 2316.0 |    0    0  904 2316 | com.aistudio.delivery.djweq/com.example.MainActivity$_9787#4654 
+(670)
+08-20 10:03:00.260  6767  6767 I HBD     : b [AiWriter] setContact : com.aistudio.delivery.djweq
+08-20 10:03:00.272  1944  1944 D SurfaceFlinger:        DEVICE |           42034844925981 | 00002102 | RGBA_8888    |  
+  0.0    0.0  904.0 2316.0 |    0    0  904 2316 | com.aistudio.delivery.djweq/com.example.MainActivity$_9787#4654 
+(670)
+08-20 10:03:00.921  1944  1944 I SurfaceFlinger: com.aistudio.delivery.djweq/com.example.MainActivity$_9787#4654 Max 
+(can't resolve refresh rate)
+08-20 10:03:01.088  1944  1944 I SurfaceFlinger: com.aistudio.delivery.djweq/com.example.MainActivity$_9787#4654 Max 
+(can't resolve refresh rate)
+
+

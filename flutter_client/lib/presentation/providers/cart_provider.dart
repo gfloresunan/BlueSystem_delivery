@@ -94,16 +94,26 @@ class CartProvider extends ChangeNotifier {
     return _items.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
   }
 
-  /// Dynamic delivery fee from Business SSOT (/businesses/{id}.deliveryFee)
+  double? _dynamicDeliveryFee;
+  double? get dynamicDeliveryFee => _dynamicDeliveryFee;
+
+  /// Dynamic delivery fee from Core Route Calculation or Business SSOT
   /// Fallback: C$ 45.00 for Commerce Delivery. NEVER C$ 35.00 (which belongs strictly to X->Y package delivery).
   double get deliveryFee {
     if (_items.isEmpty) return 0.0;
-    return _activeBusiness?.deliveryFee ?? 45.0;
+    return _dynamicDeliveryFee ?? _activeBusiness?.deliveryFee ?? 45.0;
   }
 
   double get total {
     if (_items.isEmpty) return 0.0;
     return subtotal + deliveryFee;
+  }
+
+  void setDynamicDeliveryFee(double? fee) {
+    if (_dynamicDeliveryFee != fee) {
+      _dynamicDeliveryFee = fee;
+      notifyListeners();
+    }
   }
 
   void setActiveBusiness(BusinessEntity? business) {

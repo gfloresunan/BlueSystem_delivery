@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlueSystem Enterprise - Delivery Operations Control Center</title>
+
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        if (typeof tailwind !== 'undefined') {
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            sans: ['Inter', 'system-ui', 'sans-serif'],
+                        }
+                    }
+                }
+            };
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Leaflet Heat Plugin -->
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <!-- MapLibre GL JS & Leaflet MapLibre Plugin for OpenFreeMap Vector Basemaps (Google-like Clean Aesthetics) -->
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
+    <!-- Leaflet MarkerCluster -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+    <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+
+    <!-- Chart.js para Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- jsPDF & AutoTable para exportación directa de PDFs vectoriales -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Firebase SDK (Compat API) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-check-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
+
+    <!-- Inline Logout Safeguard -->
+    <script>
+        window.dashboardLogout = function() {
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                firebase.auth().signOut().then(function() {
+                    window.location.href = 'index.html';
+                }).catch(function() {
+                    window.location.href = 'index.html';
+                });
+            } else {
+                window.location.href = 'index.html';
+            }
+        };
+    </script>
+
+    <style>
+        ::-webkit-scrollbar { width: 5px; height: 5px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+        .leaflet-container { background: #f8fafc !important; font-family: 'Inter', sans-serif; }
+        
+        /* Modern Glassmorphic Leaflet Controls */
+        .leaflet-bar {
+            border: none !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5) !important;
+            border-radius: 14px !important;
+            overflow: hidden;
+            background: rgba(15, 23, 42, 0.85) !important;
+            backdrop-filter: blur(12px) !important;
+            border: 1px solid rgba(51, 65, 85, 0.5) !important;
+        }
+        .leaflet-bar a {
+            background-color: transparent !important;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.4) !important;
+            color: #f1f5f9 !important;
+            width: 34px !important;
+            height: 34px !important;
+            line-height: 34px !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .leaflet-bar a:last-child {
+            border-bottom: none !important;
+        }
+        .leaflet-bar a:hover {
+            background-color: rgba(30, 41, 59, 0.9) !important;
+            color: #818cf8 !important;
+        }
+
+        /* Sleek Leaflet Attribution Pill */
+        .leaflet-control-attribution {
+            background: rgba(15, 23, 42, 0.8) !important;
+            backdrop-filter: blur(8px) !important;
+            color: #94a3b8 !important;
+            border-radius: 8px !important;
+            margin: 6px 8px !important;
+            padding: 3px 8px !important;
+            font-size: 10px !important;
+            font-weight: 500 !important;
+            border: 1px solid rgba(51, 65, 85, 0.4) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
+        }
+        .leaflet-control-attribution a {
+            color: #818cf8 !important;
+            text-decoration: none !important;
+            font-weight: 600 !important;
+        }
+        .leaflet-control-attribution a:hover {
+            text-decoration: underline !important;
+        }
+        
+        /* Sleek Leaflet Popups */
+        .leaflet-popup-content-wrapper {
+            background: transparent !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            border-radius: 18px !important;
+        }
+        .leaflet-popup-content {
+            margin: 0 !important;
+            line-height: 1.4 !important;
+        }
+        .leaflet-popup-tip {
+            background: #020617 !important;
+            border: 1px solid rgba(51, 65, 85, 0.5) !important;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5) !important;
+        }
+        .leaflet-container a.leaflet-popup-close-button {
+            top: 8px !important;
+            right: 8px !important;
+            padding: 4px !important;
+            color: #94a3b8 !important;
+            font-weight: 700 !important;
+            border-radius: 9999px !important;
+            background: rgba(15, 23, 42, 0.6) !important;
+            width: 20px !important;
+            height: 20px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            transition: all 0.2s ease !important;
+        }
+        .leaflet-container a.leaflet-popup-close-button:hover {
+            color: #ffffff !important;
+            background: rgba(239, 68, 68, 0.8) !important;
+        }
+
+        /* Modern Cluster Badges */
+        .bs-cluster-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            color: #ffffff;
+            letter-spacing: -0.025em;
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .bs-cluster-badge:hover {
+            transform: scale(1.15);
+        }
+        .bs-cluster-small {
+            background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            border: 2.5px solid #ffffff;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.35), 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        .bs-cluster-medium {
+            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
+            border: 2.5px solid #ffffff;
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.35), 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+        .bs-cluster-large {
+            background: linear-gradient(135deg, #e11d48 0%, #9f1239 100%);
+            border: 2.5px solid #ffffff;
+            box-shadow: 0 0 0 4px rgba(225, 29, 72, 0.35), 0 8px 16px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Live Courier Radar Pulse */
+        @keyframes bs-radar-pulse {
+            0% { transform: scale(0.95); opacity: 0.8; }
+            50% { transform: scale(1.45); opacity: 0; }
+            100% { transform: scale(0.95); opacity: 0; }
+        }
+        .bs-radar-aura {
+            position: absolute;
+            inset: -4px;
+            border-radius: 9999px;
+            background: rgba(16, 185, 129, 0.35);
+            animation: bs-radar-pulse 2.2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 font-sans text-slate-100 h-screen flex overflow-hidden">
+
+    <!-- Sidebar Control Center Layout -->
+    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col h-screen select-none shrink-0 z-20">
+        <!-- Header Branding -->
+        <div class="p-4 border-b border-slate-800/80 shrink-0">
+            <div class="flex items-center gap-3">
+                <span class="text-2xl bg-indigo-500/10 p-2 rounded-xl border border-indigo-500/20 text-indigo-400">🛡️</span>
+                <div>
+                    <h1 class="text-sm font-black text-slate-100 leading-none">BlueSystem</h1>
+                    <span class="text-[10px] text-indigo-400 font-bold tracking-wider uppercase">Ops Control Center</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scrollable Categorized Navigation -->
+        <div class="p-3 space-y-4 flex-1 overflow-y-auto min-h-0" id="sidebar-nav">
+            <p class="text-xs text-slate-500 p-4">Cargando menú por categorías...</p>
+        </div>
+
+        <!-- Fixed Footer / Admin User Info -->
+        <div class="p-4 border-t border-slate-800 bg-slate-900/90 shrink-0 flex flex-col gap-3">
+            <div class="flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 rounded-full bg-indigo-600/20 border border-indigo-500/30 text-indigo-300 font-black flex items-center justify-center text-xs shrink-0" id="userAvatarInitials">
+                    OP
+                </div>
+                <div class="min-w-0">
+                    <p class="text-xs font-bold text-slate-200 truncate" id="adminEmail">admin@bluesystem.com</p>
+                    <span class="text-[9px] text-emerald-400 font-mono font-bold tracking-wide uppercase" id="adminRoleBadge">OPERATIONS CONTROL</span>
+                </div>
+            </div>
+            <button onclick="dashboardLogout()" class="w-full bg-slate-800/80 hover:bg-rose-950/40 border border-slate-700 hover:border-rose-800/40 text-slate-300 hover:text-rose-400 text-xs py-2.5 rounded-xl font-bold transition duration-150 flex items-center justify-center gap-2">
+                <span>🚪</span> Cerrar Sesión
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Operations Area -->
+    <main class="flex-1 flex flex-col min-w-0 h-screen overflow-hidden relative">
+        <section class="flex-1 overflow-y-auto p-6 relative" id="tab-content">
+            <div class="flex items-center justify-center h-full">
+                <div class="text-center space-y-3">
+                    <div class="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                    <p class="text-sm font-semibold text-slate-400">Cargando Consola de Operaciones...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Firebase Configuration -->
+    <script src="js/firebase-config.js?v=5.7.3"></script>
+
+    <!-- Services & Utilities -->
+    <script src="js/utils/eiamAdapter.js?v=5.1.2"></script>
+    <script src="js/services/functions.js?v=5.2.0"></script>
+    <script src="js/services/storage.js?v=5.1.2"></script>
+    <script src="js/services/governanceService.js?v=5.5.5"></script>
+    <script src="js/services/canonicalIdentityResolver.js?v=5.3.1"></script>
+    <script src="js/services/identityAdministrationService.js?v=5.3.1"></script>
+    <script src="js/services/identityService.js?v=5.3.0"></script>
+    <script src="js/services/identityCanonicalService.js?v=5.3.0"></script>
+    <script src="js/services/securityPolicyEngine.js?v=5.1.2"></script>
+    <script src="js/services/commerceSyncService.js?v=5.2.2"></script>
+    <script src="js/utils/toast.js?v=5.1.2"></script>
+    <script src="js/utils/modal.js?v=5.1.2"></script>
+    <script src="js/utils/drawer.js?v=5.1.2"></script>
+    <script src="js/utils/table.js?v=5.1.2"></script>
+    <script src="js/utils/pagination.js?v=5.1.2"></script>
+    <script src="js/utils/geoCatalog.js?v=5.3.0"></script>
+    <script src="js/utils/imageUtils.js?v=5.2.0"></script>
+
+
+    <!-- Enterprise Operations Control Modules -->
+    <script src="js/dashboard/liveOperations.js?v=5.1.2"></script>
+    <script src="js/dashboard/liveMap.js?v=6.0.1"></script>
+    <script src="js/dashboard/heatmapAnalytics.js?v=1.0.2"></script>
+    <script src="js/dashboard/liveOrders.js?v=5.3.0"></script>
+    <script src="js/dashboard/liveCouriers.js?v=5.4.0"></script>
+    <script src="js/dashboard/courierCashControl.js?v=5.3.0"></script>
+    <script src="js/dashboard/deliveryExpress.js?v=6.5.0"></script>
+    <script src="js/dashboard/liveRestaurants.js?v=5.4.0"></script>
+    <script src="js/dashboard/liveCustomers.js?v=5.2.0"></script>
+    <script src="js/dashboard/incidentsCenter.js?v=5.1.2"></script>
+    <script src="js/dashboard/opsTools.js?v=5.1.2"></script>
+
+    <!-- Governance & Support Modules -->
+    <script src="js/dashboard/identityAdminDrawer.js?v=5.2.0"></script>
+    <script src="js/dashboard/governanceCenter.js?v=5.5.3"></script>
+    <script src="js/dashboard/rolesAndPermissions.js?v=1.0.1"></script>
+    <script src="js/dashboard/financeCenter.js?v=5.5.0"></script>
+    <script src="js/dashboard/analytics.js?v=6.0.1"></script>
+    <script src="js/dashboard/reputationBI.js?v=1.0.2"></script>
+    <script src="js/dashboard/users.js?v=5.2.0"></script>
+    <script src="js/dashboard/promotions.js?v=5.1.2"></script>
+    <script src="js/dashboard/dynamicMenu.js?v=5.1.2"></script>
+    <script src="js/dashboard/commerceAnnouncements.js?v=1.0.1"></script>
+    <script src="js/dashboard/categories.js?v=5.1.2"></script>
+    <script src="js/dashboard/businessCategories.js?v=1.0.0"></script>
+    <script src="js/dashboard/notifications.js?v=5.1.2"></script>
+    <script src="js/dashboard/audit.js?v=5.1.2"></script>
+    <script src="js/dashboard/config.js?v=5.1.2"></script>
+    <script src="js/dashboard/dashboardManager.js?v=5.2.0"></script>
+    <script src="js/dashboard/commerceIntelligence.js?v=5.1.2"></script>
+    <script src="js/dashboard/profileManager.js?v=5.1.2"></script>
+    <script src="js/dashboard/health.js?v=5.1.2"></script>
+    <script src="js/dashboard/domains.js?v=5.6.0"></script>
+    <script src="js/dashboard/emailTemplates.js?v=5.7.1"></script>
+    <script src="js/dashboard/supportCenter.js?v=5.1.2"></script>
+    <script src="js/dashboard/brandManager.js?v=1.0.0"></script>
+    <script src="js/dashboard/subscriptionManager.js?v=1.0.0"></script>
+    <script src="js/dashboard/appConfigManager.js?v=1.0.0"></script>
+    <script src="js/dashboard/buildEngineManager.js?v=1.0.0"></script>
+    <script src="js/dashboard/appUpdateCenter.js?v=1.0.0"></script>
+    
+    <!-- Central Operations Controller -->
+    <script src="js/dashboard/dashboard.js?v=6.0.0"></script>
+
+
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BlueSystem Admin - Login</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        if (typeof tailwind !== 'undefined') {
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        fontFamily: {
+                            sans: ['Inter', 'system-ui', 'sans-serif'],
+                        }
+                    }
+                }
+            };
+        }
+    </script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-check-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
+</head>
+<body class="bg-gray-950 font-sans min-h-screen flex items-center justify-center p-4">
+
+    <!-- Card Container -->
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl w-full max-w-md p-8 shadow-2xl space-y-6 relative overflow-hidden">
+        
+        <!-- Glow decoration -->
+        <div class="absolute -top-10 -right-10 w-32 h-32 bg-blue-500/10 rounded-full blur-2xl"></div>
+        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
+
+        <div class="text-center space-y-2 relative z-10">
+            <h1 class="text-2xl font-bold text-gray-100 tracking-tight">Panel Administrativo</h1>
+            <p class="text-xs text-gray-400 font-semibold tracking-wide uppercase">BlueSystem Enterprise</p>
+        </div>
+
+        <form id="loginForm" class="space-y-4 relative z-10">
+            <div class="space-y-1">
+                <label class="block text-xs font-semibold text-gray-400">Correo Electrónico</label>
+                <input type="email" id="email" required placeholder="admin@bluesystem.com" class="w-full bg-gray-950 border border-gray-800 rounded-lg px-4 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-blue-500 transition duration-200">
+            </div>
+
+            <div class="space-y-1">
+                <label class="block text-xs font-semibold text-gray-400">Contraseña</label>
+                <div class="relative">
+                    <input type="password" id="password" required placeholder="••••••••" class="w-full bg-gray-950 border border-gray-800 rounded-lg pl-4 pr-10 py-2.5 text-sm text-gray-200 focus:outline-none focus:border-blue-500 transition duration-200">
+                    <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white focus:outline-none select-none text-base">
+                        👁️
+                    </button>
+                </div>
+            </div>
+
+            <button type="submit" id="loginBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white py-2.5 rounded-lg text-sm font-semibold flex items-center justify-center gap-2 shadow-lg shadow-blue-500/10 transition duration-200">
+                <span class="btn-text">Ingresar al Sistema</span>
+                <span class="spinner hidden text-xs animate-spin">⟳</span>
+            </button>
+        </form>
+
+        <div id="errorMsg" class="hidden text-xs bg-red-900/20 border border-red-500/30 text-red-400 p-3 rounded-lg text-center font-medium relative z-10"></div>
+    </div>
+
+    <script src="js/firebase-config.js?v=5.7.3"></script>
+    <script src="js/auth.js?v=5.1.3"></script>
+    <script>
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.textContent = type === 'password' ? '👁️' : '🔒';
+        });
+    </script>
+</body>
+</html>

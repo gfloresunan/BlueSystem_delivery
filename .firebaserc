@@ -1,0 +1,24 @@
+{
+  "projects": {
+    "default": "bluesystem-7c9af"
+  },
+  "targets": {
+    "bluesystem-7c9af": {
+      "hosting": {
+        "corporate": [
+          "bluesystem-7c9af-corporate"
+        ],
+        "admin": [
+          "bluesystem-7c9af"
+        ],
+        "merchant": [
+          "bluesystem-7c9af-merchant"
+        ],
+        "onboarding": [
+          "bluesystem-7c9af-apply"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}

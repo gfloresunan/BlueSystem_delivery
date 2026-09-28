@@ -1,0 +1,42 @@
+index,uid,effectiveName,businessDependency,branchDependency,organizationDependency,membershipDependency,deviceDependency,orderDependency,deliveryDependency,salesDependency,paymentDependency,auditDependency,notificationDependency,hasDependency
+1,"1768226535785","Gerald José  Flores Gutiérrez",false,false,false,false,false,false,false,false,false,false,false,false
+2,"1768243841542","Kim",false,false,false,false,false,false,false,true,false,false,false,true
+3,"1768878763084","Henry Paz",false,false,false,false,false,false,false,true,false,false,false,true
+4,"1769029559449","Chepita",false,false,false,false,false,false,false,true,false,false,false,true
+5,"3Wt0XdzeOTfG1OXn72ApIhVbE5i1","Kimberly Flores Centeno",false,false,false,false,true,true,false,false,false,false,false,true
+6,"8O8hJe5kSzNQxUkLwwkCsipGmAI3","kimberly Flores",false,false,false,false,false,false,false,false,false,false,false,false
+7,"9QHYGkSa3nWiJ7KfPkccjjuIaYp2","Henry Paz",false,false,false,false,true,false,false,false,false,false,false,true
+8,"USR-1768621181014","Zamir Ocornor",false,false,false,false,false,false,false,false,false,false,false,false
+9,"USR-1769025804680","Omar Altamirano",false,false,false,false,false,false,false,false,false,false,false,false
+10,"USR-1769029685895","Richard centeno",false,false,false,false,false,false,false,false,false,false,false,false
+11,"USR-1769098535884","Adolfo Urbina",false,false,false,false,false,false,false,false,false,false,false,false
+12,"USR-1769190932815","vicenta gutirrrez",false,false,false,false,false,false,false,false,false,false,false,false
+13,"USR-1769194803657","adolfo  urbina",false,false,false,false,false,false,false,false,false,false,false,false
+14,"USR-1769465117595","andy flores",false,false,false,false,false,false,false,false,false,false,false,false
+15,"USR-1769487243198","Helo Jdkdk",false,false,false,false,false,false,false,false,false,false,false,false
+16,"USR-1769620170492","pepe flores",false,false,false,false,false,false,false,false,false,false,false,false
+17,"USR-1769633352410","Gggg Ghh",false,false,false,false,false,false,false,false,false,false,false,false
+18,"USR-1769711990359","venus flores",false,false,false,false,false,false,false,false,false,false,false,false
+19,"USR-1770060240159","Jairo  AldNa",false,false,false,false,false,false,false,false,false,false,false,false
+20,"USR-1771428610412","Nelson Busto",false,false,false,false,false,false,false,false,false,false,false,false
+21,"USR-1772377026947","Luciana  Aldana",false,false,false,false,false,false,false,false,false,false,false,false
+22,"USR-CL-1768337682525","allan mendoza",false,false,false,false,false,false,false,false,false,false,false,false
+23,"USR-CL-1768342901776","zoe flores",false,false,false,false,false,false,false,false,false,false,false,false
+24,"USR-CL-1768365031013","maria chavez",false,false,false,false,false,false,false,false,false,false,false,false
+25,"USR-CL-1768422839897","denis flores",false,false,false,false,false,false,false,false,false,false,false,false
+26,"XWNzPT5p6fbf7reFdFBNTZoQrY42","Junior Flores",true,true,true,false,false,false,false,false,false,true,false,true
+27,"XWsjzZe8lsfthRQ5PgbDzlqA2nX2","Gerald Flores",false,false,false,false,true,true,false,false,false,false,false,true
+28,"admin_initial","Admin Gerald Flores",false,false,false,false,false,false,false,true,false,false,false,true
+29,"dbX1tvV2WNdFv4KWMbWNW8lngDI2","Gerald Jose Flores Gutierrez",false,false,false,false,true,false,false,false,false,false,false,true
+30,"dlRY2ZVUqPR2Fxoc3cazcOxxRJg2","FRITONI",false,false,false,false,true,false,false,false,false,false,false,true
+31,"h00PIZpMgxSaqSVnYpRLPq0DYGC3","ITED Virtual",false,false,false,false,true,true,false,false,false,false,false,true
+32,"qtlV8m8wj0ed0tQFXKzjfXKzQ5g2","Aldrich Flores",true,true,true,false,false,false,false,false,false,true,false,true
+33,"user_cli_1768237897386","Aldrich  Flores",false,false,false,false,false,false,false,false,false,false,false,false
+34,"user_cli_1768240170991","venus flores",false,false,false,false,false,false,false,false,false,false,false,false
+35,"user_cliente0002_2026","Perla  Centeno",false,false,false,false,false,false,false,false,false,false,false,false
+36,"user_cliente0008_2026","Junior Flores",false,false,false,false,false,false,false,false,false,false,false,false
+37,"user_cliente0009_2026","hola oooo",false,false,false,false,false,false,false,false,false,false,false,false
+38,"user_cliente0010_2026","maria ramos",false,false,false,false,false,false,false,false,false,false,false,false
+39,"user_cliente0011_2026","sonia matamoros",false,false,false,false,false,false,false,false,false,false,false,false
+40,"user_cliente1768275049139","eva morales",false,false,false,false,false,false,false,false,false,false,false,false
+41,"user_cliente1768278375844","xoci ruiz",false,false,false,false,false,false,false,false,false,false,false,false

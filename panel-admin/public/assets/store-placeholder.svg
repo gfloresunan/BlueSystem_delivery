@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" width="150" height="150">
+  <rect width="150" height="150" fill="#0f172a" rx="16"/>
+  <rect x="1" y="1" width="148" height="148" fill="none" stroke="#334155" stroke-width="2" rx="15"/>
+  <g transform="translate(43, 35)">
+    <path d="M7 21L2 9h60l-5 12H7z" fill="#6366f1" opacity="0.8"/>
+    <path d="M5 21v35a2 2 0 0 0 2 2h50a2 2 0 0 0 2-2V21" fill="none" stroke="#818cf8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M22 58V36h20v22" fill="none" stroke="#a5b4fc" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M2 9L12 2h40l10 7" fill="none" stroke="#6366f1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="75" y="122" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="700" fill="#94a3b8" text-anchor="middle" letter-spacing="1">COMERCIO</text>
+</svg>

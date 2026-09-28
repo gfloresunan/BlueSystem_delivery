@@ -1,0 +1,845 @@
+{
+  "timestamp": "2026-08-16T15:27:08.425Z",
+  "organizations": [
+    {
+      "id": "1b485c29-b7e3-4173-a4fd-36f8bb4ec1e8",
+      "orgId": "1b485c29-b7e3-4173-a4fd-36f8bb4ec1e8",
+      "name": "Grupo Flores",
+      "legalName": "Grupo Flores",
+      "ruc": "J031003403434",
+      "ownerUid": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "businessIds": [
+        "bbb760d5-a8f3-4700-9a96-f58f11f345ac"
+      ],
+      "status": "ACTIVE",
+      "createdAt": {
+        "_seconds": 1786841737,
+        "_nanoseconds": 569000000
+      },
+      "updatedAt": {
+        "_seconds": 1786841737,
+        "_nanoseconds": 569000000
+      }
+    },
+    {
+      "id": "75b145e5-17ec-4248-a085-c962a408db86",
+      "orgId": "75b145e5-17ec-4248-a085-c962a408db86",
+      "name": "Grupo Flores",
+      "legalName": "Grupo Flores",
+      "ruc": "J031000000",
+      "ownerUid": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "businessIds": [
+        "e7dc911e-e587-4be9-a741-7d9d9828011f"
+      ],
+      "status": "ACTIVE",
+      "createdAt": {
+        "_seconds": 1786719549,
+        "_nanoseconds": 817000000
+      },
+      "updatedAt": {
+        "_seconds": 1786719549,
+        "_nanoseconds": 817000000
+      }
+    }
+  ],
+  "businesses": [
+    {
+      "id": "1768243841542",
+      "descripcion": "",
+      "deliveryTime": "15 min",
+      "bannerUrl": "",
+      "businessId": "1768243841542",
+      "rating": 4.8,
+      "description": "",
+      "isActive": true,
+      "nombre": "Kim",
+      "photoUrl": "",
+      "averageRating": 4.8,
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "active": true,
+      "portadaUrl": "",
+      "ratingCount": 15,
+      "tiempoEstimadoMinutos": 15,
+      "logoUrl": "",
+      "coverUrl": "",
+      "comercioNombre": "Kim",
+      "deliveryFee": 35,
+      "isOpen": false,
+      "costoEnvioBase": 35,
+      "name": "Kim",
+      "category": "Restaurante",
+      "abierto": false,
+      "isFeatured": false,
+      "updatedAt": {
+        "_seconds": 1786830880,
+        "_nanoseconds": 314000000
+      }
+    },
+    {
+      "id": "1768878763084",
+      "descripcion": "",
+      "deliveryTime": "15 min",
+      "bannerUrl": "",
+      "businessId": "1768878763084",
+      "rating": 4.8,
+      "description": "",
+      "nombre": "Henry Paz",
+      "photoUrl": "",
+      "averageRating": 4.8,
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "portadaUrl": "",
+      "ratingCount": 15,
+      "tiempoEstimadoMinutos": 15,
+      "logoUrl": "",
+      "coverUrl": "",
+      "comercioNombre": "Henry Paz",
+      "deliveryFee": 35,
+      "isOpen": false,
+      "costoEnvioBase": 35,
+      "name": "Henry Paz",
+      "category": "Restaurante",
+      "abierto": false,
+      "isFeatured": false,
+      "deletedAt": {
+        "_seconds": 1786893390,
+        "_nanoseconds": 947000000
+      },
+      "isDeleted": true,
+      "lifecycleStatus": "DEPROVISIONED",
+      "active": false,
+      "isActive": false,
+      "status": "DELETED",
+      "updatedAt": {
+        "_seconds": 1786893396,
+        "_nanoseconds": 245000000
+      }
+    },
+    {
+      "id": "1769029559449",
+      "descripcion": "",
+      "deliveryTime": "15 min",
+      "bannerUrl": "",
+      "businessId": "1769029559449",
+      "rating": 4.8,
+      "description": "",
+      "isActive": true,
+      "nombre": "Chepita",
+      "photoUrl": "",
+      "averageRating": 4.8,
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "active": true,
+      "portadaUrl": "",
+      "ratingCount": 15,
+      "tiempoEstimadoMinutos": 15,
+      "logoUrl": "",
+      "coverUrl": "",
+      "comercioNombre": "Chepita",
+      "deliveryFee": 35,
+      "isOpen": false,
+      "costoEnvioBase": 35,
+      "name": "Chepita",
+      "category": "Restaurante",
+      "abierto": false,
+      "isFeatured": false,
+      "updatedAt": {
+        "_seconds": 1786830880,
+        "_nanoseconds": 678000000
+      }
+    },
+    {
+      "id": "8O8hJe5kSzNQxUkLwwkCsipGmAI3",
+      "descripcion": "",
+      "deliveryTime": "15 min",
+      "bannerUrl": "",
+      "businessId": "8O8hJe5kSzNQxUkLwwkCsipGmAI3",
+      "rating": 4.8,
+      "description": "",
+      "isActive": false,
+      "nombre": "kimberly Flores",
+      "photoUrl": "",
+      "averageRating": 4.8,
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "active": false,
+      "portadaUrl": "",
+      "ratingCount": 15,
+      "tiempoEstimadoMinutos": 15,
+      "logoUrl": "",
+      "coverUrl": "",
+      "comercioNombre": "kimberly Flores",
+      "deliveryFee": 35,
+      "isOpen": false,
+      "costoEnvioBase": 35,
+      "name": "kimberly Flores",
+      "category": "Restaurante",
+      "abierto": false,
+      "isFeatured": false,
+      "updatedAt": {
+        "_seconds": 1786830880,
+        "_nanoseconds": 836000000
+      }
+    },
+    {
+      "id": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "descripcion": "",
+      "deliveryTime": "15 min",
+      "bannerUrl": "",
+      "businessId": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "rating": 4.8,
+      "description": "",
+      "isActive": true,
+      "nombre": "Junior Flores",
+      "photoUrl": "",
+      "averageRating": 4.8,
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "active": true,
+      "portadaUrl": "",
+      "ratingCount": 15,
+      "tiempoEstimadoMinutos": 15,
+      "logoUrl": "",
+      "coverUrl": "",
+      "comercioNombre": "Junior Flores",
+      "deliveryFee": 35,
+      "isOpen": false,
+      "costoEnvioBase": 35,
+      "name": "Junior Flores",
+      "category": "Restaurante",
+      "abierto": false,
+      "isFeatured": false,
+      "updatedAt": {
+        "_seconds": 1786830881,
+        "_nanoseconds": 8000000
+      }
+    },
+    {
+      "id": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "businessId": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "orgId": "1b485c29-b7e3-4173-a4fd-36f8bb4ec1e8",
+      "ownerUid": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "name": "El Chanchito",
+      "legalName": "Grupo Flores",
+      "ruc": "J031003403434",
+      "category": "restaurante",
+      "address": "SuperIntendencia de Banco 3 c al sur, 5 c este 1 c al lago, Casa esquinera Mano izquierda",
+      "city": "Managua",
+      "zone": "Amwericas #2",
+      "location": {
+        "_latitude": 12.16181980066395,
+        "_longitude": -86.18347525422485
+      },
+      "phone": "+50582397401",
+      "email": "ventas@tecnocomp.com.ni",
+      "documentUrls": [],
+      "lifecycleStatus": "ONBOARDING",
+      "wizardCompleted": false,
+      "onboardingStep": 0,
+      "applicationId": "McIq7vqVMwDlcLiw4q36",
+      "isOpen": false,
+      "isActive": true,
+      "branchIds": [
+        "30945c9c-3aee-4e45-b35d-a998b57cf2fa"
+      ],
+      "createdAt": {
+        "_seconds": 1786841737,
+        "_nanoseconds": 569000000
+      },
+      "updatedAt": {
+        "_seconds": 1786841737,
+        "_nanoseconds": 569000000
+      }
+    },
+    {
+      "id": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "descripcion": "La fritanga evolucionó…",
+      "deliveryTime": "15 min",
+      "bannerUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "rating": 4.8,
+      "description": "La fritanga evolucionó…",
+      "isActive": true,
+      "nombre": "FRITONI",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028783659_607421313_122094264237204960_3693436955939460644_n.jpg?alt=media&token=e17dbcf9-b7b5-4663-b5a8-4e1578683f40",
+      "averageRating": 4.8,
+      "isFeatured": true,
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "active": true,
+      "portadaUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+      "ratingCount": 15,
+      "tiempoEstimadoMinutos": 15,
+      "logoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028783659_607421313_122094264237204960_3693436955939460644_n.jpg?alt=media&token=e17dbcf9-b7b5-4663-b5a8-4e1578683f40",
+      "coverUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+      "comercioNombre": "FRITONI",
+      "deliveryFee": 50,
+      "isOpen": true,
+      "costoEnvioBase": 50,
+      "name": "FRITONI",
+      "category": "Restaurante",
+      "abierto": true,
+      "updatedAt": {
+        "_seconds": 1786830881,
+        "_nanoseconds": 172000000
+      }
+    },
+    {
+      "id": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "businessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "orgId": "75b145e5-17ec-4248-a085-c962a408db86",
+      "ownerUid": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "name": "Variedades TECNOHOME",
+      "legalName": "Grupo Flores",
+      "ruc": "J031000000",
+      "category": "tienda",
+      "address": "Residencial Las Delicias Casa Q529",
+      "city": "Managua",
+      "zone": "Americas #2",
+      "location": {
+        "_latitude": 12.136389,
+        "_longitude": -86.251389
+      },
+      "phone": "82397401",
+      "email": "gflores@unan.edu.ni",
+      "documentUrls": [],
+      "lifecycleStatus": "ONBOARDING",
+      "wizardCompleted": false,
+      "onboardingStep": 0,
+      "applicationId": "rkul8qqr6ljKyf8W7eXW",
+      "isOpen": false,
+      "isActive": true,
+      "branchIds": [
+        "794f7c02-8077-40a8-b260-2fdd27a6f35d"
+      ],
+      "createdAt": {
+        "_seconds": 1786719549,
+        "_nanoseconds": 817000000
+      },
+      "updatedAt": {
+        "_seconds": 1786719549,
+        "_nanoseconds": 817000000
+      }
+    },
+    {
+      "id": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "descripcion": "",
+      "deliveryTime": "15 min",
+      "bannerUrl": "",
+      "businessId": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "rating": 4.8,
+      "description": "",
+      "isActive": true,
+      "nombre": "Aldrich Flores",
+      "photoUrl": "",
+      "averageRating": 4.8,
+      "isFeatured": false,
+      "updatedAt": {
+        "_seconds": 1786841739,
+        "_nanoseconds": 787000000
+      },
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "active": true,
+      "portadaUrl": "",
+      "ratingCount": 15,
+      "tiempoEstimadoMinutos": 15,
+      "logoUrl": "",
+      "coverUrl": "",
+      "comercioNombre": "Aldrich Flores",
+      "deliveryFee": 35,
+      "isOpen": false,
+      "costoEnvioBase": 35,
+      "name": "Aldrich Flores",
+      "category": "Restaurante",
+      "abierto": false
+    }
+  ],
+  "branches": [
+    {
+      "id": "30945c9c-3aee-4e45-b35d-a998b57cf2fa",
+      "branchId": "30945c9c-3aee-4e45-b35d-a998b57cf2fa",
+      "businessId": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "orgId": "1b485c29-b7e3-4173-a4fd-36f8bb4ec1e8",
+      "name": "Sucursal Principal",
+      "address": "SuperIntendencia de Banco 3 c al sur, 5 c este 1 c al lago, Casa esquinera Mano izquierda",
+      "city": "Managua",
+      "zone": "Amwericas #2",
+      "location": {
+        "_latitude": 12.16181980066395,
+        "_longitude": -86.18347525422485
+      },
+      "phone": "+50582397401",
+      "isPrimary": true,
+      "isActive": true,
+      "employeeIds": [],
+      "createdAt": {
+        "_seconds": 1786841737,
+        "_nanoseconds": 569000000
+      },
+      "updatedAt": {
+        "_seconds": 1786841737,
+        "_nanoseconds": 569000000
+      }
+    },
+    {
+      "id": "794f7c02-8077-40a8-b260-2fdd27a6f35d",
+      "branchId": "794f7c02-8077-40a8-b260-2fdd27a6f35d",
+      "businessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "orgId": "75b145e5-17ec-4248-a085-c962a408db86",
+      "name": "Sucursal Principal",
+      "address": "Residencial Las Delicias Casa Q529",
+      "city": "Managua",
+      "zone": "Americas #2",
+      "location": {
+        "_latitude": 12.136389,
+        "_longitude": -86.251389
+      },
+      "phone": "82397401",
+      "isPrimary": true,
+      "isActive": true,
+      "employeeIds": [],
+      "createdAt": {
+        "_seconds": 1786719549,
+        "_nanoseconds": 817000000
+      },
+      "updatedAt": {
+        "_seconds": 1786719549,
+        "_nanoseconds": 817000000
+      }
+    },
+    {
+      "id": "BR-1769095943050",
+      "name": "Tienda Las Mercedes",
+      "address": "Costado Pali",
+      "phone": "6464",
+      "manager": "Roger"
+    },
+    {
+      "id": "BR-1769095963385",
+      "name": "Tienda las Delciias",
+      "address": "cas Q529",
+      "phone": "54545",
+      "manager": "Kimberly"
+    },
+    {
+      "id": "br_1786029236396",
+      "branchId": "br_1786029236396",
+      "address": "casa del obrero 2 cuadras arriba 75 varas al lago, barrio boer , Managua, Nicaragua, 12044",
+      "lng": 0,
+      "prepTimeMinutes": 15,
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "businessName": "FRITONI",
+      "rating": 4.8,
+      "active": true,
+      "branchName": "Fritoni Boer",
+      "isActive": true,
+      "isOpen": true,
+      "phone": "",
+      "name": "Fritoni Boer",
+      "lat": 0,
+      "updatedAt": {
+        "_seconds": 1786830401,
+        "_nanoseconds": 653000000
+      }
+    },
+    {
+      "id": "br_1786029268906",
+      "branchId": "br_1786029268906",
+      "address": "Km 12.3, frente a La Contentera",
+      "lng": 0,
+      "prepTimeMinutes": 15,
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "businessName": "FRITONI",
+      "rating": 4.8,
+      "active": true,
+      "branchName": "Fritoni Carretera Masaya",
+      "isActive": true,
+      "isOpen": true,
+      "phone": "",
+      "name": "Fritoni Carretera Masaya",
+      "lat": 0,
+      "updatedAt": {
+        "_seconds": 1786830401,
+        "_nanoseconds": 826000000
+      }
+    }
+  ],
+  "merchant_applications": [
+    {
+      "id": "McIq7vqVMwDlcLiw4q36",
+      "appId": "APP-MSLC53R4-K4ZS3",
+      "businessName": "El Chanchito",
+      "legalName": "Grupo Flores",
+      "ruc": "J031003403434",
+      "category": "restaurante",
+      "address": "SuperIntendencia de Banco 3 c al sur, 5 c este 1 c al lago, Casa esquinera Mano izquierda",
+      "city": "Managua",
+      "zone": "Amwericas #2",
+      "contactName": "Aldrich Flores",
+      "phone": "+50582397401",
+      "email": "ventas@tecnocomp.com.ni",
+      "location": {
+        "_latitude": 12.16181980066395,
+        "_longitude": -86.18347525422485
+      },
+      "documents": [
+        {
+          "name": "607421313_122094264237204960_3693436955939460644_n.jpg",
+          "documentType": "RUC",
+          "storagePath": "merchant_applications_docs/APP-MSLC53R4-K4ZS3/ruc_1786251745357_607421313_122094264237204960_3693436955939460644_n.jpg",
+          "contentType": "image/jpeg",
+          "size": 104894,
+          "uploadedAt": "2026-08-09T05:02:26.629Z",
+          "status": "PENDING_REVIEW"
+        },
+        {
+          "name": "Recibo_de_pago_a_DGI_7202645010059.pdf",
+          "documentType": "SANITY_PERMIT",
+          "storagePath": "merchant_applications_docs/APP-MSLC53R4-K4ZS3/sanity_permit_1786251754756_Recibo_de_pago_a_DGI_7202645010059.pdf",
+          "contentType": "application/pdf",
+          "size": 32171,
+          "uploadedAt": "2026-08-09T05:02:35.151Z",
+          "status": "PENDING_REVIEW"
+        },
+        {
+          "name": "menu_dasborad_comercio.png",
+          "documentType": "ID_CARD",
+          "storagePath": "merchant_applications_docs/APP-MSLC53R4-K4ZS3/id_card_1786251763128_menu_dasborad_comercio.png",
+          "contentType": "image/png",
+          "size": 1156885,
+          "uploadedAt": "2026-08-09T05:02:46.057Z",
+          "status": "PENDING_REVIEW"
+        }
+      ],
+      "documentUrls": [],
+      "rejectionReason": null,
+      "docsRequestedNote": null,
+      "createdAt": {
+        "_seconds": 1786251778,
+        "_nanoseconds": 360000000
+      },
+      "reviewedAt": {
+        "_seconds": 1786841734,
+        "_nanoseconds": 154000000
+      },
+      "reviewedBy": "admin",
+      "provisionedBusinessId": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "provisionedUid": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "status": "ONBOARDING",
+      "updatedAt": {
+        "_seconds": 1786841737,
+        "_nanoseconds": 569000000
+      }
+    },
+    {
+      "id": "XEruTtRpcqXc6J9Tt2t8",
+      "appId": "XEruTtRpcqXc6J9Tt2t8",
+      "businessName": "Comercio Remediation Test",
+      "legalName": "Remediation Test SA",
+      "ruc": "20123456789",
+      "address": "Av Central 123",
+      "city": "Ciudad de Panama",
+      "zone": "",
+      "category": "RESTAURANTE",
+      "contactName": "Juan Auditor",
+      "phone": "+50761234567",
+      "email": "e2e_remediation_test_1@bluesystem.app",
+      "location": null,
+      "documents": [],
+      "documentUrls": [],
+      "docsRequestedNote": null,
+      "provisionedBusinessId": null,
+      "provisionedUid": null,
+      "provisioningError": null,
+      "createdAt": {
+        "_seconds": 1786253217,
+        "_nanoseconds": 314000000
+      },
+      "reviewedAt": {
+        "_seconds": 1786566120,
+        "_nanoseconds": 511000000
+      },
+      "rejectionReason": "prueba",
+      "reviewedBy": "admin",
+      "status": "REJECTED",
+      "updatedAt": {
+        "_seconds": 1786566120,
+        "_nanoseconds": 511000000
+      }
+    },
+    {
+      "id": "rkul8qqr6ljKyf8W7eXW",
+      "appId": "rkul8qqr6ljKyf8W7eXW",
+      "businessName": "Variedades TECNOHOME",
+      "legalName": "Grupo Flores",
+      "ruc": "J031000000",
+      "address": "Residencial Las Delicias Casa Q529",
+      "city": "Managua",
+      "zone": "Americas #2",
+      "category": "tienda",
+      "contactName": "Junior Flores",
+      "phone": "82397401",
+      "email": "gflores@unan.edu.ni",
+      "location": {
+        "_latitude": 12.136389,
+        "_longitude": -86.251389
+      },
+      "documents": [
+        {
+          "name": "image-1786717389357.jpg",
+          "documentType": "RUC",
+          "storagePath": "merchant_applications_docs/APP-MST2J6S9-GIJO7/ruc_1786719386457_image-1786717389357.jpg",
+          "contentType": "image/jpeg",
+          "size": 100106,
+          "uploadedAt": "2026-08-14T14:56:27.828Z",
+          "status": "PENDING_REVIEW"
+        },
+        {
+          "name": "image-1786717298195.jpg",
+          "documentType": "SANITY_PERMIT",
+          "storagePath": "merchant_applications_docs/APP-MST2J6S9-GIJO7/sanity_permit_1786719394803_image-1786717298195.jpg",
+          "contentType": "image/jpeg",
+          "size": 127816,
+          "uploadedAt": "2026-08-14T14:56:35.870Z",
+          "status": "PENDING_REVIEW"
+        },
+        {
+          "name": "image-1786717186171.jpg",
+          "documentType": "ID_CARD",
+          "storagePath": "merchant_applications_docs/APP-MST2J6S9-GIJO7/id_card_1786719398997_image-1786717186171.jpg",
+          "contentType": "image/jpeg",
+          "size": 110270,
+          "uploadedAt": "2026-08-14T14:56:39.831Z",
+          "status": "PENDING_REVIEW"
+        }
+      ],
+      "documentUrls": [],
+      "rejectionReason": null,
+      "docsRequestedNote": null,
+      "provisioningError": null,
+      "createdAt": {
+        "_seconds": 1786719415,
+        "_nanoseconds": 209000000
+      },
+      "reviewedAt": {
+        "_seconds": 1786719544,
+        "_nanoseconds": 364000000
+      },
+      "reviewedBy": "admin",
+      "provisionedBusinessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "provisionedUid": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "status": "ONBOARDING",
+      "updatedAt": {
+        "_seconds": 1786719549,
+        "_nanoseconds": 817000000
+      }
+    },
+    {
+      "id": "sPK3UOy6nFrurt4wzdSn",
+      "appId": "sPK3UOy6nFrurt4wzdSn",
+      "businessName": "Test Negocio Duplicado",
+      "legalName": "Test Negocio Duplicado",
+      "ruc": "123456-7",
+      "address": "Direccion de prueba",
+      "city": "Tegucigalpa",
+      "zone": "",
+      "category": "Restaurante",
+      "contactName": "Contacto de Prueba",
+      "phone": "12345678",
+      "email": "test@test.com",
+      "location": null,
+      "documents": [],
+      "documentUrls": [],
+      "docsRequestedNote": null,
+      "provisionedBusinessId": null,
+      "provisionedUid": null,
+      "provisioningError": null,
+      "createdAt": {
+        "_seconds": 1786253914,
+        "_nanoseconds": 12000000
+      },
+      "reviewedAt": {
+        "_seconds": 1786566111,
+        "_nanoseconds": 522000000
+      },
+      "rejectionReason": "prueba",
+      "reviewedBy": "admin",
+      "status": "REJECTED",
+      "updatedAt": {
+        "_seconds": 1786566111,
+        "_nanoseconds": 522000000
+      }
+    }
+  ],
+  "users_with_business_role": [
+    {
+      "id": "1768243841542",
+      "password": "123456",
+      "assignedCashBranchId": "BR-1769095943050",
+      "email": "",
+      "name": "Kim",
+      "username": "kflores",
+      "active": true,
+      "monthlySalesGoal": 1000,
+      "commissionRate": 0,
+      "lastLogin": "2026-02-24T16:09:56.717Z",
+      "role": "business",
+      "requestedRole": "",
+      "rol": "business",
+      "updatedAt": {
+        "_seconds": 1785474049,
+        "_nanoseconds": 981000000
+      }
+    },
+    {
+      "id": "8O8hJe5kSzNQxUkLwwkCsipGmAI3",
+      "fechaRegistro": "2026-07-19T17:36:12.729307Z",
+      "telefono": "82397401",
+      "uid": "8O8hJe5kSzNQxUkLwwkCsipGmAI3",
+      "email": "kim@gmail.com",
+      "nombre": "kimberly Flores",
+      "userType": "customer",
+      "role": "business",
+      "rol": "business",
+      "deletedAt": {
+        "_seconds": 1786575880,
+        "_nanoseconds": 595000000
+      },
+      "isDeleted": true,
+      "lifecycleStatus": "DEPROVISIONED",
+      "active": false,
+      "isActive": false,
+      "status": "DELETED",
+      "updatedAt": {
+        "_seconds": 1786575881,
+        "_nanoseconds": 256000000
+      }
+    },
+    {
+      "id": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "uid": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "nombre": "Junior Flores",
+      "name": "Junior Flores",
+      "email": "gflores@unan.edu.ni",
+      "telefono": "82397401",
+      "phone": "82397401",
+      "userType": "business",
+      "role": "business",
+      "rol": "business",
+      "eiamRole": "MERCHANT_OWNER",
+      "businessId": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "orgId": "75b145e5-17ec-4248-a085-c962a408db86",
+      "branchId": "794f7c02-8077-40a8-b260-2fdd27a6f35d",
+      "active": true,
+      "isActive": true,
+      "fechaRegistro": {
+        "_seconds": 1786719549,
+        "_nanoseconds": 817000000
+      },
+      "updatedAt": {
+        "_seconds": 1786719549,
+        "_nanoseconds": 817000000
+      }
+    },
+    {
+      "id": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "uid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "phone": "82397401",
+      "fechaRegistro": "1785473846992",
+      "name": "FRITONI",
+      "active": true,
+      "telefono": "82397401",
+      "isActive": true,
+      "nombre": "FRITONI",
+      "email": "fritonic@gmail.com",
+      "role": "business",
+      "rol": "business",
+      "requestedRole": "",
+      "coverUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+      "photoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028783659_607421313_122094264237204960_3693436955939460644_n.jpg?alt=media&token=e17dbcf9-b7b5-4663-b5a8-4e1578683f40",
+      "bannerUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+      "portadaUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+      "logoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028783659_607421313_122094264237204960_3693436955939460644_n.jpg?alt=media&token=e17dbcf9-b7b5-4663-b5a8-4e1578683f40",
+      "branches": [
+        {
+          "lng": 0,
+          "createdAt": "2026-08-06T15:13:56.396Z",
+          "active": true,
+          "lat": 0,
+          "id": "br_1786029236396",
+          "name": "Fritoni Boer",
+          "phone": "",
+          "address": "casa del obrero 2 cuadras arriba 75 varas al lago, barrio boer , Managua, Nicaragua, 12044"
+        },
+        {
+          "id": "br_1786029268906",
+          "name": "Fritoni Carretera Masaya",
+          "phone": "",
+          "address": "Km 12.3, frente a La Contentera",
+          "lat": 0,
+          "lng": 0,
+          "active": true,
+          "createdAt": "2026-08-06T15:14:28.906Z"
+        }
+      ],
+      "descripcion": "La fritanga evolucionó…",
+      "address": "Barrio Boer: De Tica Bus, 3 cuadras y media al lago",
+      "avgPrepTimeMinutes": 15,
+      "categoria": "Restaurante",
+      "direccion": "Barrio Boer: De Tica Bus, 3 cuadras y media al lago",
+      "description": "La fritanga evolucionó…",
+      "tiempoEstimadoMinutos": 15,
+      "comercioNombre": "FRITONI",
+      "deliveryFee": 50,
+      "isOpen": true,
+      "costoEnvioBase": 50,
+      "userType": "business",
+      "category": "Restaurante",
+      "isFeatured": true,
+      "abierto": true,
+      "updatedAt": {
+        "_seconds": 1786029431,
+        "_nanoseconds": 81000000
+      }
+    },
+    {
+      "id": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "uid": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "nombre": "Aldrich Flores",
+      "name": "Aldrich Flores",
+      "email": "ventas@tecnocomp.com.ni",
+      "telefono": "+50582397401",
+      "phone": "+50582397401",
+      "userType": "business",
+      "role": "business",
+      "rol": "business",
+      "eiamRole": "MERCHANT_OWNER",
+      "businessId": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "orgId": "1b485c29-b7e3-4173-a4fd-36f8bb4ec1e8",
+      "branchId": "30945c9c-3aee-4e45-b35d-a998b57cf2fa",
+      "active": true,
+      "isActive": true,
+      "fechaRegistro": {
+        "_seconds": 1786841737,
+        "_nanoseconds": 569000000
+      },
+      "updatedAt": {
+        "_seconds": 1786841737,
+        "_nanoseconds": 569000000
+      }
+    }
+  ],
+  "users_all_summary": {
+    "total": 41,
+    "roles": {
+      "client": 28,
+      "business": 5,
+      "seller": 2,
+      "customer": 3,
+      "courier": 1,
+      "admin": 2
+    }
+  }
+}

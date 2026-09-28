@@ -1,0 +1,453 @@
+{
+  "timestamp": "2026-08-18T01:41:46.936Z",
+  "targetUid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+  "targetBusinessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+  "targetBranchId": "br_1786988052589",
+  "auth": {
+    "error": "//cloud.google.com/docs/authentication/adc-troubleshooting/user-creds . Raw server response: \"{\"error\":{\"code\":403,\"message\":\"Your application is authenticating by using local Application Default Credentials. The identitytoolkit.googleapis.com API requires a quota project, which is not set by default. To learn how to set your quota project, see https://cloud.google.com/docs/authentication/adc-troubleshooting/user-creds .\",\"errors\":[{\"message\":\"Your application is authenticating by using local Application Default Credentials. The identitytoolkit.googleapis.com API requires a quota project, which is not set by default. To learn how to set your quota project, see https://cloud.google.com/docs/authentication/adc-troubleshooting/user-creds .\",\"domain\":\"usageLimits\",\"reason\":\"accessNotConfigured\",\"extendedHelp\":\"https://console.developers.google.com\"}],\"status\":\"PERMISSION_DENIED\",\"details\":[{\"@type\":\"type.googleapis.com/google.rpc.ErrorInfo\",\"reason\":\"SERVICE_DISABLED\",\"domain\":\"googleapis.com\",\"metadata\":{\"service\":\"identitytoolkit.googleapis.com\",\"consumer\":\"projects/764086051850\"}},{\"@type\":\"type.googleapis.com/google.rpc.LocalizedMessage\",\"locale\":\"en-US\",\"message\":\"Your application is authenticating by using local Application Default Credentials. The identitytoolkit.googleapis.com API requires a quota project, which is not set by default. To learn how to set your quota project, see https://cloud.google.com/docs/authentication/adc-troubleshooting/user-creds .\"}]}}\""
+  },
+  "userDoc": {
+    "uid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+    "fechaRegistro": "1785473846992",
+    "name": "FRITONI",
+    "active": true,
+    "isActive": true,
+    "nombre": "FRITONI",
+    "role": "business",
+    "rol": "business",
+    "requestedRole": "",
+    "coverUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+    "photoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028783659_607421313_122094264237204960_3693436955939460644_n.jpg?alt=media&token=e17dbcf9-b7b5-4663-b5a8-4e1578683f40",
+    "bannerUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+    "portadaUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+    "logoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028783659_607421313_122094264237204960_3693436955939460644_n.jpg?alt=media&token=e17dbcf9-b7b5-4663-b5a8-4e1578683f40",
+    "avgPrepTimeMinutes": 15,
+    "categoria": "Restaurante",
+    "tiempoEstimadoMinutos": 15,
+    "comercioNombre": "FRITONI",
+    "isOpen": true,
+    "userType": "business",
+    "category": "Restaurante",
+    "isFeatured": true,
+    "abierto": true,
+    "originEvidence": "Merchant business account fritonic@gmail.com linked to commerce dlRY2ZVUqPR2Fxoc3cazcOxxRJg2 (FRITONI)",
+    "createdVia": "MERCHANT_AFFILIATION",
+    "originClassification": "AFFILIATION",
+    "identityOrigin": "AFFILIATION",
+    "deliveryFee": 35,
+    "costoEnvioBase": 35,
+    "descripcion": "Especialista en Comida Nica",
+    "address": "Bo. Boer de TicaBus 2c al Sur",
+    "phone": "82397401",
+    "direccion": "Bo. Boer de TicaBus 2c al Sur",
+    "description": "Especialista en Comida Nica",
+    "telefono": "82397401",
+    "email": "fritoni@gmail.com",
+    "branches": [
+      {
+        "branchId": "br_1786988052589",
+        "createdAt": {
+          "_seconds": 1786988053,
+          "_nanoseconds": 996000000
+        },
+        "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+        "status": "OPERATIONAL",
+        "deliveryRadiusKm": 5,
+        "locationGPS": {
+          "lng": -86.251389,
+          "lat": 12.136389
+        },
+        "isActive": true,
+        "direccion": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+        "longitude": -86.251389,
+        "phone": "",
+        "address": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+        "lng": 0,
+        "prepTimeMinutes": 15,
+        "abierto": true,
+        "active": true,
+        "telefono": "",
+        "latitude": 12.136389,
+        "isOpen": true,
+        "branchName": "Fritoni Boer",
+        "lat": 0,
+        "id": "br_1786988052589",
+        "radioCoberturaKm": 5,
+        "rating": 4.8,
+        "name": "Fritoni Boer",
+        "nombre": "Fritoni Boer",
+        "businessName": "FRITONI",
+        "updatedAt": {
+          "_seconds": 1786988057,
+          "_nanoseconds": 78000000
+        }
+      },
+      {
+        "branchId": "br_1786993038705",
+        "id": "br_1786993038705",
+        "name": "Fritoni Carrtera Masaya",
+        "nombre": "Fritoni Carrtera Masaya",
+        "direccion": "Km 12.5 Contiguo a Restaurante Cantera",
+        "telefono": "88888888",
+        "locationGPS": {
+          "lat": 12.136389,
+          "lng": -86.251389
+        },
+        "active": true,
+        "createdAt": "2026-08-17T18:57:18.707Z"
+      }
+    ],
+    "eiamRoleLevel": 6,
+    "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+    "assignedUsers": [
+      {
+        "uid": "fritoni@gmail.com",
+        "email": "fritoni@gmail.com",
+        "assignedAt": "2026-08-17T20:31:13.468Z"
+      }
+    ],
+    "branchId": "br_1786988052589",
+    "eiamRole": "MERCHANT_OWNER",
+    "orgId": "org_default_bluesystem",
+    "status": "ACTIVE",
+    "updatedAt": {
+      "_seconds": 1786999027,
+      "_nanoseconds": 260000000
+    }
+  },
+  "businessDoc": {
+    "deliveryTime": "15 min",
+    "bannerUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+    "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+    "rating": 4.8,
+    "isActive": true,
+    "nombre": "FRITONI",
+    "photoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028783659_607421313_122094264237204960_3693436955939460644_n.jpg?alt=media&token=e17dbcf9-b7b5-4663-b5a8-4e1578683f40",
+    "averageRating": 4.8,
+    "id": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+    "isFeatured": true,
+    "avgPrepTimeMinutes": 15,
+    "categoria": "Restaurante",
+    "active": true,
+    "portadaUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+    "ratingCount": 15,
+    "tiempoEstimadoMinutos": 15,
+    "logoUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028783659_607421313_122094264237204960_3693436955939460644_n.jpg?alt=media&token=e17dbcf9-b7b5-4663-b5a8-4e1578683f40",
+    "coverUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2F1786028790361_banner_fritoni.png?alt=media&token=fb014795-a1dd-46f3-b776-f4a80f8a3bff",
+    "comercioNombre": "FRITONI",
+    "isOpen": true,
+    "name": "FRITONI",
+    "category": "Restaurante",
+    "abierto": true,
+    "lifecycleStatus": "ACTIVE",
+    "source": "DIRECT_ADMIN",
+    "orgId": "org_default_bluesystem",
+    "status": "ACTIVE",
+    "featured": true,
+    "deliveryFee": 35,
+    "costoEnvioBase": 35,
+    "descripcion": "Especialista en Comida Nica",
+    "phone": "82397401",
+    "description": "Especialista en Comida Nica",
+    "telefono": "82397401",
+    "email": "fritoni@gmail.com",
+    "ownerUid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+    "onboardingStatus": "COMPLETED",
+    "wizardCompleted": true,
+    "onboardingCompletedAt": {
+      "_seconds": 1787017057,
+      "_nanoseconds": 200000000
+    },
+    "address": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+    "city": "Managua",
+    "zone": "",
+    "direccion": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+    "branchIds": [
+      "br_1786988052589"
+    ],
+    "updatedAt": {
+      "_seconds": 1787017057,
+      "_nanoseconds": 200000000
+    }
+  },
+  "branchDoc": {
+    "branchId": "br_1786988052589",
+    "id": "br_1786988052589",
+    "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+    "businessName": "FRITONI",
+    "name": "Fritoni Boer",
+    "nombre": "Fritoni Boer",
+    "branchName": "Fritoni Boer",
+    "address": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+    "direccion": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+    "telefono": "",
+    "locationGPS": {
+      "lat": 12.136389,
+      "lng": -86.251389
+    },
+    "latitude": 12.136389,
+    "longitude": -86.251389,
+    "deliveryRadiusKm": 5,
+    "radioCoberturaKm": 5,
+    "prepTimeMinutes": 15,
+    "isOpen": true,
+    "abierto": true,
+    "active": true,
+    "isActive": true,
+    "status": "OPERATIONAL",
+    "createdAt": {
+      "_seconds": 1786988053,
+      "_nanoseconds": 996000000
+    },
+    "rating": 4.8,
+    "lng": -86.251389,
+    "lat": 12.136389,
+    "isPrimary": true,
+    "orgId": "org_default_bluesystem",
+    "deliveryFee": 35,
+    "coverageRadiusKm": 5,
+    "city": "Managua",
+    "phone": "82397401",
+    "zone": "",
+    "location": {
+      "latitude": 12.136389,
+      "longitude": -86.251389
+    },
+    "updatedAt": {
+      "_seconds": 1787017057,
+      "_nanoseconds": 200000000
+    }
+  },
+  "restaurantSettingsDoc": {
+    "address": "Barrio Boer; casa del obrero 2 cuadras arriba 75 varas al lago",
+    "kitchenPrepTimeMinutes": 15,
+    "city": "Managua",
+    "accountType": "CORRIENTE",
+    "bankName": "BAC Credomatic",
+    "accountNumber": "1213123",
+    "restaurantId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+    "version": 1,
+    "legalName": "FRITONI",
+    "accountHolder": "FRITONI NICARAGUA",
+    "schedule": {
+      "domingo": {
+        "isOpen": false,
+        "close": "21:00",
+        "open": "09:00"
+      },
+      "miercoles": {
+        "isOpen": true,
+        "close": "22:00",
+        "open": "08:00"
+      },
+      "jueves": {
+        "isOpen": true,
+        "close": "22:00",
+        "open": "08:00"
+      },
+      "martes": {
+        "isOpen": true,
+        "close": "22:00",
+        "open": "08:00"
+      },
+      "sabado": {
+        "isOpen": true,
+        "close": "23:00",
+        "open": "09:00"
+      },
+      "lunes": {
+        "isOpen": true,
+        "close": "22:00",
+        "open": "08:00"
+      },
+      "viernes": {
+        "isOpen": true,
+        "close": "23:00",
+        "open": "08:00"
+      }
+    },
+    "deliveryFee": 35,
+    "isOpen": true,
+    "autoAcceptOrders": false,
+    "phone": "82397401",
+    "zone": "",
+    "maxDeliveryRadiusKm": 5,
+    "acceptedPayments": [
+      "EFECTIVO",
+      "TARJETA",
+      "TRANSFERENCIA"
+    ],
+    "printReceiptOnOrder": false,
+    "commercialName": "FRITONI",
+    "updatedAt": {
+      "_seconds": 1787017057,
+      "_nanoseconds": 200000000
+    }
+  },
+  "memberships": [
+    {
+      "id": "mem_fritoni_dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "uid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "email": "fritonic@gmail.com",
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "orgId": "org_default_bluesystem",
+      "branchId": "br_1786988052589",
+      "role": "MERCHANT_OWNER",
+      "status": "ACTIVE",
+      "permissions": [
+        "VIEW_ORDERS",
+        "MANAGE_ORDERS",
+        "VIEW_MENU",
+        "MANAGE_MENU",
+        "VIEW_FINANCE",
+        "EXPORT_REPORT",
+        "MANAGE_EMPLOYEES",
+        "MANAGE_SETTINGS",
+        "VIEW_ANALYTICS",
+        "CLOSE_CASH_REGISTER"
+      ],
+      "createdAt": {
+        "_seconds": 1786999027,
+        "_nanoseconds": 260000000
+      },
+      "updatedAt": {
+        "_seconds": 1786999027,
+        "_nanoseconds": 260000000
+      }
+    }
+  ],
+  "categories": [
+    {
+      "id": "5fnue8TC4iZlKoz33VTq",
+      "createdAt": {
+        "_seconds": 1785894851,
+        "_nanoseconds": 81000000
+      },
+      "name": "Fritanga",
+      "icon": "📁",
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "active": true,
+      "orderIndex": 2
+    },
+    {
+      "id": "cat_dlRY2ZVUqPR2Fxoc3cazcOxxRJg2_1787017056830",
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "name": "Especialidades NICA",
+      "nombre": "Especialidades NICA",
+      "description": "Categoría inicial de catálogo",
+      "active": true,
+      "order": 1,
+      "createdAt": {
+        "_seconds": 1787017057,
+        "_nanoseconds": 200000000
+      },
+      "updatedAt": {
+        "_seconds": 1787017057,
+        "_nanoseconds": 200000000
+      }
+    },
+    {
+      "id": "tHtzHeHhaMFUS3RTBTuJ",
+      "createdAt": {
+        "_seconds": 1785975002,
+        "_nanoseconds": 671000000
+      },
+      "name": "Nica",
+      "icon": "📁",
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "active": true,
+      "orderIndex": 3
+    }
+  ],
+  "products": [
+    {
+      "id": "prod_dlRY2ZVUqPR2Fxoc3cazcOxxRJg2_1787017056830",
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "name": "Quezuda",
+      "nombre": "Quezuda",
+      "price": 200,
+      "precio": 200,
+      "category": "Especialidades NICA",
+      "categoria": "Especialidades NICA",
+      "categoryId": "cat_dlRY2ZVUqPR2Fxoc3cazcOxxRJg2_1787017056830",
+      "description": "Enchilada de Carne llena de mozarela",
+      "imageUrl": "https://firebasestorage.googleapis.com/v0/b/bluesystem-7c9af.firebasestorage.app/o/commerce_assets%2FdlRY2ZVUqPR2Fxoc3cazcOxxRJg2%2FproductImageUrl_1787016342311_761627607_122128854747204960_6540336180150770248_n.jpg?alt=media&token=f8715ece-e000-4ab1-8208-9c8cf94e5eda",
+      "isAvailable": true,
+      "available": true,
+      "active": true,
+      "stockStatus": "AVAILABLE",
+      "createdAt": {
+        "_seconds": 1787017057,
+        "_nanoseconds": 200000000
+      },
+      "updatedAt": {
+        "_seconds": 1787017057,
+        "_nanoseconds": 200000000
+      }
+    }
+  ],
+  "auditEvents": [
+    {
+      "id": "Iv7e1rThgLjANGkqmdYh",
+      "event": "MERCHANT_LEGACY_REPROVISIONED",
+      "eventType": "MERCHANT_LEGACY_REPROVISIONED",
+      "domain": "IDENTITY",
+      "actorUid": "SYSTEM_MIGRATION",
+      "targetUid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "orgId": "org_default_bluesystem",
+      "branchId": "br_1786988052589",
+      "membershipId": "mem_fritoni_dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "previousRole": "business",
+      "newRole": "MERCHANT_OWNER",
+      "status": "ACTIVE",
+      "correlationId": "reprov_1786999024917",
+      "reason": "Canonical EIAM v2.2 legacy merchant re-provisioning",
+      "timestamp": {
+        "_seconds": 1786999027,
+        "_nanoseconds": 260000000
+      }
+    },
+    {
+      "id": "TwhTT1jwYqcVb81bVAK3",
+      "event": "BUSINESS_ACTIVATED",
+      "domain": "COMMERCE_OPERATIONS",
+      "actorUid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "orgId": "org_default_bluesystem",
+      "branchId": "br_1786988052589",
+      "triggeredBy": "MERCHANT_OWNER",
+      "correlationId": "act_1787017056836",
+      "metadata": {
+        "businessName": "FRITONI",
+        "productName": "Quezuda",
+        "completionPercentage": 100
+      },
+      "timestamp": {
+        "_seconds": 1787017057,
+        "_nanoseconds": 200000000
+      }
+    },
+    {
+      "id": "Zoov2pg5rKLYKQW5Pofc",
+      "event": "MERCHANT_LEGACY_REPROVISIONED",
+      "eventType": "MERCHANT_LEGACY_REPROVISIONED",
+      "domain": "IDENTITY",
+      "actorUid": "SYSTEM_MIGRATION",
+      "targetUid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "orgId": "org_default_bluesystem",
+      "branchId": "br_1786988052589",
+      "membershipId": "mem_fritoni_dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "previousRole": "business",
+      "newRole": "MERCHANT_OWNER",
+      "status": "ACTIVE",
+      "correlationId": "reprov_1786998995910",
+      "reason": "Canonical EIAM v2.2 legacy merchant re-provisioning",
+      "timestamp": {
+        "_seconds": 1786998998,
+        "_nanoseconds": 341000000
+      }
+    }
+  ]
+}

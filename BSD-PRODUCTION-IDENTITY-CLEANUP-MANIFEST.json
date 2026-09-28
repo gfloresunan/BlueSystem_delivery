@@ -1,0 +1,2966 @@
+{
+  "protocol": "BSD-PRODUCTION-IDENTITY-DATA-CLEANUP-FORENSIC-001",
+  "timestamp": "2026-09-10T15:48:26.027Z",
+  "totalAuthUsers": 33,
+  "totalFirestoreUsers": 63,
+  "totalFirestoreCouriers": 59,
+  "totalClassifiedIdentities": 72,
+  "classificationSummary": {
+    "MERCHANT_OWNER_REAL": 8,
+    "CUSTOMER_REAL": 41,
+    "COURIER_REAL": 5,
+    "STUB": 8,
+    "UNKNOWN": 6,
+    "MERCHANT_STAFF_REAL": 2,
+    "SUPER_ADMIN": 1,
+    "ADMIN": 1
+  },
+  "proposedActionSummary": {
+    "KEEP": 20,
+    "DELETE_COURIER_PROFILE_ONLY": 46,
+    "REVIEW_REQUIRED": 6
+  },
+  "superAdminCandidates": [
+    {
+      "uid": "XWsjzZe8lsfthRQ5PgbDzlqA2nX2",
+      "email": "geraldflores07@gmail.com",
+      "name": "Gerald José Flores Gutiérrez"
+    }
+  ],
+  "manifest": [
+    {
+      "uid": "04JAKPrmXjg7s2CDiT3kUPOhBwn2",
+      "email": "tecnostore@bluesystemdelivery.com",
+      "displayName": "Admin Tecnostore",
+      "role": "OWNER",
+      "classification": "MERCHANT_OWNER_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Propietario / Representante legal de comercio real activo con catálogo y operaciones.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "tecnostore@bluesystemdelivery.com",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1788806841385",
+        "createdAt": "1788028009289"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 1,
+        "employeesCount": 0,
+        "userDevicesCount": 2,
+        "applicationsCount": 0,
+        "auditEventsCount": 11,
+        "isReferencedInBusiness": true,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "1U4FlwZXl0fhVL0KH3jN5deR2nk2",
+      "email": "voladonic@gmail.com",
+      "displayName": "Volado Nicaragua",
+      "role": "CUSTOMER",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "voladonic@gmail.com",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1787629363688",
+        "createdAt": "1787629363688"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 2,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 1,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "3Wt0XdzeOTfG1OXn72ApIhVbE5i1",
+      "email": "familiaflorescenteno@gmail.com",
+      "displayName": "Kimberly Flores Centeno",
+      "role": "CUSTOMER",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "familiaflorescenteno@gmail.com",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1788884008009",
+        "createdAt": "1784922271677"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 7,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 1,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "6VkVNQ2yRzS67kEIYfyATkuwBiI3",
+      "email": "deliveryjuan@gmail.com",
+      "displayName": "Juan Delivery",
+      "role": "DRIVER",
+      "classification": "COURIER_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Courier canónico certificado de la flota operacional activa.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "deliveryjuan@gmail.com",
+        "disabled": false,
+        "emailVerified": false,
+        "lastLoginAt": "1788016779026",
+        "createdAt": "1787192920464"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 10,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 2,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "8O8hJe5kSzNQxUkLwwkCsipGmAI3",
+      "email": "kim@gmail.com",
+      "displayName": "kimberly Flores",
+      "role": "BUSINESS",
+      "classification": "STUB",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Documento en /couriers que no representa un courier operacional. Retener usuario y Auth.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "kim@gmail.com",
+        "disabled": true,
+        "emailVerified": false,
+        "lastLoginAt": "1785543623081",
+        "createdAt": "1784482573200"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "9QHYGkSa3nWiJ7KfPkccjjuIaYp2",
+      "email": "hpaz@gmail.com",
+      "displayName": "Henry Paz",
+      "role": "COURIER",
+      "classification": "COURIER_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Courier canónico certificado de la flota operacional activa.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "hpaz@gmail.com",
+        "disabled": false,
+        "emailVerified": false,
+        "lastLoginAt": "1788916178356",
+        "createdAt": "1784482623446"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 21,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 2,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "BhUswUa2cITnTR86fJQB3YGKJSm1",
+      "email": "argimleviatan@gmail.com",
+      "displayName": "MSc. William Armando Chávez",
+      "role": "CUSTOMER",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "argimleviatan@gmail.com",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1787589214211",
+        "createdAt": "1787589214210"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 1,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "BwbYQ9MpORcuTizQOYmskBIjZch2",
+      "email": "tecnohome@bluesystemdelivery.com",
+      "displayName": "Gabriel Flores",
+      "role": "BUSINESS",
+      "classification": "MERCHANT_OWNER_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Propietario / Representante legal de comercio real activo con catálogo y operaciones.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": false,
+        "courier_balances": false
+      },
+      "authAccount": {
+        "email": "tecnohome@bluesystemdelivery.com",
+        "disabled": false,
+        "emailVerified": false,
+        "lastLoginAt": "1789048632639",
+        "createdAt": "1788837748752"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": false,
+        "hasCourierBalance": false,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 1,
+        "employeesCount": 0,
+        "userDevicesCount": 1,
+        "applicationsCount": 0,
+        "auditEventsCount": 9,
+        "isReferencedInBusiness": true,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": false
+      }
+    },
+    {
+      "uid": "C6adh99jAXNqXJpIZaGFJJ5kFh72",
+      "email": "deliverypedro@gmail.com",
+      "displayName": "Delivery Pedro Flores",
+      "role": "COURIER",
+      "classification": "COURIER_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Courier canónico certificado de la flota operacional activa.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "deliverypedro@gmail.com",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1787897041516",
+        "createdAt": "1787778796447"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 1,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 1,
+        "applicationsCount": 0,
+        "auditEventsCount": 1,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "EBRcd7WUjkMtyBhbpay7nDOA6GK2",
+      "email": "afiliado.comercio.e2e@gmail.com",
+      "displayName": "Gerente Auditoría",
+      "role": "OWNER",
+      "classification": "MERCHANT_OWNER_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Propietario / Representante legal de comercio real activo con catálogo y operaciones.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": false,
+        "courier_balances": false
+      },
+      "authAccount": {
+        "email": "afiliado.comercio.e2e@gmail.com",
+        "disabled": true,
+        "emailVerified": false,
+        "lastLoginAt": null,
+        "createdAt": "1788461173378"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": false,
+        "hasCourierBalance": false,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 1,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 2,
+        "isReferencedInBusiness": true,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": false
+      }
+    },
+    {
+      "uid": "G5HO4FxxW8f4s3JkeEB60wyWfdY2",
+      "email": "admin@tecnocomp.com.ni",
+      "displayName": null,
+      "role": null,
+      "classification": "UNKNOWN",
+      "proposedAction": "REVIEW_REQUIRED",
+      "reason": "Identidad no determinística según reglas automáticas; requiere análisis manual.",
+      "risk": "HIGH",
+      "firestoreDocuments": {
+        "users": false,
+        "couriers": false,
+        "courier_balances": false
+      },
+      "authAccount": {
+        "email": "admin@tecnocomp.com.ni",
+        "disabled": false,
+        "emailVerified": false,
+        "lastLoginAt": "1785434002562",
+        "createdAt": "1785434002562"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": false,
+        "hasCourierDoc": false,
+        "hasCourierBalance": false,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": null,
+        "isReferencedInMerchant": null
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": false,
+        "hasCourierSnapshot": false
+      }
+    },
+    {
+      "uid": "IAjm32V7rXNY1beBc4yKv9zgtIC3",
+      "email": "junior@gmail.com",
+      "displayName": null,
+      "role": null,
+      "classification": "UNKNOWN",
+      "proposedAction": "REVIEW_REQUIRED",
+      "reason": "Identidad no determinística según reglas automáticas; requiere análisis manual.",
+      "risk": "HIGH",
+      "firestoreDocuments": {
+        "users": false,
+        "couriers": false,
+        "courier_balances": false
+      },
+      "authAccount": {
+        "email": "junior@gmail.com",
+        "disabled": false,
+        "emailVerified": false,
+        "lastLoginAt": "1784066732826",
+        "createdAt": "1784066732826"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": false,
+        "hasCourierDoc": false,
+        "hasCourierBalance": false,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": null,
+        "isReferencedInMerchant": null
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": false,
+        "hasCourierSnapshot": false
+      }
+    },
+    {
+      "uid": "J9IZ5L8C3ZfB4zZiRopmU8KmQm63",
+      "email": "gabifores@bluesystemdelivery.com",
+      "displayName": "Gabriel Flores",
+      "role": "CUSTOMER",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "gabifores@bluesystemdelivery.com",
+        "disabled": false,
+        "emailVerified": false,
+        "lastLoginAt": "1788040507836",
+        "createdAt": "1788023442448"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 2,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "O6DSYllEA1fPMkueKWrF4MxkSP93",
+      "email": "admin@ecnocomp.com.ni",
+      "displayName": null,
+      "role": null,
+      "classification": "UNKNOWN",
+      "proposedAction": "REVIEW_REQUIRED",
+      "reason": "Identidad no determinística según reglas automáticas; requiere análisis manual.",
+      "risk": "HIGH",
+      "firestoreDocuments": {
+        "users": false,
+        "couriers": false,
+        "courier_balances": false
+      },
+      "authAccount": {
+        "email": "admin@ecnocomp.com.ni",
+        "disabled": false,
+        "emailVerified": false,
+        "lastLoginAt": "1784942754718",
+        "createdAt": "1784942754718"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": false,
+        "hasCourierDoc": false,
+        "hasCourierBalance": false,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": null,
+        "isReferencedInMerchant": null
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": false,
+        "hasCourierSnapshot": false
+      }
+    },
+    {
+      "uid": "OfAvkWMNGFMSbjSLq5WcvnGiEDv2",
+      "email": "yy@gmail.com",
+      "displayName": "prueba",
+      "role": "CUSTOMER",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "yy@gmail.com",
+        "disabled": false,
+        "emailVerified": false,
+        "lastLoginAt": "1788314459284",
+        "createdAt": "1788314459284"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "PDziWizeJIO83ZUcsrgznmod7vz2",
+      "email": "pcenteno@gmail.com",
+      "displayName": null,
+      "role": null,
+      "classification": "UNKNOWN",
+      "proposedAction": "REVIEW_REQUIRED",
+      "reason": "Identidad no determinística según reglas automáticas; requiere análisis manual.",
+      "risk": "HIGH",
+      "firestoreDocuments": {
+        "users": false,
+        "couriers": false,
+        "courier_balances": false
+      },
+      "authAccount": {
+        "email": "pcenteno@gmail.com",
+        "disabled": false,
+        "emailVerified": false,
+        "lastLoginAt": "1784159225225",
+        "createdAt": "1784050120321"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": false,
+        "hasCourierDoc": false,
+        "hasCourierBalance": false,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": null,
+        "isReferencedInMerchant": null
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": false,
+        "hasCourierSnapshot": false
+      }
+    },
+    {
+      "uid": "QjvtPl3SMfetU7RuYunTzJIM4My1",
+      "email": "moises@gmail.com",
+      "displayName": null,
+      "role": null,
+      "classification": "UNKNOWN",
+      "proposedAction": "REVIEW_REQUIRED",
+      "reason": "Identidad no determinística según reglas automáticas; requiere análisis manual.",
+      "risk": "HIGH",
+      "firestoreDocuments": {
+        "users": false,
+        "couriers": false,
+        "courier_balances": false
+      },
+      "authAccount": {
+        "email": "moises@gmail.com",
+        "disabled": false,
+        "emailVerified": false,
+        "lastLoginAt": "1784154079719",
+        "createdAt": "1784154079719"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": false,
+        "hasCourierDoc": false,
+        "hasCourierBalance": false,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": null,
+        "isReferencedInMerchant": null
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": false,
+        "hasCourierSnapshot": false
+      }
+    },
+    {
+      "uid": "SlFFl3rNi4RBxJIoxqOhcuwyzcS2",
+      "email": "videoflorescenteno@gmail.com",
+      "displayName": "Familia Flores Centeno",
+      "role": "CUSTOMER",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "videoflorescenteno@gmail.com",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1788559018214",
+        "createdAt": "1787163797733"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 13,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 1,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "VR2PsICIj0bvOqZknpTevYdsb0n2",
+      "email": "cliente@bluesystemdelivery.com",
+      "displayName": "Cliente App",
+      "role": "CUSTOMER",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "cliente@bluesystemdelivery.com",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1788799268533",
+        "createdAt": "1788313148960"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 2,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "WSelhBHeIRUjrWFJLndenesX0GW2",
+      "email": "jeremymaudiel@gmail.com",
+      "displayName": "Jeremy Mudiel Reyes",
+      "role": "CUSTOMER",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Cliente real del sistema con pedidos, cuenta Auth o dispositivos registrados.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": false,
+        "courier_balances": false
+      },
+      "authAccount": {
+        "email": "jeremymaudiel@gmail.com",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1788608432933",
+        "createdAt": "1788608432933"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": false,
+        "hasCourierBalance": false,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 1,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": false
+      }
+    },
+    {
+      "uid": "XWNzPT5p6fbf7reFdFBNTZoQrY42",
+      "email": "gflores@unan.edu.ni",
+      "displayName": "Junior Flores",
+      "role": "OWNER",
+      "classification": "MERCHANT_STAFF_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Personal operativo de comercio vinculado mediante /employees o /membership.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "gflores@unan.edu.ni",
+        "disabled": true,
+        "emailVerified": false,
+        "lastLoginAt": null,
+        "createdAt": "1786719548324"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 1,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 1,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "XWsjzZe8lsfthRQ5PgbDzlqA2nX2",
+      "email": "geraldflores07@gmail.com",
+      "displayName": "Gerald José Flores Gutiérrez",
+      "role": "SUPER_ADMIN",
+      "classification": "SUPER_ADMIN",
+      "proposedAction": "KEEP",
+      "reason": "Plataforma Core — Super Administrador operativo inmutable.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "geraldflores07@gmail.com",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1789049935886",
+        "createdAt": "1784041682241"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 1,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 159,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "YFpQsfuTS3PLMggjR4wXMcmxvuq1",
+      "email": "aldrich@gmail.com",
+      "displayName": null,
+      "role": null,
+      "classification": "UNKNOWN",
+      "proposedAction": "REVIEW_REQUIRED",
+      "reason": "Identidad no determinística según reglas automáticas; requiere análisis manual.",
+      "risk": "HIGH",
+      "firestoreDocuments": {
+        "users": false,
+        "couriers": false,
+        "courier_balances": false
+      },
+      "authAccount": {
+        "email": "aldrich@gmail.com",
+        "disabled": false,
+        "emailVerified": false,
+        "lastLoginAt": "1784142379284",
+        "createdAt": "1784142109624"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": false,
+        "hasCourierDoc": false,
+        "hasCourierBalance": false,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": null,
+        "isReferencedInMerchant": null
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": false,
+        "hasCourierSnapshot": false
+      }
+    },
+    {
+      "uid": "YO76WMtN2XRnZDd9aEarFSnWDip1",
+      "email": "clienteapp@bluesystemdelivery.com",
+      "displayName": "App Cliente",
+      "role": "CUSTOMER",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Cliente real del sistema con pedidos, cuenta Auth o dispositivos registrados.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": false,
+        "courier_balances": false
+      },
+      "authAccount": {
+        "email": "clienteapp@bluesystemdelivery.com",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1789048288569",
+        "createdAt": "1788804369099"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": false,
+        "hasCourierBalance": false,
+        "ordersAsCustomerCount": 4,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 2,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 2,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": false
+      }
+    },
+    {
+      "uid": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+      "email": "fritonic@gmail.com",
+      "displayName": "FRITONI",
+      "role": "BUSINESS",
+      "classification": "MERCHANT_OWNER_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Propietario / Representante legal de comercio real activo con catálogo y operaciones.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "fritonic@gmail.com",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1788914597079",
+        "createdAt": "1785473846618"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 3,
+        "membershipsCount": 1,
+        "employeesCount": 0,
+        "userDevicesCount": 3,
+        "applicationsCount": 0,
+        "auditEventsCount": 20,
+        "isReferencedInBusiness": true,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "h00PIZpMgxSaqSVnYpRLPq0DYGC3",
+      "email": "itedvirtual@gmail.com",
+      "displayName": "ITED Virtual",
+      "role": "CUSTOMER",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "itedvirtual@gmail.com",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1788922000965",
+        "createdAt": "1784942569543"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 19,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 2,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "pCl8QPhEcdW0ImOF7NyLovym3Y83",
+      "email": "comercio.cert.1788461012094@bluesystemdelivery.com",
+      "displayName": "Gerente Auditoría",
+      "role": "OWNER",
+      "classification": "MERCHANT_OWNER_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Propietario / Representante legal de comercio real activo con catálogo y operaciones.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": false,
+        "courier_balances": false
+      },
+      "authAccount": {
+        "email": "comercio.cert.1788461012094@bluesystemdelivery.com",
+        "disabled": true,
+        "emailVerified": false,
+        "lastLoginAt": null,
+        "createdAt": "1788461024704"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": false,
+        "hasCourierBalance": false,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 1,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 1,
+        "isReferencedInBusiness": true,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": false
+      }
+    },
+    {
+      "uid": "qBdECx1vCFbbz4TNgCk1xCdQnNE2",
+      "email": "info@itedvirtual.edu.ni",
+      "displayName": "Rachel Flores",
+      "role": "CUSTOMER",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "info@itedvirtual.edu.ni",
+        "disabled": false,
+        "emailVerified": false,
+        "lastLoginAt": "1787792221279",
+        "createdAt": "1787786665082"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 2,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "qtlV8m8wj0ed0tQFXKzjfXKzQ5g2",
+      "email": "ventas@tecnocomp.com.ni",
+      "displayName": "Aldrich Flores",
+      "role": "OWNER",
+      "classification": "MERCHANT_OWNER_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Propietario / Representante legal de comercio real activo con catálogo y operaciones.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "ventas@tecnocomp.com.ni",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1787277072216",
+        "createdAt": "1786841736616"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 1,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 9,
+        "isReferencedInBusiness": true,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "rCpnpzQVcoPDoUdU4cJE1HpuLGA2",
+      "email": "delivery@bluesystemdelivery.com",
+      "displayName": "Delivery Jinotega Flores",
+      "role": "COURIER",
+      "classification": "COURIER_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Courier canónico certificado de la flota operacional activa.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "delivery@bluesystemdelivery.com",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1788987604489",
+        "createdAt": "1788493023016"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 2,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 2,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 2,
+        "applicationsCount": 0,
+        "auditEventsCount": 1,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "s70TqbvhFHMN51tIYEUSZldIt7y2",
+      "email": "jbporcinos@bluesystemdelivery.com",
+      "displayName": "Jeremy Reyes",
+      "role": "OWNER",
+      "classification": "MERCHANT_OWNER_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Propietario / Representante legal de comercio real activo con catálogo y operaciones.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": false,
+        "courier_balances": false
+      },
+      "authAccount": {
+        "email": "jbporcinos@bluesystemdelivery.com",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1788835442047",
+        "createdAt": "1788458356315"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": false,
+        "hasCourierBalance": false,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 3,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 4,
+        "isReferencedInBusiness": true,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": false
+      }
+    },
+    {
+      "uid": "vbg7d4PwcEc5qe2KJ4kP2kfEXbq1",
+      "email": "perlactalavera@gmail.com",
+      "displayName": "Perla Centeno",
+      "role": "CUSTOMER",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": {
+        "email": "perlactalavera@gmail.com",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1787676480039",
+        "createdAt": "1787276671841"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 2,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "waSkHJkcbofJp9WiOu1ZcbdxsN72",
+      "email": "app@bluesystemdelivery.com",
+      "displayName": "Cliente",
+      "role": "CUSTOMER",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Cliente real del sistema con pedidos, cuenta Auth o dispositivos registrados.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": false,
+        "courier_balances": false
+      },
+      "authAccount": {
+        "email": "app@bluesystemdelivery.com",
+        "disabled": false,
+        "emailVerified": true,
+        "lastLoginAt": "1788525841236",
+        "createdAt": "1788498149691"
+      },
+      "dependencies": {
+        "hasAuth": true,
+        "hasUserDoc": true,
+        "hasCourierDoc": false,
+        "hasCourierBalance": false,
+        "ordersAsCustomerCount": 1,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 1,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": false
+      }
+    },
+    {
+      "uid": "1768226535785",
+      "email": null,
+      "displayName": "Gerald José  Flores Gutiérrez",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-1768621181014",
+      "email": null,
+      "displayName": "Zamir Ocornor",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-1769025804680",
+      "email": null,
+      "displayName": "Omar Altamirano ",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-1769029685895",
+      "email": null,
+      "displayName": "Richard centeno",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-1769098535884",
+      "email": null,
+      "displayName": "Adolfo Urbina",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-1769190932815",
+      "email": null,
+      "displayName": "vicenta gutirrrez",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-1769194803657",
+      "email": null,
+      "displayName": "adolfo  urbina",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-1769465117595",
+      "email": null,
+      "displayName": "andy flores",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-1769487243198",
+      "email": null,
+      "displayName": "Helo Jdkdk",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-1769620170492",
+      "email": null,
+      "displayName": "pepe flores",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-1769633352410",
+      "email": null,
+      "displayName": "Gggg Ghh",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-1769711990359",
+      "email": null,
+      "displayName": "venus flores",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-1770060240159",
+      "email": null,
+      "displayName": "Jairo  AldNa",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-1771428610412",
+      "email": null,
+      "displayName": "Nelson Busto",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-1772377026947",
+      "email": null,
+      "displayName": "Luciana  Aldana ",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-CL-1768337682525",
+      "email": null,
+      "displayName": "allan mendoza",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-CL-1768342901776",
+      "email": null,
+      "displayName": "zoe flores",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-CL-1768365031013",
+      "email": null,
+      "displayName": "maria chavez",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "USR-CL-1768422839897",
+      "email": null,
+      "displayName": "denis flores",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "admin_initial",
+      "email": "admin@blue.com",
+      "displayName": "Admin Gerald Flores",
+      "role": "ADMIN",
+      "classification": "ADMIN",
+      "proposedAction": "KEEP",
+      "reason": "Personal administrativo de plataforma con rol EIAM activo.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "bbb760d5-a8f3-4700-9a96-f58f11f345ac",
+      "email": null,
+      "displayName": "El Chanchito",
+      "role": "BUSINESS",
+      "classification": "MERCHANT_OWNER_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Propietario / Representante legal de comercio real activo con catálogo y operaciones.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 1,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": true,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "e7dc911e-e587-4be9-a741-7d9d9828011f",
+      "email": "tecnohome@gmail.com",
+      "displayName": "Variedades TECNOHOME",
+      "role": "BUSINESS",
+      "classification": "STUB",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Documento en /couriers que no representa un courier operacional. Retener usuario y Auth.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "kpENhRwdmocYZsYZonmfWTWvdnC2",
+      "email": "deliverymario@gmail.com",
+      "displayName": "Delivery Mario Flores",
+      "role": null,
+      "classification": "COURIER_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Courier canónico certificado de la flota operacional activa.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 1,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 1,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "test_auth_fs_1786904851220",
+      "email": null,
+      "displayName": "Test Both",
+      "role": null,
+      "classification": "STUB",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Stub de sincronización POS o prueba en /couriers. Retener usuario /users como histórico o revisar, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "test_sync_1786906621837",
+      "email": "synctest@bluesystem.com",
+      "displayName": "SYNC_TEST_COMMERCE_EDITED",
+      "role": "BUSINESS",
+      "classification": "STUB",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Documento en /couriers que no representa un courier operacional. Retener usuario y Auth.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "test_sync_1786906691350",
+      "email": "synctest@bluesystem.com",
+      "displayName": "SYNC_TEST_COMMERCE_EDITED",
+      "role": "BUSINESS",
+      "classification": "STUB",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Documento en /couriers que no representa un courier operacional. Retener usuario y Auth.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "test_sync_1786906712177",
+      "email": "synctest@bluesystem.com",
+      "displayName": "SYNC_TEST_COMMERCE_EDITED",
+      "role": "BUSINESS",
+      "classification": "STUB",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Documento en /couriers que no representa un courier operacional. Retener usuario y Auth.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "user_cli_1768237897386",
+      "email": null,
+      "displayName": "Aldrich  Flores",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "user_cli_1768240170991",
+      "email": null,
+      "displayName": "venus flores",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "user_cliente0002_2026",
+      "email": null,
+      "displayName": "Perla  Centeno",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "user_cliente0008_2026",
+      "email": null,
+      "displayName": "Junior Flores",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "user_cliente0009_2026",
+      "email": null,
+      "displayName": "hola oooo",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "user_cliente0010_2026",
+      "email": null,
+      "displayName": "maria ramos",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "user_cliente0011_2026",
+      "email": null,
+      "displayName": "sonia matamoros",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "user_cliente1768275049139",
+      "email": null,
+      "displayName": "eva morales",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "user_cliente1768278375844",
+      "email": null,
+      "displayName": "xoci ruiz",
+      "role": "CLIENT",
+      "classification": "CUSTOMER_REAL",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Cliente real / histórico con stub erróneo en /couriers. Conservar /users y Auth, eliminar únicamente /couriers/{uid}.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": true,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": true,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": false,
+        "isReferencedInMerchant": false
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": true,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "1769029559449",
+      "email": null,
+      "displayName": "Chepita",
+      "role": null,
+      "classification": "STUB",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Stub huérfano en /couriers sin documento en /users, sin cuenta Auth y sin dependencias operacionales.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": false,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": false,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 1,
+        "isReferencedInBusiness": null,
+        "isReferencedInMerchant": null
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": false,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "IARgLc7GMPSkHnSS2Vmv1KpByDR2",
+      "email": null,
+      "displayName": "Vicenta Gutierrez",
+      "role": null,
+      "classification": "MERCHANT_STAFF_REAL",
+      "proposedAction": "KEEP",
+      "reason": "Personal operativo de comercio vinculado mediante /employees o /membership.",
+      "risk": "ZERO",
+      "firestoreDocuments": {
+        "users": false,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": false,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 1,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 1,
+        "isReferencedInBusiness": null,
+        "isReferencedInMerchant": null
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": false,
+        "hasCourierSnapshot": true
+      }
+    },
+    {
+      "uid": "dbX1tvV2WNdFv4KWMbWNW8lngDI2",
+      "email": null,
+      "displayName": "Gerald Jose Flores Gutierrez",
+      "role": null,
+      "classification": "STUB",
+      "proposedAction": "DELETE_COURIER_PROFILE_ONLY",
+      "reason": "Stub huérfano en /couriers sin documento en /users, sin cuenta Auth y sin dependencias operacionales.",
+      "risk": "LOW",
+      "firestoreDocuments": {
+        "users": false,
+        "couriers": true,
+        "courier_balances": true
+      },
+      "authAccount": null,
+      "dependencies": {
+        "hasAuth": false,
+        "hasUserDoc": false,
+        "hasCourierDoc": true,
+        "hasCourierBalance": true,
+        "ordersAsCustomerCount": 0,
+        "ordersAsCourierCount": 0,
+        "tripsAsCourierCount": 0,
+        "reviewsAsAuthorCount": 0,
+        "reviewsAsSubjectCount": 0,
+        "membershipsCount": 0,
+        "employeesCount": 0,
+        "userDevicesCount": 0,
+        "applicationsCount": 0,
+        "auditEventsCount": 0,
+        "isReferencedInBusiness": null,
+        "isReferencedInMerchant": null
+      },
+      "rollbackReference": {
+        "hasUserSnapshot": false,
+        "hasCourierSnapshot": true
+      }
+    }
+  ]
+}

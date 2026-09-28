@@ -1,0 +1,335 @@
+﻿
+08-20 09:47:00.258 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : EXCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 09:47:00.259 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterModelName - option : ALL / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 09:47:00.259 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : INCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.skt.prod.together","component_name":"","
+sales_code_option":"include","sales_codes":["SKC","KOO"],"model_names":[],"orders":{"SKC":100}} / PackageName : 
+com.skt.prod.together / ComponentName :  / SalesCodeOption : include / SalesCodes : [SKC, KOO] / ModelNameOption : 
+null / ModelNames : [] / Orders : {SKC=100} / Order : 1000
+08-20 09:47:00.334 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : EXCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 09:47:00.334 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterModelName - option : ALL / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 09:47:00.334 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : INCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.skt.prod.together","component_name":"","
+sales_code_option":"include","sales_codes":["SKC","KOO"],"model_names":[],"orders":{"SKC":100}} / PackageName : 
+com.skt.prod.together / ComponentName :  / SalesCodeOption : include / SalesCodes : [SKC, KOO] / ModelNameOption : 
+null / ModelNames : [] / Orders : {SKC=100} / Order : 1000
+08-20 09:58:57.453 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : EXCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 09:58:57.453 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterModelName - option : ALL / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 09:58:57.453 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : INCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.skt.prod.together","component_name":"","
+sales_code_option":"include","sales_codes":["SKC","KOO"],"model_names":[],"orders":{"SKC":100}} / PackageName : 
+com.skt.prod.together / ComponentName :  / SalesCodeOption : include / SalesCodes : [SKC, KOO] / ModelNameOption : 
+null / ModelNames : [] / Orders : {SKC=100} / Order : 1000
+08-20 09:58:57.863 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : EXCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 09:58:57.863 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterModelName - option : ALL / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 09:58:57.863 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : INCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.skt.prod.together","component_name":"","
+sales_code_option":"include","sales_codes":["SKC","KOO"],"model_names":[],"orders":{"SKC":100}} / PackageName : 
+com.skt.prod.together / ComponentName :  / SalesCodeOption : include / SalesCodes : [SKC, KOO] / ModelNameOption : 
+null / ModelNames : [] / Orders : {SKC=100} / Order : 1000
+08-20 09:59:34.679 D/AUDIT_LOG( 9787): SPLASH_FINISHED | UID: 9QHYGkSa3nWiJ7KfPkccjjuIaYp2 | Thread: main | Time: 
+1787241574679 | Destination: biometric_unlock/courier
+08-20 09:59:34.689 D/AUDIT_LOG( 9787): NAVIGATION_COMPLETED | Route: biometric_unlock/courier | UID: 
+9QHYGkSa3nWiJ7KfPkccjjuIaYp2 | Thread: main | Time: 1787241574689
+08-20 09:59:34.807 D/PERMISSION_MANAGER( 9787): Matriz RBAC aplicada para rol 'courier': totalPermisos=5
+08-20 09:59:34.807 D/UserProfileRepo( 9787): UserProfile updated for 9QHYGkSa3nWiJ7KfPkccjjuIaYp2: role=courier, 
+active=true
+08-20 09:59:37.830 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 09:59:37.835 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 09:59:38.376 D/FLOTA_DEBUG( 9787): CARGANDO_PEDIDOS_ACTIVOS: Consultando Firestore por pedidos del courier
+08-20 09:59:38.380 D/COURIER_QUERY( 9787): Starting targeted listeners for motorizadoId=9QHYGkSa3nWiJ7KfPkccjjuIaYp2
+08-20 09:59:38.607 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 09:59:38.609 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 09:59:38.633 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=ACTIVE_ROUTE, pool=0, assigned=1, 
+activeRoute=S3hE2UAk2XR7Qct2zblQ
+08-20 09:59:38.638 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=ACTIVE_ROUTE, pool=0, assigned=1, 
+activeRoute=S3hE2UAk2XR7Qct2zblQ
+08-20 09:59:38.641 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=ACTIVE_ROUTE, pool=3, assigned=1, 
+activeRoute=S3hE2UAk2XR7Qct2zblQ
+08-20 09:59:38.665 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 09:59:38.667 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 09:59:39.659 D/FLOTA_DEBUG( 9787): ON_MAP_LOADED: El mapa se carg├│ y renderiz├│ con ├®xito
+08-20 09:59:39.664 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 09:59:39.665 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 09:59:40.413 D/FLOTA_DEBUG( 9787): CREANDO_VIEWMODEL: Inicializando CourierViewModel para la pantalla 
+RutaActivaScreen
+08-20 09:59:40.418 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 09:59:40.565 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056529 lng=-86.2700826 bearing=0.0 
+accuracy=17.286
+08-20 09:59:40.607 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 09:59:40.729 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=ACTIVE_ROUTE, pool=3, assigned=1, 
+activeRoute=S3hE2UAk2XR7Qct2zblQ
+08-20 09:59:40.732 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=ACTIVE_ROUTE, pool=3, assigned=1, 
+activeRoute=S3hE2UAk2XR7Qct2zblQ
+08-20 09:59:40.956 D/FLOTA_DEBUG( 9787): ON_MAP_LOADED: El mapa se carg├│ y renderiz├│ con ├®xito en RutaActivaScreen
+08-20 09:59:40.966 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 09:59:43.979 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056538 lng=-86.2700775 bearing=0.0 
+accuracy=42.775
+08-20 09:59:45.815 D/COURIER_PAYMENT( 9787): total=435.0 received=500.0 change=65.0
+08-20 09:59:45.816 D/COURIER_DELIVERY( 9787): orderId=S3hE2UAk2XR7Qct2zblQ status=delivered -> status=completed
+08-20 09:59:45.872 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 09:59:46.012 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056543 lng=-86.2700741 bearing=89.98523 
+accuracy=40.953
+08-20 09:59:46.092 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 09:59:47.067 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 09:59:47.166 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 09:59:47.168 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 09:59:47.266 D/FLOTA_DEBUG( 9787): CARGANDO_PEDIDOS_ACTIVOS: Consultando Firestore por pedidos del courier
+08-20 09:59:47.267 D/COURIER_QUERY( 9787): Starting targeted listeners for motorizadoId=9QHYGkSa3nWiJ7KfPkccjjuIaYp2
+08-20 09:59:47.360 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 09:59:47.362 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 09:59:47.387 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=ASSIGNED_ORDERS, pool=0, assigned=1, 
+activeRoute=null
+08-20 09:59:47.395 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=ASSIGNED_ORDERS, pool=0, assigned=1, 
+activeRoute=null
+08-20 09:59:47.399 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=ASSIGNED_ORDERS, pool=3, assigned=1, 
+activeRoute=null
+08-20 09:59:47.401 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 09:59:47.402 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 09:59:47.464 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 09:59:47.465 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 09:59:47.768 D/FLOTA_DEBUG( 9787): ON_MAP_LOADED: El mapa se carg├│ y renderiz├│ con ├®xito
+08-20 09:59:47.776 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 09:59:47.777 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 09:59:47.817 I/.delivery.djweq( 9787): Compiler allocated 10209KB to compile void 
+com.example.PedidosEntrantesScreenKt.PedidosEntrantesScreen(com.example.PedidoOfrecido, 
+com.example.CourierOrdersState, kotlin.jvm.functions.Function2, kotlin.jvm.functions.Function0, 
+kotlin.jvm.functions.Function0, kotlin.jvm.functions.Function4, androidx.compose.runtime.Composer, int, int)
+08-20 09:59:48.505 I/.delivery.djweq( 9787): Compiler allocated 9160KB to compile kotlin.Unit com.example.PedidosEntran
+tesScreenKt.PedidosEntrantesScreen$lambda$124$lambda$116$lambda$115(com.example.PedidoOfrecido, 
+com.example.CourierOrdersState, java.util.List, androidx.compose.runtime.MutableIntState, 
+androidx.compose.runtime.MutableState, com.example.PedidoOfrecido, kotlin.jvm.functions.Function0, 
+kotlinx.coroutines.CoroutineScope, kotlin.jvm.functions.Function4, kotlin.jvm.functions.Function2, 
+androidx.compose.runtime.MutableState, androidx.compose.runtime.MutableState, 
+androidx.compose.foundation.layout.ColumnScope, androidx.compose.runtime.Composer, int)
+08-20 09:59:54.172 I/Toast   ( 9787): show: caller = com.example.presentation.courier.CourierMainDashboardScreenKt.Cour
+ierMainDashboardScreen$lambda$85$lambda$84$lambda$67$lambda$66:355 
+08-20 09:59:58.777 D/FLOTA_DEBUG( 9787): CREANDO_VIEWMODEL: Inicializando CourierViewModel para la pantalla 
+RutaActivaScreen
+08-20 09:59:58.780 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 09:59:58.869 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=ASSIGNED_ORDERS, pool=3, assigned=1, 
+activeRoute=null
+08-20 09:59:58.872 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=ASSIGNED_ORDERS, pool=3, assigned=1, 
+activeRoute=null
+08-20 09:59:58.894 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 09:59:58.896 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 09:59:58.918 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056544 lng=-86.2701083 bearing=90.000305 
+accuracy=11.175
+08-20 09:59:58.956 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 09:59:58.975 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=ASSIGNED_ORDERS, pool=3, assigned=1, 
+activeRoute=null
+08-20 09:59:58.980 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=ASSIGNED_ORDERS, pool=3, assigned=1, 
+activeRoute=null
+08-20 09:59:59.314 D/FLOTA_DEBUG( 9787): ON_MAP_LOADED: El mapa se carg├│ y renderiz├│ con ├®xito en RutaActivaScreen
+08-20 09:59:59.327 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 10:00:00.710 D/COURIER_PICKUP( 9787): orderId=ped_val_closed_1787169068750 status=picked_up
+08-20 10:00:00.753 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 10:00:00.970 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056549 lng=-86.2701069 bearing=89.99945 
+accuracy=10.175
+08-20 10:00:04.706 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056546 lng=-86.2701068 bearing=90.002464 
+accuracy=8.694
+08-20 10:00:07.978 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056564 lng=-86.2701022 bearing=89.99972 
+accuracy=8.168
+08-20 10:00:10.874 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056563 lng=-86.2701016 bearing=90.00069 
+accuracy=8.301
+08-20 10:00:13.977 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056586 lng=-86.2700961 bearing=89.99879 
+accuracy=8.868
+08-20 10:00:16.995 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.105659 lng=-86.2700961 bearing=89.99855 
+accuracy=10.005
+08-20 10:00:19.984 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056574 lng=-86.2700923 bearing=90.00303 
+accuracy=10.821
+08-20 10:00:22.985 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056585 lng=-86.2700934 bearing=89.997215 
+accuracy=10.147
+08-20 10:00:25.981 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056574 lng=-86.2700993 bearing=242.57605 
+accuracy=9.227
+08-20 10:00:28.980 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056565 lng=-86.2701027 bearing=238.37367 
+accuracy=8.288
+08-20 10:00:31.978 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056557 lng=-86.2701028 bearing=234.95152 
+accuracy=8.433
+08-20 10:00:34.985 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056555 lng=-86.2701038 bearing=234.03996 
+accuracy=7.974
+08-20 10:00:37.980 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056559 lng=-86.2701028 bearing=90.09719 
+accuracy=8.079
+08-20 10:00:40.982 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056566 lng=-86.2701016 bearing=89.99975 
+accuracy=7.881
+08-20 10:00:43.982 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056601 lng=-86.2700964 bearing=89.99867 
+accuracy=8.285
+08-20 10:00:45.985 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056603 lng=-86.2700973 bearing=90.00002 
+accuracy=8.041
+08-20 10:00:47.965 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056604 lng=-86.2700983 bearing=89.999825 
+accuracy=7.977
+08-20 10:00:51.970 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056593 lng=-86.2700945 bearing=90.00044 
+accuracy=7.8
+08-20 10:00:54.372 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.105659 lng=-86.2700945 bearing=90.00074 
+accuracy=8.081
+08-20 10:00:57.981 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056583 lng=-86.2700938 bearing=90.000336 
+accuracy=8.356
+08-20 10:01:26.721 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056449 lng=-86.2700473 bearing=0.0 
+accuracy=17.294
+08-20 10:01:29.995 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056461 lng=-86.2700661 bearing=273.7014 
+accuracy=27.991
+08-20 10:01:31.443 D/COURIER_PAYMENT( 9787): total=0.0 received=500.0 change=500.0
+08-20 10:01:31.443 D/COURIER_DELIVERY( 9787): orderId=ped_val_closed_1787169068750 status=delivered -> status=completed
+08-20 10:01:31.493 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 10:01:31.847 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 10:01:32.755 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 10:01:32.845 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:01:32.849 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:01:32.940 D/FLOTA_DEBUG( 9787): CARGANDO_PEDIDOS_ACTIVOS: Consultando Firestore por pedidos del courier
+08-20 10:01:32.941 D/COURIER_QUERY( 9787): Starting targeted listeners for motorizadoId=9QHYGkSa3nWiJ7KfPkccjjuIaYp2
+08-20 10:01:33.011 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:01:33.011 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:01:33.025 D/COURIER_GPS( 9787): REAL_HARDWARE_GPS_FIX: lat=12.1056496 lng=-86.2700729 bearing=89.99792 
+accuracy=35.574
+08-20 10:01:33.031 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 10:01:33.041 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:01:33.042 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:01:33.091 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 10:01:33.093 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:01:33.102 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:01:33.103 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:01:33.177 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:01:33.179 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:01:33.408 D/FLOTA_DEBUG( 9787): ON_MAP_LOADED: El mapa se carg├│ y renderiz├│ con ├®xito
+08-20 10:01:33.414 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:01:33.415 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:01:39.574 I/Toast   ( 9787): show: caller = com.example.presentation.courier.CourierMainDashboardScreenKt.Cour
+ierMainDashboardScreen$lambda$85$lambda$84$lambda$67$lambda$66:355 
+08-20 10:02:02.595 D/FLOTA_DEBUG( 9787): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:02:42.243 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:02:42.244 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:02:43.877 D/FLOTA_DEBUG( 9787): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:02:43.878 D/FLOTA_DEBUG( 9787): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:10:42.936 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : EXCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 10:10:42.936 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterModelName - option : ALL / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 10:10:42.936 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : INCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.skt.prod.together","component_name":"","
+sales_code_option":"include","sales_codes":["SKC","KOO"],"model_names":[],"orders":{"SKC":100}} / PackageName : 
+com.skt.prod.together / ComponentName :  / SalesCodeOption : include / SalesCodes : [SKC, KOO] / ModelNameOption : 
+null / ModelNames : [] / Orders : {SKC=100} / Order : 1000
+08-20 10:10:43.157 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : EXCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 10:10:43.157 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterModelName - option : ALL / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 10:10:43.157 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : INCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.skt.prod.together","component_name":"","
+sales_code_option":"include","sales_codes":["SKC","KOO"],"model_names":[],"orders":{"SKC":100}} / PackageName : 
+com.skt.prod.together / ComponentName :  / SalesCodeOption : include / SalesCodes : [SKC, KOO] / ModelNameOption : 
+null / ModelNames : [] / Orders : {SKC=100} / Order : 1000
+08-20 10:11:15.526 D/PERMISSION_MANAGER(15737): Matriz RBAC aplicada para rol 'courier': totalPermisos=5
+08-20 10:11:15.527 D/UserProfileRepo(15737): UserProfile updated for 9QHYGkSa3nWiJ7KfPkccjjuIaYp2: role=courier, 
+active=true
+08-20 10:11:18.537 D/FirebaseManager(15737): CACHE HIT: Emitted 3 businesses instantly
+08-20 10:11:23.566 D/FirebaseManager(15737): CACHE HIT: Emitted 3 businesses instantly
+08-20 10:11:43.184 I/AuditLogger(15737): [SEVERITY: INFO] [EVENT: AUTH_LOGIN_SUCCESS] SessionId: 
+be519c59-841a-4f5d-a00d-31cce16b43da | Details: {sessionId=be519c59-841a-4f5d-a00d-31cce16b43da, severity=INFO, 
+timestamp=1787242303184, uid=9QHYGkSa3nWiJ7KfPkccjjuIaYp2, role=courier}
+08-20 10:11:43.422 D/FLOTA_DEBUG(15737): LOGIN_OK: Usuario registrado con correo hpaz@gmail.com
+08-20 10:11:43.492 D/FLOTA_DEBUG(15737): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:11:43.497 D/FLOTA_DEBUG(15737): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:11:43.969 D/FLOTA_DEBUG(15737): CARGANDO_PEDIDOS_ACTIVOS: Consultando Firestore por pedidos del courier
+08-20 10:11:43.971 D/COURIER_QUERY(15737): Starting targeted listeners for motorizadoId=9QHYGkSa3nWiJ7KfPkccjjuIaYp2
+08-20 10:11:44.111 D/FLOTA_DEBUG(15737): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:11:44.112 D/FLOTA_DEBUG(15737): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:11:44.131 D/FLOTA_DEBUG(15737): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 10:11:44.144 D/FLOTA_DEBUG(15737): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 10:11:44.149 D/FLOTA_DEBUG(15737): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:11:44.150 D/FLOTA_DEBUG(15737): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:11:44.225 D/FLOTA_DEBUG(15737): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:11:44.246 D/FLOTA_DEBUG(15737): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:11:44.247 D/FLOTA_DEBUG(15737): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:11:45.110 D/FLOTA_DEBUG(15737): ON_MAP_LOADED: El mapa se carg├│ y renderiz├│ con ├®xito
+08-20 10:11:45.122 D/FLOTA_DEBUG(15737): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:11:45.123 D/FLOTA_DEBUG(15737): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:11:49.933 I/Toast   (15737): show: caller = com.example.presentation.courier.CourierMainDashboardScreenKt.Cour
+ierMainDashboardScreen$lambda$85$lambda$84$lambda$67$lambda$66:358 
+08-20 10:12:10.138 D/FLOTA_DEBUG(15737): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:12:10.139 D/FLOTA_DEBUG(15737): INICIALIZANDO_MAPA: Dibujando GoogleMap
+
+

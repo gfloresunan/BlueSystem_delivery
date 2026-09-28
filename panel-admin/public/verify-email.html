@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Verificación de Correo Electrónico — BlueSystem Delivery Enterprise</title>
+  <meta name="description" content="Portal oficial de verificación y confirmación segura de cuenta de BlueSystem Delivery Enterprise." />
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2338BDF8'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" />
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#F0F9FF',
+              100: '#E0F2FE',
+              400: '#38BDF8',
+              500: '#0EA5E9',
+              600: '#0284C7',
+              700: '#0369A1',
+              900: '#0C4A6E',
+            },
+            dark: {
+              950: '#070B14',
+              900: '#0B0F19',
+              850: '#0F172A',
+              800: '#1E293B',
+              700: '#334155',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Firebase App & Auth SDKs (Compat v9) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+  <style>
+    body {
+      background-color: #070B14;
+      color: #E2E8F0;
+      font-family: 'Inter', sans-serif;
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .glow-emerald {
+      box-shadow: 0 0 60px -10px rgba(16, 185, 129, 0.35);
+    }
+    .glow-blue {
+      box-shadow: 0 0 60px -10px rgba(56, 189, 248, 0.25);
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #FFFFFF 0%, #38BDF8 50%, #818CF8 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    @keyframes pulseCheck {
+      0% { transform: scale(0.85); opacity: 0; }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-check {
+      animation: pulseCheck 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 selection:bg-brand-500 selection:text-white relative overflow-x-hidden">
+
+  <!-- BACKGROUND GLOWS -->
+  <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-brand-500/15 rounded-full blur-[140px]"></div>
+    <div class="absolute bottom-10 right-10 w-[400px] h-[400px] bg-indigo-600/15 rounded-full blur-[140px]"></div>
+    <div class="absolute inset-0 bg-[linear-gradient(to_right,#1e293b0a_1px,transparent_1px),linear-gradient(to_bottom,#1e293b0a_1px,transparent_1px)] bg-[size:3rem_3rem]"></div>
+  </div>
+
+  <!-- MAIN CARD CONTAINER -->
+  <main class="w-full max-w-lg relative z-10">
+    <!-- Header Logo -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-brand-600 to-indigo-500 shadow-xl shadow-brand-500/25 mb-4 ring-1 ring-white/20">
+        <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      </div>
+      <h1 class="text-2xl sm:text-3xl font-extrabold font-display tracking-tight text-white">BlueSystem <span class="gradient-text">Delivery</span></h1>
+      <p class="text-xs sm:text-sm text-slate-400 mt-1 font-medium tracking-wide uppercase">Sistema Centralizado de Seguridad Enterprise</p>
+    </div>
+
+    <!-- GLASS CARD -->
+    <div class="glass-card rounded-3xl p-6 sm:p-10 shadow-2xl transition-all duration-300 relative overflow-hidden" id="cardContainer">
+
+      <!-- 1. ESTADO: CARGANDO / VERIFICANDO -->
+      <div id="stateLoading" class="text-center py-8">
+        <div class="relative w-16 h-16 mx-auto mb-6">
+          <div class="w-16 h-16 rounded-full border-4 border-slate-800 border-t-brand-400 animate-spin"></div>
+          <div class="absolute inset-0 flex items-center justify-center">
+            <svg class="w-6 h-6 text-brand-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+        </div>
+        <h2 class="text-xl font-bold text-white font-display mb-2">Verificando Correo Electrónico...</h2>
+        <p class="text-sm text-slate-400 max-w-sm mx-auto leading-relaxed">
+          Validando token de seguridad y confirmando tu identidad con los servidores oficiales de BlueSystem Delivery.
+        </p>
+      </div>
+
+      <!-- 2. ESTADO: ÉXITO CERTIFICADO -->
+      <div id="stateSuccess" class="hidden text-center py-6 animate-check">
+        <!-- Success Icon -->
+        <div class="w-20 h-20 rounded-full bg-emerald-500/10 border-2 border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto mb-6 glow-emerald ring-8 ring-emerald-500/5">
+          <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+
+        <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-3">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          Verificación Completada
+        </div>
+
+        <h2 class="text-2xl sm:text-3xl font-bold text-white font-display mb-3">
+          ¡Correo Verificado con Éxito!
+        </h2>
+
+        <div class="p-4 rounded-2xl bg-dark-900/80 border border-slate-800 my-5 text-left">
+          <p class="text-sm text-slate-300 leading-relaxed">
+            Tu cuenta ha sido validada oficialmente. A partir de este momento puedes disfrutar de todos los servicios corporativos de entrega, seguimiento en tiempo real y comprobantes oficiales.
+          </p>
+          <div class="mt-3 pt-3 border-t border-slate-800/80 flex items-center gap-2 text-xs text-brand-400 font-medium">
+            <svg class="w-4 h-4 shrink-0 text-emerald-400" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1,1 0 00-1.414-1.414L9 10.586 7.707 9.293a1,1 0 00-1.414 1.414l2 2a1,1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span>Ya puedes cerrar esta ventana con total seguridad.</span>
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-400 mb-6">
+          Regresa a la aplicación <strong class="text-white">BlueSystem Delivery</strong> en tu teléfono móvil para continuar.
+        </p>
+
+        <!-- Botón de Cerrar Ventana -->
+        <button onclick="window.close()" class="w-full py-3.5 px-6 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-semibold text-sm shadow-lg shadow-brand-600/30 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          <span>Cerrar Ventana</span>
+        </button>
+      </div>
+
+      <!-- 3. ESTADO: ERROR / ENLACE YA USADO O EXPIRADO -->
+      <div id="stateError" class="hidden text-center py-6">
+        <div class="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+        </div>
+
+        <h2 class="text-xl font-bold text-white font-display mb-2" id="errorTitle">
+          Aviso de Verificación
+        </h2>
+        <p class="text-sm text-slate-300 mb-4 px-2 leading-relaxed" id="errorMessageDetail">
+          Este enlace de verificación ya fue utilizado o ha expirado. Si tu cuenta ya se encuentra verificada, puedes continuar utilizando la aplicación normalmente.
+        </p>
+
+        <div class="p-3.5 rounded-xl bg-dark-900 border border-slate-800 text-xs text-slate-400 mb-6 text-left space-y-1">
+          <div class="font-medium text-slate-300">💡 ¿Qué puedes hacer?</div>
+          <div>• Si ya confirmaste tu cuenta, puedes cerrar esta pestaña.</div>
+          <div>• Si tu cuenta sigue sin verificar, abre tu app móvil y pulsa <em>"Reenviar Correo"</em>.</div>
+        </div>
+
+        <button onclick="window.close()" class="w-full py-3 px-4 rounded-xl bg-dark-800 hover:bg-dark-700 text-slate-200 border border-slate-700 font-medium text-sm transition-colors">
+          Cerrar Esta Ventana
+        </button>
+      </div>
+
+    </div>
+
+    <!-- FOOTER SECURITY BADGE -->
+    <div class="text-center mt-6 text-xs text-slate-500 flex items-center justify-center gap-2">
+      <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+      </svg>
+      <span>Portal Oficial con Cifrado SSL de 256 bits — BlueSystem Enterprise</span>
+    </div>
+  </main>
+
+  <script>
+    // Inicialización y Validación de Acción de Firebase Auth
+    const urlParams = new URLSearchParams(window.location.search);
+    const apiKey = urlParams.get('apiKey') || "AIzaSyDLyDOt1OorDHVa96loxXUpqqcOZqHD7V8";
+    const oobCode = urlParams.get('oobCode');
+    const mode = urlParams.get('mode');
+
+    const firebaseConfig = {
+      apiKey: apiKey,
+      authDomain: "bluesystem-7c9af.firebaseapp.com",
+      projectId: "bluesystem-7c9af",
+      storageBucket: "bluesystem-7c9af.appspot.com",
+    };
+
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
+    }
+    const auth = firebase.auth();
+
+    const stateLoading = document.getElementById('stateLoading');
+    const stateSuccess = document.getElementById('stateSuccess');
+    const stateError = document.getElementById('stateError');
+    const errorTitle = document.getElementById('errorTitle');
+    const errorMessageDetail = document.getElementById('errorMessageDetail');
+    const cardContainer = document.getElementById('cardContainer');
+
+    function showState(state) {
+      stateLoading.classList.add('hidden');
+      stateSuccess.classList.add('hidden');
+      stateError.classList.add('hidden');
+
+      if (state === 'loading') stateLoading.classList.remove('hidden');
+      if (state === 'success') {
+        stateSuccess.classList.remove('hidden');
+        cardContainer.classList.add('glow-emerald');
+      }
+      if (state === 'error') stateError.classList.remove('hidden');
+    }
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      if (!oobCode || (mode && mode !== 'verifyEmail')) {
+        showState('error');
+        errorTitle.textContent = "Parámetros No Válidos";
+        errorMessageDetail.textContent = "No se detectó un código de verificación válido en el enlace. Por favor verifica que el enlace esté completo.";
+        return;
+      }
+
+      try {
+        // Aplicar el código de verificación con Firebase Auth
+        await auth.applyActionCode(oobCode);
+        showState('success');
+      } catch (err) {
+        console.error("Error al verificar correo:", err);
+        showState('error');
+        if (err.code === 'auth/expired-action-code') {
+          errorTitle.textContent = "Enlace Expirado";
+          errorMessageDetail.textContent = "El enlace de verificación ha caducado. Abre tu aplicación y solicita un nuevo correo de verificación.";
+        } else if (err.code === 'auth/invalid-action-code') {
+          errorTitle.textContent = "Enlace Ya Utilizado";
+          errorMessageDetail.textContent = "Este enlace ya fue procesado o tu correo electrónico ya ha sido verificado previamente. Ya puedes cerrar esta ventana.";
+        } else {
+          errorTitle.textContent = "Aviso de Seguridad";
+          errorMessageDetail.textContent = err.message || "No fue posible procesar la verificación. Por favor intenta nuevamente.";
+        }
+      }
+    });
+  </script>
+</body>
+</html>

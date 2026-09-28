@@ -1,0 +1,238 @@
+[
+  {
+    "uid": "G5HO4FxxW8f4s3JkeEB60wyWfdY2",
+    "email": "admin@tecnocomp.com.ni",
+    "displayName": null,
+    "phoneNumber": null,
+    "disabled": false,
+    "createdAt": "1785434002562",
+    "lastLoginAt": "1785434002562",
+    "providers": [
+      "password"
+    ],
+    "customClaims": {},
+    "evidence": {
+      "directUserExists": false,
+      "usersByEmail": [],
+      "membershipsByUid": [],
+      "membershipsByEmail": [],
+      "employeesByUid": [],
+      "employeesByEmail": [],
+      "businessesByOwner": [],
+      "businessesByEmail": [],
+      "branchesByOwner": [],
+      "userDevices": [],
+      "legacyDevices": []
+    },
+    "classification": "TEST_AUTH_ONLY",
+    "risk": "LOW",
+    "confidence": "HIGH",
+    "primaryReason": "Typo or test registration pattern (e.g. 'admin@tecnocomp.com.ni') with 0 Firestore records.",
+    "duplicateNote": "NO_DUPLICATE",
+    "futureRecommendation": "CANDIDATE_FOR_DELETION"
+  },
+  {
+    "uid": "IAjm32V7rXNY1beBc4yKv9zgtIC3",
+    "email": "junior@gmail.com",
+    "displayName": null,
+    "phoneNumber": null,
+    "disabled": false,
+    "createdAt": "1784066732826",
+    "lastLoginAt": "1784066732826",
+    "providers": [
+      "password"
+    ],
+    "customClaims": {},
+    "evidence": {
+      "directUserExists": false,
+      "usersByEmail": [],
+      "membershipsByUid": [],
+      "membershipsByEmail": [],
+      "employeesByUid": [],
+      "employeesByEmail": [],
+      "businessesByOwner": [],
+      "businessesByEmail": [],
+      "branchesByOwner": [],
+      "userDevices": [],
+      "legacyDevices": []
+    },
+    "classification": "LEGACY_TEST_SIGNUP",
+    "risk": "MEDIUM",
+    "confidence": "HIGH",
+    "primaryReason": "Test login created during development for email 'junior@gmail.com'. Production merchant/user operates under canonical UID.",
+    "duplicateNote": "Development personal email for operator",
+    "futureRecommendation": "CANDIDATE_FOR_DELETION"
+  },
+  {
+    "uid": "O6DSYllEA1fPMkueKWrF4MxkSP93",
+    "email": "admin@ecnocomp.com.ni",
+    "displayName": null,
+    "phoneNumber": null,
+    "disabled": false,
+    "createdAt": "1784942754718",
+    "lastLoginAt": "1784942754718",
+    "providers": [
+      "password"
+    ],
+    "customClaims": {},
+    "evidence": {
+      "directUserExists": false,
+      "usersByEmail": [],
+      "membershipsByUid": [],
+      "membershipsByEmail": [],
+      "employeesByUid": [],
+      "employeesByEmail": [],
+      "businessesByOwner": [],
+      "businessesByEmail": [],
+      "branchesByOwner": [],
+      "userDevices": [],
+      "legacyDevices": []
+    },
+    "classification": "TEST_AUTH_ONLY",
+    "risk": "LOW",
+    "confidence": "HIGH",
+    "primaryReason": "Typo or test registration pattern (e.g. 'admin@ecnocomp.com.ni') with 0 Firestore records.",
+    "duplicateNote": "NO_DUPLICATE",
+    "futureRecommendation": "CANDIDATE_FOR_DELETION"
+  },
+  {
+    "uid": "PDziWizeJIO83ZUcsrgznmod7vz2",
+    "email": "pcenteno@gmail.com",
+    "displayName": null,
+    "phoneNumber": null,
+    "disabled": false,
+    "createdAt": "1784050120321",
+    "lastLoginAt": "1784159225225",
+    "providers": [
+      "password"
+    ],
+    "customClaims": {},
+    "evidence": {
+      "directUserExists": false,
+      "usersByEmail": [],
+      "membershipsByUid": [],
+      "membershipsByEmail": [],
+      "employeesByUid": [],
+      "employeesByEmail": [],
+      "businessesByOwner": [],
+      "businessesByEmail": [],
+      "branchesByOwner": [],
+      "userDevices": [],
+      "legacyDevices": []
+    },
+    "classification": "LEGACY_TEST_SIGNUP",
+    "risk": "MEDIUM",
+    "confidence": "HIGH",
+    "primaryReason": "Test login created during development for email 'pcenteno@gmail.com'. Production merchant/user operates under canonical UID.",
+    "duplicateNote": "Development personal email for operator",
+    "futureRecommendation": "CANDIDATE_FOR_DELETION"
+  },
+  {
+    "uid": "QjvtPl3SMfetU7RuYunTzJIM4My1",
+    "email": "moises@gmail.com",
+    "displayName": null,
+    "phoneNumber": null,
+    "disabled": false,
+    "createdAt": "1784154079719",
+    "lastLoginAt": "1784154079719",
+    "providers": [
+      "password"
+    ],
+    "customClaims": {},
+    "evidence": {
+      "directUserExists": false,
+      "usersByEmail": [],
+      "membershipsByUid": [],
+      "membershipsByEmail": [],
+      "employeesByUid": [],
+      "employeesByEmail": [],
+      "businessesByOwner": [],
+      "businessesByEmail": [],
+      "branchesByOwner": [],
+      "userDevices": [],
+      "legacyDevices": []
+    },
+    "classification": "LEGACY_TEST_SIGNUP",
+    "risk": "MEDIUM",
+    "confidence": "HIGH",
+    "primaryReason": "Test login created during development for email 'moises@gmail.com'. Production merchant/user operates under canonical UID.",
+    "duplicateNote": "Development personal email for operator",
+    "futureRecommendation": "CANDIDATE_FOR_DELETION"
+  },
+  {
+    "uid": "YFpQsfuTS3PLMggjR4wXMcmxvuq1",
+    "email": "aldrich@gmail.com",
+    "displayName": null,
+    "phoneNumber": null,
+    "disabled": false,
+    "createdAt": "1784142109624",
+    "lastLoginAt": "1784142379284",
+    "providers": [
+      "password"
+    ],
+    "customClaims": {},
+    "evidence": {
+      "directUserExists": false,
+      "usersByEmail": [],
+      "membershipsByUid": [],
+      "membershipsByEmail": [],
+      "employeesByUid": [],
+      "employeesByEmail": [],
+      "businessesByOwner": [],
+      "businessesByEmail": [],
+      "branchesByOwner": [],
+      "userDevices": [],
+      "legacyDevices": []
+    },
+    "classification": "LEGACY_TEST_SIGNUP",
+    "risk": "MEDIUM",
+    "confidence": "HIGH",
+    "primaryReason": "Test login created during development for email 'aldrich@gmail.com'. Production merchant/user operates under canonical UID.",
+    "duplicateNote": "Development personal email for operator",
+    "futureRecommendation": "CANDIDATE_FOR_DELETION"
+  },
+  {
+    "uid": "dKZf5tyzpUMNPk1Wy92BQgp4aMF3",
+    "email": "fritoni@gmail.com",
+    "displayName": null,
+    "phoneNumber": null,
+    "disabled": false,
+    "createdAt": "1784402691055",
+    "lastLoginAt": "1786998551110",
+    "providers": [
+      "password"
+    ],
+    "customClaims": {},
+    "evidence": {
+      "directUserExists": false,
+      "usersByEmail": [
+        {
+          "id": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+          "nombre": "FRITONI",
+          "role": "business",
+          "businessId": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2"
+        }
+      ],
+      "membershipsByUid": [],
+      "membershipsByEmail": [],
+      "employeesByUid": [],
+      "employeesByEmail": [],
+      "businessesByOwner": [],
+      "businessesByEmail": [
+        {
+          "id": "dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+          "name": "FRITONI"
+        }
+      ],
+      "branchesByOwner": [],
+      "userDevices": [],
+      "legacyDevices": []
+    },
+    "classification": "DUPLICATE_AUTH_ACCOUNT",
+    "risk": "MEDIUM",
+    "confidence": "HIGH",
+    "primaryReason": "User with email 'fritoni@gmail.com' exists under different Firestore document ID(s): [dlRY2ZVUqPR2Fxoc3cazcOxxRJg2]",
+    "duplicateNote": "POSSIBLE_DUPLICATE with dlRY2ZVUqPR2Fxoc3cazcOxxRJg2",
+    "futureRecommendation": "MANUAL_REVIEW"
+  }
+]

@@ -1,0 +1,6 @@
+{
+  "name": "Delivery Track",
+  "description": "App de tracking de repartidor en tiempo real con panel de cliente y mapa simulado.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

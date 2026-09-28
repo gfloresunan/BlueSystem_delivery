@@ -57,20 +57,28 @@ class CloudFunctionsService {
     }
   }
 
-  /// Calculates authoritative delivery route (Distance / Matrix)
+  /// Calculates authoritative delivery route (Distance / Matrix / Dynamic Pricing)
   Future<Map<String, dynamic>> calculateDeliveryRoute({
     required double originLat,
     required double originLng,
     required double destLat,
     required double destLng,
-    required String tenantId,
+    String? tenantId,
+    String serviceType = 'COMMERCE_DELIVERY',
+    String transportProfile = 'TWO_WHEELER',
   }) async {
     try {
       final callable = _functions.httpsCallable('calculateDeliveryRouteCallable');
       final result = await callable.call<Map<String, dynamic>>({
+        'originLat': originLat,
+        'originLng': originLng,
+        'destLat': destLat,
+        'destLng': destLng,
         'origin': {'lat': originLat, 'lng': originLng},
         'destination': {'lat': destLat, 'lng': destLng},
-        'tenantId': tenantId,
+        if (tenantId != null) 'tenantId': tenantId,
+        'serviceType': serviceType,
+        'transportProfile': transportProfile,
       });
       return result.data;
     } on FirebaseFunctionsException catch (e) {

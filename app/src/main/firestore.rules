@@ -1,0 +1,905 @@
+rules_version = '2';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BLUESYSTEM DELIVERY ENTERPRISE — Firestore Security Rules (EIAM v2.1)
+// Enterprise Identity & Access Management
+//
+// Estrategia de seguridad EIAM v2.1:
+//   1. Custom Claims (role, businessId, branchId, orgId) del token JWT
+//   2. Validación estricta: resource.data.businessId == request.auth.token.businessId
+//   3. Soporte para estructura de Holding: /organizations/{orgId}
+//   4. Ningún usuario puede leer o escribir datos de otro tenant
+//   5. Plataforma ADMIN tiene acceso de lectura/auditoría global
+//
+// DESPLIEGUE: firebase deploy --only firestore:rules
+// ═══════════════════════════════════════════════════════════════════════════════
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─── Helpers ─────────────────────────────────────────────────────────────
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAppCheckVerified() {
+      // App Check token validation (Play Integrity / reCAPTCHA Enterprise)
+      return request.auth != null && (request.auth.token.firebase.get("app_check", false) == true || request.auth.token.get("app_check", false) == true);
+    }
+
+    function currentUid() {
+      return request.auth.uid;
+    }
+
+    function getRole() {
+      return request.auth.token.get("role", request.auth.token.get("eiamRole", "GUEST"));
+    }
+
+    function getBusinessId() {
+      return request.auth.token.get("businessId", null);
+    }
+
+    function getBranchId() {
+      return request.auth.token.get("branchId", null);
+    }
+
+    function getOrgId() {
+      return request.auth.token.get("orgId", null);
+    }
+
+    // ─── EIAM v3 Helpers (Fase 2C.6) ──────────────────────────────────────────
+    function getTenantId() {
+      return request.auth.token.get("tenantId", null);
+    }
+
+    function getBrandId() {
+      return request.auth.token.get("brandId", null);
+    }
+
+    function isEiamV3() {
+      return request.auth.token.get("eiamVer", 0) == 3;
+    }
+
+    function isTenantMember(resourceTenantId) {
+      return isPlatformAdmin() || (getTenantId() != null && resourceTenantId != null && getTenantId() == resourceTenantId);
+    }
+
+    function canAccessTenant(resourceTenantId) {
+      return isPlatformAdmin() || (getTenantId() != null && resourceTenantId != null && getTenantId() == resourceTenantId);
+    }
+
+    function canAccessBrand(resourceTenantId, resourceBrandId) {
+      return isPlatformAdmin() || (
+        isTenantMember(resourceTenantId) && (
+          getBrandId() == null || resourceBrandId == null || getBrandId() == resourceBrandId
+        )
+      );
+    }
+
+    // Roles de plataforma con acceso global
+    function isPlatformAdmin() {
+      return isAuthenticated() && (
+        getRole() in ["SUPER_ADMIN", "ADMIN", "AUDITOR", "SUPPORT", "SUPERVISOR", "OPERATOR", "OPERATIONS", "super_admin", "admin", "auditor", "support", "supervisor", "operator", "operations"] ||
+        request.auth.token.get("admin", false) == true ||
+        request.auth.token.get("isSuperAdmin", false) == true
+      );
+    }
+
+    function isSuperAdmin() {
+      return getRole() in ["SUPER_ADMIN", "super_admin"];
+    }
+
+    function isSupervisor() {
+      return isAuthenticated() && (
+        getRole() in ["SUPERVISOR", "supervisor", "MERCHANT_SUPERVISOR"] ||
+        request.auth.token.get("supervisor", false) == true
+      );
+    }
+
+    // Roles con capacidad de gestionar empleados/sucursales
+    function isBusinessAdmin() {
+      return getRole() in ["OWNER", "MANAGER", "MERCHANT_OWNER", "MERCHANT_MANAGER"];
+    }
+
+    // Cualquier staff del comercio
+    function isBusinessStaff() {
+      return getRole() in ["OWNER", "MANAGER", "SUPERVISOR", "CASHIER", "COOK", "MERCHANT_OWNER", "MERCHANT_MANAGER", "MERCHANT_SUPERVISOR", "MERCHANT_CASHIER", "MERCHANT_COOK"];
+    }
+
+    // Repartidor/Motorizado con identidad verificada (Token Claim o Documento /users/{uid} activo)
+    function isCourierOrDriver() {
+      return isAuthenticated() && (
+        getRole() in ["courier", "COURIER", "motorizado", "MOTORIZADO", "driver", "DRIVER", "repartidor", "REPARTIDOR"] ||
+        request.auth.token.get("userType", "") in ["courier", "COURIER", "motorizado", "MOTORIZADO", "driver", "DRIVER", "repartidor", "REPARTIDOR"] ||
+        request.auth.token.get("role", "") in ["courier", "COURIER", "motorizado", "MOTORIZADO", "driver", "DRIVER", "repartidor", "REPARTIDOR"] ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("role", "") in ["courier", "COURIER", "motorizado", "MOTORIZADO", "driver", "DRIVER", "repartidor", "REPARTIDOR"] ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("userType", "") in ["courier", "COURIER", "motorizado", "MOTORIZADO", "driver", "DRIVER", "repartidor", "REPARTIDOR"] ||
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("rol", "") in ["courier", "COURIER", "motorizado", "MOTORIZADO", "driver", "DRIVER", "repartidor", "REPARTIDOR"]) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("isActive", true) == true &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get("active", true) == true) ||
+        (exists(/databases/$(database)/documents/couriers/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/couriers/$(request.auth.uid)).data.get("isActive", true) == true &&
+         get(/databases/$(database)/documents/couriers/$(request.auth.uid)).data.get("isApproved", true) == true)
+      );
+    }
+
+    // Valida que el businessId del claim coincide exactamente con el recurso (o sus campos legacy determinísticos)
+    function getOrderBusinessId(resData) {
+      return resData.get("businessId", resData.get("comercioId", resData.get("restaurantId", resData.get("merchantId", null))));
+    }
+
+    function ownsBusiness(resourceBusinessId) {
+      return isPlatformAdmin() || (getBusinessId() != null && resourceBusinessId != null && getBusinessId() == resourceBusinessId);
+    }
+
+    function isWritingOwnBusinessId() {
+      return isPlatformAdmin() || (request.resource.data.businessId == getBusinessId() || request.resource.data.get("comercioId", "") == getBusinessId());
+    }
+
+    // ─── /tenants/{tenantId} (EIAM v3) ────────────────────────────────────────
+    match /tenants/{tenantId} {
+      allow read: if isAuthenticated() && (isPlatformAdmin() || getTenantId() == tenantId);
+      allow create, update, delete: if isSuperAdmin();
+    }
+
+    // ─── /brands/{brandId} (EIAM v3) ──────────────────────────────────────────
+    match /brands/{brandId} {
+      allow read: if true; // Public for marketplace branding
+      allow create, update: if isAuthenticated() &&
+                               (isPlatformAdmin() || (isBusinessAdmin() && isTenantMember(request.resource.data.get("tenantId", null))));
+      allow delete: if isSuperAdmin();
+    }
+
+    // ─── /organizations/{orgId} (EIAM v2.1 & v3) ─────────────────────────────
+    match /organizations/{orgId} {
+      allow read: if isAuthenticated() &&
+                     (isPlatformAdmin() || getOrgId() == orgId || resource.data.ownerUid == currentUid() ||
+                      isTenantMember(resource.data.get("tenantId", null)));
+
+      allow create, update: if isAuthenticated() &&
+                               (isPlatformAdmin() || resource.data.ownerUid == currentUid() ||
+                                isTenantMember(request.resource.data.get("tenantId", null)));
+
+      allow delete: if isSuperAdmin();
+    }
+
+    // ─── /users/{uid} ────────────────────────────────────────────────────────
+    match /users/{uid} {
+      allow read: if isAuthenticated() &&
+                     (currentUid() == uid || isPlatformAdmin() || isBusinessStaff() || isBusinessAdmin() ||
+                      resource.data.get("role", "") in ["courier", "COURIER", "motorizado", "MOTORIZADO"] ||
+                      resource.data.get("userType", "") in ["motorizado", "driver", "courier"]);
+
+      allow update: if isAuthenticated() && (
+                       // Administradores de plataforma autorizados pueden modificar identidades y roles
+                       isPlatformAdmin() ||
+                       // Usuario común solo puede actualizar sus datos de perfil no sensibles
+                       (currentUid() == uid &&
+                        !request.resource.data.diff(resource.data).affectedKeys()
+                          .hasAny(["role", "userType", "rol", "eiamRole", "isActive"]))
+                     );
+
+      allow create: if isAuthenticated() && currentUid() == uid;
+      allow delete: if isSuperAdmin();
+
+      match /role_history/{historyId} {
+        allow read: if isAuthenticated() &&
+                       (currentUid() == uid || isPlatformAdmin());
+        allow write: if isPlatformAdmin();
+      }
+
+      match /preferences/{doc} {
+        allow read, write: if isAuthenticated() && currentUid() == uid;
+      }
+
+      match /settings/{doc} {
+        allow read, write: if isAuthenticated() && currentUid() == uid;
+      }
+
+      match /notificationSettings/{doc} {
+        allow read, write: if isAuthenticated() && currentUid() == uid;
+      }
+
+      match /notifications/{notificationId} {
+        allow read: if isAuthenticated() && (currentUid() == uid || isPlatformAdmin());
+        allow update: if isAuthenticated() && currentUid() == uid;
+        allow write: if isPlatformAdmin();
+      }
+
+      match /shoppingCart/{doc} {
+        allow read, write: if isAuthenticated() && currentUid() == uid;
+      }
+
+      match /favorites/{doc} {
+        allow read, write: if isAuthenticated() && currentUid() == uid;
+      }
+
+      match /addresses/{addressId} {
+        allow read: if isAuthenticated() && currentUid() == uid;
+        allow create: if isAuthenticated() && currentUid() == uid &&
+                      request.resource.data.userId == uid &&
+                      request.resource.data.id == addressId;
+        allow update: if isAuthenticated() && currentUid() == uid &&
+                      resource.data.userId == uid &&
+                      request.resource.data.userId == uid &&
+                      request.resource.data.id == addressId;
+        allow delete: if isAuthenticated() && currentUid() == uid &&
+                      resource.data.userId == uid;
+      }
+
+      match /devices/{deviceId} {
+        allow read, write: if isAuthenticated() && currentUid() == uid;
+      }
+
+      match /products/{productId} {
+        allow read: if true;
+        allow write: if isAuthenticated() && (currentUid() == uid || isPlatformAdmin());
+      }
+
+      match /loyalty/{businessId} {
+        allow read: if isAuthenticated() && (currentUid() == uid || isPlatformAdmin());
+        allow write: if isPlatformAdmin();
+      }
+
+      match /loyaltySummary/{doc} {
+        allow read: if isAuthenticated() && (currentUid() == uid || isPlatformAdmin());
+        allow write: if isPlatformAdmin();
+      }
+
+      match /loyaltyTransactions/{txId} {
+        allow read: if isAuthenticated() && (currentUid() == uid || isPlatformAdmin());
+        allow write: if isPlatformAdmin();
+      }
+    }
+
+    // ─── /businesses/{businessId} ────────────────────────────────────────────
+    match /businesses/{businessId} {
+      allow read: if true; // Public by design for Marketplace e-Commerce catalog access
+
+      allow write: if isAuthenticated() &&
+                      isWritingOwnBusinessId() &&
+                      (isPlatformAdmin() || isBusinessAdmin());
+
+      allow delete: if isSuperAdmin();
+
+      match /products/{productId} {
+        allow read: if true;
+        allow write: if isAuthenticated() && (isPlatformAdmin() || isBusinessAdmin() || ownsBusiness(businessId));
+      }
+
+      match /subcategories/{subCatId} {
+        allow read: if true;
+        allow write: if isAuthenticated() && (isPlatformAdmin() || (isBusinessAdmin() && ownsBusiness(businessId)));
+      }
+
+      match /reviews/{reviewId} {
+        allow read, write: if true;
+      }
+    }
+
+    match /reviews/{reviewId} {
+      // Lectura publica — necesaria para mostrar ratings en el marketplace
+      allow read: if true;
+
+      // FASE 1 — RC-002 SECURITY FIX
+      // Solo un cliente autenticado puede crear una resena propia.
+      // La resena debe pertenecer al usuario que la crea (customerId == uid)
+      // y debe estar asociada a un pedido real (orderId no vacio).
+      // Esto preserva el flujo real de OrdersViewModel.submitReview()
+      // que ya incluye customerId = auth.currentUser?.uid
+      allow create: if isAuthenticated() &&
+                       request.resource.data.customerId == currentUid() &&
+                       request.resource.data.get("orderId", "") != "";
+
+      // Solo el creador original o un admin puede actualizar
+      allow update: if isAuthenticated() &&
+                       (resource.data.customerId == currentUid() || isPlatformAdmin());
+
+      // Solo admin de plataforma puede eliminar
+      allow delete: if isAuthenticated() && isPlatformAdmin();
+    }
+
+    match /coupons/{couponId} {
+      // Lectura publica — cupones activos son visibles en el marketplace
+      allow read: if true;
+
+      // Creación:
+      // - GLOBAL: Exclusivo de Platform Admin
+      // - MERCHANT_SPECIFIC: Platform Admin o Business Admin para su propio negocio
+      allow create: if isAuthenticated() && (
+        (request.resource.data.get("scope", "GLOBAL") == "GLOBAL" && isPlatformAdmin()) ||
+        (request.resource.data.get("scope", "") == "MERCHANT_SPECIFIC" &&
+         (isPlatformAdmin() || (isBusinessAdmin() && isWritingOwnBusinessId() && request.resource.data.get("businessId", "") == getBusinessId())))
+      );
+
+      // Modificación / Eliminación:
+      // - GLOBAL: Exclusivo de Platform Admin
+      // - MERCHANT_SPECIFIC: Platform Admin o Business Admin propietario del negocio
+      allow update: if isAuthenticated() && (
+        (resource.data.get("scope", "GLOBAL") == "GLOBAL" && isPlatformAdmin()) ||
+        (resource.data.get("scope", "") == "MERCHANT_SPECIFIC" &&
+         (isPlatformAdmin() || (isBusinessAdmin() && ownsBusiness(resource.data.get("businessId", null)))))
+      );
+
+      allow delete: if isAuthenticated() && (
+        (resource.data.get("scope", "GLOBAL") == "GLOBAL" && isPlatformAdmin()) ||
+        (resource.data.get("scope", "") == "MERCHANT_SPECIFIC" &&
+         (isPlatformAdmin() || (isBusinessAdmin() && ownsBusiness(resource.data.get("businessId", null)))))
+      );
+    }
+
+    // ─── /coupon_redemptions/{redemptionId} ───────────────────────────────────
+    match /coupon_redemptions/{redemptionId} {
+      // Lectura: Cliente dueño de la redención, comercio del pedido, o Platform Admin
+      allow read: if isAuthenticated() && (
+        currentUid() == resource.data.customerId ||
+        ownsBusiness(resource.data.get("businessId", null)) ||
+        isPlatformAdmin()
+      );
+
+      // Inmutable para auditoría financiera — Exclusivo Admin SDK (Cloud Functions) y Platform Admin
+      // Previene falsificación de redenciones desde clientes modificados.
+      allow write, create, update, delete: if isPlatformAdmin();
+    }
+
+    // ─── /loyalty_rewards/{rewardId} ──────────────────────────────────────────
+    match /loyalty_rewards/{rewardId} {
+      // Lectura pública/autenticada para visualizar recompensas disponibles en el marketplace
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated() && isPlatformAdmin();
+    }
+
+    // ─── /loyalty_levels/{levelId} ────────────────────────────────────────────
+    match /loyalty_levels/{levelId} {
+      // Lectura pública/autenticada de niveles y beneficios del programa de fidelidad
+      allow read: if isAuthenticated();
+      allow create, update, delete: if isAuthenticated() && isPlatformAdmin();
+    }
+
+    // ─── /loyalty_redemptions/{redemptionId} ──────────────────────────────────
+    match /loyalty_redemptions/{redemptionId} {
+      // Lectura: Cliente dueño de la redención o Platform Admin
+      allow read: if isAuthenticated() && (
+        currentUid() == resource.data.customerId ||
+        ownsBusiness(resource.data.get("businessId", null)) ||
+        isPlatformAdmin()
+      );
+      allow write, create, update, delete: if isPlatformAdmin();
+    }
+
+    // ─── /loyalty_settings/{doc} ──────────────────────────────────────────────
+    match /loyalty_settings/{doc} {
+      allow read: if isAuthenticated();
+      allow write: if isAuthenticated() && isPlatformAdmin();
+    }
+
+    // ─── /loyalty_awards/{awardId} ────────────────────────────────────────────
+    match /loyalty_awards/{awardId} {
+      // Exclusivo Admin SDK / Cloud Functions para garantizar idempotencia estricta
+      allow read, write: if isPlatformAdmin();
+    }
+
+    // ─── /branches/{branchId} ────────────────────────────────────────────────
+    match /branches/{branchId} {
+      allow read: if true; // Public by design for Marketplace branch access
+
+      allow write: if isAuthenticated() &&
+                      isWritingOwnBusinessId() &&
+                      (isPlatformAdmin() || isBusinessAdmin());
+
+      allow delete: if isAuthenticated() &&
+                       (isSuperAdmin() || getRole() == "OWNER");
+    }
+
+    // ─── /membership/{membershipId} (Legacy EIAM v2.1) ──────────────────────
+    match /membership/{membershipId} {
+      allow read: if isAuthenticated() &&
+                     (currentUid() == resource.data.uid ||
+                      ownsBusiness(resource.data.businessId) ||
+                      isPlatformAdmin());
+
+      allow create, update: if isAuthenticated() &&
+                                isWritingOwnBusinessId() &&
+                                (isPlatformAdmin() || isBusinessAdmin());
+
+      allow delete: if isAuthenticated() &&
+                       (isSuperAdmin() || getRole() == "OWNER");
+    }
+
+    // ─── /memberships/{membershipId} (Canónico EIAM v3) ──────────────────────
+    match /memberships/{membershipId} {
+      allow read: if isAuthenticated() &&
+                     (currentUid() == resource.data.uid ||
+                      isTenantMember(resource.data.tenantId) ||
+                      isPlatformAdmin());
+
+      allow create: if isAuthenticated() &&
+                       (isPlatformAdmin() || (isBusinessAdmin() && isTenantMember(request.resource.data.tenantId))) &&
+                       request.resource.data.schemaVersion == "3.0";
+
+      allow update: if isAuthenticated() &&
+                       (isPlatformAdmin() || (isBusinessAdmin() && isTenantMember(resource.data.tenantId))) &&
+                       !request.resource.data.diff(resource.data).affectedKeys()
+                         .hasAny(["membershipId", "uid", "tenantId", "createdAt", "schemaVersion"]);
+
+      allow delete: if isAuthenticated() &&
+                       (isSuperAdmin() || (isBusinessAdmin() && isTenantMember(resource.data.tenantId)));
+    }
+
+    // ─── /employees/{employeeId} ─────────────────────────────────────────────
+    match /employees/{employeeId} {
+      allow read: if isAuthenticated() &&
+                     (currentUid() == resource.data.uid ||
+                      ownsBusiness(resource.data.businessId) ||
+                      isPlatformAdmin());
+
+      allow create, update: if isAuthenticated() &&
+                               isWritingOwnBusinessId() &&
+                               (isPlatformAdmin() || isBusinessAdmin());
+
+      allow delete: if isAuthenticated() &&
+                       (isSuperAdmin() || getRole() in ["OWNER", "ADMIN"]);
+    }
+
+    // ─── /invitations/{token} ────────────────────────────────────────────────
+    match /invitations/{token} {
+      // Permitir lectura individual (get) por token ID para el flujo público de validación de invitación (accept-invite)
+      allow get: if true;
+
+      // Restringir el escaneo coleccional (list) exclusivamente a Platform Admin y Business Admin de su propio tenant
+      allow list: if isAuthenticated() &&
+                     (isPlatformAdmin() ||
+                      (isBusinessAdmin() && resource.data.businessId == getBusinessId()));
+
+      allow create: if isAuthenticated() && isBusinessAdmin() && isWritingOwnBusinessId();
+
+      allow update: if isAuthenticated() && (
+                       // Business Admin de plataforma o tenant para gestionar la invitación
+                       (isWritingOwnBusinessId() && (isPlatformAdmin() || isBusinessAdmin())) ||
+                       // Usuario que acepta la invitación: debe estar PENDING, acceptedByUid debe ser el currentUid(), el estado pasa a ACCEPTED
+                       // Y los campos inmutables (email, businessId, branchId, orgId, targetRole, token, expiresAt) NO PUEDEN MODIFICARSE
+                       (resource.data.status == "PENDING" &&
+                        request.resource.data.get("acceptedByUid", "") == currentUid() &&
+                        request.resource.data.get("status", "") == "ACCEPTED" &&
+                        !request.resource.data.diff(resource.data).affectedKeys()
+                          .hasAny(["email", "businessId", "branchId", "orgId", "targetRole", "token", "expiresAt"]))
+                     );
+
+      allow delete: if isAuthenticated() && (isPlatformAdmin() || isBusinessAdmin());
+    }
+
+    // ─── /sessions/{sessionId} ───────────────────────────────────────────────
+    match /sessions/{sessionId} {
+      allow read: if isAuthenticated() &&
+                     (currentUid() == resource.data.uid || isPlatformAdmin());
+
+      allow write: if isAuthenticated() && currentUid() == resource.data.uid;
+
+      allow update: if isAuthenticated() && isPlatformAdmin();
+    }
+
+    // ─── /devices/{deviceId} ─────────────────────────────────────────────────
+    match /devices/{deviceId} {
+      allow read: if isAuthenticated() &&
+                     (resource == null || resource.data.uid == currentUid() || isPlatformAdmin());
+
+      allow create, update: if isAuthenticated() &&
+                               (request.resource.data.uid == currentUid() || isPlatformAdmin());
+
+      allow delete: if isAuthenticated() &&
+                       (resource.data.uid == currentUid() || isSuperAdmin());
+    }
+
+    // ─── /user_devices/{deviceDocId} ─────────────────────────────────────────
+    match /user_devices/{deviceDocId} {
+      allow read: if isAuthenticated() &&
+                     (resource == null || resource.data.uid == currentUid() || isPlatformAdmin());
+
+      allow create, update: if isAuthenticated() &&
+                               (request.resource.data.uid == currentUid() || isPlatformAdmin());
+
+      allow delete: if isAuthenticated() &&
+                       (resource.data.uid == currentUid() || isPlatformAdmin());
+    }
+
+    // ─── /ubicaciones_repartidores/{motorizadoId} ─────────────────────────────
+    match /ubicaciones_repartidores/{motorizadoId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() &&
+                               (currentUid() == motorizadoId || isPlatformAdmin());
+    }
+
+    // ─── /couriers/{courierId} ───────────────────────────────────────────────
+    match /couriers/{courierId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() &&
+                               (currentUid() == courierId || isPlatformAdmin() || isBusinessAdmin() || isBusinessStaff());
+    }
+
+    // ─── /courier_shifts/{shiftId} ───────────────────────────────────────────
+    match /courier_shifts/{shiftId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated() &&
+                               (currentUid() == resource.data.get("courierId", currentUid()) ||
+                                request.resource.data.get("courierId", "") == currentUid() ||
+                                isPlatformAdmin());
+    }
+
+    // ─── /orders/{orderId} ───────────────────────────────────────────────────
+    match /orders/{orderId} {
+      allow read: if isAuthenticated() &&
+                     (currentUid() == resource.data.get("customerId", "") ||
+                      currentUid() == resource.data.get("clienteId", "") ||
+                      ownsBusiness(getOrderBusinessId(resource.data)) ||
+                      isTenantMember(resource.data.get("tenantId", null)) ||
+                      currentUid() == resource.data.get("assignedCourierId", "") ||
+                      currentUid() == resource.data.get("motorizadoId", "") ||
+                      (resource.data.get("rejectedByCouriers", []).hasAny([currentUid()])) ||
+                      isPlatformAdmin() ||
+                      resource.data.get("status", "") in ["ready", "READY", "listo", "LISTO", "assigned", "ASSIGNED", "in_transit", "en_ruta", "delivering", "DELIVERING", "preparing", "PREPARING", "courier_accepted", "COURIER_ACCEPTED", "aceptado_por_courier", "pending", "PENDING"]);
+
+      allow create: if isAuthenticated() && (
+                       // Dominio A: Pedido comercial de Cliente para sí mismo con estado inicial válido
+                       (((request.resource.data.get("customerId", "") == currentUid() ||
+                          request.resource.data.get("clienteId", "") == currentUid())) &&
+                        request.resource.data.get("serviceType", "COMMERCE_DELIVERY") != "X_TO_Y_DELIVERY" &&
+                        request.resource.data.get("status", "pending") in ["pending", "draft", "created"] &&
+                        !request.resource.data.keys().hasAny(["assignedCourierId", "motorizadoId", "deliveredAt", "completedAt"])) ||
+                       // Dominio B: Encomienda X_TO_Y_DELIVERY de Cliente para sí mismo (status ready para efectivo o payment_verifying)
+                       (((request.resource.data.get("customerId", "") == currentUid() ||
+                          request.resource.data.get("clienteId", "") == currentUid())) &&
+                        request.resource.data.get("serviceType", "") == "X_TO_Y_DELIVERY" &&
+                        request.resource.data.get("status", "ready") in ["ready", "READY", "payment_verifying", "PAYMENT_VERIFYING", "pending", "PENDING", "draft", "created"] &&
+                        !request.resource.data.keys().hasAny(["assignedCourierId", "motorizadoId", "deliveredAt", "completedAt"])) ||
+                       // Personal de comercio creando pedido manual para su propio negocio / tenant
+                       ((isWritingOwnBusinessId() || isTenantMember(request.resource.data.get("tenantId", null))) && (isBusinessAdmin() || isBusinessStaff())) ||
+                       // Platform Admin
+                       isPlatformAdmin()
+                     );
+
+      allow update: if isAuthenticated() && (
+                       // Platform Admin: Modificación completa
+                       isPlatformAdmin() ||
+                       // Cliente: Cancelación de su propio pedido si el estado actual es cancelable
+                       (((currentUid() == resource.data.get("customerId", "") ||
+                          currentUid() == resource.data.get("clienteId", ""))) &&
+                        resource.data.get("status", "pending") in ["pending", "draft", "created", "preparing", "PENDIENTE", "PREPARANDO"] &&
+                        request.resource.data.diff(resource.data).affectedKeys()
+                          .hasOnly(["status", "estado", "cancelReason", "cancelledAt", "historialEstados", "updatedAt"])) ||
+                       // Merchant Admin (OWNER/MANAGER): Puede modificar campos operativos pero NO campos de identidad
+                       ((ownsBusiness(getOrderBusinessId(resource.data)) || isTenantMember(resource.data.get("tenantId", null))) && isBusinessAdmin() &&
+                        !request.resource.data.diff(resource.data).affectedKeys().hasAny(["customerId", "clienteId", "businessId", "tenantId", "createdAt"])) ||
+                       // Personal de comercio (CASHIER, COOK, SUPERVISOR)
+                       ((ownsBusiness(getOrderBusinessId(resource.data)) || isTenantMember(resource.data.get("tenantId", null))) && isBusinessStaff() &&
+                        request.resource.data.diff(resource.data).affectedKeys()
+                          .hasOnly(["status", "estado", "historialEstados", "notasCocina", "preparadoAt", "updatedAt", "rejectionReason", "rejectedBy", "rejectedAt", "assignedCourierId", "motorizadoId", "driverName", "assignedCourierName", "motorizadoNombre", "assignedCourierPlate", "motorizadoPlaca", "assignedAt"])) ||
+                       // Repartidor/Motorizado
+                       ((currentUid() == resource.data.assignedCourierId || currentUid() == resource.data.motorizadoId || resource.data.get("assignedCourierId", "") == "" || resource.data.get("motorizadoId", "") == "") &&
+                        request.resource.data.diff(resource.data).affectedKeys()
+                          .hasOnly(["status", "estado", "historialEstados", "ubicacionRepartidor", "deliveredAt", "entregadoAt", "acceptedAt", "pickedUpAt", "completedAt", "completadoAt", "updatedAt", "courierPhase", "assignedCourierId", "motorizadoId", "driverName", "motorizadoNombre", "driverPhone", "motorizadoTelefono", "cashReceived", "changeGiven", "cashCollectedNet", "cashDiscrepancy", "discrepancyAmount", "financialReconciliationStatus", "reconciledAt"]))
+                     );
+
+      allow delete: if isSuperAdmin();
+    }
+
+    // ─── /deliveryTrips/{tripId} (Dominio B: Envíos X a Y) ───────────────────
+    match /deliveryTrips/{tripId} {
+      allow read: if isAuthenticated();
+
+      allow create: if isAuthenticated() && (
+                       (((request.resource.data.get("customerId", "") == currentUid() ||
+                          request.resource.data.get("clienteId", "") == currentUid())) &&
+                        request.resource.data.get("status", "PENDING") in ["PENDING", "pending", "PAYMENT_VERIFYING", "payment_verifying", "draft", "created"] &&
+                        !request.resource.data.keys().hasAny(["assignedCourierId", "motorizadoId", "deliveredAt", "completedAt"])) ||
+                       isPlatformAdmin()
+                     );
+
+      allow update: if isAuthenticated() && (
+                       // Platform Admin: Modificación completa
+                       isPlatformAdmin() ||
+                       // Cliente: Cancelación o actualización de oferta/notas
+                       (((currentUid() == resource.data.get("customerId", "") ||
+                          currentUid() == resource.data.get("clienteId", ""))) &&
+                        resource.data.get("status", "PENDING") in ["PENDING", "pending", "PAYMENT_VERIFYING", "payment_verifying", "draft", "created"] &&
+                        request.resource.data.diff(resource.data).affectedKeys()
+                          .hasOnly(["status", "estado", "cancelReason", "cancelledAt", "customerOffer", "notes", "updatedAt"])) ||
+                       // Repartidor/Motorizado: Aceptación, entrega y tracking de ubicación
+                       ((currentUid() == resource.data.get("assignedCourierId", "") ||
+                         currentUid() == resource.data.get("motorizadoId", "") ||
+                         resource.data.get("assignedCourierId", "") == "" ||
+                         resource.data.get("motorizadoId", "") == "") &&
+                        request.resource.data.diff(resource.data).affectedKeys()
+                          .hasOnly(["status", "estado", "historialEstados", "ubicacionRepartidor", "deliveredAt", "entregadoAt", "acceptedAt", "pickedUpAt", "completedAt", "completadoAt", "updatedAt", "courierPhase", "assignedCourierId", "motorizadoId", "driverName", "motorizadoNombre", "driverPhone", "motorizadoTelefono", "cashReceived", "cashDiscrepancy", "dispatch"]))
+                     );
+
+      allow delete: if isSuperAdmin();
+    }
+
+    // ─── /products/{productId} ───────────────────────────────────────────────
+    match /products/{productId} {
+      allow read: if true; // Public by design for Marketplace e-Commerce catalog access
+
+      allow create: if isAuthenticated() &&
+                       isWritingOwnBusinessId() &&
+                       (isPlatformAdmin() || isBusinessAdmin());
+
+      allow update: if isAuthenticated() &&
+                       isWritingOwnBusinessId() &&
+                       (isPlatformAdmin() || isBusinessAdmin() ||
+                        (isBusinessStaff() &&
+                         request.resource.data.diff(resource.data).affectedKeys()
+                           .hasOnly(["isAvailable", "available", "active", "stockStatus", "stock", "updatedAt"])));
+
+      allow delete: if isAuthenticated() &&
+                       (ownsBusiness(resource.data.businessId) && isBusinessAdmin() || isPlatformAdmin());
+    }
+
+    // ─── /audit_events/{eventId} ─────────────────────────────────────────────
+    match /audit_events/{eventId} {
+      allow read: if isAuthenticated() &&
+                     (currentUid() == resource.data.get("uid", "") ||
+                      currentUid() == resource.data.get("actorUid", "") ||
+                      ownsBusiness(resource.data.businessId) ||
+                      isPlatformAdmin());
+
+      allow create: if isAuthenticated() && (
+                       isPlatformAdmin() ||
+                       request.resource.data.get("uid", "") == currentUid() ||
+                       request.resource.data.get("actorUid", "") == currentUid() ||
+                       ownsBusiness(request.resource.data.get("businessId", null))
+                     );
+
+      allow update, delete: if isPlatformAdmin();
+    }
+
+    // ─── /roles/{roleId} (EIAM v2.2) ──────────────────────────────────────────
+    match /roles/{roleId} {
+      allow read: if isAuthenticated() && (isPlatformAdmin() || isBusinessAdmin());
+      allow write: if isPlatformAdmin();
+    }
+
+    // ─── /permissions/{docId} (EIAM v2.2) ────────────────────────────────────
+    match /permissions/{docId} {
+      allow read: if isAuthenticated() && (isPlatformAdmin() || isBusinessAdmin());
+      allow write: if isPlatformAdmin();
+    }
+
+    // ─── /merchant_applications/{appId} (ADR-011) ─────────────────────────
+    match /merchant_applications/{appId} {
+      // Las creaciones públicas se procesan exclusivamente vía Cloud Function (Admin SDK)
+      // para garantizar validación de negocio, formato e idempotencia (control de duplicados).
+      allow create: if isPlatformAdmin();
+
+      // El solicitante puede consultar su solicitud por correo o el admin global
+      allow read: if isPlatformAdmin() ||
+                     (isAuthenticated() && request.auth.token.email == resource.data.email);
+
+      // Solo administradores de plataforma pueden actualizar estado de solicitud
+      allow update: if isPlatformAdmin();
+
+      // Ninguna solicitud se elimina (auditabilidad permanente)
+      allow delete: if false;
+    }
+
+    // ─── /restaurant_settings/{restaurantId} (SSOT-01 Compliance) ────────────
+    match /restaurant_settings/{restaurantId} {
+      allow read: if isAuthenticated() &&
+                     (isPlatformAdmin() || ownsBusiness(restaurantId));
+
+      allow write: if isAuthenticated() &&
+                      (ownsBusiness(restaurantId) || isPlatformAdmin());
+    }
+
+    // ─── /dashboard_summary/{merchantId} (ADR-003 Aggregated Dashboard) ──────
+    match /dashboard_summary/{merchantId} {
+      allow read: if isAuthenticated() &&
+                     (isPlatformAdmin() || ownsBusiness(merchantId));
+
+      allow create, update, delete: if isPlatformAdmin();
+    }
+
+    // ─── /financial_events/{eventId} (Phase 5 Finance Integration) ──────────
+    // Inmutables: solo el Admin SDK (Cloud Functions) puede escribirlos.
+    // Ningún cliente puede crear, modificar o eliminar eventos financieros.
+    match /financial_events/{eventId} {
+      allow read: if isAuthenticated() &&
+                     (ownsBusiness(resource.data.businessId) || isPlatformAdmin());
+
+      // Solo escritura desde Admin SDK (Cloud Functions bypassa reglas).
+      // Prevenimos escrituras directas desde cualquier cliente:
+      allow create, update, delete: if isPlatformAdmin();
+    }
+
+    // ─── /merchant_summaries/{businessId} (Phase 5 Finance Integration) ─────
+    // Documento de solo lectura para el comercio. Solo actualizable via Admin SDK.
+    match /merchant_summaries/{businessId} {
+      allow read: if isAuthenticated() &&
+                     (ownsBusiness(businessId) || isPlatformAdmin());
+
+      // Escritura solo desde Admin SDK (Cloud Functions con FieldValue.increment):
+      allow create, update: if isPlatformAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // ─── /platform_config/{docId} (configuración global de plataforma) ───────
+    match /platform_config/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isSuperAdmin();
+    }
+
+    // ─── Marketplace Public Content Collections ─────────────────────────────
+    match /promotions/{promoId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && (isPlatformAdmin() || isBusinessAdmin());
+    }
+
+    match /dashboard/{docId} {
+      allow read: if true;
+      allow write: if isPlatformAdmin();
+    }
+
+    // ─── /system_health (Active Sessions Heartbeat) ──────────────────────────
+    match /system_health/{document=**} {
+      allow read, write: if isAuthenticated();
+    }
+
+    match /dashboard_config/{docId} {
+      allow read: if true;
+      allow write: if isPlatformAdmin();
+    }
+
+    match /featuredProducts/{docId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && (isPlatformAdmin() || isBusinessAdmin());
+    }
+
+    match /featured_products/{docId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && (isPlatformAdmin() || isBusinessAdmin());
+    }
+
+    match /flashDeals/{docId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && (isPlatformAdmin() || isBusinessAdmin());
+    }
+
+    match /flash_deals/{docId} {
+      allow read: if true;
+      allow write: if isAuthenticated() && (isPlatformAdmin() || isBusinessAdmin());
+    }
+
+    match /categories/{catId} {
+      allow read: if true;
+      allow create: if isAuthenticated() && (
+        isPlatformAdmin() || 
+        (
+          isBusinessAdmin() && 
+          request.resource.data.businessId == getBusinessId() &&
+          request.resource.data.get("type", "BUSINESS") in ["BUSINESS", "SUBCATEGORY"]
+        )
+      );
+      allow update: if isAuthenticated() && (
+        isPlatformAdmin() || 
+        (
+          isBusinessAdmin() && 
+          request.resource.data.businessId == getBusinessId() &&
+          request.resource.data.get("type", "BUSINESS") in ["BUSINESS", "SUBCATEGORY"] &&
+          (!request.resource.data.diff(resource.data).affectedKeys().hasAny(["type"]) || resource.data.get("type", "BUSINESS") in ["BUSINESS", "SUBCATEGORY"])
+        )
+      );
+      allow delete: if isAuthenticated() && (
+        isPlatformAdmin() || 
+        (
+          isBusinessAdmin() && 
+          resource.data.businessId == getBusinessId() &&
+          resource.data.get("type", "BUSINESS") in ["BUSINESS", "SUBCATEGORY"]
+        )
+      );
+    }
+
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if isPlatformAdmin();
+    }
+
+    match /users/{userId}/notifications/{notifId} {
+      allow read, write: if true;
+    }
+
+    // ─── /incidents/{incidentId} ─────────────────────────────────────────────
+    match /incidents/{incidentId} {
+      allow read: if isAuthenticated() && (
+        isPlatformAdmin() || 
+        isBusinessAdmin() || 
+        isBusinessStaff() || 
+        request.auth.token.get("userType", "") in ["courier", "motorizado", "driver"] ||
+        getRole() in ["courier", "COURIER", "motorizado", "MOTORIZADO"]
+      );
+      allow create, update: if isAuthenticated();
+      allow delete: if isAuthenticated() && isPlatformAdmin();
+    }
+
+    // ─── /notification_campaigns/{campaignId} (Notification Center Enterprise) ──
+    match /notification_campaigns/{campaignId} {
+      allow read: if isAuthenticated() && isPlatformAdmin();
+      allow create, update: if isAuthenticated() && isPlatformAdmin();
+      allow delete: if isSuperAdmin();
+
+      match /versions/{versionId} {
+        allow read: if isAuthenticated() && isPlatformAdmin();
+        allow create, update: if isAuthenticated() && isPlatformAdmin();
+        allow delete: if isSuperAdmin();
+      }
+    }
+
+    // ─── /courier_cash_ledger/{entryId} (Subledger de Custodia / Solo Backend) ──
+    match /courier_cash_ledger/{entryId} {
+      allow read: if isAuthenticated() && (
+        currentUid() == resource.data.courierId ||
+        isPlatformAdmin() ||
+        isBusinessAdmin() ||
+        isSupervisor()
+      );
+      allow write: if false; // Solo Admin SDK (Cloud Functions)
+    }
+
+    // ─── /courier_balances/{courierId} (Balance Agregado / Solo Backend) ─────
+    match /courier_balances/{courierId} {
+      allow read: if isAuthenticated() && (
+        currentUid() == courierId ||
+        isPlatformAdmin() ||
+        isBusinessAdmin() ||
+        isSupervisor()
+      );
+      allow write: if false; // Solo Admin SDK (Cloud Functions)
+    }
+
+    // ─── /courier_settlements/{settlementId} (Liquidación y Arqueo) ──────────
+    match /courier_settlements/{settlementId} {
+      allow read: if isAuthenticated() && (
+        currentUid() == resource.data.courierId ||
+        isPlatformAdmin() ||
+        isBusinessAdmin() ||
+        isSupervisor()
+      );
+      allow write: if false; // Solo Admin SDK vía Callable HTTPS
+    }
+
+    // ─── /courier_daily_closures/{closureId} (Cierre Diario y Depósito Bancario) ──
+    match /courier_daily_closures/{closureId} {
+      allow read: if isAuthenticated() && (
+        currentUid() == resource.data.courierId ||
+        isPlatformAdmin() ||
+        isBusinessAdmin() ||
+        isSupervisor()
+      );
+      allow write: if false; // Solo Admin SDK vía Cloud Functions
+    }
+
+    // ─── /financial_events/{eventId} (General Accounting Ledger) ─────────────
+    match /financial_events/{eventId} {
+      allow read: if isAuthenticated() && (
+        ownsBusiness(resource.data.businessId) ||
+        isPlatformAdmin()
+      );
+      allow write: if false; // Solo Admin SDK (Cloud Functions)
+    }
+
+    // ─── /merchant_summaries/{businessId} (Agregados Financieros Merchant) ───
+    match /merchant_summaries/{businessId} {
+      allow read: if isAuthenticated() && (
+        ownsBusiness(businessId) ||
+        isPlatformAdmin()
+      );
+      allow write: if false; // Solo Admin SDK (Cloud Functions)
+    }
+
+    // ─── Denegar todo lo demás ────────────────────────────────────────────────
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,556 @@
+﻿
+08-20 09:58:57.453 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : EXCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 09:58:57.453 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterModelName - option : ALL / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 09:58:57.453 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : INCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.skt.prod.together","component_name":"","
+sales_code_option":"include","sales_codes":["SKC","KOO"],"model_names":[],"orders":{"SKC":100}} / PackageName : 
+com.skt.prod.together / ComponentName :  / SalesCodeOption : include / SalesCodes : [SKC, KOO] / ModelNameOption : 
+null / ModelNames : [] / Orders : {SKC=100} / Order : 1000
+08-20 09:58:57.863 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : EXCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 09:58:57.863 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterModelName - option : ALL / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 09:58:57.863 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : INCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.skt.prod.together","component_name":"","
+sales_code_option":"include","sales_codes":["SKC","KOO"],"model_names":[],"orders":{"SKC":100}} / PackageName : 
+com.skt.prod.together / ComponentName :  / SalesCodeOption : include / SalesCodes : [SKC, KOO] / ModelNameOption : 
+null / ModelNames : [] / Orders : {SKC=100} / Order : 1000
+08-20 10:10:42.936 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : EXCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 10:10:42.936 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterModelName - option : ALL / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 10:10:42.936 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : INCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.skt.prod.together","component_name":"","
+sales_code_option":"include","sales_codes":["SKC","KOO"],"model_names":[],"orders":{"SKC":100}} / PackageName : 
+com.skt.prod.together / ComponentName :  / SalesCodeOption : include / SalesCodes : [SKC, KOO] / ModelNameOption : 
+null / ModelNames : [] / Orders : {SKC=100} / Order : 1000
+08-20 10:10:43.157 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : EXCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 10:10:43.157 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterModelName - option : ALL / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 10:10:43.157 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : INCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.skt.prod.together","component_name":"","
+sales_code_option":"include","sales_codes":["SKC","KOO"],"model_names":[],"orders":{"SKC":100}} / PackageName : 
+com.skt.prod.together / ComponentName :  / SalesCodeOption : include / SalesCodes : [SKC, KOO] / ModelNameOption : 
+null / ModelNames : [] / Orders : {SKC=100} / Order : 1000
+08-20 10:11:15.526 D/PERMISSION_MANAGER(15737): Matriz RBAC aplicada para rol 'courier': totalPermisos=5
+08-20 10:11:15.527 D/UserProfileRepo(15737): UserProfile updated for 9QHYGkSa3nWiJ7KfPkccjjuIaYp2: role=courier, 
+active=true
+08-20 10:11:18.537 D/FirebaseManager(15737): CACHE HIT: Emitted 3 businesses instantly
+08-20 10:11:23.566 D/FirebaseManager(15737): CACHE HIT: Emitted 3 businesses instantly
+08-20 10:11:43.184 I/AuditLogger(15737): [SEVERITY: INFO] [EVENT: AUTH_LOGIN_SUCCESS] SessionId: 
+be519c59-841a-4f5d-a00d-31cce16b43da | Details: {sessionId=be519c59-841a-4f5d-a00d-31cce16b43da, severity=INFO, 
+timestamp=1787242303184, uid=9QHYGkSa3nWiJ7KfPkccjjuIaYp2, role=courier}
+08-20 10:11:43.422 D/FLOTA_DEBUG(15737): LOGIN_OK: Usuario registrado con correo hpaz@gmail.com
+08-20 10:11:43.492 D/FLOTA_DEBUG(15737): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:11:43.497 D/FLOTA_DEBUG(15737): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:11:43.969 D/FLOTA_DEBUG(15737): CARGANDO_PEDIDOS_ACTIVOS: Consultando Firestore por pedidos del courier
+08-20 10:11:43.971 D/COURIER_QUERY(15737): Starting targeted listeners for motorizadoId=9QHYGkSa3nWiJ7KfPkccjjuIaYp2
+08-20 10:11:44.111 D/FLOTA_DEBUG(15737): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:11:44.112 D/FLOTA_DEBUG(15737): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:11:44.131 D/FLOTA_DEBUG(15737): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 10:11:44.144 D/FLOTA_DEBUG(15737): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 10:11:44.149 D/FLOTA_DEBUG(15737): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:11:44.150 D/FLOTA_DEBUG(15737): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:11:44.225 D/FLOTA_DEBUG(15737): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:11:44.246 D/FLOTA_DEBUG(15737): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:11:44.247 D/FLOTA_DEBUG(15737): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:11:45.110 D/FLOTA_DEBUG(15737): ON_MAP_LOADED: El mapa se carg├│ y renderiz├│ con ├®xito
+08-20 10:11:45.122 D/FLOTA_DEBUG(15737): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:11:45.123 D/FLOTA_DEBUG(15737): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:11:49.933 I/Toast   (15737): show: caller = com.example.presentation.courier.CourierMainDashboardScreenKt.Cour
+ierMainDashboardScreen$lambda$85$lambda$84$lambda$67$lambda$66:358 
+08-20 10:12:10.138 D/FLOTA_DEBUG(15737): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:12:10.139 D/FLOTA_DEBUG(15737): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:12:32.857 D/FLOTA_DEBUG(15737): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:12:32.859 D/FLOTA_DEBUG(15737): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:12:32.959 D/FLOTA_DEBUG(15737): CARGANDO_PEDIDOS_ACTIVOS: Consultando Firestore por pedidos del courier
+08-20 10:12:33.012 D/FLOTA_DEBUG(15737): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:12:33.013 D/FLOTA_DEBUG(15737): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:12:33.469 D/FLOTA_DEBUG(15737): ON_MAP_LOADED: El mapa se carg├│ y renderiz├│ con ├®xito
+08-20 10:12:33.470 D/FLOTA_DEBUG(15737): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:12:33.471 D/FLOTA_DEBUG(15737): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:12:33.517 I/.delivery.djweq(15737): Compiler allocated 10100KB to compile void 
+com.example.PedidosEntrantesScreenKt.PedidosEntrantesScreen(com.example.PedidoOfrecido, 
+com.example.CourierOrdersState, kotlin.jvm.functions.Function2, kotlin.jvm.functions.Function0, 
+kotlin.jvm.functions.Function0, kotlin.jvm.functions.Function4, androidx.compose.runtime.Composer, int, int)
+08-20 10:25:26.430 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : EXCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 10:25:26.430 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterModelName - option : ALL / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 10:25:26.430 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : INCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.skt.prod.together","component_name":"","
+sales_code_option":"include","sales_codes":["SKC","KOO"],"model_names":[],"orders":{"SKC":100}} / PackageName : 
+com.skt.prod.together / ComponentName :  / SalesCodeOption : include / SalesCodes : [SKC, KOO] / ModelNameOption : 
+null / ModelNames : [] / Orders : {SKC=100} / Order : 1000
+08-20 10:25:26.512 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : EXCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 10:25:26.512 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterModelName - option : ALL / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 10:25:26.512 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : INCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.skt.prod.together","component_name":"","
+sales_code_option":"include","sales_codes":["SKC","KOO"],"model_names":[],"orders":{"SKC":100}} / PackageName : 
+com.skt.prod.together / ComponentName :  / SalesCodeOption : include / SalesCodes : [SKC, KOO] / ModelNameOption : 
+null / ModelNames : [] / Orders : {SKC=100} / Order : 1000
+08-20 10:27:28.833 D/DeliveryFCM(22604): Canales de notificaci├│n registrados: new_orders_channel_v2, 
+order_status_channel
+08-20 10:28:52.256 I/AuditLogger(22604): [SEVERITY: INFO] [EVENT: AUTH_LOGIN_SUCCESS] SessionId: 
+2fbbbc9e-4eaf-493d-8a5d-a3e45fb608e8 | Details: {sessionId=2fbbbc9e-4eaf-493d-8a5d-a3e45fb608e8, severity=INFO, 
+timestamp=1787243332256, uid=9QHYGkSa3nWiJ7KfPkccjjuIaYp2, role=courier}
+08-20 10:28:52.609 D/FLOTA_DEBUG(22604): LOGIN_OK: Usuario registrado con correo hpaz@gmail.com
+08-20 10:28:52.707 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:28:52.714 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:28:53.177 D/FLOTA_DEBUG(22604): CARGANDO_PEDIDOS_ACTIVOS: Consultando Firestore por pedidos del courier
+08-20 10:28:53.179 D/COURIER_QUERY(22604): Starting targeted listeners for motorizadoId=9QHYGkSa3nWiJ7KfPkccjjuIaYp2
+08-20 10:28:53.279 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:28:53.280 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:28:53.500 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 10:28:53.507 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 10:28:53.508 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:28:53.510 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:28:53.511 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:29:05.707 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:29:05.707 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:29:10.119 I/Toast   (22604): show: caller = com.example.presentation.courier.CourierMainDashboardScreenKt.Cour
+ierMainDashboardScreen$lambda$84$lambda$83$lambda$66$lambda$65:354 
+08-20 10:29:28.037 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=ped_fc8398d6-36a
+08-20 10:29:28.038 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=ped_fc8398d6-36a
+08-20 10:29:28.038 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=ped_fc8398d6-36a
+08-20 10:29:28.055 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:29:29.225 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=ped_fc8398d6-36a
+08-20 10:29:29.226 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=ped_fc8398d6-36a
+08-20 10:29:29.227 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=ped_fc8398d6-36a
+08-20 10:29:29.251 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:29:29.695 D/COURIER_REJECT(22604): Pedido ped_fc8398d6-36a desasignado exitosamente en Firestore
+08-20 10:29:29.758 D/COURIER_REJECT(22604): Pedido ped_fc8398d6-36a desasignado exitosamente en Firestore
+08-20 10:29:29.799 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=ped_fc8398d6-36a
+08-20 10:29:29.800 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=ped_fc8398d6-36a
+08-20 10:29:29.800 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=ped_fc8398d6-36a
+08-20 10:29:29.819 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:29:30.030 D/COURIER_REJECT(22604): Pedido ped_fc8398d6-36a desasignado exitosamente en Firestore
+08-20 10:29:30.107 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=ped_fc8398d6-36a
+08-20 10:29:30.108 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=ped_fc8398d6-36a
+08-20 10:29:30.108 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=ped_fc8398d6-36a
+08-20 10:29:30.128 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:29:30.305 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=ped_fc8398d6-36a
+08-20 10:29:30.306 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=ped_fc8398d6-36a
+08-20 10:29:30.306 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=ped_fc8398d6-36a
+08-20 10:29:30.330 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:29:30.333 D/COURIER_REJECT(22604): Pedido ped_fc8398d6-36a desasignado exitosamente en Firestore
+08-20 10:29:30.491 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=ped_fc8398d6-36a
+08-20 10:29:30.492 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=ped_fc8398d6-36a
+08-20 10:29:30.492 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=ped_fc8398d6-36a
+08-20 10:29:30.511 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:29:31.325 D/COURIER_REJECT(22604): Pedido ped_fc8398d6-36a desasignado exitosamente en Firestore
+08-20 10:29:31.350 D/COURIER_REJECT(22604): Pedido ped_fc8398d6-36a desasignado exitosamente en Firestore
+08-20 10:29:36.064 D/FLOTA_DEBUG(22604): ON_MAP_LOADED: El mapa se carg├│ y renderiz├│ con ├®xito
+08-20 10:29:36.066 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:29:36.068 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:29:37.817 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=ped_fc8398d6-36a
+08-20 10:29:37.819 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=ped_fc8398d6-36a
+08-20 10:29:37.819 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=ped_fc8398d6-36a
+08-20 10:29:37.837 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:29:38.076 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=ped_fc8398d6-36a
+08-20 10:29:38.076 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=ped_fc8398d6-36a
+08-20 10:29:38.076 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=ped_fc8398d6-36a
+08-20 10:29:38.092 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:29:38.094 D/COURIER_REJECT(22604): Pedido ped_fc8398d6-36a desasignado exitosamente en Firestore
+08-20 10:29:38.254 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=ped_fc8398d6-36a
+08-20 10:29:38.255 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=ped_fc8398d6-36a
+08-20 10:29:38.255 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=ped_fc8398d6-36a
+08-20 10:29:38.276 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:29:38.285 D/COURIER_REJECT(22604): Pedido ped_fc8398d6-36a desasignado exitosamente en Firestore
+08-20 10:29:38.418 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=ped_fc8398d6-36a
+08-20 10:29:38.419 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=ped_fc8398d6-36a
+08-20 10:29:38.419 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=ped_fc8398d6-36a
+08-20 10:29:38.437 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:29:38.596 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=ped_fc8398d6-36a
+08-20 10:29:38.597 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=ped_fc8398d6-36a
+08-20 10:29:38.597 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=ped_fc8398d6-36a
+08-20 10:29:38.619 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:29:38.770 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=ped_fc8398d6-36a
+08-20 10:29:38.771 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=ped_fc8398d6-36a
+08-20 10:29:38.771 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=ped_fc8398d6-36a
+08-20 10:29:38.794 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:29:38.839 D/COURIER_REJECT(22604): Pedido ped_fc8398d6-36a desasignado exitosamente en Firestore
+08-20 10:29:38.937 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=ped_fc8398d6-36a
+08-20 10:29:38.938 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=ped_fc8398d6-36a
+08-20 10:29:38.938 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=ped_fc8398d6-36a
+08-20 10:29:38.952 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:29:39.078 D/COURIER_REJECT(22604): Pedido ped_fc8398d6-36a desasignado exitosamente en Firestore
+08-20 10:29:39.102 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=ped_fc8398d6-36a
+08-20 10:29:39.103 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=ped_fc8398d6-36a
+08-20 10:29:39.103 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=ped_fc8398d6-36a
+08-20 10:29:39.116 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:29:39.169 D/COURIER_REJECT(22604): Pedido ped_fc8398d6-36a desasignado exitosamente en Firestore
+08-20 10:29:39.179 D/COURIER_REJECT(22604): Pedido ped_fc8398d6-36a desasignado exitosamente en Firestore
+08-20 10:29:39.189 D/COURIER_REJECT(22604): Pedido ped_fc8398d6-36a desasignado exitosamente en Firestore
+08-20 10:29:39.571 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:29:39.572 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:29:39.609 D/COURIER_REJECT(22604): Pedido ped_fc8398d6-36a desasignado exitosamente en Firestore
+08-20 10:29:40.081 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:29:40.082 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:29:41.283 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=yjkXuzCVtWgwjVt3NylZ
+08-20 10:29:41.284 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=yjkXuzCVtWgwjVt3NylZ
+08-20 10:29:41.284 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=yjkXuzCVtWgwjVt3NylZ
+08-20 10:29:41.295 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=3, assigned=0, 
+activeRoute=null
+08-20 10:29:41.298 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:29:41.299 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:29:41.783 D/COURIER_REJECT(22604): Pedido yjkXuzCVtWgwjVt3NylZ desasignado exitosamente en Firestore
+08-20 10:29:42.174 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:29:42.175 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:29:43.016 I/.delivery.djweq(22604): Compiler allocated 9120KB to compile kotlin.Unit com.example.PedidosEntran
+tesScreenKt.PedidosEntrantesScreen$lambda$126$lambda$118$lambda$117(com.example.PedidoOfrecido, 
+com.example.CourierOrdersState, java.util.List, androidx.compose.runtime.MutableIntState, 
+androidx.compose.runtime.MutableState, kotlin.jvm.functions.Function1, kotlinx.coroutines.CoroutineScope, 
+kotlin.jvm.functions.Function4, com.example.PedidoOfrecido, kotlin.jvm.functions.Function2, 
+androidx.compose.runtime.MutableState, androidx.compose.runtime.MutableState, 
+androidx.compose.foundation.layout.ColumnScope, androidx.compose.runtime.Composer, int)
+08-20 10:29:43.539 D/FLOTA_DEBUG(22604): CREANDO_VIEWMODEL: Inicializando CourierViewModel para la pantalla 
+RutaActivaScreen
+08-20 10:29:43.547 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 10:29:43.650 D/COURIER_GPS(22604): REAL_HARDWARE_GPS_FIX: lat=12.1056677 lng=-86.270116 bearing=90.00121 
+accuracy=9.014
+08-20 10:29:43.658 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=ASSIGNED_ORDERS, pool=3, assigned=1, 
+activeRoute=null
+08-20 10:29:43.669 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=ASSIGNED_ORDERS, pool=3, assigned=1, 
+activeRoute=null
+08-20 10:29:43.670 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=ASSIGNED_ORDERS, pool=2, assigned=1, 
+activeRoute=null
+08-20 10:29:43.738 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 10:29:43.744 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:29:43.744 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:29:43.775 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=ASSIGNED_ORDERS, pool=2, assigned=1, 
+activeRoute=null
+08-20 10:29:43.782 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=ASSIGNED_ORDERS, pool=2, assigned=1, 
+activeRoute=null
+08-20 10:29:43.793 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 10:29:43.795 I/.delivery.djweq(22604): Compiler allocated 10MB to compile void 
+com.example.PedidosEntrantesScreenKt.PedidosEntrantesScreen(com.example.PedidoOfrecido, 
+com.example.CourierOrdersState, kotlin.jvm.functions.Function2, kotlin.jvm.functions.Function1, 
+kotlin.jvm.functions.Function0, kotlin.jvm.functions.Function4, androidx.compose.runtime.Composer, int, int)
+08-20 10:29:44.041 D/FLOTA_DEBUG(22604): ON_MAP_LOADED: El mapa se carg├│ y renderiz├│ con ├®xito en RutaActivaScreen
+08-20 10:29:44.052 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 10:29:45.639 D/COURIER_PICKUP(22604): orderId=ped_fc8398d6-36a status=picked_up
+08-20 10:29:45.660 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 10:29:46.963 D/COURIER_GPS(22604): REAL_HARDWARE_GPS_FIX: lat=12.1056699 lng=-86.2701189 bearing=89.998314 
+accuracy=8.043
+08-20 10:29:49.141 D/DeliveryFCM(22604): Payload: Action=COURIER_ASSIGNED, OrderId=ped_fc8398d6-36a, CampaignId=, 
+Title=ƒøÁ Nuevo pedido asignado
+08-20 10:29:49.958 D/COURIER_GPS(22604): REAL_HARDWARE_GPS_FIX: lat=12.1056709 lng=-86.2701181 bearing=89.99873 
+accuracy=7.183
+08-20 10:29:52.966 D/COURIER_GPS(22604): REAL_HARDWARE_GPS_FIX: lat=12.1056711 lng=-86.2701161 bearing=89.999954 
+accuracy=7.133
+08-20 10:29:55.964 D/COURIER_GPS(22604): REAL_HARDWARE_GPS_FIX: lat=12.1056714 lng=-86.2701161 bearing=89.999855 
+accuracy=6.715
+08-20 10:29:58.972 D/COURIER_GPS(22604): REAL_HARDWARE_GPS_FIX: lat=12.1056716 lng=-86.2701117 bearing=89.99998 
+accuracy=6.756
+08-20 10:30:01.962 D/COURIER_GPS(22604): REAL_HARDWARE_GPS_FIX: lat=12.1056721 lng=-86.270111 bearing=89.999855 
+accuracy=6.454
+08-20 10:30:02.295 D/COURIER_PAYMENT(22604): total=235.0 received=500.0 change=265.0
+08-20 10:30:02.295 D/COURIER_DELIVERY(22604): orderId=ped_fc8398d6-36a status=delivered -> status=completed
+08-20 10:30:02.341 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 10:30:02.882 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 10:30:03.974 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap en RutaActivaScreen
+08-20 10:30:04.078 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:30:04.081 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:30:04.161 D/FLOTA_DEBUG(22604): CARGANDO_PEDIDOS_ACTIVOS: Consultando Firestore por pedidos del courier
+08-20 10:30:04.162 D/COURIER_QUERY(22604): Starting targeted listeners for motorizadoId=9QHYGkSa3nWiJ7KfPkccjjuIaYp2
+08-20 10:30:04.235 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:30:04.236 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:30:04.247 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 10:30:04.259 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 10:30:04.260 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=2, assigned=0, 
+activeRoute=null
+08-20 10:30:04.270 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:30:04.271 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:30:04.629 D/FLOTA_DEBUG(22604): ON_MAP_LOADED: El mapa se carg├│ y renderiz├│ con ├®xito
+08-20 10:30:04.634 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:30:04.636 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:30:06.177 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=s26JKFCGwelS2nFklRYs
+08-20 10:30:06.178 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:06.178 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:06.196 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=2, assigned=0, 
+activeRoute=null
+08-20 10:30:06.518 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=s26JKFCGwelS2nFklRYs
+08-20 10:30:06.519 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:06.519 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:06.537 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=2, assigned=0, 
+activeRoute=null
+08-20 10:30:06.640 D/COURIER_REJECT(22604): Pedido s26JKFCGwelS2nFklRYs desasignado exitosamente en Firestore
+08-20 10:30:06.739 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=s26JKFCGwelS2nFklRYs
+08-20 10:30:06.741 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:06.741 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:06.756 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=2, assigned=0, 
+activeRoute=null
+08-20 10:30:06.897 D/COURIER_REJECT(22604): Pedido s26JKFCGwelS2nFklRYs desasignado exitosamente en Firestore
+08-20 10:30:06.907 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=s26JKFCGwelS2nFklRYs
+08-20 10:30:06.908 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:06.908 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:06.923 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=2, assigned=0, 
+activeRoute=null
+08-20 10:30:07.038 D/COURIER_REJECT(22604): Pedido s26JKFCGwelS2nFklRYs desasignado exitosamente en Firestore
+08-20 10:30:07.081 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.082 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.082 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.108 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=2, assigned=0, 
+activeRoute=null
+08-20 10:30:07.173 D/COURIER_REJECT(22604): Pedido s26JKFCGwelS2nFklRYs desasignado exitosamente en Firestore
+08-20 10:30:07.250 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.251 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.251 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.267 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=2, assigned=0, 
+activeRoute=null
+08-20 10:30:07.423 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.424 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.424 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.441 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=2, assigned=0, 
+activeRoute=null
+08-20 10:30:07.592 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.593 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.593 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.609 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=2, assigned=0, 
+activeRoute=null
+08-20 10:30:07.627 D/COURIER_REJECT(22604): Pedido s26JKFCGwelS2nFklRYs desasignado exitosamente en Firestore
+08-20 10:30:07.766 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.766 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.767 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.783 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=2, assigned=0, 
+activeRoute=null
+08-20 10:30:07.898 D/COURIER_REJECT(22604): Pedido s26JKFCGwelS2nFklRYs desasignado exitosamente en Firestore
+08-20 10:30:07.916 D/COURIER_REJECT(22604): Pedido s26JKFCGwelS2nFklRYs desasignado exitosamente en Firestore
+08-20 10:30:07.948 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.949 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.949 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:07.962 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=2, assigned=0, 
+activeRoute=null
+08-20 10:30:08.117 D/COURIER_REJECT(22604): Pedido s26JKFCGwelS2nFklRYs desasignado exitosamente en Firestore
+08-20 10:30:08.125 D/COURIER_REJECT(22604): Pedido s26JKFCGwelS2nFklRYs desasignado exitosamente en Firestore
+08-20 10:30:08.147 D/COURIER_REJECT(22604): Pedido s26JKFCGwelS2nFklRYs desasignado exitosamente en Firestore
+08-20 10:30:08.437 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=s26JKFCGwelS2nFklRYs
+08-20 10:30:08.437 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:08.437 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:08.454 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=2, assigned=0, 
+activeRoute=null
+08-20 10:30:08.617 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=s26JKFCGwelS2nFklRYs
+08-20 10:30:08.618 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:08.618 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:08.632 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=2, assigned=0, 
+activeRoute=null
+08-20 10:30:08.643 D/COURIER_REJECT(22604): Pedido s26JKFCGwelS2nFklRYs desasignado exitosamente en Firestore
+08-20 10:30:08.791 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=s26JKFCGwelS2nFklRYs
+08-20 10:30:08.792 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:08.792 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:08.807 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=2, assigned=0, 
+activeRoute=null
+08-20 10:30:08.868 D/COURIER_REJECT(22604): Pedido s26JKFCGwelS2nFklRYs desasignado exitosamente en Firestore
+08-20 10:30:08.908 D/COURIER_REJECT(22604): Boton rechazar presionado para orderId=s26JKFCGwelS2nFklRYs
+08-20 10:30:08.909 D/COURIER_REJECT(22604): Iniciando rechazo para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:08.909 D/COURIER_REJECT(22604): Ejecutando desasignaci├│n en Firestore para pedidoId=s26JKFCGwelS2nFklRYs
+08-20 10:30:08.924 D/FLOTA_DEBUG(22604): FIRESTORE_COURIER_FLOW: uiStatus=POOL_ORDERS, pool=2, assigned=0, 
+activeRoute=null
+08-20 10:30:09.593 D/COURIER_REJECT(22604): Pedido s26JKFCGwelS2nFklRYs desasignado exitosamente en Firestore
+08-20 10:30:09.835 D/COURIER_REJECT(22604): Pedido s26JKFCGwelS2nFklRYs desasignado exitosamente en Firestore
+08-20 10:30:16.069 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:30:16.072 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:30:16.162 D/FLOTA_DEBUG(22604): CARGANDO_PEDIDOS_ACTIVOS: Consultando Firestore por pedidos del courier
+08-20 10:30:16.200 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:30:16.200 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:30:16.786 D/FLOTA_DEBUG(22604): ON_MAP_LOADED: El mapa se carg├│ y renderiz├│ con ├®xito
+08-20 10:30:16.798 D/FLOTA_DEBUG(22604): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:30:16.800 D/FLOTA_DEBUG(22604): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:44:27.729 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : EXCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 10:44:27.729 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterModelName - option : ALL / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 10:44:27.729 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : INCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.skt.prod.together","component_name":"","
+sales_code_option":"include","sales_codes":["SKC","KOO"],"model_names":[],"orders":{"SKC":100}} / PackageName : 
+com.skt.prod.together / ComponentName :  / SalesCodeOption : include / SalesCodes : [SKC, KOO] / ModelNameOption : 
+null / ModelNames : [] / Orders : {SKC=100} / Order : 1000
+08-20 10:44:27.839 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : EXCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 10:44:27.839 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterModelName - option : ALL / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.google.android.apps.tachyon","component_
+name":"","sales_code_option":"exclude","sales_codes":["CDR","DOR","UFN","UFU","SAM","CHC","TCE","GCF"],"model_names":[]
+,"orders":{"default":200,"SKC":900,"KTC":900,"LUC":900}} / PackageName : com.google.android.apps.tachyon / 
+ComponentName :  / SalesCodeOption : exclude / SalesCodes : [CDR, DOR, UFN, UFU, SAM, CHC, TCE, GCF] / ModelNameOption 
+: null / ModelNames : [] / Orders : {default=200, SKC=900, KTC=900, LUC=900} / Order : 200
+08-20 10:44:27.839 I/Telecom ( 3004): SamsungAllowedPhoneAccountFilterManager : filterSalesCode - option : INCLUDE / 
+allowedPhoneAccount : SamsungJsonPhoneAccount { RawData : {"package_name":"com.skt.prod.together","component_name":"","
+sales_code_option":"include","sales_codes":["SKC","KOO"],"model_names":[],"orders":{"SKC":100}} / PackageName : 
+com.skt.prod.together / ComponentName :  / SalesCodeOption : include / SalesCodes : [SKC, KOO] / ModelNameOption : 
+null / ModelNames : [] / Orders : {SKC=100} / Order : 1000
+08-20 10:47:04.553 D/DeliveryFCM(30171): Canales de notificaci├│n registrados: new_orders_channel_v2, 
+order_status_channel
+08-20 10:49:02.120 I/AuditLogger(30171): [SEVERITY: INFO] [EVENT: AUTH_LOGIN_SUCCESS] SessionId: 
+d08a8c9b-45c4-45f9-8fb3-afe6d5f69ab8 | Details: {sessionId=d08a8c9b-45c4-45f9-8fb3-afe6d5f69ab8, severity=INFO, 
+timestamp=1787244542119, uid=9QHYGkSa3nWiJ7KfPkccjjuIaYp2, role=courier}
+08-20 10:49:02.258 D/FLOTA_DEBUG(30171): LOGIN_OK: Usuario registrado con correo hpaz@gmail.com
+08-20 10:49:02.688 D/FLOTA_DEBUG(30171): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:49:02.713 D/FLOTA_DEBUG(30171): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:49:04.535 D/FLOTA_DEBUG(30171): CARGANDO_PEDIDOS_ACTIVOS: Consultando Firestore por pedidos del courier
+08-20 10:49:04.544 D/COURIER_QUERY(30171): Starting targeted listeners for motorizadoId=9QHYGkSa3nWiJ7KfPkccjjuIaYp2
+08-20 10:49:04.658 D/FLOTA_DEBUG(30171): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 10:49:04.658 D/FLOTA_DEBUG(30171): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 10:49:04.783 D/FLOTA_DEBUG(30171): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:49:04.786 D/FLOTA_DEBUG(30171): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:49:04.842 D/FLOTA_DEBUG(30171): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 10:49:28.461 D/FLOTA_DEBUG(30171): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:49:28.467 D/FLOTA_DEBUG(30171): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:49:33.726 I/Toast   (30171): show: caller = com.example.presentation.courier.CourierMainDashboardScreenKt.Cour
+ierMainDashboardScreen$lambda$84$lambda$83$lambda$66$lambda$65:354 
+08-20 10:49:40.415 D/FLOTA_DEBUG(30171): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:49:40.420 D/FLOTA_DEBUG(30171): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:49:40.506 D/FLOTA_DEBUG(30171): CARGANDO_PEDIDOS_ACTIVOS: Consultando Firestore por pedidos del courier
+08-20 10:49:40.542 D/FLOTA_DEBUG(30171): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 10:49:40.542 D/FLOTA_DEBUG(30171): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 10:50:55.990 I/AndroidRuntime(  787): VM exiting with result code 0, cleanup skipped.
+08-20 10:51:56.089 I/AndroidRuntime(  690): VM exiting with result code 0, cleanup skipped.
+08-20 10:59:31.523 D/DeliveryFCM(30171): Message received from: /topics/available_orders
+08-20 10:59:31.576 I/NotificationManager(30171): com.aistudio.delivery.djweq: notify(1717436055, null, 
+Notification(channel=new_orders_channel_v2 shortcut=null contentView=null vibrate=null sound=null defaults=0 
+flags=AUTO_CANCEL|HIGH_PRIORITY color=0x00000000 category=call actions=2 vis=PRIVATE semFlags=0x0 semPriority=0 
+semMissedCount=0 semScenarioType=0)) as user
+08-20 11:00:27.333 D/PERMISSION_MANAGER( 6986): Matriz RBAC aplicada para rol 'courier': totalPermisos=5
+08-20 11:00:27.333 D/UserProfileRepo( 6986): UserProfile updated for 9QHYGkSa3nWiJ7KfPkccjjuIaYp2: role=courier, 
+active=true
+08-20 11:00:27.607 D/PERMISSION_MANAGER( 6986): Matriz RBAC aplicada para rol 'courier': totalPermisos=5
+08-20 11:00:27.607 D/UserProfileRepo( 6986): UserProfile updated for 9QHYGkSa3nWiJ7KfPkccjjuIaYp2: role=courier, 
+active=true
+08-20 11:00:32.904 D/FirebaseManager( 6986): CACHE HIT: Emitted 3 businesses instantly
+08-20 11:00:38.347 D/FirebaseManager( 6986): CACHE HIT: Emitted 3 businesses instantly
+08-20 11:01:38.933 I/AuditLogger( 6986): [SEVERITY: INFO] [EVENT: AUTH_LOGIN_SUCCESS] SessionId: 
+ea875bd6-7b9c-4014-86c6-4c2b38158b42 | Details: {sessionId=ea875bd6-7b9c-4014-86c6-4c2b38158b42, severity=INFO, 
+timestamp=1787245298933, uid=9QHYGkSa3nWiJ7KfPkccjjuIaYp2, role=courier}
+08-20 11:01:39.042 D/FLOTA_DEBUG( 6986): LOGIN_OK: Usuario registrado con correo hpaz@gmail.com
+08-20 11:01:39.399 D/FLOTA_DEBUG( 6986): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 11:01:39.426 D/FLOTA_DEBUG( 6986): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 11:01:41.589 D/FLOTA_DEBUG( 6986): CARGANDO_PEDIDOS_ACTIVOS: Consultando Firestore por pedidos del courier
+08-20 11:01:41.596 D/COURIER_QUERY( 6986): Starting targeted listeners for motorizadoId=9QHYGkSa3nWiJ7KfPkccjjuIaYp2
+08-20 11:01:41.715 D/FLOTA_DEBUG( 6986): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 11:01:41.715 D/FLOTA_DEBUG( 6986): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 11:01:41.716 D/FLOTA_DEBUG( 6986): FIRESTORE_COURIER_FLOW: uiStatus=EMPTY, pool=0, assigned=0, activeRoute=null
+08-20 11:01:41.945 D/FLOTA_DEBUG( 6986): CREANDO_PEDIDOS_ENTRANTES_SCREEN: Iniciando composici├│n de 
+PedidosEntrantesScreen
+08-20 11:01:41.948 D/FLOTA_DEBUG( 6986): INICIALIZANDO_MAPA: Dibujando GoogleMap
+08-20 11:01:58.708 I/Toast   ( 6986): show: caller = com.example.presentation.courier.CourierMainDashboardScreenKt.Cour
+ierMainDashboardScreen$lambda$84$lambda$83$lambda$66$lambda$65:354 
+08-20 11:27:39.004 E/fatal   (26785): runForegroundReporters
+08-20 11:31:20.012 E/fb4a.TaskQueueExecutor(16217): Task failed on fatal error or exceeded retry limit. 
+2021197715261969
+08-20 11:34:55.899 I/AndroidRuntime(24369): VM exiting with result code 0, cleanup skipped.
+08-20 11:35:55.995 I/AndroidRuntime(24354): VM exiting with result code 0, cleanup skipped.
+
+
