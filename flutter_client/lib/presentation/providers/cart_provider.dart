@@ -74,6 +74,13 @@ class CartItem {
   }
 }
 
+enum CommerceQuoteStatus {
+  unquoted,
+  calculating,
+  quoted,
+  error,
+}
+
 class CartProvider extends ChangeNotifier {
   final List<CartItem> _items = [];
   BusinessEntity? _activeBusiness;
@@ -94,9 +101,17 @@ class CartProvider extends ChangeNotifier {
     return _items.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
   }
 
+  CommerceQuoteStatus _quoteStatus = CommerceQuoteStatus.unquoted;
+  CommerceQuoteStatus get quoteStatus => _quoteStatus;
+  bool get isQuoted => _quoteStatus == CommerceQuoteStatus.quoted;
+  bool get isCalculatingQuote => _quoteStatus == CommerceQuoteStatus.calculating;
+  bool get hasAuthoritativeQuote => _quoteStatus == CommerceQuoteStatus.quoted && _dynamicDeliveryFee != null;
+
+  String? _quoteErrorMessage;
+  String? get quoteErrorMessage => _quoteErrorMessage;
+
   double? _dynamicDeliveryFee;
   double? get dynamicDeliveryFee => _dynamicDeliveryFee;
-  bool get hasAuthoritativeQuote => _dynamicDeliveryFee != null;
 
   double? _routeDistanceKm;
   double? get routeDistanceKm => _routeDistanceKm;
@@ -113,12 +128,26 @@ class CartProvider extends ChangeNotifier {
   Map<String, dynamic>? _pricingSnapshot;
   Map<String, dynamic>? get pricingSnapshot => _pricingSnapshot;
 
-  /// In Paso 1 / Unquoted state, returns 0.0. In Paso 2 with active quote, returns the authoritative fee.
-  double get deliveryFee => _dynamicDeliveryFee ?? 0.0;
+  /// In Paso 1 / Unquoted state, returns null (or 0.0 for fallback display if requested).
+  double? get authoritativeDeliveryFee => isQuoted ? _dynamicDeliveryFee : null;
+  double get deliveryFee => isQuoted ? (_dynamicDeliveryFee ?? 0.0) : 0.0;
 
   double get total {
     if (_items.isEmpty) return 0.0;
     return subtotal + deliveryFee;
+  }
+
+  void setCalculatingQuote() {
+    _quoteStatus = CommerceQuoteStatus.calculating;
+    _quoteErrorMessage = null;
+    notifyListeners();
+  }
+
+  void setQuoteError(String error) {
+    _quoteStatus = CommerceQuoteStatus.error;
+    _quoteErrorMessage = error;
+    _dynamicDeliveryFee = null;
+    notifyListeners();
   }
 
   void setCommerceQuote({
@@ -129,6 +158,8 @@ class CartProvider extends ChangeNotifier {
     required double courierDistanceEarnings,
     required Map<String, dynamic> pricingSnapshot,
   }) {
+    _quoteStatus = CommerceQuoteStatus.quoted;
+    _quoteErrorMessage = null;
     _dynamicDeliveryFee = deliveryFee;
     _routeDistanceKm = routeDistanceKm;
     _customerPricePerKm = customerPricePerKm;
@@ -139,6 +170,8 @@ class CartProvider extends ChangeNotifier {
   }
 
   void clearCommerceQuote() {
+    _quoteStatus = CommerceQuoteStatus.unquoted;
+    _quoteErrorMessage = null;
     _dynamicDeliveryFee = null;
     _routeDistanceKm = null;
     _customerPricePerKm = null;
