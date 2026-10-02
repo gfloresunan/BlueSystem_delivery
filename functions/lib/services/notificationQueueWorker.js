@@ -263,38 +263,74 @@ async function processCampaign(campaignId, workerId = `worker_${process.env.K_RE
                 // Campaña promocional general dirigida a 'all': restringir a clientes
                 query = query.where("role", "in", ["customer", "cliente"]);
             }
-            const snap = await query.get();
-            snap.forEach((doc) => {
-                const d = doc.data();
-                const token = d.fcmToken ? d.fcmToken.trim() : "";
-                const uid = d.uid || doc.id.split("_")[0];
-                const deviceId = d.deviceId || (doc.id.includes("_") ? doc.id.substring(uid.length + 1) : doc.id);
-                const devRole = (d.role || d.userType || "").toString().toLowerCase();
-                if (isPromotionalCampaign && nonCustomerRoles.includes(devRole)) {
-                    return;
+            // P9.1-B: Cursor-based pagination (limit 1000, startAfter) to prevent memory pressure
+            const DEVICE_PAGE_SIZE = 1000;
+            let lastDeviceDoc = null;
+            let hasMoreDevices = true;
+            while (hasMoreDevices) {
+                let pagedQuery = query.limit(DEVICE_PAGE_SIZE);
+                if (lastDeviceDoc) {
+                    pagedQuery = pagedQuery.startAfter(lastDeviceDoc);
                 }
-                if (token && token.length > 20) {
-                    validDevices.push({
-                        docId: doc.id,
-                        uid,
-                        deviceId,
-                        token,
-                        role: devRole,
-                    });
+                const snap = await pagedQuery.get();
+                if (snap.empty) {
+                    break;
                 }
-            });
+                snap.forEach((doc) => {
+                    const d = doc.data();
+                    const token = d.fcmToken ? d.fcmToken.trim() : "";
+                    const uid = d.uid || doc.id.split("_")[0];
+                    const deviceId = d.deviceId || (doc.id.includes("_") ? doc.id.substring(uid.length + 1) : doc.id);
+                    const devRole = (d.role || d.userType || "").toString().toLowerCase();
+                    if (isPromotionalCampaign && nonCustomerRoles.includes(devRole)) {
+                        return;
+                    }
+                    if (token && token.length > 20) {
+                        validDevices.push({
+                            docId: doc.id,
+                            uid,
+                            deviceId,
+                            token,
+                            role: devRole,
+                        });
+                    }
+                });
+                if (snap.docs.length < DEVICE_PAGE_SIZE) {
+                    hasMoreDevices = false;
+                }
+                else {
+                    lastDeviceDoc = snap.docs[snap.docs.length - 1];
+                }
+            }
         }
-        // ─── FASE 3.2 — AUDITAR Y FILTRAR POR CAMPAIGN_DELIVERIES ───────────────
-        // Cargar los delivery records existentes para esta campaña
-        const existingDeliveriesSnap = await db
-            .collection("campaign_deliveries")
-            .where("campaignId", "==", campaignId)
-            .get();
+        // ─── FASE 3.2 & P9.1-B — AUDITAR Y FILTRAR POR CAMPAIGN_DELIVERIES ───────────────
+        // Cargar los delivery records existentes para esta campaña (paginado en lotes de 1000)
         const existingDeliveryStatusMap = new Map();
-        existingDeliveriesSnap.forEach((dDoc) => {
-            const data = dDoc.data();
-            existingDeliveryStatusMap.set(dDoc.id, data.status);
-        });
+        let lastDelivDoc = null;
+        let hasMoreDeliv = true;
+        while (hasMoreDeliv) {
+            let delivQuery = db
+                .collection("campaign_deliveries")
+                .where("campaignId", "==", campaignId)
+                .limit(1000);
+            if (lastDelivDoc) {
+                delivQuery = delivQuery.startAfter(lastDelivDoc);
+            }
+            const existingDeliveriesSnap = await delivQuery.get();
+            if (existingDeliveriesSnap.empty) {
+                break;
+            }
+            existingDeliveriesSnap.forEach((dDoc) => {
+                const data = dDoc.data();
+                existingDeliveryStatusMap.set(dDoc.id, data.status);
+            });
+            if (existingDeliveriesSnap.docs.length < 1000) {
+                hasMoreDeliv = false;
+            }
+            else {
+                lastDelivDoc = existingDeliveriesSnap.docs[existingDeliveriesSnap.docs.length - 1];
+            }
+        }
         const devicesToDispatch = [];
         let skippedAlreadyAcceptedCount = 0;
         const targetedUsersSet = new Set();

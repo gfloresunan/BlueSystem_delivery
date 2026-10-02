@@ -164,6 +164,14 @@ export async function discoverEligibleCouriers(
 
   const nowMs = Date.now();
 
+  const nearbyCandidates: Array<{
+    courierId: string;
+    data: any;
+    lat: number;
+    lng: number;
+    distKm: number;
+  }> = [];
+
   for (const doc of locationsSnap.docs) {
     const courierId = doc.id;
     if (excludedSet.has(courierId)) continue;
@@ -202,42 +210,61 @@ export async function discoverEligibleCouriers(
       continue;
     }
 
-    // 4. Validación de Perfil Operacional (/couriers o /users)
-    const courierDoc = await db.collection("couriers").doc(courierId).get();
-    const userDoc = courierDoc.exists ? null : await db.collection("users").doc(courierId).get();
-    const profile = (courierDoc.exists ? courierDoc.data() : userDoc?.data()) || {};
+    nearbyCandidates.push({ courierId, data, lat, lng, distKm });
+  }
 
-    const isOnline = profile.isOnline !== false && profile.online !== false && profile.estadoTurno !== "OFFLINE";
-    const isActive = profile.isActive !== false && profile.active !== false;
-    const hasActiveAssignment = Boolean(profile.activeAssignmentId || profile.pedidoActivoId);
+  if (nearbyCandidates.length === 0) {
+    return [];
+  }
 
-    if (!isOnline || !isActive || hasActiveAssignment) {
-      continue;
-    }
+  // 4 & 5. Evaluación Concurrente de Perfiles Operacionales y Balances Financieros (P9.1-A: Anti-N+1)
+  const evaluatedCandidates = await Promise.all(
+    nearbyCandidates.map(async ({ courierId, data, lat, lng, distKm }) => {
+      const [courierDoc, balanceSnap] = await Promise.all([
+        db.collection("couriers").doc(courierId).get(),
+        db.collection("courier_balances").doc(courierId).get(),
+      ]);
 
-    // 5. Validación de Restricciones Financieras (/courier_balances)
-    const balanceSnap = await db.collection("courier_balances").doc(courierId).get();
-    if (balanceSnap.exists) {
-      const bData = balanceSnap.data() || {};
-      const canReceive = bData.canReceiveNewOrders !== false;
-      const state = (bData.financialAccessState || "ALLOW").toString().toUpperCase();
-      const cashCents = Number(bData.cashOutstandingCents || 0);
-      const limitCents = Number(bData.effectiveCashLimitCents || bData.cashLimitCents || dispatchConfig.DEFAULT_CASH_LIMIT_CENTS);
-      const hasOverdue = Boolean(bData.hasOverdueClosure);
+      const userDoc = courierDoc.exists ? null : await db.collection("users").doc(courierId).get();
+      const profile = (courierDoc.exists ? courierDoc.data() : userDoc?.data()) || {};
 
-      if (!canReceive || state.startsWith("BLOCKED") || hasOverdue || (limitCents > 0 && cashCents >= limitCents)) {
-        continue; // Bloqueado financieramente
+      const isOnline = profile.isOnline !== false && profile.online !== false && profile.estadoTurno !== "OFFLINE";
+      const isActive = profile.isActive !== false && profile.active !== false;
+      const hasActiveAssignment = Boolean(profile.activeAssignmentId || profile.pedidoActivoId);
+
+      if (!isOnline || !isActive || hasActiveAssignment) {
+        return null;
       }
-    }
 
-    const name = data.nombre || profile.name || profile.nombre || "Motorizado";
-    candidates.push({
-      courierId,
-      name,
-      distanceKm: distKm,
-      lat,
-      lng,
-    });
+      // Validación de Restricciones Financieras (/courier_balances)
+      if (balanceSnap.exists) {
+        const bData = balanceSnap.data() || {};
+        const canReceive = bData.canReceiveNewOrders !== false;
+        const state = (bData.financialAccessState || "ALLOW").toString().toUpperCase();
+        const cashCents = Number(bData.cashOutstandingCents || 0);
+        const limitCents = Number(bData.effectiveCashLimitCents || bData.cashLimitCents || dispatchConfig.DEFAULT_CASH_LIMIT_CENTS);
+        const hasOverdue = Boolean(bData.hasOverdueClosure);
+
+        if (!canReceive || state.startsWith("BLOCKED") || hasOverdue || (limitCents > 0 && cashCents >= limitCents)) {
+          return null; // Bloqueado financieramente
+        }
+      }
+
+      const name = data.nombre || profile.name || profile.nombre || "Motorizado";
+      return {
+        courierId,
+        name,
+        distanceKm: distKm,
+        lat,
+        lng,
+      };
+    })
+  );
+
+  for (const candidate of evaluatedCandidates) {
+    if (candidate) {
+      candidates.push(candidate);
+    }
   }
 
   // Ordenar candidatos por proximidad al origen X
