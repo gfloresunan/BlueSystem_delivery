@@ -45,6 +45,11 @@ export {
   registerBankDepositReceipt,
   verifyCourierDailyClosure,
   generateOfficialClosureActPdf,
+  getSettlementNotificationConfig,
+  updateSettlementNotificationConfig,
+  adminSaveSettlementBankAccount,
+  adminToggleSettlementBankAccountStatus,
+  getSettlementBankAccounts,
 } from "./callables/courierClosureCallables";
 
 export {
@@ -178,7 +183,7 @@ export {
   adminManualPointsAdjustment,
 } from "./callables/loyaltyCallables";
 
-// ─── Cloud Schedulers (Cron Tasks - Sprint 17.1) ──────────────────────────────
+// ─── Cloud Schedulers (Cron Tasks - Sprint 17.1 & Phase 8.1 Disaster Recovery) ─
 export { archiveOrdersScheduler } from "./schedulers/archiveOrders";
 export { auditCleanupScheduler } from "./schedulers/auditCleanup";
 export { notificationCleanupScheduler } from "./schedulers/notificationCleanup";
@@ -187,6 +192,7 @@ export { dashboardAggregatorScheduler } from "./schedulers/dashboardAggregator";
 export { healthCheckScheduler } from "./schedulers/healthCheck";
 export { aggregateTopSellingDaily } from "./schedulers/topSellingScheduler";
 export { xToYDispatchScheduler } from "./schedulers/xToYDispatchScheduler";
+export { firestoreBackupScheduler, adminTriggerFirestoreBackup } from "./schedulers/firestoreBackupScheduler";
 
 // ─── Payment Hardening & Pre-Bank Certification (Phase 2 & Phase 3) ───────────
 export {
@@ -300,6 +306,7 @@ export {
   adminResendStaffInvitation,
   getStaffInvitationDetails,
 } from "./callables/staffAuth";
-
-
-
+// ─── BSD-PRESTORE-PHASE-2.1: User Self-Management & Account Deletion (Apple 5.1.1(v) & Google Play) ───
+export {
+  deleteMyAccount,
+} from "./callables/userSelfManagement";

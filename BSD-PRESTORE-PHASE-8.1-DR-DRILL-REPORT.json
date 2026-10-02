@@ -1,0 +1,157 @@
+{
+  "metadata": {
+    "drillTimestamp": "2026-10-02T14:13:20.867Z",
+    "targetEnv": "staging",
+    "projectId": "bluesystem-7c9af-staging",
+    "durationMs": 11296,
+    "rpoSeconds": 227063,
+    "rtoSeconds": 11,
+    "verdict": "DRILL_PASSED_CERTIFIED"
+  },
+  "census": {
+    "users": 72,
+    "businesses": 8,
+    "orders": 76,
+    "deliveryTrips": 17,
+    "financial_events": 78,
+    "merchant_settlements": 4,
+    "courier_daily_closures": 7,
+    "courier_balances": 59,
+    "system_config": 3,
+    "audit_events": 4090
+  },
+  "integritySuites": [
+    {
+      "suiteName": "Document Census",
+      "checkName": "Colección /users accesible y poblada",
+      "passed": true,
+      "details": "docs: 72"
+    },
+    {
+      "suiteName": "Document Census",
+      "checkName": "Colección /businesses accesible y poblada",
+      "passed": true,
+      "details": "docs: 8"
+    },
+    {
+      "suiteName": "Document Census",
+      "checkName": "Colección /orders accesible y poblada",
+      "passed": true,
+      "details": "docs: 76"
+    },
+    {
+      "suiteName": "Document Census",
+      "checkName": "Colección /deliveryTrips accesible y poblada",
+      "passed": true,
+      "details": "docs: 17"
+    },
+    {
+      "suiteName": "Document Census",
+      "checkName": "Colección /financial_events accesible y poblada",
+      "passed": true,
+      "details": "docs: 78"
+    },
+    {
+      "suiteName": "Document Census",
+      "checkName": "Colección /merchant_settlements accesible y poblada",
+      "passed": true,
+      "details": "docs: 4"
+    },
+    {
+      "suiteName": "Document Census",
+      "checkName": "Colección /courier_daily_closures accesible y poblada",
+      "passed": true,
+      "details": "docs: 7"
+    },
+    {
+      "suiteName": "Document Census",
+      "checkName": "Colección /courier_balances accesible y poblada",
+      "passed": true,
+      "details": "docs: 59"
+    },
+    {
+      "suiteName": "Document Census",
+      "checkName": "Colección /system_config accesible y poblada",
+      "passed": true,
+      "details": "docs: 3"
+    },
+    {
+      "suiteName": "Document Census",
+      "checkName": "Colección /audit_events accesible y poblada",
+      "passed": true,
+      "details": "docs: 4090"
+    },
+    {
+      "suiteName": "Orders Integrity",
+      "checkName": "Estatus de pedidos conforme al modelo de máquina de estados",
+      "passed": true,
+      "details": "76/76 válidos"
+    },
+    {
+      "suiteName": "Orders Integrity",
+      "checkName": "Estructura de precios y montos monetarios consistentes",
+      "passed": true,
+      "details": "76/76 consistentes"
+    },
+    {
+      "suiteName": "Trips Integrity",
+      "checkName": "Estatus de viajes X->Y conformes a ADR-026",
+      "passed": true,
+      "details": "17/17 conformes"
+    },
+    {
+      "suiteName": "Financial Ledger",
+      "checkName": "Ledger contable preservado (Append-only events)",
+      "passed": true,
+      "details": "78 eventos íntegros"
+    },
+    {
+      "suiteName": "Settlements Core",
+      "checkName": "Preservación de liquidaciones comerciales auditables",
+      "passed": true,
+      "details": "4 liquidaciones registradas"
+    },
+    {
+      "suiteName": "Cash Closures Core",
+      "checkName": "Preservación de arqueos diarios oficiales de motorizados",
+      "passed": true,
+      "details": "7 actas registradas"
+    },
+    {
+      "suiteName": "Frozen Core",
+      "checkName": "Documento SSOT /system_config/global existe y es legible",
+      "passed": true,
+      "details": ""
+    },
+    {
+      "suiteName": "Frozen Core",
+      "checkName": "Tarifas X->Y preservadas en SSOT (Zero overwrite con legacy)",
+      "passed": true,
+      "details": "baseFee: 35, pricePerKm: 10"
+    },
+    {
+      "suiteName": "Indexes Audit",
+      "checkName": "Archivo firestore.indexes.json íntegro y versionado",
+      "passed": true,
+      "details": "35 índices compuestos declarados"
+    },
+    {
+      "suiteName": "RTO Measurement",
+      "checkName": "Tiempo de recuperación RTO cumple umbral de emergencia (< 2 horas)",
+      "passed": true,
+      "details": "RTO: 11s"
+    },
+    {
+      "suiteName": "RPO Measurement",
+      "checkName": "Arquitectura PITR soporta ventana continua de 7 días al segundo",
+      "passed": true,
+      "details": "PITR Continuo"
+    }
+  ],
+  "financialAudit": {},
+  "summary": {
+    "totalChecks": 21,
+    "passedChecks": 21,
+    "failedChecks": 0
+  }
+}

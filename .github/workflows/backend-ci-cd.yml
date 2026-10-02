@@ -12,12 +12,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v3
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: 'functions/package-lock.json'
 
@@ -31,20 +31,24 @@ jobs:
           cd functions
           npm run build
 
+      - name: Run Enterprise Backend Test Suite (87 Tests)
+        run: |
+          cd functions
+          npm test
+
   deploy_staging:
     name: 🚀 Deploy to Staging Environment
     needs: validate_and_test
     if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
-    environment: staging
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v3
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Build Backend
         run: |
@@ -65,15 +69,16 @@ jobs:
     needs: validate_and_test
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    environment: production
+    environment:
+      name: production
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      - name: Setup Node.js 20
-        uses: actions/setup-node@v3
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Build Backend
         run: |
@@ -83,4 +88,4 @@ jobs:
 
       - name: Deploy Firebase Production Infrastructure
         run: |
-          npx firebase-tools deploy --only functions,firestore:rules,storage:rules --token "${{ secrets.FIREBASE_TOKEN }}"
+          npx firebase-tools deploy --only functions,firestore:rules,storage:rules,firestore:indexes --token "${{ secrets.FIREBASE_TOKEN }}"
