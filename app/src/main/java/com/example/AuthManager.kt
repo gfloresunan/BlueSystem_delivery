@@ -233,7 +233,6 @@ class AuthManager {
             val crashlytics = FirebaseCrashlytics.getInstance()
             crashlytics.setUserId(user.uid)
             crashlytics.setCustomKey("role", safeUserType)
-            crashlytics.setCustomKey("email", email)
             crashlytics.setCustomKey("app_version", BuildConfig.VERSION_NAME)
             
             AuditLogger.logEvent("AUTH_REGISTER_SUCCESS", mapOf("uid" to user.uid))
@@ -275,7 +274,6 @@ class AuthManager {
             val crashlytics = FirebaseCrashlytics.getInstance()
             crashlytics.setUserId(user.uid)
             crashlytics.setCustomKey("role", userInfo.role)
-            crashlytics.setCustomKey("email", email)
             crashlytics.setCustomKey("app_version", BuildConfig.VERSION_NAME)
             
             AuditLogger.logEvent("AUTH_LOGIN_SUCCESS", mapOf("uid" to user.uid, "role" to userInfo.role))
@@ -327,6 +325,17 @@ class AuthManager {
         val uid = auth.currentUser?.uid ?: "none"
         val email = auth.currentUser?.email
         Log.d("AUDIT_LOG", "LOGOUT_SIGNOUT_EXECUTED | StoppedUserListeners: $stoppedCount | UID: $uid | Email: $email | Thread: ${Thread.currentThread().name} | Time: ${System.currentTimeMillis()}")
+
+        // Desvincular token FCM en Firestore antes de cerrar sesión (P4-01)
+        if (uid != "none" && !uid.startsWith("guest_")) {
+            try {
+                val context = com.google.firebase.FirebaseApp.getInstance().applicationContext
+                com.example.data.FcmManager.unbindCurrentDeviceTokenBlocking(context, uid)
+            } catch (unbindErr: Exception) {
+                Log.w("LOGOUT", "No se pudo desvincular token FCM en logout: ${unbindErr.message}")
+            }
+        }
+
         Log.d("LOGOUT", "FirebaseAuth.signOut()")
         auth.signOut()
         userInfoCache.clear()
@@ -383,7 +392,6 @@ class AuthManager {
             val crashlytics = FirebaseCrashlytics.getInstance()
             crashlytics.setUserId(user.uid)
             crashlytics.setCustomKey("role", role)
-            crashlytics.setCustomKey("email", user.email ?: "")
             crashlytics.setCustomKey("app_version", BuildConfig.VERSION_NAME)
             
             AuditLogger.logEvent("AUTH_SOCIAL_LOGIN_SUCCESS", mapOf("uid" to user.uid, "role" to role))

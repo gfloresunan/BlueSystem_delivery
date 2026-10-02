@@ -37,11 +37,24 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
   String _ordersFilter = 'TODOS'; // TODOS, NUEVOS, PREPARANDO, LISTOS, ENTREGADOS
   bool _isOpen = true;
   String _businessName = 'Cargando comercio...';
+  String _businessLogoUrl = '';
+  String _businessCategory = '';
   String? _canonicalBusinessId;
   bool _isLoadingBusiness = true;
   StreamSubscription<BusinessEntity?>? _businessSub;
   bool _isKitchenMode = false;
   String _menuSelectedCategory = 'TODAS';
+
+  String _resolveCategoryEmoji(String cat) {
+    final lower = cat.toLowerCase();
+    if (lower.contains('farm') || lower.contains('salud') || lower.contains('medic')) return '💊';
+    if (lower.contains('tec') || lower.contains('comput') || lower.contains('cel') || lower.contains('electr')) return '💻';
+    if (lower.contains('super') || lower.contains('market') || lower.contains('pulper') || lower.contains('abarrot')) return '🛒';
+    if (lower.contains('rest') || lower.contains('comida') || lower.contains('burger') || lower.contains('pizza')) return '🍽️';
+    if (lower.contains('flor')) return '💐';
+    if (lower.contains('licor') || lower.contains('bebida')) return '🍾';
+    return '🏪';
+  }
 
   @override
   void dispose() {
@@ -89,6 +102,10 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
         final data = doc.data()!;
         _businessName = data['name'] as String? ?? data['nombre'] as String? ?? 'Comercio Aliado';
         _isOpen = data['isOpen'] as bool? ?? data['abierto'] as bool? ?? true;
+        _businessLogoUrl = (data['logoUrl'] as String?)?.isNotEmpty == true
+            ? (data['logoUrl'] as String)
+            : (data['photoUrl'] as String?) ?? (data['image'] as String?) ?? '';
+        _businessCategory = (data['category'] as String?) ?? (data['categoria'] as String?) ?? '';
       }
     } catch (e) {
       AppLogger.warn('MerchantDashboardScreen', 'Error resolving business info via firestore: $e');
@@ -101,6 +118,14 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
           setState(() {
             _businessName = biz.name;
             _isOpen = biz.isOpen;
+            if (biz.logoUrl != null && biz.logoUrl!.isNotEmpty) {
+              _businessLogoUrl = biz.logoUrl!;
+            } else if (biz.bannerUrl != null && biz.bannerUrl!.isNotEmpty) {
+              _businessLogoUrl = biz.bannerUrl!;
+            }
+            if (biz.category.isNotEmpty) {
+              _businessCategory = biz.category;
+            }
           });
         }
       });
@@ -194,40 +219,69 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 1,
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        title: Row(
           children: [
-            Text(
-              _businessName,
-              style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 17, color: BrandColors.textPrimaryLight),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
+            Container(
+              width: 38,
+              height: 38,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: BrandColors.surfaceContainerLowLight,
+                border: Border.all(color: BrandColors.outlineVariantLight, width: 1.5),
+              ),
+              child: ClipOval(
+                child: _businessLogoUrl.isNotEmpty
+                    ? Image.network(
+                        _businessLogoUrl,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Center(
+                          child: Text(_resolveCategoryEmoji(_businessCategory), style: const TextStyle(fontSize: 18)),
+                        ),
+                      )
+                    : Center(
+                        child: Text(_resolveCategoryEmoji(_businessCategory), style: const TextStyle(fontSize: 18)),
+                      ),
+              ),
             ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _isOpen ? BrandColors.statusSuccess : const Color(0xFFEF4444),
-                  ),
-                ),
-                const SizedBox(width: 5),
-                Flexible(
-                  child: Text(
-                    _isOpen ? 'ABIERTO AHORA' : 'CERRADO',
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                      color: _isOpen ? BrandColors.statusSuccess : const Color(0xFFEF4444),
-                    ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _businessName,
+                    style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: BrandColors.textPrimaryLight),
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                   ),
-                ),
-              ],
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _isOpen ? BrandColors.statusSuccess : const Color(0xFFEF4444),
+                        ),
+                      ),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          _isOpen ? 'ABIERTO AHORA' : 'CERRADO',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: _isOpen ? BrandColors.statusSuccess : const Color(0xFFEF4444),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -326,7 +380,7 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
             .where((o) => o.status == OrderStatus.pending || o.status == OrderStatus.preparing || o.status == OrderStatus.accepted)
             .toList();
 
-        final totalSales = completedOrders.fold(0.0, (acc, o) => acc + o.total);
+        final totalSales = completedOrders.fold(0.0, (acc, o) => acc + o.productSubtotal);
         final avgTicket = completedOrders.isNotEmpty ? totalSales / completedOrders.length : 0.0;
 
         return RefreshIndicator(
@@ -725,16 +779,33 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
                 'Orden #${o.orderId.substring(0, o.orderId.length > 6 ? 6 : o.orderId.length).toUpperCase()}',
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.12),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  statusLabel,
-                  style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 10),
-                ),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: BrandColors.bluePrimary.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '💰 C\$ ${o.productSubtotal.toInt()}',
+                      style: const TextStyle(color: BrandColors.bluePrimary, fontWeight: FontWeight.w900, fontSize: 12),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: statusColor.withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      statusLabel,
+                      style: TextStyle(color: statusColor, fontWeight: FontWeight.bold, fontSize: 10),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -804,13 +875,30 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text('Total a Cobrar:', style: TextStyle(fontWeight: FontWeight.bold)),
               Text(
-                'C\$ ${o.total.toInt()}',
+                'Valor Productos (${o.paymentMethod.name.toUpperCase()}):',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+              Text(
+                'C\$ ${o.productSubtotal.toInt()}',
                 style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900, color: BrandColors.bluePrimary),
               ),
             ],
           ),
+          if (o.discount > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: 4.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Descuento comercial:', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                  Text(
+                    '- C\$ ${o.discount.toInt()}',
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.redAccent),
+                  ),
+                ],
+              ),
+            ),
           const SizedBox(height: 12),
 
           // Action Buttons based on status
@@ -966,7 +1054,7 @@ class _MerchantDashboardScreenState extends State<MerchantDashboardScreen> {
                                       : null,
                                 ),
                                 child: p.imageUrl == null || p.imageUrl!.isEmpty
-                                    ? const Icon(Icons.fastfood, color: Colors.grey)
+                                    ? const Icon(Icons.inventory_2_outlined, color: Colors.grey)
                                     : null,
                               ),
                               const SizedBox(width: 12),

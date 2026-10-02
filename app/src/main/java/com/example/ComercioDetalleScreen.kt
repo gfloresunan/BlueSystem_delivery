@@ -1485,19 +1485,9 @@ fun ComercioDetalleScreen(
                         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp), color = Color(0xFFE2E8F0))
 
                         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Subtotal:", fontSize = 13.sp, color = bsGrayText)
-                            Text("C$ ${String.format(java.util.Locale.US, "%.2f", cartSubtotal)}", fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Envío estimado:", fontSize = 13.sp, color = bsGrayText)
-                            Text("C$ ${String.format(java.util.Locale.US, "%.2f", deliveryFee)}", fontSize = 13.sp, fontWeight = FontWeight.Bold)
-                        }
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text("Total estimado:", fontSize = 15.sp, fontWeight = FontWeight.Black, color = bsObsidian)
+                            Text("Subtotal:", fontSize = 15.sp, fontWeight = FontWeight.Black, color = bsObsidian)
                             Text(
-                                "C$ ${String.format(java.util.Locale.US, "%.2f", cartSubtotal + deliveryFee)}",
+                                "C$ ${String.format(java.util.Locale.US, "%.2f", cartSubtotal)}",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Black,
                                 color = bsBlue700
@@ -1515,7 +1505,7 @@ fun ComercioDetalleScreen(
                                 navController.navigate("auth_screen")
                             } else {
                                 showCheckoutDialog = false
-                                navController.previousBackStackEntry?.savedStateHandle?.set("open_checkout", true)
+                                navController.previousBackStackEntry?.savedStateHandle?.set("open_cart", true)
                                 navController.popBackStack()
                             }
                         },

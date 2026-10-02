@@ -118,6 +118,9 @@ class _LoginScreenState extends State<LoginScreen> {
       } else if (provider.toLowerCase().contains('facebook')) {
         AppLogger.info('LoginScreen', 'Iniciando autenticación OAuth federada con Facebook');
         await widget.sessionState.signInWithFacebookFederated();
+      } else if (provider.toLowerCase().contains('apple')) {
+        AppLogger.info('LoginScreen', 'Iniciando autenticación OAuth federada con Apple');
+        await widget.sessionState.signInWithAppleFederated();
       } else {
         throw Exception('Proveedor de autenticación no soportado: $provider');
       }
@@ -459,6 +462,31 @@ class _LoginScreenState extends State<LoginScreen> {
                                   SizedBox(width: 10),
                                   Text(
                                     'Continuar con Facebook',
+                                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+
+                            // Apple Sign-In Button (Official Apple Human Interface Guidelines Style)
+                            ElevatedButton(
+                              key: const Key('apple_sign_in_button'),
+                              onPressed: _isLoading ? null : () => _handleSocialAuth('Apple'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.black,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                elevation: 1,
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.apple, color: Colors.white, size: 22),
+                                  SizedBox(width: 10),
+                                  Text(
+                                    'Continuar con Apple',
                                     style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
                                   ),
                                 ],

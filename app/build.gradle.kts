@@ -22,8 +22,8 @@ android {
     applicationId = "com.aistudio.delivery.djweq"
     minSdk = 24
     targetSdk = 36
-    versionCode = 1
-    versionName = "1.0"
+    versionCode = 2
+    versionName = "1.0.1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -70,11 +70,19 @@ android {
 
   signingConfigs {
     create("release") {
-      val keystorePath = System.getenv("KEYSTORE_PATH") ?: "${rootDir}/my-upload-key.jks"
-      storeFile = file(keystorePath)
-      storePassword = System.getenv("STORE_PASSWORD")
-      keyAlias = "upload"
-      keyPassword = System.getenv("KEY_PASSWORD")
+      val keystorePath = (project.findProperty("KEYSTORE_PATH") as? String)
+        ?: System.getenv("KEYSTORE_PATH")
+        ?: "${rootDir}/my-upload-key.jks"
+      val keystoreFile = file(keystorePath)
+
+      if (keystoreFile.exists()) {
+        storeFile = keystoreFile
+        storePassword = (project.findProperty("STORE_PASSWORD") as? String) ?: System.getenv("STORE_PASSWORD")
+        keyAlias = (project.findProperty("KEY_ALIAS") as? String) ?: System.getenv("KEY_ALIAS") ?: "upload"
+        keyPassword = (project.findProperty("KEY_PASSWORD") as? String) ?: System.getenv("KEY_PASSWORD")
+      } else {
+        logger.warn("⚠️ [SIGNING] Keystore no encontrado en: ${keystoreFile.absolutePath}. El build usará debugConfig/fallback hasta que se suministre la clave de producción oficial.")
+      }
     }
     create("debugConfig") {
       storeFile = file("${rootDir}/debug.keystore")
@@ -89,10 +97,15 @@ android {
       isCrunchPngs = false
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("release")
+      val releaseSigning = signingConfigs.getByName("release")
+      if (releaseSigning.storeFile != null && releaseSigning.storeFile!!.exists()) {
+        signingConfig = releaseSigning
+      } else {
+        signingConfig = signingConfigs.getByName("debugConfig")
+      }
     }
     debug {
-      signingConfig = signingConfigs.getByName("debug")
+      signingConfig = signingConfigs.getByName("debugConfig")
     }
 
   }

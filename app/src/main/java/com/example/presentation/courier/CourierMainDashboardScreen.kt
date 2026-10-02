@@ -587,7 +587,8 @@ fun CourierMainDashboardScreen(
                                 }
                                 1 -> {
                                     CourierCashClosureScreen(
-                                        onBack = { subTabFinanzas = 0 }
+                                        onBack = { subTabFinanzas = 0 },
+                                        financesState = financesState
                                     )
                                 }
                             }

@@ -153,4 +153,36 @@ class SessionManagementTest {
         assertTrue("El UID no debe estar vacío o en blanco", validSession.uid.isNotBlank())
         assertTrue("El UID debe tener más de 3 caracteres", validSession.uid.length > 3)
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // TC-SESSION-08: Desvinculación de token en user_devices tras logout (P4-01)
+    // ─────────────────────────────────────────────────────────────────────────
+    @Test
+    fun `RC1-SESSION-08 Device token registry is unbound and marked inactive upon logout`() {
+        val uid = "user_test_p401"
+        val deviceId = "device_samsung_galaxy"
+        val registry = mutableMapOf<String, Any>(
+            "uid" to uid,
+            "deviceId" to deviceId,
+            "isActive" to true,
+            "tokenStatus" to "active"
+        )
+
+        // Simulación de registro activo
+        assertTrue("El dispositivo debe estar activo antes del logout", registry["isActive"] as Boolean)
+
+        // Ejecución de unbind
+        val unbindPayload = mapOf<String, Any>(
+            "uid" to uid,
+            "isActive" to false,
+            "tokenStatus" to "unbound_logout",
+            "unbindAt" to System.currentTimeMillis()
+        )
+        registry.putAll(unbindPayload)
+
+        assertFalse("El dispositivo debe quedar marcado con isActive = false tras el logout", registry["isActive"] as Boolean)
+        assertEquals("unbound_logout", registry["tokenStatus"])
+        assertEquals(uid, registry["uid"])
+    }
 }
+

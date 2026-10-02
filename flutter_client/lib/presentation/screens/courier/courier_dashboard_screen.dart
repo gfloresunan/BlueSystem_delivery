@@ -11,6 +11,7 @@ import '../../../domain/entities/order_entity.dart';
 import '../../../domain/entities/trip_entity.dart';
 import '../../../domain/services/core_service_interfaces.dart';
 import '../../../data/services/courier_cash_closure_service.dart';
+import 'courier_cash_closure_screen.dart';
 import '../../providers/session_state.dart';
 import '../../widgets/state_views.dart';
 
@@ -525,7 +526,7 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                               maxLines: 1,
                             ),
                             Text(
-                              isCash ? '💵 Efectivo contra entrega' : '💳 Pago electrónico',
+                              isCash ? '💵 Efectivo contra entrega' : '💳 Pago electrónico (Prepago C\$ 0.00)',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
@@ -551,7 +552,36 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
+
+            // ─── Banner de Ganancia Destacada (1:1 Android Parity) ───────────
+            Container(
+              padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF10B981).withOpacity(0.12),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    'Pago de este Delivery: ',
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF64748B)),
+                  ),
+                  Text(
+                    'C\$ ${order.effectiveCourierEarnings.toStringAsFixed(2)}',
+                    key: Key('courier_order_earnings_${order.orderId}'),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF059669),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
 
             // ─── Address & Navigation ───────────────────────────────────────
             Row(
@@ -1042,130 +1072,180 @@ class _CourierDashboardScreenState extends State<CourierDashboardScreen> {
     final receiptController = TextEditingController(
       text: 'https://storage.googleapis.com/bluesystem-7c9af.appspot.com/courier_deposits/$courierId/${DateTime.now().millisecondsSinceEpoch}.jpg',
     );
+    String selectedBank = CourierCashClosureScreen.availableBanks.first;
+
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Iniciar Cierre Diario (Arqueo)'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          title: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.blue.shade50,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.blue.shade200),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.monetization_on, color: Color(0xFF2563EB)),
-                    const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text('Total a liquidar (Arqueo):', style: TextStyle(fontSize: 11, color: Colors.grey)),
-                        Text(
-                          'C\$ ${(totalCollectedCents / 100).toStringAsFixed(2)}',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2563EB)),
-                        ),
-                      ],
+              const Expanded(child: Text('Iniciar Cierre Diario (Arqueo)', style: TextStyle(fontSize: 18))),
+              IconButton(
+                icon: const Icon(Icons.open_in_new, size: 20),
+                tooltip: 'Abrir Pantalla Completa e Historial',
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CourierCashClosureScreen(
+                        courierId: courierId,
+                        courierName: widget.sessionState.currentUser?.displayName ?? 'Motorizado',
+                        cashClosureService: widget.cashClosureService!,
+                      ),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                key: const Key('cash_closure_ref_input'),
-                controller: refController,
-                decoration: const InputDecoration(
-                  labelText: 'Referencia Bancaria / Minuta *',
-                  hintText: 'Ej. DEP-98765432',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.receipt),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                key: const Key('cash_closure_receipt_input'),
-                controller: receiptController,
-                decoration: const InputDecoration(
-                  labelText: 'URL Comprobante Storage (ADR-018)',
-                  hintText: 'gs:// / https://storage...',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.cloud_upload_outlined),
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Al enviar se genera el Acta Oficial PDF (ADR-018) con hash inmutable y se transfiere el arqueo al centro de liquidación.',
-                style: TextStyle(fontSize: 11, color: Colors.grey),
+                  );
+                },
               ),
             ],
           ),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.shade50,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.blue.shade200),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.monetization_on, color: Color(0xFF2563EB)),
+                      const SizedBox(width: 8),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Total a liquidar (Arqueo):', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                          Text(
+                            'C\$ ${(totalCollectedCents / 100).toStringAsFixed(2)}',
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2563EB)),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                const Text('Banco de Depósito (Nicaragua):', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 4),
+                DropdownButtonFormField<String>(
+                  key: const Key('cash_closure_bank_selector'),
+                  value: selectedBank,
+                  isExpanded: true,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  ),
+                  items: CourierCashClosureScreen.availableBanks.map((bank) {
+                    return DropdownMenuItem<String>(
+                      value: bank,
+                      child: Text(bank, style: const TextStyle(fontSize: 13)),
+                    );
+                  }).toList(),
+                  onChanged: (val) {
+                    if (val != null) {
+                      setDialogState(() => selectedBank = val);
+                    }
+                  },
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  key: const Key('cash_closure_ref_input'),
+                  controller: refController,
+                  decoration: const InputDecoration(
+                    labelText: 'Referencia Bancaria / Minuta *',
+                    hintText: 'Ej. DEP-98765432',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.receipt),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  key: const Key('cash_closure_receipt_input'),
+                  controller: receiptController,
+                  decoration: const InputDecoration(
+                    labelText: 'URL Comprobante Storage (ADR-018)',
+                    hintText: 'gs:// / https://storage...',
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.cloud_upload_outlined),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Al enviar se genera el Acta Oficial PDF (ADR-018) con hash inmutable y se transfiere el arqueo al centro de liquidación.',
+                  style: TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              key: const Key('cash_closure_submit_button'),
+              onPressed: () async {
+                final ref = refController.text.trim();
+                if (ref.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Por favor ingresa la referencia bancaria.'), backgroundColor: Colors.orange),
+                  );
+                  return;
+                }
+                final receiptUrl = receiptController.text.trim();
+                final courierName = widget.sessionState.currentUser?.displayName ?? 'Motorizado';
+
+                Navigator.pop(ctx);
+                try {
+                  // 1. Generate ADR-018 Official Act Document
+                  final actDoc = await widget.cashClosureService!.generateOfficialActDocument(
+                    courierId: courierId,
+                    courierName: courierName,
+                    totalCollectedCents: totalCollectedCents,
+                    bankReference: ref,
+                    depositReceiptUrl: receiptUrl,
+                  );
+
+                  // 2. Transmit closure to backend callable
+                  await widget.cashClosureService!.initiateDailyClosure(
+                    courierId: courierId,
+                    bankReference: ref,
+                    receiptUrl: receiptUrl,
+                    totalCollectedCents: totalCollectedCents,
+                    bankName: selectedBank,
+                  );
+
+                  if (mounted) {
+                    final actNumberLine = actDoc.split('\n').firstWhere(
+                          (line) => line.contains('Número de Acta:'),
+                          orElse: () => 'Acta generada exitosamente',
+                        );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('✅ Cierre y $actNumberLine.'),
+                        backgroundColor: Colors.green,
+                        duration: const Duration(seconds: 4),
+                      ),
+                    );
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error al iniciar cierre: $e'), backgroundColor: Colors.red),
+                    );
+                  }
+                }
+              },
+              child: const Text('Generar Acta y Enviar'),
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            key: const Key('cash_closure_submit_button'),
-            onPressed: () async {
-              final ref = refController.text.trim();
-              if (ref.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Por favor ingresa la referencia bancaria.'), backgroundColor: Colors.orange),
-                );
-                return;
-              }
-              final receiptUrl = receiptController.text.trim();
-              final courierName = widget.sessionState.currentUser?.displayName ?? 'Motorizado';
-
-              Navigator.pop(ctx);
-              try {
-                // 1. Generate ADR-018 Official Act Document
-                final actDoc = await widget.cashClosureService!.generateOfficialActDocument(
-                  courierId: courierId,
-                  courierName: courierName,
-                  totalCollectedCents: totalCollectedCents,
-                  bankReference: ref,
-                  depositReceiptUrl: receiptUrl,
-                );
-
-                // 2. Transmit closure to backend callable
-                await widget.cashClosureService!.initiateDailyClosure(
-                  courierId: courierId,
-                  bankReference: ref,
-                  receiptUrl: receiptUrl,
-                  totalCollectedCents: totalCollectedCents,
-                );
-
-                if (mounted) {
-                  final actNumberLine = actDoc.split('\n').firstWhere(
-                        (line) => line.contains('Número de Acta:'),
-                        orElse: () => 'Acta generada exitosamente',
-                      );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('✅ Cierre y $actNumberLine.'),
-                      backgroundColor: Colors.green,
-                      duration: const Duration(seconds: 4),
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Error al iniciar cierre: $e'), backgroundColor: Colors.red),
-                  );
-                }
-              }
-            },
-            child: const Text('Generar Acta y Enviar'),
-          ),
-        ],
       ),
     );
   }

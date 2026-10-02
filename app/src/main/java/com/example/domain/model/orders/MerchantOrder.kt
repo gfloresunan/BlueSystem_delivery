@@ -14,7 +14,24 @@ data class MerchantOrder(
     val deliveryAddress: String = rawPedido.destinationAddress.ifBlank { "Managua, Nicaragua" },
     val distanceKm: Double = 2.4,
     val etaMinutes: Int = 25,
-    val totalAmount: Double = rawPedido.total,
+    val totalAmount: Double = rawPedido.total, // Preservado para compatibilidad con consumidores existentes
+    val customerTotal: Double = rawPedido.total, // Total pagado por el cliente
+    val productSubtotal: Double = if (rawPedido.merchantGrossSales > 0.0) {
+        rawPedido.merchantGrossSales
+    } else if (rawPedido.subtotal > 0.0) {
+        val discount = if (rawPedido.discountAmount > 0.0) rawPedido.discountAmount else 0.0
+        maxOf(0.0, rawPedido.subtotal - discount)
+    } else if (rawPedido.items.isNotEmpty()) {
+        val itemsSum = rawPedido.items.sumOf { (it.price * it.quantity).toDouble() }
+        if (itemsSum > 0.0) {
+            val discount = if (rawPedido.discountAmount > 0.0) rawPedido.discountAmount else 0.0
+            maxOf(0.0, itemsSum - discount)
+        } else {
+            0.0
+        }
+    } else {
+        0.0
+    },
     val paymentMethod: String = rawPedido.paymentMethod.ifBlank { "Efectivo" },
     val isPaid: Boolean = rawPedido.amountPaid > 0 || rawPedido.paymentMethod.isNotBlank(),
     val isVipCustomer: Boolean = false,

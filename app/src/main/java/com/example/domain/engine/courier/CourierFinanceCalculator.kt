@@ -225,9 +225,7 @@ object CourierFinanceCalculator {
                 ratePerKmApplied = rateApplied,
                 distanceEarnings = distanceEarnings,
                 bonusEarnings = bonusEarnings,
-                tipEarnings = tipAmount,
-                compensatedAmount = if (order.compensatedAmount > 0.0) order.compensatedAmount else (if (isCompleted && isCash) minOf(cashCollected, earning) else 0.0),
-                distanceSource = order.distanceSource,
+                compensatedAmount = if (isCompleted && isCash) minOf(cashCollected, earning) else 0.0,
                 timestamp = order.getFinancialTimestamp(),
                 isCompleted = isCompleted
             )

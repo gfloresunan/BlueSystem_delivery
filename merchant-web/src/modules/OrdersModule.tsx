@@ -7,6 +7,8 @@ import { useTabState } from '../shared/context/TabStateContext';
 import { SkeletonCard } from '../shared/components/Skeleton';
 import { db } from '../shared/services/firebase';
 import { useAuth } from '../shared/context/AuthContext';
+import { getMerchantOrderFinancials } from '../shared/utils/merchantFinancialMapper';
+import { OrderDetailModal } from '../components/OrderDetailModal';
 import { 
   collection, 
   query, 
@@ -70,6 +72,10 @@ export interface OrderItem {
   itemsList?: Array<{ name?: string; productName?: string; quantity?: number; price?: number }>;
   total: string;
   totalAmount?: number;
+  productSubtotal?: number;
+  productSubtotalFormatted?: string;
+  rawProductsSubtotal?: number;
+  commercialDiscount?: number;
   merchantGrossSales?: number;
   merchantGrossSalesFormatted?: string;
   merchantCommissionRate?: number;
@@ -274,6 +280,9 @@ export const OrdersModule: React.FC = () => {
   const [rejectReasonOption, setRejectReasonOption] = useState<string>('Producto no disponible');
   const [customRejectReason, setCustomRejectReason] = useState<string>('');
   const [isSubmittingReject, setIsSubmittingReject] = useState(false);
+
+  // Modal Detalle de Pedido (Exclusivo Productos & Merchant)
+  const [selectedOrderForDetail, setSelectedOrderForDetail] = useState<OrderItem | null>(null);
 
   // Modal Chat en Vivo (Auditoría Solo Lectura)
   const [isChatModalOpen, setIsChatModalOpen] = useState(false);
@@ -631,9 +640,8 @@ export const OrdersModule: React.FC = () => {
             const driverName = d.assignedCourierName || d.driverName || d.motorizadoNombre || undefined;
             const assignedCourierPlate = d.assignedCourierPlate || d.motorizadoPlaca || undefined;
 
-            const subtotalVal = Number(d.subtotal || 0);
-            const discountVal = Number(d.discountAmount || d.couponDiscount || d.coupon?.discountAmount || 0);
-            const grossSalesVal = Number(d.merchantGrossSales ?? (subtotalVal > 0 ? Math.max(0, subtotalVal - discountVal) : (d.total || 0)));
+            const fin = getMerchantOrderFinancials(d);
+            const grossSalesVal = fin.productSubtotal;
             const commissionRateVal = Number(d.merchantCommissionRate || 0.15);
             const commissionAmtVal = Number(d.merchantCommissionAmount ?? Math.round(grossSalesVal * commissionRateVal * 100) / 100);
             const netPayoutVal = Number(d.merchantNetPayout ?? Math.max(0, Math.round((grossSalesVal - commissionAmtVal) * 100) / 100));
@@ -653,16 +661,20 @@ export const OrdersModule: React.FC = () => {
               customerPhone: d.customerPhone || d.clienteTelefono || d.phone || undefined,
               items: itemsSummary || 'Sin items',
               itemsList: Array.isArray(d.items) ? d.items : undefined,
-              total: `C$ ${(d.total || 0).toFixed(2)}`,
-              totalAmount: Number(d.total || 0),
+              total: `C$ ${fin.customerTotal.toFixed(2)}`,
+              totalAmount: fin.customerTotal,
+              productSubtotal: fin.productSubtotal,
+              productSubtotalFormatted: fin.productSubtotalFormatted,
+              rawProductsSubtotal: fin.rawProductsSubtotal,
+              commercialDiscount: fin.commercialDiscount,
               merchantGrossSales: grossSalesVal,
-              merchantGrossSalesFormatted: `C$ ${grossSalesVal.toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              merchantGrossSalesFormatted: fin.productSubtotalFormatted,
               merchantCommissionRate: commissionRateVal,
               merchantCommissionAmount: commissionAmtVal,
               merchantNetPayout: netPayoutVal,
-              subtotalAmount: d.subtotal || 0,
-              couponCode: d.couponCode || d.coupon?.code || undefined,
-              couponDiscount: d.couponDiscount || d.coupon?.discountAmount || undefined,
+              subtotalAmount: fin.rawProductsSubtotal,
+              couponCode: fin.couponCode,
+              couponDiscount: fin.commercialDiscount,
               deliveryFee: d.deliveryFee || 0,
               tipAmount: d.tipAmount || d.tip || undefined,
               additionalChargeAmount: d.additionalChargeAmount || d.additionalCharge || undefined,
@@ -1054,7 +1066,7 @@ export const OrdersModule: React.FC = () => {
 
       {/* ─── KANBAN BOARD O VISTA LISTA ────────────────────────────────────── */}
       {viewMode === 'kanban' ? (
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 items-start">
           
           {/* 🟠 COLUMNA 1: NUEVOS */}
           <div className="bg-obsidian-900 border border-orange-500/20 rounded-xl p-4 flex flex-col min-h-[480px]">
@@ -1079,11 +1091,20 @@ export const OrdersModule: React.FC = () => {
                 {columnBuckets.NUEVOS.map((o) => (
                   <div key={o.id} className="bg-slate-800/80 border border-orange-500/30 p-3 rounded-xl space-y-2 shadow-lg relative group hover:border-orange-400/60 transition">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-orange-400 text-xs tracking-wider">#{o.orderNumber}</span>
+                      <button
+                        onClick={() => setSelectedOrderForDetail(o)}
+                        className="font-bold text-orange-400 text-xs tracking-wider hover:underline flex items-center gap-1"
+                        title="Ver detalle del pedido"
+                      >
+                        #{o.orderNumber}
+                      </button>
                       <span className="text-[10px] bg-slate-700/80 px-2 py-0.5 rounded text-slate-300 font-mono">{o.timeAgo}</span>
                     </div>
 
-                    <div>
+                    <div 
+                      onClick={() => setSelectedOrderForDetail(o)}
+                      className="cursor-pointer group-hover:opacity-90"
+                    >
                       <p className="text-sm font-bold text-slate-100">{o.customerName}</p>
                       <p className="text-xs text-slate-300 mt-0.5 line-clamp-2">{o.items}</p>
                     </div>
@@ -1099,7 +1120,7 @@ export const OrdersModule: React.FC = () => {
                       <div>
                         <span className="text-[10px] text-slate-400 font-medium block">Valor de productos</span>
                         <span className="text-xs font-black text-emerald-400">
-                          {o.merchantGrossSalesFormatted || o.total}
+                          {o.productSubtotalFormatted || o.merchantGrossSalesFormatted}
                         </span>
                       </div>
                       {o.couponCode && (
@@ -1160,13 +1181,22 @@ export const OrdersModule: React.FC = () => {
                 {columnBuckets.PENDIENTES.map((o) => (
                   <div key={o.id} className="bg-slate-800/80 border border-amber-500/30 p-3 rounded-xl space-y-2 shadow-lg">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-amber-400 text-xs tracking-wider">#{o.orderNumber}</span>
+                      <button
+                        onClick={() => setSelectedOrderForDetail(o)}
+                        className="font-bold text-amber-400 text-xs tracking-wider hover:underline"
+                        title="Ver detalle del pedido"
+                      >
+                        #{o.orderNumber}
+                      </button>
                       <span className="text-[10px] bg-amber-500/20 text-amber-300 font-semibold px-2 py-0.5 rounded">
                         {o.isScheduled ? 'Programado' : 'En Espera'}
                       </span>
                     </div>
 
-                    <div>
+                    <div 
+                      onClick={() => setSelectedOrderForDetail(o)}
+                      className="cursor-pointer"
+                    >
                       <p className="text-sm font-bold text-slate-100">{o.customerName}</p>
                       <p className="text-xs text-slate-300 mt-0.5 line-clamp-2">{o.items}</p>
                     </div>
@@ -1181,7 +1211,7 @@ export const OrdersModule: React.FC = () => {
                       <div>
                         <span className="text-[10px] text-slate-400 font-medium block">Valor de productos</span>
                         <span className="text-xs font-black text-emerald-400">
-                          {o.merchantGrossSalesFormatted || o.total}
+                          {o.productSubtotalFormatted || o.merchantGrossSalesFormatted}
                         </span>
                       </div>
                     </div>
@@ -1231,13 +1261,22 @@ export const OrdersModule: React.FC = () => {
                 {columnBuckets.PREPARACION.map((o) => (
                   <div key={o.id} className="bg-slate-800/80 border border-blue-500/30 p-3 rounded-xl space-y-2 shadow-lg">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-blue-400 text-xs tracking-wider">#{o.orderNumber}</span>
+                      <button
+                        onClick={() => setSelectedOrderForDetail(o)}
+                        className="font-bold text-blue-400 text-xs tracking-wider hover:underline"
+                        title="Ver detalle del pedido"
+                      >
+                        #{o.orderNumber}
+                      </button>
                       <span className="text-[10px] bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded font-bold border border-blue-500/30">
                         {o.slaMinutes || 15}m SLA
                       </span>
                     </div>
 
-                    <div>
+                    <div 
+                      onClick={() => setSelectedOrderForDetail(o)}
+                      className="cursor-pointer"
+                    >
                       <p className="text-sm font-bold text-slate-100">{o.customerName}</p>
                       <p className="text-xs text-slate-300 mt-0.5 line-clamp-2">{o.items}</p>
                     </div>
@@ -1252,7 +1291,7 @@ export const OrdersModule: React.FC = () => {
                       <div>
                         <span className="text-[10px] text-slate-400 font-medium block">Valor de productos</span>
                         <span className="text-xs font-black text-emerald-400">
-                          {o.merchantGrossSalesFormatted || o.total}
+                          {o.productSubtotalFormatted || o.merchantGrossSalesFormatted}
                         </span>
                       </div>
                     </div>
@@ -1297,13 +1336,22 @@ export const OrdersModule: React.FC = () => {
                 {columnBuckets.DELIVERY.map((o) => (
                   <div key={o.id} className="bg-slate-800/80 border border-purple-500/30 p-3.5 rounded-xl space-y-2.5 shadow-lg">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-purple-400 text-xs tracking-wider">#{o.orderNumber}</span>
+                      <button
+                        onClick={() => setSelectedOrderForDetail(o)}
+                        className="font-bold text-purple-400 text-xs tracking-wider hover:underline"
+                        title="Ver detalle del pedido"
+                      >
+                        #{o.orderNumber}
+                      </button>
                       <span className="text-[10px] bg-purple-950/80 text-purple-300 font-bold px-2 py-0.5 rounded border border-purple-800/40">
                         {o.canonicalStatus === 'IN_TRANSIT' ? '🚚 En Ruta' : o.canonicalStatus === 'ASSIGNED' ? '🛵 Asignado' : '📦 Listo'}
                       </span>
                     </div>
 
-                    <div>
+                    <div 
+                      onClick={() => setSelectedOrderForDetail(o)}
+                      className="cursor-pointer"
+                    >
                       <p className="text-sm font-bold text-slate-100">{o.customerName}</p>
                       <p className="text-xs text-slate-300 mt-0.5 line-clamp-2">{o.items}</p>
                     </div>
@@ -1318,7 +1366,7 @@ export const OrdersModule: React.FC = () => {
                       <div>
                         <span className="text-[10px] text-slate-400 font-medium block">Valor de productos</span>
                         <span className="text-xs font-black text-emerald-400">
-                          {o.merchantGrossSalesFormatted || o.total}
+                          {o.productSubtotalFormatted || o.merchantGrossSalesFormatted}
                         </span>
                       </div>
                     </div>
@@ -1394,13 +1442,22 @@ export const OrdersModule: React.FC = () => {
                 {columnBuckets.ENTREGAS_HOY.map((o) => (
                   <div key={o.id} className="bg-slate-800/80 border border-emerald-500/30 p-3 rounded-xl space-y-2 shadow-lg">
                     <div className="flex justify-between items-center">
-                      <span className="font-bold text-emerald-400 text-xs tracking-wider">#{o.orderNumber}</span>
+                      <button
+                        onClick={() => setSelectedOrderForDetail(o)}
+                        className="font-bold text-emerald-400 text-xs tracking-wider hover:underline"
+                        title="Ver detalle del pedido"
+                      >
+                        #{o.orderNumber}
+                      </button>
                       <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded border border-emerald-500/30 flex items-center gap-1">
                         <CheckCircle className="w-3 h-3" /> Entregado
                       </span>
                     </div>
 
-                    <div>
+                    <div 
+                      onClick={() => setSelectedOrderForDetail(o)}
+                      className="cursor-pointer"
+                    >
                       <p className="text-sm font-bold text-slate-100">{o.customerName}</p>
                       <p className="text-xs text-slate-300 mt-0.5 line-clamp-2">{o.items}</p>
                     </div>
@@ -1415,7 +1472,7 @@ export const OrdersModule: React.FC = () => {
                       <div>
                         <span className="text-[10px] text-slate-400 font-medium block">Valor de productos</span>
                         <span className="text-xs font-black text-emerald-400">
-                          {o.merchantGrossSalesFormatted || o.total}
+                          {o.productSubtotalFormatted || o.merchantGrossSalesFormatted}
                         </span>
                       </div>
                       {o.couponCode && (
@@ -1469,7 +1526,12 @@ export const OrdersModule: React.FC = () => {
                 return (
                   <div key={o.id} className="p-4 flex items-center justify-between text-sm hover:bg-slate-800/30 transition">
                     <div className="w-1/4">
-                      <span className="font-bold text-blue-400">#{o.orderNumber}</span>
+                      <button
+                        onClick={() => setSelectedOrderForDetail(o)}
+                        className="font-bold text-blue-400 hover:underline text-left block"
+                      >
+                        #{o.orderNumber}
+                      </button>
                       <p className="text-xs text-slate-200 font-semibold">{o.customerName}</p>
                       <span className="text-[10px] text-slate-500">{o.timeAgo}</span>
                     </div>
@@ -1497,7 +1559,7 @@ export const OrdersModule: React.FC = () => {
 
                     <div className="w-1/6">
                       <span className="font-bold text-emerald-400 block text-xs">
-                        {o.merchantGrossSalesFormatted || o.total}
+                        {o.productSubtotalFormatted || o.merchantGrossSalesFormatted}
                       </span>
                     </div>
 
@@ -1655,7 +1717,15 @@ export const OrdersModule: React.FC = () => {
 
                   return (
                     <tr key={o.id} className="hover:bg-slate-800/30 transition">
-                      <td className="p-3 font-mono font-bold text-blue-400">#{o.orderNumber}</td>
+                      <td className="p-3 font-mono font-bold text-blue-400">
+                        <button
+                          onClick={() => setSelectedOrderForDetail(o)}
+                          className="hover:underline text-blue-400"
+                          title="Ver detalle del pedido"
+                        >
+                          #{o.orderNumber}
+                        </button>
+                      </td>
                       <td className="p-3 text-slate-400 font-mono">{dateDisplay}</td>
                       <td className="p-3 font-semibold text-slate-200">{o.customerName}</td>
                       <td className="p-3 text-slate-300 max-w-xs truncate" title={o.items}>{o.items}</td>
@@ -1669,7 +1739,7 @@ export const OrdersModule: React.FC = () => {
                         )}
                       </td>
                       <td className="p-3 font-bold text-emerald-400">
-                        {o.merchantGrossSalesFormatted || o.total}
+                        {o.productSubtotalFormatted || o.merchantGrossSalesFormatted}
                       </td>
                       <td className="p-3">
                         <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${badgeClass}`}>
@@ -2025,6 +2095,25 @@ export const OrdersModule: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* ─── MODAL DETALLE DE PEDIDO (EXCLUSIVO VALOR PRODUCTOS, ZERO FEES) ─── */}
+      {selectedOrderForDetail && (
+        <OrderDetailModal
+          order={selectedOrderForDetail}
+          onClose={() => setSelectedOrderForDetail(null)}
+          onAdvanceStatus={handleAdvanceStatus}
+          onOpenCourierModal={(order) => {
+            setSelectedOrderForDetail(null);
+            handleOpenCourierModal(order);
+          }}
+          onOpenRejectModal={(order) => {
+            setSelectedOrderForDetail(null);
+            handleOpenRejectModal(order);
+          }}
+          isProcessing={processingOrderId === selectedOrderForDetail.id}
+        />
+      )}
     </div>
   );
 };
+

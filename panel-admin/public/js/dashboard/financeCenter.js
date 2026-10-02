@@ -568,15 +568,15 @@ const financeCenterModule = {
                 }
             }
 
-            // 1. Resolver configuración dinámica de comisiones
+            // 1. Resolver configuración dinámica de comisiones desde SSOT canónico (/system_config/global)
             let platformFeePercent = 0.15; // Fallback canónico: 15%
             try {
-                const feeDoc = await db.collection('platform_config').doc('fees').get();
-                if (feeDoc.exists && feeDoc.data()?.merchantFeePercent != null) {
-                    platformFeePercent = Number(feeDoc.data().merchantFeePercent);
+                const globalDoc = await db.collection('system_config').doc('global').get();
+                if (globalDoc.exists && globalDoc.data()?.merchantCommissionRate != null) {
+                    platformFeePercent = Number(globalDoc.data().merchantCommissionRate);
                 }
             } catch (e) {
-                console.warn("[FINANCE_CENTER] platform_config/fees no disponible, usando fallback 15%");
+                console.warn("[FINANCE_CENTER] /system_config/global no disponible, usando fallback 15%");
             }
             financeCenterModule.platformFeePercent = platformFeePercent;
 

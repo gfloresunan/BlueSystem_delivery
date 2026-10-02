@@ -16,11 +16,11 @@ const routingService_1 = require("../services/routingService");
             roundingPrecision: "KM_BLOCK_2DEC",
             pricingVersion: "v2.2-commerce",
         };
-        (0, node_test_1.it)("TEST 01: 8.7 km -> Customer C$ 69.60, Courier C$ 60.90", () => {
+        (0, node_test_1.it)("TEST 01: 8.7 km -> Customer C$ 70.00 (Math.ceil), Courier C$ 60.00 (Math.floor)", () => {
             const distanceMeters = 8700; // 8.7 km
             const res = (0, routingService_1.buildCommercePricingSnapshot)(distanceMeters, config);
-            node_assert_1.default.strictEqual(res.deliveryFee, 69.6);
-            node_assert_1.default.strictEqual(res.courierEarnings, 60.9);
+            node_assert_1.default.strictEqual(res.deliveryFee, 70);
+            node_assert_1.default.strictEqual(res.courierEarnings, 60);
             node_assert_1.default.strictEqual(res.pricingSnapshot.customerPricePerKm, 8.0);
             node_assert_1.default.strictEqual(res.pricingSnapshot.courierPricePerKm, 7.0);
             node_assert_1.default.strictEqual(res.pricingSnapshot.distanceKm, 8.7);
@@ -51,12 +51,18 @@ const routingService_1 = require("../services/routingService");
             node_assert_1.default.strictEqual(res.courierEarnings, 105.0);
             node_assert_1.default.strictEqual(res.pricingSnapshot.distanceKm, 15.0);
         });
-        (0, node_test_1.it)("TEST 06: Distancias decimales precisas (3.45 km)", () => {
+        (0, node_test_1.it)("TEST 06: Distancias decimales precisas (3.45 km -> C$ 28 / C$ 24, 5.66 km -> C$ 51 / C$ 39)", () => {
             const res = (0, routingService_1.buildCommercePricingSnapshot)(3450, config);
-            // 3.45 * 8 = 27.60
-            node_assert_1.default.strictEqual(res.deliveryFee, 27.6);
-            // 3.45 * 7 = 24.15
-            node_assert_1.default.strictEqual(res.courierEarnings, 24.15);
+            // 3.45 * 8 = 27.60 -> Math.ceil = 28
+            node_assert_1.default.strictEqual(res.deliveryFee, 28);
+            // 3.45 * 7 = 24.15 -> Math.floor = 24
+            node_assert_1.default.strictEqual(res.courierEarnings, 24);
+            // Caso exacto de usuario: 5.66 km con tarifa 9 y 7
+            const resUser = (0, routingService_1.buildCommercePricingSnapshot)(5660, { customerPricePerKm: 9.0, courierPricePerKm: 7.0 });
+            // 5.66 * 9 = 50.94 -> Math.ceil = 51
+            node_assert_1.default.strictEqual(resUser.deliveryFee, 51);
+            // 5.66 * 7 = 39.62 -> Math.floor = 39
+            node_assert_1.default.strictEqual(resUser.courierEarnings, 39);
         });
         (0, node_test_1.it)("TEST 07: Distancia cero (0m) resulta en 0", () => {
             const res = (0, routingService_1.buildCommercePricingSnapshot)(0, config);
@@ -82,13 +88,13 @@ const routingService_1 = require("../services/routingService");
             // X→Y: Base $35 + (8.7 * $15) = 35 + 130.5 = 165.5 -> ceil = C$ 166.00
             const xyRes = (0, routingService_1.buildPricingSnapshot)(distanceMeters);
             node_assert_1.default.strictEqual(xyRes.calculatedFee, 166.0);
-            // Commerce: 8.7 * $8 = C$ 69.60 (Customer) & 8.7 * $7 = C$ 60.90 (Courier)
+            // Commerce: 8.7 * $8 = C$ 69.60 -> Ceil = C$ 70.00 & 8.7 * $7 = C$ 60.90 -> Floor = C$ 60.00
             const commRes = (0, routingService_1.buildCommercePricingSnapshot)(distanceMeters, {
                 customerPricePerKm: 8.0,
                 courierPricePerKm: 7.0,
             });
-            node_assert_1.default.strictEqual(commRes.deliveryFee, 69.6);
-            node_assert_1.default.strictEqual(commRes.courierEarnings, 60.9);
+            node_assert_1.default.strictEqual(commRes.deliveryFee, 70);
+            node_assert_1.default.strictEqual(commRes.courierEarnings, 60);
             // Verificación de diferencia inequívoca
             node_assert_1.default.notStrictEqual(xyRes.calculatedFee, commRes.deliveryFee);
         });
@@ -173,32 +179,32 @@ const routingService_1 = require("../services/routingService");
         };
         (0, node_test_1.it)("TEST 17: Legacy delivery fee (C$ 60) is NEVER used as fallback in dynamic commerce flow", () => {
             const legacyMerchantFee = 60.0;
-            const distanceMeters = 8700; // 8.7 km
+            const distanceMeters = 8700; // 8.7 km -> 8.7 * 8 = 69.60 -> Math.ceil = 70
             const snapshot = (0, routingService_1.buildCommercePricingSnapshot)(distanceMeters, config);
-            node_assert_1.default.strictEqual(snapshot.deliveryFee, 69.6);
+            node_assert_1.default.strictEqual(snapshot.deliveryFee, 70);
             node_assert_1.default.notStrictEqual(snapshot.deliveryFee, legacyMerchantFee);
             node_assert_1.default.strictEqual(snapshot.pricingSnapshot.customerPricePerKm, 8.0);
         });
         (0, node_test_1.it)("TEST 18: Address change invalidates previous quote and recalculates new A->B2 fee", () => {
-            // B1: Trabajo (8.7 km)
+            // B1: Trabajo (8.7 km -> 8.7 * 8 = 69.60 -> 70, 8.7 * 7 = 60.90 -> 60)
             const quoteB1 = (0, routingService_1.buildCommercePricingSnapshot)(8700, config);
-            node_assert_1.default.strictEqual(quoteB1.deliveryFee, 69.6);
-            node_assert_1.default.strictEqual(quoteB1.courierEarnings, 60.9);
-            // B2: Casa (3.5 km)
+            node_assert_1.default.strictEqual(quoteB1.deliveryFee, 70);
+            node_assert_1.default.strictEqual(quoteB1.courierEarnings, 60);
+            // B2: Casa (3.5 km -> 3.5 * 8 = 28.00 -> 28, 3.5 * 7 = 24.50 -> 24)
             const quoteB2 = (0, routingService_1.buildCommercePricingSnapshot)(3500, config);
-            node_assert_1.default.strictEqual(quoteB2.deliveryFee, 28.0);
-            node_assert_1.default.strictEqual(quoteB2.courierEarnings, 24.5);
+            node_assert_1.default.strictEqual(quoteB2.deliveryFee, 28);
+            node_assert_1.default.strictEqual(quoteB2.courierEarnings, 24);
             // Verify B1 quote is not equal to B2 quote
             node_assert_1.default.notStrictEqual(quoteB1.deliveryFee, quoteB2.deliveryFee);
         });
         (0, node_test_1.it)("TEST 19: Tip amount is strictly additive to courier earnings and never overwritten", () => {
-            const distanceMeters = 8700; // 8.7 km -> C$ 60.90
+            const distanceMeters = 8700; // 8.7 km -> C$ 60 (Math.floor)
             const tipAmount = 10.0;
             const snapshot = (0, routingService_1.buildCommercePricingSnapshot)(distanceMeters, config);
             const courierDistanceEarnings = snapshot.courierEarnings;
             const courierTotalEarnings = courierDistanceEarnings + tipAmount;
-            node_assert_1.default.strictEqual(courierDistanceEarnings, 60.9);
-            node_assert_1.default.strictEqual(courierTotalEarnings, 70.9);
+            node_assert_1.default.strictEqual(courierDistanceEarnings, 60);
+            node_assert_1.default.strictEqual(courierTotalEarnings, 70);
         });
         (0, node_test_1.it)("TEST 20: Missing coordinates fail-closed (cannot quote without valid A and B)", () => {
             const validOrigin = (0, routingService_1.validateCoordinatesInNicaragua)(12.1364, -86.2514);
@@ -208,16 +214,16 @@ const routingService_1 = require("../services/routingService");
         });
         (0, node_test_1.it)("TEST 21: Pricing snapshot is immutable and unaffected by subsequent global config changes", () => {
             const initialSnapshot = (0, routingService_1.buildCommercePricingSnapshot)(8700, config);
-            node_assert_1.default.strictEqual(initialSnapshot.deliveryFee, 69.6);
+            node_assert_1.default.strictEqual(initialSnapshot.deliveryFee, 70);
             // Simulate future global price change to C$ 10.00/km
             const futureConfig = {
                 customerPricePerKm: 10.0,
                 courierPricePerKm: 9.0,
             };
             const futureQuote = (0, routingService_1.buildCommercePricingSnapshot)(8700, futureConfig);
-            node_assert_1.default.strictEqual(futureQuote.deliveryFee, 87.0);
-            // The historical stamped snapshot remains C$ 69.60
-            node_assert_1.default.strictEqual(initialSnapshot.deliveryFee, 69.6);
+            node_assert_1.default.strictEqual(futureQuote.deliveryFee, 87);
+            // The historical stamped snapshot remains C$ 70
+            node_assert_1.default.strictEqual(initialSnapshot.deliveryFee, 70);
         });
     });
 });

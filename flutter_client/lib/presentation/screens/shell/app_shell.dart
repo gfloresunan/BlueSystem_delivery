@@ -7,6 +7,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 
 import '../../../core/auth/auth_context.dart';
 import '../../../core/design_system/bsds_theme.dart';
@@ -20,6 +21,8 @@ import '../../providers/cart_provider.dart';
 import '../../providers/session_state.dart';
 import '../../theme/brand_theme_builder.dart';
 import '../../widgets/state_views.dart';
+import '../../../data/services/admin_service.dart';
+import '../admin/admin_dashboard_screen.dart';
 import '../address/address_manager_screen.dart';
 import '../auth/login_screen.dart';
 import '../courier/courier_dashboard_screen.dart';
@@ -39,6 +42,7 @@ class AppShell extends StatefulWidget {
   final IMerchantService merchantService;
   final IBannerService? bannerService;
   final ICourierCashClosureService? cashClosureService;
+  final AdminFirestoreService? adminService;
   final IUserService? userService;
   final CartProvider? cartProvider;
   final INotificationService? notificationService;
@@ -52,6 +56,7 @@ class AppShell extends StatefulWidget {
     required this.merchantService,
     this.bannerService,
     this.cashClosureService,
+    this.adminService,
     this.userService,
     this.cartProvider,
     this.notificationService,
@@ -166,6 +171,8 @@ class _AppShellState extends State<AppShell> {
         final claims = widget.sessionState.claims;
         final user = widget.sessionState.currentUser;
 
+        // Admin/SuperAdmin/Auditor/Support → Platform Admin Console
+        final isPlatformAdmin = claims?.isPlatformAdmin == true;
         final isCourier = claims?.role == EiamRole.driver || user?.role == EiamRole.driver;
         final isMerchant = claims?.role == EiamRole.owner ||
             claims?.role == EiamRole.manager ||
@@ -183,13 +190,24 @@ class _AppShellState extends State<AppShell> {
           );
         }
 
+        // ─── 4. Render Appropriate Shell Based on Role ───────────────────────
+        // Priority: Admin > Courier > Merchant > Customer (1:1 Android parity)
+        if (isPlatformAdmin && widget.adminService != null) {
+          return AdminDashboardScreen(
+            adminService: widget.adminService!,
+            sessionState: widget.sessionState,
+            orderService: widget.orderService,
+            tripService: widget.tripService,
+            fleetService: widget.fleetService,
+          );
+        }
+
         // Reset selected index if exceeding tab bounds
         final maxTabs = isCourier ? 4 : (isMerchant ? 5 : 4);
         if (_selectedIndex >= maxTabs) {
           _selectedIndex = 0;
         }
 
-        // ─── 4. Render Appropriate Shell Based on Role ───────────────────────
         if (isCourier) {
           return _buildCourierShell();
         } else if (isMerchant) {
@@ -333,6 +351,7 @@ class _AppShellState extends State<AppShell> {
           onNavigate: _handleNavigation,
           bannerService: widget.bannerService,
           merchantService: widget.merchantService,
+          userService: widget.userService ?? UserFirestoreService(),
           onAddToCart: _addToCart,
           onCartClick: _openCartDialog,
           onOpenExpress: () {
@@ -665,6 +684,25 @@ class _AppShellState extends State<AppShell> {
                     label: const Text('Cerrar Sesión', style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
           ),
+          if (!widget.sessionState.isGuestMode) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: TextButton.icon(
+                key: const Key('delete_account_button'),
+                style: TextButton.styleFrom(
+                  foregroundColor: Colors.red.shade700,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                onPressed: () => _confirmAccountDeletion(context),
+                icon: const Icon(Icons.delete_forever_rounded, size: 20),
+                label: const Text(
+                  'Eliminar mi cuenta definitivamente',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -840,6 +878,101 @@ class _AppShellState extends State<AppShell> {
         ),
       ),
     );
+  }
+
+  Future<void> _confirmAccountDeletion(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.red),
+            SizedBox(width: 8),
+            Text('Eliminar Cuenta'),
+          ],
+        ),
+        content: const Text(
+          'Esta acción es definitiva e irreversible. Se borrarán tus datos personales de perfil, dispositivos y credenciales.\n\n'
+          'Por favor ten en cuenta que no puedes eliminar tu cuenta si tienes pedidos activos o pendientes de entrega.',
+          style: TextStyle(fontSize: 14),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Eliminar definitivamente'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const Center(
+        child: Card(
+          child: Padding(
+            padding: EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircularProgressIndicator(),
+                SizedBox(height: 16),
+                Text('Eliminando cuenta...'),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    try {
+      final callable = FirebaseFunctions.instance.httpsCallable('deleteMyAccount');
+      final result = await callable.call();
+      final data = result.data as Map<dynamic, dynamic>?;
+
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop(); // dismiss loading dialog
+
+      if (data?['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Tu cuenta ha sido eliminada correctamente.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        await widget.sessionState.signOut();
+        if (mounted) {
+          setState(() => _selectedIndex = 0);
+        }
+      } else {
+        final msg = data?['message'] ?? 'No se pudo eliminar la cuenta.';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$msg'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context, rootNavigator: true).pop(); // dismiss loading dialog
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al eliminar cuenta: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _openSavedAddressesModal(BuildContext context) {

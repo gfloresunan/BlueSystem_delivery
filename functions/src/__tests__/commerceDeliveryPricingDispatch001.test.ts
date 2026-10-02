@@ -26,12 +26,12 @@ describe("BSD-COMMERCE-DYNAMIC-DELIVERY-PRICING-COURIER-EARNINGS-DISPATCH-001: U
       pricingVersion: "v2.2-commerce",
     };
 
-    it("TEST 01: 8.7 km -> Customer C$ 69.60, Courier C$ 60.90", () => {
+    it("TEST 01: 8.7 km -> Customer C$ 70.00 (Math.ceil), Courier C$ 60.00 (Math.floor)", () => {
       const distanceMeters = 8700; // 8.7 km
       const res = buildCommercePricingSnapshot(distanceMeters, config);
 
-      assert.strictEqual(res.deliveryFee, 69.6);
-      assert.strictEqual(res.courierEarnings, 60.9);
+      assert.strictEqual(res.deliveryFee, 70);
+      assert.strictEqual(res.courierEarnings, 60);
       assert.strictEqual(res.pricingSnapshot.customerPricePerKm, 8.0);
       assert.strictEqual(res.pricingSnapshot.courierPricePerKm, 7.0);
       assert.strictEqual(res.pricingSnapshot.distanceKm, 8.7);
@@ -67,12 +67,19 @@ describe("BSD-COMMERCE-DYNAMIC-DELIVERY-PRICING-COURIER-EARNINGS-DISPATCH-001: U
       assert.strictEqual(res.pricingSnapshot.distanceKm, 15.0);
     });
 
-    it("TEST 06: Distancias decimales precisas (3.45 km)", () => {
+    it("TEST 06: Distancias decimales precisas (3.45 km -> C$ 28 / C$ 24, 5.66 km -> C$ 51 / C$ 39)", () => {
       const res = buildCommercePricingSnapshot(3450, config);
-      // 3.45 * 8 = 27.60
-      assert.strictEqual(res.deliveryFee, 27.6);
-      // 3.45 * 7 = 24.15
-      assert.strictEqual(res.courierEarnings, 24.15);
+      // 3.45 * 8 = 27.60 -> Math.ceil = 28
+      assert.strictEqual(res.deliveryFee, 28);
+      // 3.45 * 7 = 24.15 -> Math.floor = 24
+      assert.strictEqual(res.courierEarnings, 24);
+
+      // Caso exacto de usuario: 5.66 km con tarifa 9 y 7
+      const resUser = buildCommercePricingSnapshot(5660, { customerPricePerKm: 9.0, courierPricePerKm: 7.0 });
+      // 5.66 * 9 = 50.94 -> Math.ceil = 51
+      assert.strictEqual(resUser.deliveryFee, 51);
+      // 5.66 * 7 = 39.62 -> Math.floor = 39
+      assert.strictEqual(resUser.courierEarnings, 39);
     });
 
     it("TEST 07: Distancia cero (0m) resulta en 0", () => {
@@ -103,13 +110,13 @@ describe("BSD-COMMERCE-DYNAMIC-DELIVERY-PRICING-COURIER-EARNINGS-DISPATCH-001: U
       const xyRes = buildPricingSnapshot(distanceMeters);
       assert.strictEqual(xyRes.calculatedFee, 166.0);
 
-      // Commerce: 8.7 * $8 = C$ 69.60 (Customer) & 8.7 * $7 = C$ 60.90 (Courier)
+      // Commerce: 8.7 * $8 = C$ 69.60 -> Ceil = C$ 70.00 & 8.7 * $7 = C$ 60.90 -> Floor = C$ 60.00
       const commRes = buildCommercePricingSnapshot(distanceMeters, {
         customerPricePerKm: 8.0,
         courierPricePerKm: 7.0,
       });
-      assert.strictEqual(commRes.deliveryFee, 69.6);
-      assert.strictEqual(commRes.courierEarnings, 60.9);
+      assert.strictEqual(commRes.deliveryFee, 70);
+      assert.strictEqual(commRes.courierEarnings, 60);
 
       // Verificación de diferencia inequívoca
       assert.notStrictEqual(xyRes.calculatedFee, commRes.deliveryFee);
@@ -214,39 +221,39 @@ describe("BSD-COMMERCE-DYNAMIC-DELIVERY-PRICING-COURIER-EARNINGS-DISPATCH-001: U
 
     it("TEST 17: Legacy delivery fee (C$ 60) is NEVER used as fallback in dynamic commerce flow", () => {
       const legacyMerchantFee = 60.0;
-      const distanceMeters = 8700; // 8.7 km
+      const distanceMeters = 8700; // 8.7 km -> 8.7 * 8 = 69.60 -> Math.ceil = 70
       const snapshot = buildCommercePricingSnapshot(distanceMeters, config);
 
-      assert.strictEqual(snapshot.deliveryFee, 69.6);
+      assert.strictEqual(snapshot.deliveryFee, 70);
       assert.notStrictEqual(snapshot.deliveryFee, legacyMerchantFee);
       assert.strictEqual(snapshot.pricingSnapshot.customerPricePerKm, 8.0);
     });
 
     it("TEST 18: Address change invalidates previous quote and recalculates new A->B2 fee", () => {
-      // B1: Trabajo (8.7 km)
+      // B1: Trabajo (8.7 km -> 8.7 * 8 = 69.60 -> 70, 8.7 * 7 = 60.90 -> 60)
       const quoteB1 = buildCommercePricingSnapshot(8700, config);
-      assert.strictEqual(quoteB1.deliveryFee, 69.6);
-      assert.strictEqual(quoteB1.courierEarnings, 60.9);
+      assert.strictEqual(quoteB1.deliveryFee, 70);
+      assert.strictEqual(quoteB1.courierEarnings, 60);
 
-      // B2: Casa (3.5 km)
+      // B2: Casa (3.5 km -> 3.5 * 8 = 28.00 -> 28, 3.5 * 7 = 24.50 -> 24)
       const quoteB2 = buildCommercePricingSnapshot(3500, config);
-      assert.strictEqual(quoteB2.deliveryFee, 28.0);
-      assert.strictEqual(quoteB2.courierEarnings, 24.5);
+      assert.strictEqual(quoteB2.deliveryFee, 28);
+      assert.strictEqual(quoteB2.courierEarnings, 24);
 
       // Verify B1 quote is not equal to B2 quote
       assert.notStrictEqual(quoteB1.deliveryFee, quoteB2.deliveryFee);
     });
 
     it("TEST 19: Tip amount is strictly additive to courier earnings and never overwritten", () => {
-      const distanceMeters = 8700; // 8.7 km -> C$ 60.90
+      const distanceMeters = 8700; // 8.7 km -> C$ 60 (Math.floor)
       const tipAmount = 10.0;
       const snapshot = buildCommercePricingSnapshot(distanceMeters, config);
 
       const courierDistanceEarnings = snapshot.courierEarnings;
       const courierTotalEarnings = courierDistanceEarnings + tipAmount;
 
-      assert.strictEqual(courierDistanceEarnings, 60.9);
-      assert.strictEqual(courierTotalEarnings, 70.9);
+      assert.strictEqual(courierDistanceEarnings, 60);
+      assert.strictEqual(courierTotalEarnings, 70);
     });
 
     it("TEST 20: Missing coordinates fail-closed (cannot quote without valid A and B)", () => {
@@ -259,7 +266,7 @@ describe("BSD-COMMERCE-DYNAMIC-DELIVERY-PRICING-COURIER-EARNINGS-DISPATCH-001: U
 
     it("TEST 21: Pricing snapshot is immutable and unaffected by subsequent global config changes", () => {
       const initialSnapshot = buildCommercePricingSnapshot(8700, config);
-      assert.strictEqual(initialSnapshot.deliveryFee, 69.6);
+      assert.strictEqual(initialSnapshot.deliveryFee, 70);
 
       // Simulate future global price change to C$ 10.00/km
       const futureConfig: CommerceDeliveryPricingConfig = {
@@ -268,10 +275,10 @@ describe("BSD-COMMERCE-DYNAMIC-DELIVERY-PRICING-COURIER-EARNINGS-DISPATCH-001: U
       };
 
       const futureQuote = buildCommercePricingSnapshot(8700, futureConfig);
-      assert.strictEqual(futureQuote.deliveryFee, 87.0);
+      assert.strictEqual(futureQuote.deliveryFee, 87);
 
-      // The historical stamped snapshot remains C$ 69.60
-      assert.strictEqual(initialSnapshot.deliveryFee, 69.6);
+      // The historical stamped snapshot remains C$ 70
+      assert.strictEqual(initialSnapshot.deliveryFee, 70);
     });
   });
 });

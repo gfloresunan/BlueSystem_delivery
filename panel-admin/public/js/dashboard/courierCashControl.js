@@ -56,6 +56,12 @@ const courierCashControlModule = {
                         <p class="text-xs text-slate-400">Auditoría contable, arqueos en mesa, depósitos bancarios, actas oficiales y control de custodia de efectivo</p>
                     </div>
                     <div class="flex items-center gap-3">
+                        <button onclick="courierCashControlModule.openRecipientsModal()" class="bg-indigo-600/30 hover:bg-indigo-600/50 text-indigo-300 border border-indigo-500/50 text-xs px-3 py-2 rounded-xl font-bold transition flex items-center gap-1.5 shadow-sm">
+                            <span>🔔</span> Destinatarios de Alertas
+                        </button>
+                        <button onclick="courierCashControlModule.openBankAccountsModal()" class="bg-emerald-600/30 hover:bg-emerald-600/50 text-emerald-300 border border-emerald-500/50 text-xs px-3 py-2 rounded-xl font-bold transition flex items-center gap-1.5 shadow-sm">
+                            <span>🏦</span> Cuentas Bancarias
+                        </button>
                         <button onclick="courierCashControlModule.refreshData()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs px-3 py-2 rounded-xl font-bold transition flex items-center gap-1.5">
                             <span>🔄</span> Actualizar
                         </button>
@@ -340,10 +346,267 @@ const courierCashControlModule = {
         return currentName;
     },
 
+    resolveClosureItems: async (closure) => {
+        const targetDate = closure.businessDate || '';
+        const expCents = Number(closure.expectedAmountCents || 0);
+        const incOrders = Array.isArray(closure.includedOrderIds) ? closure.includedOrderIds : [];
+        const incTrips = Array.isArray(closure.includedTripIds) ? closure.includedTripIds : [];
+        
+        const candidateRows = [];
+
+        // Helper canónico para extraer fecha YYYY-MM-DD en la zona horaria operacional de Nicaragua (America/Managua)
+        const extractDate = (docData) => {
+            if (docData.businessDate) return docData.businessDate;
+            const raw = docData.deliveredAt || docData.completedAt || docData.createdAt || docData.fecha || docData.timestamp;
+            if (raw) {
+                try {
+                    const d = (typeof raw.toDate === 'function') ? raw.toDate() : (raw instanceof Date ? raw : new Date(raw));
+                    if (!isNaN(d.getTime())) {
+                        return d.toLocaleDateString('en-CA', { timeZone: 'America/Managua' });
+                    }
+                } catch (eDate) {}
+            }
+            return '';
+        };
+
+        // Helper para calcular montos de pedidos
+        const calcOrderNet = (oData) => {
+            const cashRec = Number(oData.cashReceived || oData.total || 0);
+            const chGiven = Number(oData.changeGiven || 0);
+            const pSnap = oData.pricingSnapshot || {};
+            const snapCourierEarn = Number(pSnap.courierEarnings || 0);
+            const rawEarning = Number(oData.courierTotalEarnings || oData.courierEarnings || snapCourierEarn || (oData.serviceType === 'X_TO_Y_DELIVERY' ? oData.deliveryFee : 0) || 0);
+            const courierEarning = Math.floor(rawEarning);
+            const netCash = Math.max(0, cashRec - chGiven);
+            const netToDeposit = Math.max(0, netCash - courierEarning);
+            return { cashRec, courierEarning, netToDeposit };
+        };
+
+        // 1. Prioridad Canónica: Consultar Subledger /courier_cash_ledger por closureId o por courierId + businessDate
+        if (closure.courierId) {
+            try {
+                // A. Buscar por closureId explícito en el ledger si existe
+                const ledgerSnapByClosure = await db.collection('courier_cash_ledger')
+                    .where('closureId', '==', closure.closureId || closure.id)
+                    .get();
+
+                const ledgerDocs = [];
+                if (!ledgerSnapByClosure.empty) {
+                    ledgerSnapByClosure.forEach(doc => ledgerDocs.push(doc));
+                } else if (targetDate) {
+                    // B. Si el closure no tiene vínculo por closureId en ledger, consultar por courierId y filtrar por fecha operacional local
+                    const ledgerSnapByCourier = await db.collection('courier_cash_ledger')
+                        .where('courierId', '==', closure.courierId)
+                        .get();
+                    ledgerSnapByCourier.forEach(doc => {
+                        const d = doc.data();
+                        const entryDate = extractDate(d);
+                        if (entryDate === targetDate && (d.eventType === 'ORDER_CASH_COLLECTED' || d.eventType === 'TRIP_CASH_COLLECTED')) {
+                            ledgerDocs.push(doc);
+                        }
+                    });
+                }
+
+                for (const lDoc of ledgerDocs) {
+                    const lData = lDoc.data();
+                    const totalCents = Number(lData.amountCents || 0);
+                    const earnCents = Number(lData.earningsCents || 0);
+                    const custCents = Number(lData.netCustodyCents || Math.max(0, totalCents - earnCents));
+                    const isTrip = lData.sourceDomain === 'X_TO_Y_DELIVERY' || Boolean(lData.tripId);
+                    
+                    let displayCode = '#' + (lData.orderId || lData.tripId || lDoc.id).slice(-6).toUpperCase();
+                    let storeRef = isTrip ? 'Viaje Express' : 'Comercio';
+
+                    // Si tenemos orderId, enriquecer con orderCode canónico y nombre del comercio
+                    if (lData.orderId && !isTrip) {
+                        try {
+                            const oSnap = await db.collection('orders').doc(lData.orderId).get();
+                            if (oSnap.exists) {
+                                const oD = oSnap.data();
+                                if (oD.orderCode) displayCode = '#' + oD.orderCode;
+                                if (oD.storeName || oD.businessName) storeRef = oD.storeName || oD.businessName;
+                            }
+                        } catch (eOD) {}
+                    }
+
+                    candidateRows.push({
+                        code: displayCode,
+                        id: displayCode,
+                        domain: isTrip ? 'EXPRESS_TRIP' : 'COMMERCE_DELIVERY',
+                        type: isTrip ? 'Viaje X→Y' : 'Comercio',
+                        ref: storeRef,
+                        desc: lData.description || `Recaudación [${storeRef}] (Total C$ ${(totalCents/100).toFixed(2)} - Ganancia C$ ${(earnCents/100).toFixed(2)})`,
+                        amount: custCents / 100,
+                        cashRec: totalCents / 100,
+                        courierEarning: earnCents / 100,
+                        netToDeposit: custCents / 100,
+                        method: 'Efectivo',
+                        total: (totalCents / 100).toFixed(2),
+                        earnings: (earnCents / 100).toFixed(2),
+                        custody: (custCents / 100).toFixed(2),
+                        isDirectClosure: lData.closureId === closure.id || lData.closureId === closure.closureId,
+                        isExactAmount: expCents > 0 && (custCents === expCents || totalCents === expCents),
+                        isDateMatch: true
+                    });
+                }
+            } catch (eLedger) {
+                console.warn("[COURIER_CASH_CONTROL] Error consultando /courier_cash_ledger:", eLedger);
+            }
+        }
+
+        // 2. Si no hubo filas desde el ledger, revisar pedidos en /orders incluidos en includedOrderIds
+        if (candidateRows.length === 0 && incOrders.length > 0) {
+            for (const oId of incOrders) {
+                try {
+                    const oDoc = await db.collection('orders').doc(oId).get();
+                    if (oDoc.exists) {
+                        const oData = oDoc.data();
+                        const pMethod = (oData.paymentMethod || oData.metodoPago || '').toLowerCase();
+                        if (pMethod === 'efectivo' || pMethod === 'cash') {
+                            const oDate = extractDate(oData);
+                            const { cashRec, courierEarning, netToDeposit } = calcOrderNet(oData);
+                            const netCents = Math.round(netToDeposit * 100);
+                            const grossCents = Math.round(cashRec * 100);
+                            const isDirectClosure = oData.closureId === closure.id || oData.closureId === closure.closureId;
+                            const isExactAmount = (expCents > 0 && (netCents === expCents || grossCents === expCents));
+                            const isDateMatch = Boolean(targetDate && oDate === targetDate);
+
+                            candidateRows.push({
+                                code: '#' + (oData.orderCode || oDoc.id).slice(-6).toUpperCase(),
+                                id: '#' + (oData.orderCode || oDoc.id).slice(-6).toUpperCase(),
+                                domain: 'COMMERCE_DELIVERY',
+                                type: 'Comercio',
+                                ref: oData.storeName || oData.businessName || 'Comercio',
+                                desc: `Recaudación pedido [${oData.storeName || oData.businessName || 'Comercio'}]${courierEarning > 0 ? ` (Total C$ ${cashRec.toFixed(2)} - Ganancia C$ ${courierEarning.toFixed(2)})` : ''}`,
+                                amount: netToDeposit > 0 ? netToDeposit : cashRec,
+                                cashRec,
+                                courierEarning,
+                                netToDeposit,
+                                method: 'Efectivo',
+                                total: cashRec.toFixed(2),
+                                earnings: courierEarning.toFixed(2),
+                                custody: (netToDeposit > 0 ? netToDeposit : cashRec).toFixed(2),
+                                isDirectClosure,
+                                isExactAmount,
+                                isDateMatch
+                            });
+                        }
+                    }
+                } catch (eO) {}
+            }
+        }
+
+        // 3. Si aún no hubo candidatos, buscar pedidos completados en la fecha por assignedCourierId
+        if (candidateRows.length === 0 && targetDate && closure.courierId) {
+            try {
+                const snap = await db.collection('orders')
+                    .where('assignedCourierId', '==', closure.courierId)
+                    .where('status', 'in', ['delivered', 'completed', 'entregado', 'completado'])
+                    .get();
+                
+                snap.forEach(oDoc => {
+                    const oData = oDoc.data();
+                    const pMethod = (oData.paymentMethod || oData.metodoPago || '').toLowerCase();
+                    if (pMethod === 'efectivo' || pMethod === 'cash') {
+                        const oDate = extractDate(oData);
+                        if (oDate === targetDate) {
+                            const { cashRec, courierEarning, netToDeposit } = calcOrderNet(oData);
+                            const netCents = Math.round(netToDeposit * 100);
+                            const grossCents = Math.round(cashRec * 100);
+                            const isDirectClosure = oData.closureId === closure.id || oData.closureId === closure.closureId;
+                            const isExactAmount = (expCents > 0 && (netCents === expCents || grossCents === expCents));
+
+                            candidateRows.push({
+                                code: '#' + (oData.orderCode || oDoc.id).slice(-6).toUpperCase(),
+                                id: '#' + (oData.orderCode || oDoc.id).slice(-6).toUpperCase(),
+                                domain: 'COMMERCE_DELIVERY',
+                                type: 'Comercio',
+                                ref: oData.storeName || oData.businessName || 'Comercio',
+                                desc: `Recaudación pedido [${oData.storeName || oData.businessName || 'Comercio'}]${courierEarning > 0 ? ` (Total C$ ${cashRec.toFixed(2)} - Ganancia C$ ${courierEarning.toFixed(2)})` : ''}`,
+                                amount: netToDeposit > 0 ? netToDeposit : cashRec,
+                                cashRec,
+                                courierEarning,
+                                netToDeposit,
+                                method: 'Efectivo',
+                                total: cashRec.toFixed(2),
+                                earnings: courierEarning.toFixed(2),
+                                custody: (netToDeposit > 0 ? netToDeposit : cashRec).toFixed(2),
+                                isDirectClosure,
+                                isExactAmount,
+                                isDateMatch: true
+                            });
+                        }
+                    }
+                });
+            } catch (eOrders) {}
+        }
+
+        // 4. Revisar Viajes Express X->Y si aplica
+        if (candidateRows.length === 0 && incTrips.length > 0) {
+            for (const tId of incTrips) {
+                try {
+                    const tDoc = await db.collection('deliveryTrips').doc(tId).get();
+                    if (tDoc.exists) {
+                        const tData = tDoc.data();
+                        const pMethod = (tData.paymentMethod || '').toLowerCase();
+                        if (pMethod === 'cash' || pMethod === 'efectivo') {
+                            const tAmt = Number(tData.fareAmount || tData.cost || tData.price || 0);
+                            const tEarn = Number(tData.courierEarnings || tAmt * 0.8 || 0);
+                            const tCust = Math.max(0, tAmt - tEarn);
+                            candidateRows.push({
+                                code: '#' + tDoc.id.slice(-6).toUpperCase(),
+                                id: '#' + tDoc.id.slice(-6).toUpperCase(),
+                                domain: 'EXPRESS_TRIP',
+                                type: 'Viaje X→Y',
+                                ref: `Viaje Express [${tData.senderName || 'Cliente'}]`,
+                                desc: `Viaje Express (Total C$ ${tAmt.toFixed(2)} - Ganancia C$ ${tEarn.toFixed(2)})`,
+                                amount: tCust,
+                                cashRec: tAmt,
+                                courierEarning: tEarn,
+                                netToDeposit: tCust,
+                                method: 'Efectivo',
+                                total: tAmt.toFixed(2),
+                                earnings: tEarn.toFixed(2),
+                                custody: tCust.toFixed(2),
+                                isDirectClosure: tData.closureId === closure.id || tData.closureId === closure.closureId,
+                                isExactAmount: expCents > 0 && Math.round(tCust * 100) === expCents,
+                                isDateMatch: true
+                            });
+                        }
+                    }
+                } catch (eT) {}
+            }
+        }
+
+        // Filtrar filas candidatas priorizando consistencia
+        if (candidateRows.length === 0) return [];
+
+        let finalRows = candidateRows.filter(r => r.isDirectClosure);
+
+        if (finalRows.length === 0) {
+            finalRows = candidateRows.filter(r => r.isExactAmount && r.isDateMatch);
+        }
+
+        if (finalRows.length === 0) {
+            finalRows = candidateRows.filter(r => r.isDateMatch);
+        }
+
+        if (finalRows.length === 0) {
+            finalRows = candidateRows.filter(r => r.isExactAmount);
+        }
+
+        if (finalRows.length === 0 && candidateRows.length > 0) {
+            finalRows = candidateRows;
+        }
+
+        return finalRows;
+    },
+
     printOfficialAct: async (closureId) => {
         const closure = courierCashControlModule.closuresCache.find(c => c.id === closureId);
         if (!closure) return;
 
+        const isVerified = closure.status === 'VERIFIED';
         const expected = (Number(closure.expectedAmountCents || 0) / 100).toFixed(2);
         const counted = (Number(closure.countedAmountCents || 0) / 100).toFixed(2);
         const diff = (Number(closure.differenceCents || 0) / 100).toFixed(2);
@@ -354,11 +617,19 @@ const courierCashControlModule = {
             courierDisplayName = closure.courierName || `Motorizado (${closure.courierId.slice(-6)})`;
         }
 
-        const actNum = closure.officialAct?.actNumber || `ACTA-${closure.closureId}`;
-        const verCode = closure.officialAct?.verificationCode || closure.closureOperationId || 'ER74F05M';
-        const supervisorName = closure.verifiedByName || closure.officialAct?.supervisorName || 'Gerald José Flores Gutiérrez';
+        const actNum = closure.officialAct?.actNumber || `ACTA-${closure.closureId || closure.id.slice(-8)}`;
+        const verCode = closure.officialAct?.verificationCode || closure.closureOperationId || closure.id || 'N/A';
+        const supervisorName = closure.verifiedByName || closure.officialAct?.supervisorName || (isVerified ? 'Gerald José Flores Gutiérrez' : 'Pendiente de Aprobación');
 
-        // 1. Generación Vectorial Nativa con jsPDF (100% libre de errores de canvas / páginas en blanco)
+        // 1. Consultar desglose unitario de pedidos y viajes asociados para ANEXO I (Mismo motor que el Subledger del Modal)
+        let detailedItems = [];
+        try {
+            detailedItems = await courierCashControlModule.resolveClosureItems(closure);
+        } catch (fetchErr) {
+            console.warn("[PDF] Error consultando desglose detallado para ANEXO I:", fetchErr);
+        }
+
+        // 2. Generación Vectorial Nativa con jsPDF (100% libre de errores de canvas / páginas en blanco)
         const jsPdfLib = (window.jspdf && window.jspdf.jsPDF) ? window.jspdf.jsPDF : (window.jsPDF ? window.jsPDF : null);
 
         if (jsPdfLib) {
@@ -379,69 +650,98 @@ const courierCashControlModule = {
                 doc.setTextColor(203, 213, 225);
                 doc.text('Acta Oficial de Arqueo, Liquidación y Depósito Bancario', 15, 18);
 
-                // Badge Acta No
-                doc.setFillColor(22, 101, 52);
-                doc.roundedRect(135, 7, 60, 12, 2, 2, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(8);
-                doc.text(actNum, 165, 14.5, { align: 'center' });
+                // Badge Acta No / Estado
+                if (isVerified) {
+                    doc.setFillColor(22, 101, 52); // Green 800
+                    doc.roundedRect(125, 7, 70, 12, 2, 2, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(8);
+                    doc.text(actNum, 160, 14.5, { align: 'center' });
+                } else {
+                    doc.setFillColor(180, 83, 9); // Amber 700
+                    doc.roundedRect(125, 7, 70, 12, 2, 2, 'F');
+                    doc.setTextColor(255, 255, 255);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(7.5);
+                    doc.text('BORRADOR / PENDIENTE', 160, 14.5, { align: 'center' });
+                }
 
-                // 2. Sección 1: Datos de Identificación
+                // SECCIÓN 1: Datos de Identificación y Auditoría
                 doc.setTextColor(30, 41, 59);
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(10);
-                doc.text('1. DATOS DE IDENTIFICACIÓN Y AUDITORÍA', 15, 36);
+                doc.text('1. DATOS DE IDENTIFICACIÓN Y AUDITORÍA', 15, 35);
 
                 doc.setDrawColor(226, 232, 240);
                 doc.setFillColor(248, 250, 252);
-                doc.roundedRect(15, 39, 180, 28, 2, 2, 'FD');
+                doc.roundedRect(15, 38, 180, 32, 2, 2, 'FD');
 
-                doc.setFontSize(9);
+                // Fila 1 (y = 44)
+                doc.setFontSize(8.5);
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(51, 65, 85);
-                doc.text('Motorizado:', 20, 46);
+                doc.text('Motorizado:', 20, 44);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(15, 23, 42);
-                doc.text(courierDisplayName, 52, 46);
+                doc.text(courierDisplayName, 48, 44);
 
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(51, 65, 85);
-                doc.text('ID Courier:', 20, 54);
+                doc.text('Fecha Operacional:', 112, 44);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(15, 23, 42);
-                doc.text(closure.courierId, 52, 54);
+                doc.text(closure.businessDate || 'N/A', 148, 44);
+
+                // Fila 2 (y = 52)
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(51, 65, 85);
+                doc.text('ID Courier:', 20, 52);
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(15, 23, 42);
+                const shortCourierId = `CR-${(closure.courierId || '').slice(-8).toUpperCase()}`;
+                doc.text(shortCourierId, 48, 52);
 
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(51, 65, 85);
-                doc.text('Estado Auditoría:', 20, 62);
-                doc.setFont('helvetica', 'bold');
-                doc.setTextColor(22, 101, 52);
-                doc.text('VERIFICADO Y APROBADO', 52, 62);
-
-                // Columna Derecha
-                doc.setFont('helvetica', 'bold');
-                doc.setTextColor(51, 65, 85);
-                doc.text('Fecha Operacional:', 120, 46);
+                doc.text('Moneda Oficial:', 112, 52);
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(15, 23, 42);
-                doc.text(closure.businessDate || 'N/A', 156, 46);
+                doc.text('NIO (Córdobas)', 148, 52);
+
+                // Fila 3 (y = 60)
+                doc.setFont('helvetica', 'bold');
+                doc.setTextColor(51, 65, 85);
+                doc.text('Estado Auditoría:', 20, 60);
+                doc.setFont('helvetica', 'bold');
+                if (isVerified) {
+                    doc.setTextColor(22, 101, 52);
+                    doc.text('VERIFICADO Y APROBADO', 48, 60);
+                } else {
+                    doc.setTextColor(180, 83, 9);
+                    doc.text('PENDIENTE DE APROBACIÓN', 48, 60);
+                }
 
                 doc.setFont('helvetica', 'bold');
                 doc.setTextColor(51, 65, 85);
-                doc.text('Código Validación:', 120, 54);
+                doc.text('Cód. Validación:', 112, 60);
                 doc.setFont('helvetica', 'bold');
+                doc.setFontSize(7);
                 doc.setTextColor(2, 132, 199);
-                doc.text(verCode, 156, 54);
-
-                doc.setFont('helvetica', 'bold');
-                doc.setTextColor(51, 65, 85);
-                doc.text('Moneda Oficial:', 120, 62);
+                const shortVerCode = verCode.length > 28 ? (verCode.slice(0, 26) + '…') : verCode;
+                doc.text(shortVerCode, 142, 60);
                 doc.setFont('helvetica', 'normal');
-                doc.setTextColor(15, 23, 42);
-                doc.text('NIO (Córdobas)', 156, 62);
+                doc.setFontSize(8.5);
 
-                // 3. Sección 2: Conciliación de 4 Capas
+                // Marca de Agua para Borradores
+                if (!isVerified) {
+                    doc.setTextColor(235, 240, 248);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(28);
+                    doc.text('BORRADOR NO APROBADO', 105, 135, { align: 'center', angle: 35 });
+                }
+
+                // SECCIÓN 2: Conciliación de 4 Capas
                 doc.setTextColor(30, 41, 59);
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(10);
@@ -449,29 +749,93 @@ const courierCashControlModule = {
 
                 if (typeof doc.autoTable === 'function') {
                     doc.autoTable({
-                        startY: 82,
+                        startY: 81,
                         margin: { left: 15, right: 15 },
                         head: [['Capa Contable', 'Concepto y Referencias', 'Monto (NIO)', 'Estado']],
                         body: [
-                            ['Capa 1: Recaudación', `Efectivo total esperado (${closure.ordersCount || 0} pedidos)`, `C$ ${expected}`, 'Conforme'],
+                            ['Capa 1: Recaudación', `Efectivo total esperado (${closure.ordersCount || detailedItems.length || 0} operaciones)`, `C$ ${expected}`, isVerified ? 'Conforme' : 'Por Validar'],
                             ['Capa 2: Arqueo Mesa', 'Efectivo físico entregado en liquidación', `C$ ${counted}`, Number(diff) === 0 ? 'Exacto' : `Diff: C$ ${diff}`],
-                            ['Capa 3: Depósito Bancario', `${closure.bankDeposit?.bankName || 'Depósito'} (Ref: ${closure.bankDeposit?.bankReference || 'N/A'})`, `C$ ${deposited}`, 'Liquidado']
+                            ['Capa 3: Depósito Banco', `${closure.bankDeposit?.bankName || 'Depósito Bancario'} (Ref: ${closure.bankDeposit?.bankReference || 'N/A'})`, `C$ ${deposited}`, isVerified ? 'Liquidado' : 'Pendiente'],
+                            ['Capa 4: Verificación', `Aprobado por ${supervisorName}`, `C$ ${deposited > 0 ? deposited : counted}`, isVerified ? 'Verificado' : 'En Revisión']
                         ],
                         theme: 'grid',
-                        headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105], fontStyle: 'bold', fontSize: 9 },
-                        bodyStyles: { textColor: [15, 23, 42], fontSize: 8.5, cellPadding: 4 },
+                        headStyles: { fillColor: [241, 245, 249], textColor: [71, 85, 105], fontStyle: 'bold', fontSize: 8.5 },
+                        bodyStyles: { textColor: [15, 23, 42], fontSize: 8, cellPadding: 3 },
                         columnStyles: {
                             0: { fontStyle: 'bold', cellWidth: 42 },
                             1: { cellWidth: 78 },
                             2: { halign: 'right', fontStyle: 'bold', cellWidth: 30 },
-                            3: { halign: 'center', fontStyle: 'bold', textColor: [22, 101, 52], cellWidth: 30 }
+                            3: { halign: 'center', fontStyle: 'bold', textColor: isVerified ? [22, 101, 52] : [180, 83, 9], cellWidth: 30 }
+                        }
+                    });
+
+                    // SECCIÓN 3: ANEXO I — DETALLE DE PEDIDOS Y VIAJES X→Y (GAP-05)
+                    const afterLayersY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 7 : 125;
+                    doc.setTextColor(30, 41, 59);
+                    doc.setFont('helvetica', 'bold');
+                    doc.setFontSize(10);
+                    doc.text('3. ANEXO I — DETALLE DE PEDIDOS Y VIAJES (CONCILIACIÓN UNITARIA)', 15, afterLayersY);
+
+                    const tableBody = detailedItems.length > 0 ? detailedItems.map(item => [
+                        item.id,
+                        item.type,
+                        item.ref,
+                        item.method,
+                        `C$ ${item.total}`,
+                        `C$ ${item.earnings}`,
+                        `C$ ${item.custody}`
+                    ]) : [
+                        ['N/A', 'Consolidado', `Liquidación en bloque (${closure.ordersCount || 1} operaciones)`, 'Efectivo', `C$ ${expected}`, 'C$ 0.00', `C$ ${expected}`]
+                    ];
+
+                    // Fila Total
+                    const totalCobrado = detailedItems.length > 0 ? detailedItems.reduce((acc, i) => acc + Number(i.total), 0).toFixed(2) : expected;
+                    const totalGanancia = detailedItems.length > 0 ? detailedItems.reduce((acc, i) => acc + Number(i.earnings), 0).toFixed(2) : '0.00';
+                    const totalCustodia = detailedItems.length > 0 ? detailedItems.reduce((acc, i) => acc + Number(i.custody), 0).toFixed(2) : expected;
+
+                    tableBody.push([
+                        'TOTAL',
+                        '-',
+                        `${detailedItems.length || closure.ordersCount || 1} registros conciliados`,
+                        '-',
+                        `C$ ${totalCobrado}`,
+                        `C$ ${totalGanancia}`,
+                        `C$ ${totalCustodia}`
+                    ]);
+
+                    doc.autoTable({
+                        startY: afterLayersY + 3,
+                        margin: { left: 15, right: 15 },
+                        head: [['ID Ref', 'Tipo', 'Comercio / Detalle', 'Método', 'Cobrado', 'Ganancia', 'Custodia Neta']],
+                        body: tableBody,
+                        theme: 'striped',
+                        headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 8 },
+                        bodyStyles: { textColor: [30, 41, 59], fontSize: 7.5, cellPadding: 2.5 },
+                        columnStyles: {
+                            0: { fontStyle: 'bold', cellWidth: 22 },
+                            1: { cellWidth: 22 },
+                            2: { cellWidth: 50 },
+                            3: { cellWidth: 20 },
+                            4: { halign: 'right', cellWidth: 22 },
+                            5: { halign: 'right', cellWidth: 22 },
+                            6: { halign: 'right', fontStyle: 'bold', textColor: [16, 185, 129], cellWidth: 22 }
+                        },
+                        didParseCell: (data) => {
+                            if (data.row.index === tableBody.length - 1) {
+                                data.cell.styles.fontStyle = 'bold';
+                                data.cell.styles.fillColor = [241, 245, 249];
+                            }
                         }
                     });
                 }
 
-                const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 30 : 140;
+                // 4. Firmas Oficiales (Con salto de página inteligente si es necesario)
+                let finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 18 : 190;
+                if (finalY + 30 > 265) {
+                    doc.addPage();
+                    finalY = 35;
+                }
 
-                // 4. Firmas Oficiales
                 doc.setDrawColor(15, 23, 42);
                 doc.setLineWidth(0.5);
                 doc.line(25, finalY, 85, finalY);
@@ -487,19 +851,20 @@ const courierCashControlModule = {
                 doc.setFont('helvetica', 'normal');
                 doc.setTextColor(100, 116, 139);
                 doc.text('Motorizado Responsable', 55, finalY + 10, { align: 'center' });
-                doc.text('Auditoría & Finanzas', 155, finalY + 10, { align: 'center' });
+                doc.text(isVerified ? 'Auditoría & Finanzas (Aprobado)' : 'Auditoría & Finanzas (Pendiente)', 155, finalY + 10, { align: 'center' });
 
                 // 5. Pie de Página y Hash de Seguridad
                 doc.setDrawColor(203, 213, 225);
                 doc.setLineWidth(0.3);
-                doc.line(15, 268, 195, 268);
+                doc.line(15, 272, 195, 272);
 
                 doc.setFontSize(7.5);
                 doc.setTextColor(100, 116, 139);
-                doc.text('Documento inmutable generado por BlueSystem Delivery Enterprise.', 105, 274, { align: 'center' });
-                doc.text(`Hash de Seguridad: ${verCode} | Auditoría Canónica v2.2`, 105, 279, { align: 'center' });
+                doc.text('Documento inmutable generado por BlueSystem Delivery Enterprise. Certificación GAP-05.', 105, 276, { align: 'center' });
+                doc.text(`Hash de Seguridad: ${verCode} | Auditoría Canónica v2.2 Enterprise`, 105, 280, { align: 'center' });
 
-                doc.save(`Acta_Oficial_${actNum}.pdf`);
+                const fileName = isVerified ? `Acta_Oficial_${actNum}.pdf` : `Borrador_Acta_${closure.closureId || closure.id.slice(-6)}.pdf`;
+                doc.save(fileName);
                 return;
             } catch (pdfErr) {
                 console.warn("[COURIER_CASH_CONTROL] Fallback de impresión:", pdfErr);
@@ -1020,16 +1385,29 @@ const courierCashControlModule = {
                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${statusBadgeClass}">
                             ${c.status}
                         </span>
+                        ${c.status === 'REJECTED' && c.rejectionReason ? `
+                            <div class="text-[10px] text-rose-400 font-sans mt-1 max-w-[160px] truncate" title="Motivo: ${c.rejectionReason}">
+                                ⚠️ ${c.rejectionReason}
+                            </div>
+                        ` : ''}
                     </td>
-                    <td class="py-3 px-4 text-center space-x-1.5">
-                        <button onclick="courierCashControlModule.openClosureDetail('${c.id}')" class="px-2.5 py-1 text-[10px] font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg transition">
-                            Detalle 4-Capas
-                        </button>
+                    <td class="py-3 px-4 text-center space-x-1.5 whitespace-nowrap">
                         ${c.status === 'VERIFIED' ? `
-                            <button onclick="courierCashControlModule.printOfficialAct('${c.id}')" class="px-2 py-1 text-[10px] font-bold bg-emerald-950/60 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-800/40 rounded-lg transition" title="Descargar Acta PDF">
+                            <button onclick="courierCashControlModule.openClosureDetail('${c.id}')" class="px-2.5 py-1 text-[10px] font-bold bg-emerald-950/50 hover:bg-emerald-900/80 text-emerald-300 border border-emerald-800/50 rounded-lg transition inline-flex items-center gap-1" title="Ver detalle de conciliación">
+                                <span>✅</span> Aprobado / Ver
+                            </button>
+                            <button onclick="courierCashControlModule.printOfficialAct('${c.id}')" class="px-2 py-1 text-[10px] font-bold bg-indigo-950/60 hover:bg-indigo-900/80 text-indigo-300 border border-indigo-800/40 rounded-lg transition inline-flex items-center gap-1" title="Descargar Acta Oficial PDF">
                                 📄 Acta
                             </button>
-                        ` : ''}
+                        ` : c.status === 'REJECTED' ? `
+                            <button onclick="courierCashControlModule.openClosureDetail('${c.id}')" class="px-2.5 py-1 text-[10px] font-bold bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-800/50 rounded-lg transition inline-flex items-center gap-1">
+                                <span>❌</span> Rechazado
+                            </button>
+                        ` : `
+                            <button onclick="courierCashControlModule.openClosureDetail('${c.id}')" class="px-3 py-1.5 text-[10px] font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition shadow-md shadow-indigo-600/30 inline-flex items-center gap-1 font-sans">
+                                <span>⚡</span> Verificar y Aprobar
+                            </button>
+                        `}
                     </td>
                 </tr>
             `;
@@ -1056,7 +1434,7 @@ const courierCashControlModule = {
                                 <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-800 text-slate-300 font-mono">
                                     CIERRE #${closure.closureId ? closure.closureId.slice(-8) : closure.id.slice(-8)}
                                 </span>
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${closure.status === 'VERIFIED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'}">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${closure.status === 'VERIFIED' ? 'bg-emerald-500/20 text-emerald-400' : closure.status === 'REJECTED' ? 'bg-rose-500/20 text-rose-400' : 'bg-amber-500/20 text-amber-400'}">
                                     ${closure.status}
                                 </span>
                             </div>
@@ -1070,6 +1448,40 @@ const courierCashControlModule = {
                     </div>
 
                     <div class="p-6 space-y-6 flex-1">
+                        ${closure.rejectionReason ? `
+                            <div class="bg-rose-950/40 p-4 rounded-xl border border-rose-800/60 shadow-lg">
+                                <div class="flex items-center gap-2 mb-2">
+                                    <span class="text-base">⚠️</span>
+                                    <h4 class="text-xs font-bold text-rose-300 uppercase tracking-wider">
+                                        Expediente de Cierre Rechazado / Observado
+                                    </h4>
+                                </div>
+                                <div class="bg-rose-950/60 p-3 rounded-lg border border-rose-800/40 mb-3">
+                                    <span class="text-[10px] uppercase font-bold text-rose-300">Motivo de la Observación:</span>
+                                    <div class="text-sm font-semibold text-rose-100 mt-1 whitespace-pre-wrap">${closure.rejectionReason}</div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                                    <div>
+                                        <span class="text-slate-400 text-[10px] uppercase">Rechazado por:</span>
+                                        <div class="font-bold text-white">${closure.rejectedByName || closure.verifiedByName || 'Supervisor de Operaciones'}</div>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 text-[10px] uppercase">Rol Auditor:</span>
+                                        <div class="font-bold text-rose-300">${closure.rejectedByRole || 'SUPERVISOR'}</div>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 text-[10px] uppercase">Fecha y Hora:</span>
+                                        <div class="font-mono text-slate-300">${closure.rejectedAt ? (closure.rejectedAt.toDate ? closure.rejectedAt.toDate().toLocaleString('es-NI') : new Date((closure.rejectedAt._seconds || closure.rejectedAt.seconds) * 1000).toLocaleString('es-NI')) : (closure.verifiedAt ? (closure.verifiedAt.toDate ? closure.verifiedAt.toDate().toLocaleString('es-NI') : new Date((closure.verifiedAt._seconds || closure.verifiedAt.seconds) * 1000).toLocaleString('es-NI')) : 'N/A')}</div>
+                                    </div>
+                                </div>
+                                ${closure.resubmittedAt ? `
+                                    <div class="mt-3 pt-2.5 border-t border-rose-800/40 text-[11px] text-amber-300 flex items-center gap-1.5">
+                                        <span>🔄</span> <span>Este cierre cuenta con una subsanación re-enviada el ${closure.resubmittedAt.toDate ? closure.resubmittedAt.toDate().toLocaleString('es-NI') : new Date((closure.resubmittedAt._seconds || closure.resubmittedAt.seconds) * 1000).toLocaleString('es-NI')} pendiente de verificación.</span>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        ` : ''}
+
                         <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80">
                             <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-3">
                                 Conciliación Financiera Cuatripartita
@@ -1163,9 +1575,16 @@ const courierCashControlModule = {
                     </div>
 
                     <div class="p-5 border-t border-slate-800 bg-slate-900 flex flex-col sm:flex-row items-center justify-between gap-3">
-                        <button onclick="courierCashControlModule.printOfficialAct('${closure.id}')" class="w-full sm:w-auto px-4 py-2 text-xs font-bold text-slate-200 bg-slate-800 hover:bg-slate-700 rounded-xl transition flex items-center justify-center gap-1.5">
-                            <span>📄</span> Imprimir / Descargar Acta
-                        </button>
+                        ${closure.status === 'VERIFIED' ? `
+                            <button onclick="courierCashControlModule.printOfficialAct('${closure.id}')" class="w-full sm:w-auto px-4 py-2 text-xs font-bold text-emerald-300 bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800/40 rounded-xl transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950/20">
+                                <span>📄</span> Descargar Acta Oficial Aprobada (PDF)
+                            </button>
+                        ` : `
+                            <div class="text-xs text-amber-400 flex items-center gap-2 bg-amber-950/30 border border-amber-800/40 px-3.5 py-2 rounded-xl">
+                                <span>🔒</span>
+                                <span>El Acta Oficial se habilitará para descarga una vez aprobado el cierre.</span>
+                            </div>
+                        `}
 
                         ${closure.status !== 'VERIFIED' && closure.status !== 'REJECTED' ? `
                             <div class="flex items-center gap-2 w-full sm:w-auto">
@@ -1173,7 +1592,7 @@ const courierCashControlModule = {
                                     Rechazar
                                 </button>
                                 <button onclick="courierCashControlModule.verifyClosure('${closure.id}')" class="flex-1 sm:flex-none px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-1.5">
-                                    <span>✅</span> Aprobar Cierre
+                                    <span>✅</span> Verificar y Aprobar
                                 </button>
                             </div>
                         ` : ''}
@@ -1183,35 +1602,26 @@ const courierCashControlModule = {
         `;
 
         try {
-            const snap = await db.collection('courier_cash_ledger')
-                .where('courierId', '==', closure.courierId)
-                .where('direction', '==', 'CREDIT')
-                .limit(50)
-                .get();
-
             const tbody = document.getElementById('ledgerDetailTableBody');
-            if (tbody) {
-                if (snap.empty) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500">Sin asientos en subledger</td></tr>';
-                } else {
-                    let html = '';
-                    snap.forEach(doc => {
-                        const item = doc.data();
-                        html += `
-                            <tr>
-                                <td class="py-2 px-3 font-mono font-bold text-slate-200">
-                                    ${item.orderCode ? item.orderCode : item.orderId ? '#' + item.orderId.slice(-6).toUpperCase() : item.tripId ? 'TRIP-#' + item.tripId.slice(-6).toUpperCase() : doc.id.slice(-6)}
-                                </td>
-                                <td class="py-2 px-3 text-slate-400">${item.sourceDomain || 'FOOD_DELIVERY'}</td>
-                                <td class="py-2 px-3 text-slate-300">${item.description || 'Cobro en efectivo'}</td>
-                                <td class="py-2 px-3 text-right font-bold text-emerald-400">
-                                    C$ ${(Number(item.amountCents || 0) / 100).toFixed(2)}
-                                </td>
-                            </tr>
-                        `;
-                    });
-                    tbody.innerHTML = html;
-                }
+            if (!tbody) return;
+
+            const finalRows = await courierCashControlModule.resolveClosureItems(closure);
+
+            if (finalRows.length > 0) {
+                let html = '';
+                finalRows.forEach(row => {
+                    html += `
+                        <tr>
+                            <td class="py-2 px-3 font-mono font-bold text-slate-200">${row.code}</td>
+                            <td class="py-2 px-3 text-slate-400">${row.domain}</td>
+                            <td class="py-2 px-3 text-slate-300">${row.desc}</td>
+                            <td class="py-2 px-3 text-right font-bold text-emerald-400">C$ ${row.amount.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+                tbody.innerHTML = html;
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500 font-sans">No hay pedidos registrados para este cierre específico</td></tr>';
             }
         } catch (e) {
             console.error("Error consultando subledger:", e);
@@ -1231,19 +1641,76 @@ const courierCashControlModule = {
     },
 
     promptRejectClosure: (closureId) => {
-        const reason = prompt("Ingrese el motivo formal del rechazo del cierre:");
-        if (!reason || !reason.trim()) return;
-        courierCashControlModule.rejectClosure(closureId, reason.trim());
+        const existing = document.getElementById('rejectClosureModal');
+        if (existing) existing.remove();
+
+        const modal = document.createElement('div');
+        modal.id = 'rejectClosureModal';
+        modal.className = 'fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-[70] flex items-center justify-center p-4';
+        modal.innerHTML = `
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative flex flex-col">
+                <div class="flex items-center justify-between pb-3 border-b border-slate-800 mb-4">
+                    <div class="flex items-center gap-2">
+                        <span class="text-rose-400 text-lg">⚠️</span>
+                        <h3 class="text-sm font-bold text-white uppercase tracking-wider">Rechazar Cierre de Caja</h3>
+                    </div>
+                    <button onclick="document.getElementById('rejectClosureModal').remove()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">✕</button>
+                </div>
+                <p class="text-xs text-slate-300 mb-3">
+                    Explique claramente al motorizado por qué este cierre fue rechazado y qué debe corregir antes de volver a presentarlo.
+                </p>
+                <div class="mb-4">
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Motivo del Rechazo / Observación *</label>
+                    <textarea id="rejectClosureReasonInput" rows="4" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 transition" placeholder="Ej: El comprobante bancario no es legible o el monto depositado difiere de lo recaudado..."></textarea>
+                </div>
+                <div class="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+                    <button onclick="document.getElementById('rejectClosureModal').remove()" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition">
+                        Cancelar
+                    </button>
+                    <button id="btnConfirmRejectClosure" onclick="courierCashControlModule.confirmRejectClosure('${closureId}')" class="px-5 py-2 text-xs font-bold text-white bg-rose-600 hover:bg-rose-500 rounded-xl transition shadow-lg shadow-rose-600/20 flex items-center gap-1.5">
+                        <span>❌</span> Confirmar Rechazo
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        setTimeout(() => {
+            const txt = document.getElementById('rejectClosureReasonInput');
+            if (txt) txt.focus();
+        }, 100);
     },
 
-    rejectClosure: async (closureId, reason) => {
+    confirmRejectClosure: async (closureId) => {
+        const input = document.getElementById('rejectClosureReasonInput');
+        const reason = input ? input.value.trim() : '';
+        if (!reason || reason.length < 5) {
+            alert("Por favor ingrese un motivo detallado del rechazo (mínimo 5 caracteres).");
+            if (input) input.focus();
+            return;
+        }
+
+        const btn = document.getElementById('btnConfirmRejectClosure');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span>⏳</span> Procesando rechazo...';
+        }
+
         try {
             const fn = firebase.functions().httpsCallable('verifyCourierDailyClosure');
             await fn({ closureId, action: 'REJECT', rejectionReason: reason });
-            alert("Cierre rechazado formalmente.");
+            const modal = document.getElementById('rejectClosureModal');
+            if (modal) modal.remove();
+            alert("Cierre rechazado correctamente.\nEl motorizado recibirá la observación en su aplicación y correo electrónico para regularizarla y volver a presentar el cierre.");
             courierCashControlModule.closeModal();
+            if (typeof courierCashControlModule.loadClosures === 'function') {
+                courierCashControlModule.loadClosures();
+            }
         } catch (err) {
             alert("Error rechazando cierre: " + err.message);
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>❌</span> Confirmar Rechazo';
+            }
         }
     },
 
@@ -1566,6 +2033,496 @@ const courierCashControlModule = {
                 feedback.textContent = err.message || 'Error al actualizar el límite de efectivo.';
                 feedback.classList.remove('hidden');
             }
+        }
+    },
+
+    openRecipientsModal: async () => {
+        const modalContainer = document.getElementById('cashModalContainer');
+        if (!modalContainer) return;
+
+        modalContainer.innerHTML = `
+            <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-xl p-6 space-y-5 shadow-2xl relative">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-xl">🔔</span>
+                            <div>
+                                <h3 class="text-base font-black text-white">Destinatarios de Alertas de Liquidación</h3>
+                                <p class="text-xs text-slate-400">Configuración corporativa de notificaciones push, in-app y correo</p>
+                            </div>
+                        </div>
+                        <button onclick="courierCashControlModule.closeModal()" class="text-slate-400 hover:text-white text-lg font-bold">✕</button>
+                    </div>
+
+                    <div id="recipientsModalLoading" class="py-12 text-center text-slate-400 text-xs flex flex-col items-center gap-2">
+                        <span class="animate-spin text-xl">⏳</span> Cargando configuración de destinatarios...
+                    </div>
+
+                    <div id="recipientsModalBody" class="hidden space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+                        <!-- Roles Habilitados -->
+                        <div class="space-y-2">
+                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">Roles Notificados Automáticamente</label>
+                            <div class="grid grid-cols-2 gap-2 bg-slate-950/50 p-3 rounded-xl border border-slate-800 text-xs text-slate-300">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="role_admin" class="rounded border-slate-700 text-indigo-600 focus:ring-0">
+                                    <span>Administradores (ADMIN / SUPER)</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="role_supervisor" class="rounded border-slate-700 text-indigo-600 focus:ring-0">
+                                    <span>Supervisores de Operaciones</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="role_finance" class="rounded border-slate-700 text-indigo-600 focus:ring-0">
+                                    <span>Gerencia Financiera</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="role_accountant" class="rounded border-slate-700 text-indigo-600 focus:ring-0">
+                                    <span>Contabilidad</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Canales de Notificación -->
+                        <div class="space-y-2">
+                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">Canales Activos</label>
+                            <div class="flex items-center gap-4 bg-slate-950/50 p-3 rounded-xl border border-slate-800 text-xs text-slate-300">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="channel_push" checked class="rounded border-slate-700 text-indigo-600 focus:ring-0">
+                                    <span>Push FCM</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="channel_inapp" checked class="rounded border-slate-700 text-indigo-600 focus:ring-0">
+                                    <span>Centro In-App</span>
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="channel_email" checked class="rounded border-slate-700 text-indigo-600 focus:ring-0">
+                                    <span>Email Corporativo</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Usuarios Específicos -->
+                        <div class="space-y-2">
+                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">Destinatarios Específicos Adicionales</label>
+                            <div id="specificUsersList" class="space-y-1.5 max-h-36 overflow-y-auto bg-slate-950/50 p-3 rounded-xl border border-slate-800 text-xs">
+                                <!-- Poblado dinámicamente -->
+                            </div>
+                        </div>
+
+                        <!-- Justificación de Auditoría -->
+                        <div class="space-y-1">
+                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wider">Motivo de Auditoría <span class="text-rose-400">*</span></label>
+                            <textarea id="recipientsReasonInput" rows="2" placeholder="Ej: Actualización de personal asignado al turno diurno de finanzas..." class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500"></textarea>
+                        </div>
+
+                        <div id="recipientsFeedback" class="hidden"></div>
+
+                        <div class="flex items-center justify-end gap-3 pt-2">
+                            <button onclick="courierCashControlModule.closeModal()" class="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:text-white transition">Cancelar</button>
+                            <button id="btnSaveRecipients" onclick="courierCashControlModule.saveRecipientsConfig()" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-4 py-2 rounded-xl font-bold transition flex items-center gap-1.5">
+                                <span>💾</span> Guardar Destinatarios
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        try {
+            const getFn = firebase.functions().httpsCallable('getSettlementNotificationConfig');
+            const res = await getFn({});
+            const { config, eligibleUsers } = res.data || {};
+
+            document.getElementById('recipientsModalLoading')?.classList.add('hidden');
+            const body = document.getElementById('recipientsModalBody');
+            if (body) body.classList.remove('hidden');
+
+            const roles = config?.enabledRoles || [];
+            if (document.getElementById('role_admin')) document.getElementById('role_admin').checked = roles.some(r => r.toUpperCase().includes('ADMIN'));
+            if (document.getElementById('role_supervisor')) document.getElementById('role_supervisor').checked = roles.some(r => r.toUpperCase().includes('SUPERVISOR'));
+            if (document.getElementById('role_finance')) document.getElementById('role_finance').checked = roles.some(r => r.toUpperCase().includes('FINANCE'));
+            if (document.getElementById('role_accountant')) document.getElementById('role_accountant').checked = roles.some(r => r.toUpperCase().includes('ACCOUNTANT'));
+
+            if (document.getElementById('channel_push')) document.getElementById('channel_push').checked = config?.channelPreferences?.pushFcm !== false;
+            if (document.getElementById('channel_inapp')) document.getElementById('channel_inapp').checked = config?.channelPreferences?.inApp !== false;
+            if (document.getElementById('channel_email')) document.getElementById('channel_email').checked = config?.channelPreferences?.email !== false;
+
+            const specificContainer = document.getElementById('specificUsersList');
+            if (specificContainer && Array.isArray(eligibleUsers)) {
+                if (eligibleUsers.length === 0) {
+                    specificContainer.innerHTML = '<span class="text-slate-500 italic">No hay usuarios administrativos adicionales.</span>';
+                } else {
+                    const selectedUids = new Set(config?.specificUserUids || []);
+                    specificContainer.innerHTML = eligibleUsers.map(u => `
+                        <label class="flex items-center justify-between p-1.5 hover:bg-slate-900/80 rounded-lg cursor-pointer">
+                            <div class="flex items-center gap-2">
+                                <input type="checkbox" name="specificUserCheckbox" value="${u.uid}" ${selectedUids.has(u.uid) ? 'checked' : ''} class="rounded border-slate-700 text-indigo-600 focus:ring-0">
+                                <div>
+                                    <div class="font-bold text-slate-200">${u.name}</div>
+                                    <div class="text-[10px] text-slate-500">${u.email} &bull; ${u.role}</div>
+                                </div>
+                            </div>
+                            <span class="text-[10px] ${u.isActive ? 'text-emerald-400' : 'text-slate-500'} font-semibold">${u.isActive ? 'Activo' : 'Inactivo'}</span>
+                        </label>
+                    `).join('');
+                }
+            }
+        } catch (err) {
+            console.error('[LOAD_RECIPIENTS_CONFIG_ERR]', err);
+            const loading = document.getElementById('recipientsModalLoading');
+            if (loading) loading.innerHTML = `<span class="text-rose-400">Error al cargar configuración: ${err.message || 'Error de red'}</span>`;
+        }
+    },
+
+    saveRecipientsConfig: async () => {
+        const btnSave = document.getElementById('btnSaveRecipients');
+        const feedback = document.getElementById('recipientsFeedback');
+        const reasonInput = document.getElementById('recipientsReasonInput');
+        const reason = reasonInput ? reasonInput.value.trim() : '';
+
+        if (!reason || reason.length < 5) {
+            if (feedback) {
+                feedback.className = 'text-xs p-2.5 rounded-lg bg-rose-950/50 text-rose-300 border border-rose-800/50';
+                feedback.textContent = 'Debe ingresar una justificación de auditoría válida (mínimo 5 caracteres).';
+                feedback.classList.remove('hidden');
+            }
+            return;
+        }
+
+        const enabledRoles = [];
+        if (document.getElementById('role_admin')?.checked) enabledRoles.push('ADMIN', 'SUPER_ADMIN', 'PLATFORM_ADMIN');
+        if (document.getElementById('role_supervisor')?.checked) enabledRoles.push('SUPERVISOR');
+        if (document.getElementById('role_finance')?.checked) enabledRoles.push('FINANCE_MANAGER');
+        if (document.getElementById('role_accountant')?.checked) enabledRoles.push('ACCOUNTANT');
+
+        const specificUserUids = [];
+        document.querySelectorAll('input[name="specificUserCheckbox"]:checked').forEach(cb => {
+            specificUserUids.push(cb.value);
+        });
+
+        const channelPreferences = {
+            pushFcm: document.getElementById('channel_push')?.checked || false,
+            inApp: document.getElementById('channel_inapp')?.checked || false,
+            email: document.getElementById('channel_email')?.checked || false,
+        };
+
+        if (btnSave) {
+            btnSave.disabled = true;
+            btnSave.textContent = 'Guardando...';
+        }
+
+        try {
+            const updateFn = firebase.functions().httpsCallable('updateSettlementNotificationConfig');
+            await updateFn({
+                enabledRoles,
+                specificUserUids,
+                channelPreferences,
+                reason,
+            });
+
+            if (feedback) {
+                feedback.className = 'text-xs p-2.5 rounded-lg bg-emerald-950/50 text-emerald-300 border border-emerald-800/50';
+                feedback.textContent = 'Configuración de destinatarios actualizada y auditada exitosamente.';
+                feedback.classList.remove('hidden');
+            }
+
+            setTimeout(() => {
+                courierCashControlModule.closeModal();
+            }, 1200);
+        } catch (err) {
+            console.error('[SAVE_RECIPIENTS_CONFIG_ERR]', err);
+            if (btnSave) {
+                btnSave.disabled = false;
+                btnSave.textContent = 'Guardar Destinatarios';
+            }
+            if (feedback) {
+                feedback.className = 'text-xs p-2.5 rounded-lg bg-rose-950/50 text-rose-300 border border-rose-800/50';
+                feedback.textContent = err.message || 'Error al guardar la configuración.';
+                feedback.classList.remove('hidden');
+            }
+        }
+    },
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // GESTIÓN SOBERANA DE BANCOS Y CUENTAS DE LIQUIDACIÓN
+    // ═════════════════════════════════════════════════════════════════════════
+    bankAccountsList: [],
+
+    openBankAccountsModal: async () => {
+        const modalContainer = document.getElementById('cashModalContainer');
+        if (!modalContainer) return;
+
+        modalContainer.innerHTML = `
+            <div class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-4xl w-full p-6 relative shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <div class="flex items-center gap-2.5">
+                            <span class="text-xl">🏦</span>
+                            <div>
+                                <h3 class="text-base font-black text-white">Bancos y Cuentas de Liquidación</h3>
+                                <p class="text-xs text-slate-400">Configuración oficial de cuentas para depósitos de recaudación de motorizados</p>
+                            </div>
+                        </div>
+                        <button onclick="courierCashControlModule.closeModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 text-lg">✕</button>
+                    </div>
+
+                    <div id="bankAccountsFeedback" class="hidden text-xs p-3 rounded-xl"></div>
+
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-slate-400">Cuentas registradas en <code class="text-indigo-400 font-mono text-[11px]">/system_config/bank_accounts</code></span>
+                        <button onclick="courierCashControlModule.openEditBankAccountModal()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-1.5 shadow-lg shadow-emerald-600/20">
+                            <span>➕</span> Agregar Cuenta Oficial
+                        </button>
+                    </div>
+
+                    <div id="bankAccountsTableContainer" class="overflow-x-auto rounded-xl border border-slate-800">
+                        <div class="p-8 text-center text-xs text-slate-500">⏳ Cargando cuentas bancarias oficiales...</div>
+                    </div>
+
+                    <div class="border-t border-slate-800 pt-3 flex items-center justify-between text-[11px] text-slate-500">
+                        <span>ℹ️ Desactivar una cuenta no altera los comprobantes ni expedientes de cierres históricos.</span>
+                        <button onclick="courierCashControlModule.closeModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        await courierCashControlModule.loadBankAccountsConfig();
+    },
+
+    loadBankAccountsConfig: async () => {
+        const tableContainer = document.getElementById('bankAccountsTableContainer');
+        if (!tableContainer) return;
+
+        try {
+            const getFn = firebase.functions().httpsCallable('getSettlementBankAccounts');
+            const res = await getFn();
+            const accounts = res.data?.accounts || [];
+            courierCashControlModule.bankAccountsList = accounts;
+
+            if (accounts.length === 0) {
+                tableContainer.innerHTML = '<div class="p-8 text-center text-xs text-slate-500 italic">No hay cuentas bancarias configuradas. Pulsa "Agregar Cuenta Oficial" para registrar la primera.</div>';
+                return;
+            }
+
+            tableContainer.innerHTML = `
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-950/60 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                        <tr>
+                            <th class="p-3">Banco</th>
+                            <th class="p-3">Número de Cuenta</th>
+                            <th class="p-3">Titular / Beneficiario</th>
+                            <th class="p-3">Tipo / Moneda</th>
+                            <th class="p-3 text-center">Estado</th>
+                            <th class="p-3 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 text-slate-200">
+                        ${accounts.map((acc, idx) => `
+                            <tr class="hover:bg-slate-800/30 transition">
+                                <td class="p-3 font-bold text-white flex items-center gap-2">
+                                    <span class="text-base">🏦</span>
+                                    <span>${acc.bankName || 'Sin Nombre'}</span>
+                                </td>
+                                <td class="p-3 font-mono font-bold text-indigo-400">${acc.accountNumber || '—'}</td>
+                                <td class="p-3 text-slate-300">${acc.holderName || acc.beneficiary || 'BlueSystem Delivery'}</td>
+                                <td class="p-3 text-slate-400">${acc.accountType || 'Corriente'} • <span class="font-bold text-white">${acc.currency || 'NIO'}</span></td>
+                                <td class="p-3 text-center">
+                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${acc.isActive !== false ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                                        ${acc.isActive !== false ? '● ACTIVA' : '○ INACTIVA'}
+                                    </span>
+                                </td>
+                                <td class="p-3 text-right space-x-1.5">
+                                    <button onclick="courierCashControlModule.openEditBankAccountModal('${acc.id}')" class="px-2.5 py-1 text-[11px] font-bold bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-300 rounded-lg border border-indigo-500/30 transition">
+                                        Editar
+                                    </button>
+                                    <button onclick="courierCashControlModule.toggleBankAccountStatus('${acc.id}', ${acc.isActive !== false})" class="px-2.5 py-1 text-[11px] font-bold ${acc.isActive !== false ? 'bg-amber-600/20 hover:bg-amber-600/40 text-amber-300 border border-amber-500/30' : 'bg-emerald-600/20 hover:bg-emerald-600/40 text-emerald-300 border border-emerald-500/30'} rounded-lg transition">
+                                        ${acc.isActive !== false ? 'Desactivar' : 'Activar'}
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+        } catch (err) {
+            console.error('[LOAD_BANK_ACCOUNTS_ERR]', err);
+            tableContainer.innerHTML = `<div class="p-6 text-center text-xs text-rose-400">Error al cargar cuentas bancarias: ${err.message || 'Error de red'}</div>`;
+        }
+    },
+
+    openEditBankAccountModal: (accountId = null) => {
+        const existing = accountId ? courierCashControlModule.bankAccountsList.find(a => a.id === accountId) : null;
+        const isEdit = !!existing;
+
+        const subModal = document.createElement('div');
+        subModal.id = 'editBankAccountSubModal';
+        subModal.className = 'fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4';
+        subModal.innerHTML = `
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 relative shadow-2xl space-y-4">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h4 class="text-sm font-black text-white flex items-center gap-2">
+                        <span>${isEdit ? '✏️' : '➕'}</span>
+                        <span>${isEdit ? 'Editar Cuenta Bancaria Oficial' : 'Nueva Cuenta Bancaria Oficial'}</span>
+                    </h4>
+                    <button onclick="document.getElementById('editBankAccountSubModal').remove()" class="text-slate-400 hover:text-white p-1">✕</button>
+                </div>
+
+                <div id="subModalFeedback" class="hidden text-xs p-2.5 rounded-lg"></div>
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block font-bold text-slate-400 mb-1">Nombre del Banco *</label>
+                        <input type="text" id="bankInputName" value="${existing?.bankName || ''}" placeholder="ej. Banco LAFISE Bancentro" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-400 mb-1">Número de Cuenta Oficial *</label>
+                        <input type="text" id="bankInputNumber" value="${existing?.accountNumber || ''}" placeholder="ej. 10020304050607" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block font-bold text-slate-400 mb-1">Tipo de Cuenta</label>
+                            <select id="bankInputType" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+                                <option value="Corriente" ${existing?.accountType === 'Corriente' ? 'selected' : ''}>Corriente</option>
+                                <option value="Ahorro" ${existing?.accountType === 'Ahorro' ? 'selected' : ''}>Ahorro</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block font-bold text-slate-400 mb-1">Moneda</label>
+                            <select id="bankInputCurrency" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+                                <option value="NIO" ${existing?.currency === 'NIO' ? 'selected' : ''}>Córdobas (NIO)</option>
+                                <option value="USD" ${existing?.currency === 'USD' ? 'selected' : ''}>Dólares (USD)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-400 mb-1">Titular / Beneficiario *</label>
+                        <input type="text" id="bankInputBeneficiary" value="${existing?.holderName || existing?.beneficiary || 'BlueSystem Delivery'}" placeholder="ej. BlueSystem Delivery" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-400 mb-1">Orden de Visualización</label>
+                        <input type="number" id="bankInputOrder" value="${existing?.displayOrder || 1}" min="1" max="99" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <div class="border-t border-slate-800 pt-3 flex items-center justify-end gap-2">
+                    <button onclick="document.getElementById('editBankAccountSubModal').remove()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold rounded-xl text-xs transition">
+                        Cancelar
+                    </button>
+                    <button id="btnSaveBankAccount" onclick="courierCashControlModule.submitSaveBankAccount('${existing?.id || ''}')" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs transition shadow-lg shadow-emerald-600/20">
+                        ${isEdit ? 'Actualizar Cuenta' : 'Guardar Cuenta'}
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(subModal);
+    },
+
+    submitSaveBankAccount: async (accountId = '') => {
+        const bankName = document.getElementById('bankInputName')?.value.trim();
+        const accountNumber = document.getElementById('bankInputNumber')?.value.trim();
+        const accountType = document.getElementById('bankInputType')?.value;
+        const currency = document.getElementById('bankInputCurrency')?.value;
+        const holderName = document.getElementById('bankInputBeneficiary')?.value.trim();
+        const displayOrder = parseInt(document.getElementById('bankInputOrder')?.value || '1', 10);
+        const feedback = document.getElementById('subModalFeedback');
+        const btnSave = document.getElementById('btnSaveBankAccount');
+
+        if (!bankName || bankName.length < 2) {
+            if (feedback) {
+                feedback.className = 'text-xs p-2.5 rounded-lg bg-rose-950/50 text-rose-300 border border-rose-800/50';
+                feedback.textContent = 'El nombre del banco es obligatorio.';
+                feedback.classList.remove('hidden');
+            }
+            return;
+        }
+
+        if (!accountNumber || accountNumber.length < 3) {
+            if (feedback) {
+                feedback.className = 'text-xs p-2.5 rounded-lg bg-rose-950/50 text-rose-300 border border-rose-800/50';
+                feedback.textContent = 'El número de cuenta es obligatorio.';
+                feedback.classList.remove('hidden');
+            }
+            return;
+        }
+
+        if (btnSave) {
+            btnSave.disabled = true;
+            btnSave.textContent = 'Guardando...';
+        }
+
+        try {
+            const saveFn = firebase.functions().httpsCallable('adminSaveSettlementBankAccount');
+            await saveFn({
+                id: accountId || undefined,
+                bankName,
+                accountNumber,
+                accountType,
+                currency,
+                holderName: holderName || 'BlueSystem Delivery',
+                displayOrder,
+                isActive: true
+            });
+
+            const subModal = document.getElementById('editBankAccountSubModal');
+            if (subModal) subModal.remove();
+
+            const mainFeedback = document.getElementById('bankAccountsFeedback');
+            if (mainFeedback) {
+                mainFeedback.className = 'text-xs p-3 rounded-xl bg-emerald-950/50 text-emerald-300 border border-emerald-800/50';
+                mainFeedback.textContent = '✅ Cuenta bancaria guardada y auditada exitosamente.';
+                mainFeedback.classList.remove('hidden');
+                setTimeout(() => mainFeedback.classList.add('hidden'), 3000);
+            }
+
+            await courierCashControlModule.loadBankAccountsConfig();
+        } catch (err) {
+            console.error('[SAVE_BANK_ACCOUNT_ERR]', err);
+            if (btnSave) {
+                btnSave.disabled = false;
+                btnSave.textContent = 'Guardar Cuenta';
+            }
+            if (feedback) {
+                feedback.className = 'text-xs p-2.5 rounded-lg bg-rose-950/50 text-rose-300 border border-rose-800/50';
+                feedback.textContent = err.message || 'Error al guardar la cuenta.';
+                feedback.classList.remove('hidden');
+            }
+        }
+    },
+
+    toggleBankAccountStatus: async (accountId, currentActive) => {
+        const actionText = currentActive ? 'desactivar' : 'activar';
+        const confirmMsg = `¿Está seguro de que desea ${actionText} esta cuenta bancaria?\n\nLos cierres históricos conservarán su snapshot inmutable y no serán afectados.`;
+        if (!confirm(confirmMsg)) return;
+
+        const reason = prompt(`Ingrese la justificación de auditoría para ${actionText} esta cuenta:`, `Mantenimiento operativo de cuentas bancarias`);
+        if (!reason || reason.trim().length < 3) {
+            alert('Debe proporcionar una justificación válida para continuar.');
+            return;
+        }
+
+        try {
+            const toggleFn = firebase.functions().httpsCallable('adminToggleSettlementBankAccountStatus');
+            await toggleFn({
+                id: accountId,
+                isActive: !currentActive,
+                reason: reason.trim()
+            });
+
+            const mainFeedback = document.getElementById('bankAccountsFeedback');
+            if (mainFeedback) {
+                mainFeedback.className = 'text-xs p-3 rounded-xl bg-indigo-950/50 text-indigo-300 border border-indigo-800/50';
+                mainFeedback.textContent = `✅ Cuenta bancaria ${!currentActive ? 'activada' : 'desactivada'} y registrada en auditoría.`;
+                mainFeedback.classList.remove('hidden');
+                setTimeout(() => mainFeedback.classList.add('hidden'), 3000);
+            }
+
+            await courierCashControlModule.loadBankAccountsConfig();
+        } catch (err) {
+            console.error('[TOGGLE_BANK_ACCOUNT_ERR]', err);
+            alert('Error al modificar estado de la cuenta: ' + (err.message || 'Error de red'));
         }
     },
 

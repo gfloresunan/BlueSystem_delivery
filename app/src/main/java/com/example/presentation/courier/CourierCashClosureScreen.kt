@@ -38,6 +38,34 @@ import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.*
 
+data class SettlementBankOption(
+    val id: String,
+    val bankName: String,
+    val accountNumber: String,
+    val accountType: String = "Corriente",
+    val currency: String = "NIO",
+    val beneficiary: String = "BlueSystem Delivery",
+    val isActive: Boolean = true
+) {
+    val displayLabel: String
+        get() = if (accountNumber.isNotBlank()) "$bankName — Cta: $accountNumber" else bankName
+}
+
+private val defaultSettlementBankOptions = listOf(
+    SettlementBankOption(
+        id = "default_bac_nio",
+        bankName = "BAC Credomatic (Córdobas)",
+        accountNumber = "365821945",
+        beneficiary = "BlueSystem Delivery"
+    ),
+    SettlementBankOption(
+        id = "default_banpro_nio",
+        bankName = "Banpro Grupo Promerica (Córdobas)",
+        accountNumber = "10020304050607",
+        beneficiary = "BlueSystem Delivery"
+    )
+)
+
 /**
  * Pantalla integral de Cierre Diario de Efectivo, Depósito Bancario y Acta Oficial del Motorizado.
  * Estilo visual: BlueSystem Enterprise Dark Theme (#020617, #0F172A, #1E293B, #10B981, #38BDF8).
@@ -46,7 +74,8 @@ import java.util.*
 @Composable
 fun CourierCashClosureScreen(
     onBack: () -> Unit,
-    onNavigateToHistory: () -> Unit = {}
+    onNavigateToHistory: () -> Unit = {},
+    financesState: com.example.CourierFinancesState? = null
 ) {
     val auth = remember { FirebaseAuth.getInstance() }
     val db = remember { FirebaseFirestore.getInstance() }
@@ -78,24 +107,48 @@ fun CourierCashClosureScreen(
         Pair(start, end)
     }
 
-    var totalRecaudadoState by remember { mutableStateOf(0.0) }
+    var totalRecaudadoState by remember {
+        mutableStateOf(
+            if (financesState != null && financesState.selectedFilter == com.example.FinanceDateFilter.TODAY) {
+                financesState.totalGeneralRequiredDeposit
+            } else 0.0
+        )
+    }
+    var todayCollectionsState by remember { mutableStateOf(0.0) }
+    var runningCashBalanceState by remember { mutableStateOf(0.0) }
     var effectiveCashLimitState by remember { mutableStateOf(2000.0) }
-    var pedidosCountState by remember { mutableStateOf(0) }
+    var pedidosCountState by remember {
+        mutableStateOf(
+            if (financesState != null && financesState.selectedFilter == com.example.FinanceDateFilter.TODAY) {
+                financesState.totalGeneralCount
+            } else 0
+        )
+    }
     var closureStatusState by remember { mutableStateOf("OPEN") }
     var closureIdState by remember { mutableStateOf("") }
+    var closureBusinessDateState by remember { mutableStateOf(todayDateStr) }
+    var isPendingRejectedResubmission by remember { mutableStateOf(false) }
     var officialActNumberState by remember { mutableStateOf("") }
     var verificationCodeState by remember { mutableStateOf("") }
     var rejectionReasonState by remember { mutableStateOf("") }
     var courierRealNameState by remember { mutableStateOf("") }
     var loadingState by remember { mutableStateOf(true) }
 
-    // Campos de Depósito Bancario
-    val availableBanks = listOf("BAC Credomatic", "Banco LAFISE Bancentro", "Banpro Grupo Promerica", "BDF Banco de Finanzas", "Avanz", "Billetera Móvil / Banpro", "Kash / BAC")
-    var selectedBank by remember { mutableStateOf(availableBanks.first()) }
+    LaunchedEffect(financesState?.totalGeneralRequiredDeposit, financesState?.totalGeneralCount) {
+        if (closureStatusState == "OPEN" && !isPendingRejectedResubmission && financesState != null && financesState.selectedFilter == com.example.FinanceDateFilter.TODAY) {
+            totalRecaudadoState = financesState.totalGeneralRequiredDeposit
+            pedidosCountState = financesState.totalGeneralCount
+        }
+    }
+
+    // Campos de Depósito Bancario Dinámicos (SSOT: /system_config/bank_accounts)
+    var availableBankOptions by remember { mutableStateOf(defaultSettlementBankOptions) }
+    var selectedBankOption by remember { mutableStateOf(defaultSettlementBankOptions.first()) }
     var bankDropdownExpanded by remember { mutableStateOf(false) }
     var bankReferenceInput by remember { mutableStateOf("") }
     var depositAmountInput by remember { mutableStateOf("") }
     var notesInput by remember { mutableStateOf("") }
+    var amountMismatchDialogData by remember { mutableStateOf<Pair<Long, Long>?>(null) }
 
     // Voucher selection
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
@@ -112,11 +165,42 @@ fun CourierCashClosureScreen(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var successDialogMessage by remember { mutableStateOf<String?>(null) }
 
-    // Cargar datos de subledger y pedidos completados en efectivo para la jornada de hoy
+    // Cargar datos de subledger, balances y cierres del motorizado
     LaunchedEffect(courierUid) {
         if (courierUid.isEmpty()) {
             loadingState = false
             return@LaunchedEffect
+        }
+
+        // 0.1 Cargar catálogo dinámico de cuentas bancarias oficiales (/system_config/bank_accounts)
+        db.collection("system_config").document("bank_accounts").addSnapshotListener { bDoc, _ ->
+            if (bDoc != null && bDoc.exists()) {
+                val rawList = bDoc.get("accounts") as? List<Map<String, Any>>
+                if (!rawList.isNullOrEmpty()) {
+                    val parsed = rawList.mapNotNull { m ->
+                        val active = (m["isActive"] as? Boolean) ?: true
+                        if (!active) return@mapNotNull null
+                        val bName = (m["bankName"] as? String)?.trim() ?: ""
+                        val accNum = (m["accountNumber"] as? String)?.trim() ?: ""
+                        if (bName.isEmpty()) return@mapNotNull null
+                        SettlementBankOption(
+                            id = (m["id"] as? String) ?: "bank_${accNum}",
+                            bankName = bName,
+                            accountNumber = accNum,
+                            accountType = (m["accountType"] as? String) ?: "Corriente",
+                            currency = (m["currency"] as? String) ?: "NIO",
+                            beneficiary = (m["beneficiary"] as? String) ?: (m["holderName"] as? String) ?: "BlueSystem Delivery",
+                            isActive = active
+                        )
+                    }
+                    if (parsed.isNotEmpty()) {
+                        availableBankOptions = parsed
+                        if (!parsed.any { it.id == selectedBankOption.id }) {
+                            selectedBankOption = parsed.first()
+                        }
+                    }
+                }
+            }
         }
 
         // 0. Cargar nombre real del motorizado de Firestore
@@ -149,101 +233,100 @@ fun CourierCashClosureScreen(
                 if (limitCents > 0L) {
                     effectiveCashLimitState = limitCents / 100.0
                 }
+                val outstanding = (bDoc.getLong("cashOutstandingCents") ?: 0L) / 100.0
+                runningCashBalanceState = outstanding
             }
         }
 
-        // 1. Escuchar cierre formal de hoy
+        // 1. Escuchar cierres de este motorizado buscando cierres pendientes de subsanar o el cierre de hoy
         db.collection("courier_daily_closures")
             .whereEqualTo("courierId", courierUid)
-            .whereEqualTo("businessDate", todayDateStr)
-            .limit(1)
             .addSnapshotListener { snap, _ ->
                 if (snap != null && !snap.isEmpty) {
-                    val doc = snap.documents[0]
-                    closureIdState = doc.id
-                    closureStatusState = doc.getString("status") ?: "OPEN"
-                    rejectionReasonState = doc.getString("rejectionReason") ?: ""
-                    totalRecaudadoState = (doc.getLong("expectedAmountCents") ?: 0L) / 100.0
-                    pedidosCountState = (doc.getLong("ordersCount") ?: 0L).toInt()
+                    // Prioridad A: Cierre en estado REJECTED pendiente de subsanar
+                    val rejectedDoc = snap.documents.firstOrNull { it.getString("status") == "REJECTED" }
+                    // Prioridad B: Cierre de la jornada de hoy
+                    val todayDoc = snap.documents.firstOrNull { it.getString("businessDate") == todayDateStr }
+                    // Prioridad C: Cierre en revisión PENDING_ADMIN_VERIFICATION
+                    val pendingDoc = snap.documents.firstOrNull { it.getString("status") in listOf("PENDING_ADMIN_VERIFICATION", "PENDING_VERIFICATION") }
 
-                    val cNameFromDoc = doc.getString("courierName")
-                    if (!cNameFromDoc.isNullOrBlank() && cNameFromDoc != "Repartidor" && cNameFromDoc != "Motorizado") {
-                        courierRealNameState = cNameFromDoc
-                    }
+                    val activeDoc = rejectedDoc ?: todayDoc ?: pendingDoc
 
-                    val act = doc.get("officialAct") as? Map<*, *>
-                    if (act != null) {
-                        officialActNumberState = (act["actNumber"] as? String) ?: ""
-                        verificationCodeState = (act["verificationCode"] as? String) ?: ""
-                    }
-                    loadingState = false
-                } else {
-                    // 2. Si no hay cierre formal, leer de /courier_balances
-                    db.collection("courier_balances").document(courierUid).get()
-                        .addOnSuccessListener { bDoc ->
-                            if (bDoc.exists()) {
-                                val outstanding = (bDoc.getLong("cashOutstandingCents") ?: 0L) / 100.0
-                                if (outstanding > 0.0) {
-                                    totalRecaudadoState = outstanding
-                                }
-                                val limitCents = bDoc.getLong("effectiveCashLimitCents")
-                                    ?: bDoc.getLong("cashLimitCents")
-                                    ?: 200000L
-                                if (limitCents > 0L) {
-                                    effectiveCashLimitState = limitCents / 100.0
-                                }
-                            }
-                            // 3. Reconciliación con pedidos en efectivo completados hoy (filtrados por fecha y courier)
-                            db.collection("orders")
-                                .whereEqualTo("assignedCourierId", courierUid)
-                                .whereIn("status", listOf("delivered", "completed", "entregado", "completado"))
-                                .get()
-                                .addOnSuccessListener { orderSnap ->
-                                    var directCashSum = 0.0
-                                    var directCount = 0
-                                    orderSnap.documents.forEach { oDoc ->
-                                        val ts = oDoc.getTimestamp("deliveredAt")?.toDate()?.time
-                                            ?: oDoc.getTimestamp("completedAt")?.toDate()?.time
-                                            ?: oDoc.getTimestamp("createdAt")?.toDate()?.time
-                                            ?: oDoc.getLong("completedAt")
-                                            ?: oDoc.getLong("deliveredAt")
-                                            ?: oDoc.getLong("createdAt")
-                                            ?: 0L
-                                        val isToday = ts == 0L || ts in todayStartMs..todayEndMs
+                    if (activeDoc != null) {
+                        closureIdState = activeDoc.id
+                        val st = activeDoc.getString("status") ?: "OPEN"
+                        closureStatusState = st
+                        rejectionReasonState = activeDoc.getString("rejectionReason") ?: ""
+                        closureBusinessDateState = activeDoc.getString("businessDate") ?: todayDateStr
+                        isPendingRejectedResubmission = (st == "REJECTED")
+                        totalRecaudadoState = (activeDoc.getLong("expectedAmountCents") ?: 0L) / 100.0
+                        pedidosCountState = (activeDoc.getLong("ordersCount") ?: 0L).toInt()
 
-                                        if (isToday) {
-                                            val pMethod = (oDoc.getString("paymentMethod") ?: oDoc.getString("metodoPago") ?: "").lowercase()
-                                            if (pMethod in listOf("efectivo", "cash")) {
-                                                val cashRec = (oDoc.get("cashReceived") as? Number)?.toDouble()
-                                                    ?: (oDoc.get("total") as? Number)?.toDouble()
-                                                    ?: 0.0
-                                                val chGiven = (oDoc.get("changeGiven") as? Number)?.toDouble() ?: 0.0
-                                                val courierEarning = (oDoc.get("courierTotalEarnings") as? Number)?.toDouble()
-                                                    ?: (oDoc.get("courierEarnings") as? Number)?.toDouble()
-                                                    ?: (oDoc.get("deliveryFee") as? Number)?.toDouble()
-                                                    ?: 0.0
-                                                val netCash = maxOf(0.0, cashRec - chGiven)
-                                                val toDeposit = maxOf(0.0, netCash - courierEarning)
-                                                directCashSum += toDeposit
-                                                directCount++
-                                            }
-                                        }
-                                    }
-                                    if (totalRecaudadoState == 0.0 && directCashSum > 0.0) {
-                                        totalRecaudadoState = directCashSum
-                                    }
-                                    if (pedidosCountState == 0) {
-                                        pedidosCountState = directCount
-                                    }
-                                    loadingState = false
-                                }
-                                .addOnFailureListener {
-                                    loadingState = false
-                                }
+                        val cNameFromDoc = activeDoc.getString("courierName")
+                        if (!cNameFromDoc.isNullOrBlank() && cNameFromDoc != "Repartidor" && cNameFromDoc != "Motorizado") {
+                            courierRealNameState = cNameFromDoc
                         }
-                        .addOnFailureListener {
-                            loadingState = false
+
+                        val act = activeDoc.get("officialAct") as? Map<*, *>
+                        if (act != null) {
+                            officialActNumberState = (act["actNumber"] as? String) ?: ""
+                            verificationCodeState = (act["verificationCode"] as? String) ?: ""
                         }
+                    } else {
+                        closureStatusState = "OPEN"
+                        closureIdState = ""
+                        rejectionReasonState = ""
+                        closureBusinessDateState = todayDateStr
+                        isPendingRejectedResubmission = false
+                    }
+                }
+                loadingState = false
+            }
+
+        // 2. Reconciliación con pedidos en efectivo completados hoy
+        db.collection("orders")
+            .whereEqualTo("assignedCourierId", courierUid)
+            .whereIn("status", listOf("delivered", "completed", "entregado", "completado"))
+            .get()
+            .addOnSuccessListener { orderSnap ->
+                var directCashSum = 0.0
+                var directCount = 0
+                orderSnap.documents.forEach { oDoc ->
+                    val ts = oDoc.getTimestamp("deliveredAt")?.toDate()?.time
+                        ?: oDoc.getTimestamp("completedAt")?.toDate()?.time
+                        ?: oDoc.getTimestamp("createdAt")?.toDate()?.time
+                        ?: oDoc.getLong("completedAt")
+                        ?: oDoc.getLong("deliveredAt")
+                        ?: oDoc.getLong("createdAt")
+                        ?: 0L
+                    val isToday = ts in todayStartMs..todayEndMs
+
+                    if (isToday) {
+                        val pMethod = (oDoc.getString("paymentMethod") ?: oDoc.getString("metodoPago") ?: "").lowercase()
+                        if (pMethod in listOf("efectivo", "cash")) {
+                            val cashRec = (oDoc.get("cashReceived") as? Number)?.toDouble()
+                                ?: (oDoc.get("total") as? Number)?.toDouble()
+                                ?: 0.0
+                            val chGiven = (oDoc.get("changeGiven") as? Number)?.toDouble() ?: 0.0
+                            val pSnap = oDoc.get("pricingSnapshot") as? Map<*, *>
+                            val snapCourierEarn = (pSnap?.get("courierEarnings") as? Number)?.toDouble()
+                            val rawEarning = (oDoc.get("courierTotalEarnings") as? Number)?.toDouble()
+                                ?: (oDoc.get("courierEarnings") as? Number)?.toDouble()
+                                ?: snapCourierEarn
+                                ?: (if (oDoc.getString("serviceType") == "X_TO_Y_DELIVERY") (oDoc.get("deliveryFee") as? Number)?.toDouble() else 0.0)
+                                ?: 0.0
+                            val courierEarning = Math.floor(rawEarning)
+                            val netCash = maxOf(0.0, cashRec - chGiven)
+                            val toDeposit = maxOf(0.0, netCash - courierEarning)
+                            directCashSum += toDeposit
+                            directCount++
+                        }
+                    }
+                }
+                todayCollectionsState = directCashSum
+                if (!isPendingRejectedResubmission && closureStatusState == "OPEN") {
+                    totalRecaudadoState = directCashSum
+                    pedidosCountState = directCount
                 }
             }
     }
@@ -324,12 +407,17 @@ fun CourierCashClosureScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Card Principal: Resumen de Recaudación
+            // Card Principal: Resumen de Recaudación / Subsanación
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
-                border = BorderStroke(1.dp, Color(0xFF1E293B))
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isPendingRejectedResubmission) Color(0xFF1E1111) else Color(0xFF0F172A)
+                ),
+                border = BorderStroke(
+                    1.dp,
+                    if (isPendingRejectedResubmission) Color(0xFF7F1D1D) else Color(0xFF1E293B)
+                )
             ) {
                 Column(modifier = Modifier.padding(20.dp)) {
                     Row(
@@ -338,10 +426,10 @@ fun CourierCashClosureScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "TOTAL RECAUDADO HOY",
+                            text = if (isPendingRejectedResubmission) "CIERRE OBSERVADO A SUBSANAR" else "TOTAL RECAUDADO HOY",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Black,
-                            color = Color(0xFF94A3B8),
+                            color = if (isPendingRejectedResubmission) Color(0xFFFCA5A5) else Color(0xFF94A3B8),
                             letterSpacing = 1.sp
                         )
                         Surface(
@@ -357,7 +445,7 @@ fun CourierCashClosureScreen(
                                 text = when (closureStatusState) {
                                     "VERIFIED" -> "VERIFICADO"
                                     "PENDING_ADMIN_VERIFICATION", "PENDING_VERIFICATION" -> "EN REVISIÓN"
-                                    "REJECTED" -> "RECHAZADO"
+                                    "REJECTED" -> "OBSERVADO"
                                     else -> "ABIERTO"
                                 },
                                 color = Color.White,
@@ -374,7 +462,7 @@ fun CourierCashClosureScreen(
                         text = "C$ ${String.format(Locale.US, "%.2f", totalRecaudadoState)}",
                         fontSize = 32.sp,
                         fontWeight = FontWeight.Black,
-                        color = Color(0xFF38BDF8)
+                        color = if (isPendingRejectedResubmission) Color(0xFFF87171) else Color(0xFF38BDF8)
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -387,12 +475,32 @@ fun CourierCashClosureScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Column {
-                            Text("Fecha Operacional", fontSize = 10.sp, color = Color(0xFF64748B), fontWeight = FontWeight.SemiBold)
-                            Text(todayDateStr, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                            Text("Fecha del Cierre", fontSize = 10.sp, color = Color(0xFF64748B), fontWeight = FontWeight.SemiBold)
+                            Text(closureBusinessDateState, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
                         }
                         Column(horizontalAlignment = Alignment.End) {
-                            Text("Pedidos Cobrados", fontSize = 10.sp, color = Color(0xFF64748B), fontWeight = FontWeight.SemiBold)
+                            Text("Pedidos del Cierre", fontSize = 10.sp, color = Color(0xFF64748B), fontWeight = FontWeight.SemiBold)
                             Text("$pedidosCountState", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF10B981))
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Desglose explícito de separación de fuentes
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF0B132B), RoundedCornerShape(12.dp))
+                            .padding(12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Column {
+                            Text("Recaudado Hoy ($todayDateStr)", fontSize = 10.sp, color = Color(0xFF94A3B8), fontWeight = FontWeight.Medium)
+                            Text("C$ ${String.format(Locale.US, "%.2f", todayCollectionsState)}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF38BDF8))
+                        }
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text("Saldo Pendiente Acumulado", fontSize = 10.sp, color = Color(0xFF94A3B8), fontWeight = FontWeight.Medium)
+                            Text("C$ ${String.format(Locale.US, "%.2f", runningCashBalanceState)}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFFFBBF24))
                         }
                     }
                 }
@@ -410,18 +518,18 @@ fun CourierCashClosureScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.Error, contentDescription = null, tint = Color(0xFFEF4444), modifier = Modifier.size(20.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("COMPROBANTE RECHAZADO", fontWeight = FontWeight.Black, color = Color(0xFFFCA5A5), fontSize = 13.sp)
+                            Text("COMPROBANTE OBSERVADO / RECHAZADO", fontWeight = FontWeight.Black, color = Color(0xFFFCA5A5), fontSize = 13.sp)
                         }
                         Spacer(modifier = Modifier.height(6.dp))
                         Text(
                             text = "Motivo: ${rejectionReasonState.ifBlank { "Rechazado por auditoría administrativa." }}",
-                            fontSize = 12.sp,
+                            fontSize = 13.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFFECACA)
+                            color = Color.White
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Por favor verifica los datos de tu depósito bancario y vuelve a subir el comprobante correcto.",
+                            text = "El cierre del $closureBusinessDateState por C$ ${String.format(Locale.US, "%.2f", totalRecaudadoState)} requiere corrección. Por favor revisa los datos de tu depósito bancario y vuelve a subir el comprobante correcto en el formulario abajo.",
                             fontSize = 11.sp,
                             color = Color(0xFFFCA5A5)
                         )
@@ -522,7 +630,7 @@ fun CourierCashClosureScreen(
                                     businessDate = todayDateStr,
                                     expectedAmount = totalRecaudadoState,
                                     countedAmount = totalRecaudadoState,
-                                    bankName = selectedBank,
+                                    bankName = selectedBankOption.bankName,
                                     bankReference = bankReferenceInput.ifBlank { "Depósito Verificado" },
                                     depositAmount = totalRecaudadoState
                                 )
@@ -565,10 +673,10 @@ fun CourierCashClosureScreen(
                             onExpandedChange = { bankDropdownExpanded = !bankDropdownExpanded }
                         ) {
                             OutlinedTextField(
-                                value = selectedBank,
+                                value = selectedBankOption.displayLabel,
                                 onValueChange = {},
                                 readOnly = true,
-                                label = { Text("Banco Receptor") },
+                                label = { Text("Banco y Cuenta Receptora *") },
                                 trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = bankDropdownExpanded) },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -588,13 +696,44 @@ fun CourierCashClosureScreen(
                                 onDismissRequest = { bankDropdownExpanded = false },
                                 modifier = Modifier.background(Color(0xFF1E293B))
                             ) {
-                                availableBanks.forEach { bank ->
+                                availableBankOptions.forEach { opt ->
                                     DropdownMenuItem(
-                                        text = { Text(bank, color = Color.White, fontWeight = FontWeight.Medium) },
+                                        text = {
+                                            Column {
+                                                Text(opt.bankName, color = Color.White, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                                if (opt.accountNumber.isNotBlank()) {
+                                                    Text("Cta: ${opt.accountNumber} • ${opt.beneficiary}", color = Color(0xFF38BDF8), fontSize = 11.sp)
+                                                }
+                                            }
+                                        },
                                         onClick = {
-                                            selectedBank = bank
+                                            selectedBankOption = opt
                                             bankDropdownExpanded = false
                                         }
+                                    )
+                                }
+                            }
+                        }
+
+                        // Badge informativo de Titular de Cuenta
+                        if (selectedBankOption.beneficiary.isNotBlank()) {
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = Color(0xFF1E293B).copy(alpha = 0.6f),
+                                border = BorderStroke(1.dp, Color(0xFF334155)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(Icons.Default.AccountBalance, contentDescription = null, tint = Color(0xFF38BDF8), modifier = Modifier.size(14.dp))
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = "Titular: ${selectedBankOption.beneficiary} • Tipo: ${selectedBankOption.accountType} (${selectedBankOption.currency})",
+                                        color = Color(0xFF94A3B8),
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium
                                     )
                                 }
                             }
@@ -744,15 +883,29 @@ fun CourierCashClosureScreen(
                         // Botón de Envío
                         Button(
                             onClick = {
-                                val amountFloat = depositAmountInput.toDoubleOrNull() ?: totalRecaudadoState
-                                val amountCents = Math.round(amountFloat * 100).toInt()
+                                val rawInput = depositAmountInput.trim()
+                                if (rawInput.isEmpty()) {
+                                    errorMessage = "Por favor ingresa el monto depositado."
+                                    return@Button
+                                }
+
+                                val normalizedInput = rawInput.replace(",", ".")
+                                val parsedDouble = normalizedInput.toDoubleOrNull()
+                                if (parsedDouble == null || parsedDouble.isNaN() || parsedDouble.isInfinite() || parsedDouble <= 0.0) {
+                                    errorMessage = "El monto depositado debe ser un número válido mayor a 0."
+                                    return@Button
+                                }
+
+                                val amountCents = Math.round(parsedDouble * 100.0)
+                                val expectedCents = Math.round(totalRecaudadoState * 100.0)
+
+                                if (amountCents != expectedCents) {
+                                    amountMismatchDialogData = Pair(amountCents, expectedCents)
+                                    return@Button
+                                }
 
                                 if (bankReferenceInput.trim().isEmpty()) {
                                     errorMessage = "Por favor ingresa el número de referencia del comprobante."
-                                    return@Button
-                                }
-                                if (amountCents <= 0) {
-                                    errorMessage = "El monto depositado debe ser mayor a 0."
                                     return@Button
                                 }
                                 if (selectedImageUri == null) {
@@ -775,7 +928,8 @@ fun CourierCashClosureScreen(
                                                 "closureOperationId" to opId,
                                                 "courierId" to courierUid,
                                                 "businessDate" to todayDateStr,
-                                                "shift" to "FULL_DAY"
+                                                "shift" to "FULL_DAY",
+                                                "expectedAmountCents" to Math.round(totalRecaudadoState * 100).toInt()
                                             )
                                             val initResult = functions.getHttpsCallable("initiateCourierDailyClosure").call(initPayload).await()
                                             val initData = initResult.data as? Map<*, *>
@@ -807,9 +961,10 @@ fun CourierCashClosureScreen(
                                         uploadProgressText = "Registrando depósito en auditoría financiera..."
                                         val depositPayload = hashMapOf(
                                             "closureId" to targetClosureId,
-                                            "bankName" to selectedBank,
+                                            "bankName" to selectedBankOption.bankName,
+                                            "accountReference" to selectedBankOption.accountNumber,
                                             "bankReference" to bankReferenceInput.trim(),
-                                            "depositAmountCents" to amountCents,
+                                            "depositAmountCents" to amountCents.toInt(),
                                             "depositDate" to todayDateStr,
                                             "receiptStoragePath" to storagePath,
                                             "receiptDownloadUrl" to downloadUrl,
@@ -877,6 +1032,59 @@ fun CourierCashClosureScreen(
             shape = RoundedCornerShape(16.dp),
             containerColor = Color(0xFF0F172A),
             tonalElevation = 6.dp
+        )
+    }
+
+    // Diálogo Preventivo de Monto Incorrecto (Incidente B)
+    amountMismatchDialogData?.let { (ingresadoCents, esperadoCents) ->
+        AlertDialog(
+            onDismissRequest = { amountMismatchDialogData = null },
+            icon = { Icon(Icons.Default.Warning, contentDescription = null, tint = Color(0xFFEF4444), modifier = Modifier.size(28.dp)) },
+            title = {
+                Text(
+                    "Monto de depósito incorrecto",
+                    fontWeight = FontWeight.Black,
+                    color = Color.White,
+                    fontSize = 17.sp,
+                    textAlign = TextAlign.Center
+                )
+            },
+            text = {
+                val espStr = String.format(Locale.US, "%.2f", esperadoCents / 100.0)
+                val ingStr = String.format(Locale.US, "%.2f", ingresadoCents / 100.0)
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        "El monto que debes depositar para este cierre es C$ $espStr.",
+                        color = Color(0xFFE2E8F0),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        "Has ingresado C$ $ingStr.",
+                        color = Color(0xFFF87171),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        "Corrige el monto antes de continuar.",
+                        color = Color(0xFF94A3B8),
+                        fontSize = 13.sp
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = { amountMismatchDialogData = null },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444)),
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("Corregir monto", fontWeight = FontWeight.Bold, color = Color.White)
+                }
+            },
+            shape = RoundedCornerShape(16.dp),
+            containerColor = Color(0xFF1E293B),
+            tonalElevation = 8.dp
         )
     }
 
@@ -1029,6 +1237,31 @@ fun CourierCashClosureScreen(
                                                 fontSize = 10.sp,
                                                 color = Color(0xFF64748B)
                                             )
+                                        }
+
+                                        if (closureItem.status == "REJECTED" && closureItem.rejectionReason.isNotBlank()) {
+                                            Spacer(modifier = Modifier.height(6.dp))
+                                            Surface(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                shape = RoundedCornerShape(8.dp),
+                                                color = Color(0xFF450A0A),
+                                                border = BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.5f))
+                                            ) {
+                                                Column(modifier = Modifier.padding(8.dp)) {
+                                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                                        Icon(Icons.Default.Error, contentDescription = null, tint = Color(0xFFEF4444), modifier = Modifier.size(14.dp))
+                                                        Spacer(modifier = Modifier.width(4.dp))
+                                                        Text("MOTIVO DEL RECHAZO", fontSize = 10.sp, fontWeight = FontWeight.Black, color = Color(0xFFFCA5A5))
+                                                    }
+                                                    Spacer(modifier = Modifier.height(2.dp))
+                                                    Text(
+                                                        text = closureItem.rejectionReason,
+                                                        fontSize = 11.sp,
+                                                        fontWeight = FontWeight.SemiBold,
+                                                        color = Color(0xFFFECACA)
+                                                    )
+                                                }
+                                            }
                                         }
 
                                         if (closureItem.status == "VERIFIED") {
@@ -1184,8 +1417,9 @@ fun downloadOfficialActPdf(
         textPaint.textSize = 10f
         textPaint.typeface = android.graphics.Typeface.DEFAULT
         textPaint.color = android.graphics.Color.parseColor("#0F172A")
+        val shortCourierId = if (courierId.length > 8) "CR-" + courierId.takeLast(8).uppercase() else courierId
         canvas.drawText("Motorizado: $resolvedCourierName", 48f, 138f, textPaint)
-        canvas.drawText("ID Courier: $courierId", 48f, 156f, textPaint)
+        canvas.drawText("ID Courier: $shortCourierId", 48f, 156f, textPaint)
         canvas.drawText("Estado: VERIFICADO Y APROBADO", 48f, 174f, textPaint)
 
         canvas.drawText("Fecha Operacional: $businessDate", 320f, 138f, textPaint)

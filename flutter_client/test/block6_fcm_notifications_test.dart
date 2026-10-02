@@ -90,6 +90,19 @@ class MockNotificationServiceForBlock6 implements INotificationService {
   }
 
   @override
+  Future<void> unbindDeviceToken({
+    required String uid,
+    String? deviceId,
+  }) async {
+    final resolvedDeviceId = deviceId ?? registeredDeviceId ?? 'flutter';
+    final docKey = '${uid}_$resolvedDeviceId';
+    if (canonicalUserDevices.containsKey(docKey)) {
+      canonicalUserDevices[docKey]!['isActive'] = false;
+      canonicalUserDevices[docKey]!['tokenStatus'] = 'unbound_logout';
+    }
+  }
+
+  @override
   void handleDeepLink(Map<String, dynamic> data) {
     _deepLinkController.add(data);
   }
@@ -137,6 +150,8 @@ class DummyAuthService implements IAuthService {
   Future<UserProfileEntity> signInWithGoogle() async => currentUser ?? _defaultUser;
   @override
   Future<UserProfileEntity> signInWithFacebook() async => currentUser ?? _defaultUser;
+  @override
+  Future<UserProfileEntity> signInWithApple() async => currentUser ?? _defaultUser;
   @override
   Future<void> sendPasswordReset(String email) async {}
   @override
@@ -483,5 +498,30 @@ void main() {
       // Everything resolves safely without exceptions
       expect(tester.takeException(), isNull);
     });
+
+    test('P4-01: unbindDeviceToken marks device inactive and unbind_logout', () async {
+      final mockNotifs = MockNotificationServiceForBlock6();
+      const testUid = 'user_logout_test_123';
+      const testToken = 'token_logout_test_abc';
+
+      await mockNotifs.registerDeviceToken(
+        uid: testUid,
+        token: testToken,
+        role: 'customer',
+        deviceId: 'device_test_1',
+      );
+
+      const docKey = '${testUid}_device_test_1';
+      expect(mockNotifs.canonicalUserDevices[docKey]!['isActive'], isTrue);
+
+      await mockNotifs.unbindDeviceToken(
+        uid: testUid,
+        deviceId: 'device_test_1',
+      );
+
+      expect(mockNotifs.canonicalUserDevices[docKey]!['isActive'], isFalse);
+      expect(mockNotifs.canonicalUserDevices[docKey]!['tokenStatus'], 'unbound_logout');
+    });
   });
 }
+

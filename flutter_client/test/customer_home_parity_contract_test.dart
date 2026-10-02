@@ -247,6 +247,8 @@ class DummyAuthService implements IAuthService {
   @override
   Future<UserProfileEntity> signInWithFacebook() async => throw UnimplementedError();
   @override
+  Future<UserProfileEntity> signInWithApple() async => throw UnimplementedError();
+  @override
   Future<void> sendPasswordReset(String email) async {}
   @override
   Future<void> signOut() async {}

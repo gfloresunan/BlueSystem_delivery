@@ -84,8 +84,43 @@ class OrderEntity {
   final double total;
   final PaymentMethod paymentMethod;
   final bool isPaid;
+  final double? merchantGrossSales;
+  final double? courierEarnings;
+  final double? courierTotalEarnings;
+  final double? courierTip;
   final int createdAt;
   final int updatedAt;
+
+  /// Subtotal neto de productos correspondiente exclusivamente al comercio
+  /// (BSD-MERCHANT-ORDER-FINANCIAL-VISIBILITY-RESPONSIVE-UX-001 / ADR-019).
+  /// Aísla estrictamente el valor de los productos vendidos excluyendo envíos, propinas y tarifas de servicio.
+  double get productSubtotal {
+    if (merchantGrossSales != null && merchantGrossSales! > 0) {
+      return merchantGrossSales!;
+    }
+    if (subtotal > 0) {
+      final net = subtotal - discount;
+      return net > 0 ? net : 0.0;
+    }
+    if (items.isNotEmpty) {
+      final itemsSum = items.fold(0.0, (acc, it) => acc + (it.unitPrice * it.quantity));
+      if (itemsSum > 0) {
+        final net = itemsSum - discount;
+        return net > 0 ? net : 0.0;
+      }
+    }
+    return 0.0;
+  }
+
+  double get effectiveCourierEarnings {
+    if (courierTotalEarnings != null && courierTotalEarnings! > 0) {
+      return courierTotalEarnings!;
+    }
+    if (courierEarnings != null && courierEarnings! > 0) {
+      return courierEarnings!;
+    }
+    return deliveryFee;
+  }
 
   const OrderEntity({
     required this.orderId,
@@ -111,6 +146,10 @@ class OrderEntity {
     required this.total,
     required this.paymentMethod,
     required this.isPaid,
+    this.merchantGrossSales,
+    this.courierEarnings,
+    this.courierTotalEarnings,
+    this.courierTip,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -118,6 +157,17 @@ class OrderEntity {
   factory OrderEntity.fromMap(Map<String, dynamic> map, String id) {
     final origenMap = map['origen'] as Map?;
     final coordMap = map['coordenadas'] as Map?;
+    final pSnap = map['pricingSnapshot'] as Map?;
+    final snapCourierEarn = (pSnap?['courierEarnings'] as num?)?.toDouble();
+    final courierEarn = (map['courierEarnings'] as num?)?.toDouble() ?? snapCourierEarn;
+    final courierTotEarn = (map['courierTotalEarnings'] as num?)?.toDouble() ??
+        (map['gananciaRepartidor'] as num?)?.toDouble();
+    final tipVal = (map['tip'] as num?)?.toDouble() ??
+        (map['tipAmount'] as num?)?.toDouble() ??
+        (map['courierTip'] as num?)?.toDouble();
+    final grossSales = (map['merchantGrossSales'] as num?)?.toDouble() ??
+        (map['merchantProductSubtotal'] as num?)?.toDouble();
+
     return OrderEntity(
       orderId: id,
       tenantId: map['tenantId'] as String? ?? '',
@@ -165,6 +215,10 @@ class OrderEntity {
       total: (map['total'] as num?)?.toDouble() ?? 0.0,
       paymentMethod: _parsePayment(map['paymentMethod'] as String?),
       isPaid: map['isPaid'] as bool? ?? false,
+      merchantGrossSales: grossSales,
+      courierEarnings: courierEarn,
+      courierTotalEarnings: courierTotEarn,
+      courierTip: tipVal,
       createdAt: (map['createdAt'] as num?)?.toInt() ?? 0,
       updatedAt: (map['updatedAt'] as num?)?.toInt() ?? 0,
     );
@@ -249,6 +303,8 @@ class OrderEntity {
         'deliveryFee': deliveryFee,
         'discount': discount,
         'total': total,
+        'merchantGrossSales': merchantGrossSales,
+        'productSubtotal': productSubtotal,
         'paymentMethod': paymentMethod.name.toUpperCase(),
         'isPaid': isPaid,
         'createdAt': createdAt,

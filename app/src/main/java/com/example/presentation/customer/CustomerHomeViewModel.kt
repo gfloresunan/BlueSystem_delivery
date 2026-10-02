@@ -721,7 +721,9 @@ class CustomerHomeViewModel : ViewModel() {
                     }
 
                     val effectiveOriginMuni = originMuni.ifBlank { customerMuni }
-                    val effectiveTenantId = branchInfo?.tenantId?.ifBlank { null } ?: bizInfo?.tenantId ?: ""
+                    val effectiveTenantId = branchInfo?.tenantId?.ifBlank { null }
+                        ?: bizInfo?.tenantId?.ifBlank { null }
+                        ?: "ten_bluesystem_core"
                     val effectiveDeptId = branchInfo?.departmentId?.ifBlank { null } ?: bizInfo?.departmentId ?: ""
                     val effectiveDeptName = branchInfo?.departmentName?.ifBlank { null } ?: bizInfo?.departmentName ?: ""
                     val effectiveMuniName = branchInfo?.municipalityName?.ifBlank { null } ?: bizInfo?.municipalityName ?: effectiveOriginMuni

@@ -673,8 +673,28 @@ fun SmartHeaderWidget(
                                 color = Color.White,
                                 modifier = Modifier.size(52.dp)
                             ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Text("🍔", fontSize = 28.sp)
+                                val logoUrl = uiState.businessInfo?.logoUrl?.ifBlank { uiState.businessInfo?.photoUrl } ?: ""
+                                if (logoUrl.isNotBlank()) {
+                                    AsyncImage(
+                                        model = logoUrl,
+                                        contentDescription = "Logo Comercio",
+                                        modifier = Modifier.fillMaxSize().clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                } else {
+                                    val cat = (uiState.businessInfo?.category ?: uiState.businessInfo?.categoria ?: uiState.businessInfo?.nombre ?: "").lowercase()
+                                    val iconEmoji = when {
+                                        cat.contains("farm") || cat.contains("salud") || cat.contains("medic") -> "💊"
+                                        cat.contains("tec") || cat.contains("comput") || cat.contains("cel") || cat.contains("electr") -> "💻"
+                                        cat.contains("super") || cat.contains("market") || cat.contains("pulper") || cat.contains("abarrot") -> "🛒"
+                                        cat.contains("rest") || cat.contains("comida") || cat.contains("burger") || cat.contains("pizza") -> "🍽️"
+                                        cat.contains("flor") -> "💐"
+                                        cat.contains("licor") || cat.contains("bebida") -> "🍾"
+                                        else -> "🏪"
+                                    }
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Text(iconEmoji, fontSize = 26.sp)
+                                    }
                                 }
                             }
                             Icon(
@@ -1533,7 +1553,7 @@ fun ProductSummaryWidget(outOfStockCount: Int, lowStockCount: Int, onAddProduct:
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Control de Productos & Stock 🍔", fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
+                Text("Control de Productos & Stock 📦", fontWeight = FontWeight.ExtraBold, fontSize = 15.sp)
                 Button(onClick = onAddProduct, shape = RoundedCornerShape(10.dp), colors = ButtonDefaults.buttonColors(containerColor = BluePrimary)) {
                     Text("+ Producto", fontSize = 11.sp)
                 }

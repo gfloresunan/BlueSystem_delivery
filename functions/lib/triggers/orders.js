@@ -404,14 +404,14 @@ exports.notifyNewOrder = functions.firestore
             const routeDistanceKm = Math.round((routeDistanceMeters / 1000) * 100) / 100;
             // COURIER-RATE-SSOT-REMEDIATION-004: Courier financials only calculated if rate is valid
             const effectiveCourierRate = courierRatePerKm !== null && courierRatePerKm !== void 0 ? courierRatePerKm : 0;
+            const isCommerceDelivery = (order.serviceType || "COMMERCE_DELIVERY") !== "X_TO_Y_DELIVERY";
             const ratePerKmCents = Math.round(effectiveCourierRate * 100);
             const distanceEarningsCents = courierRatePerKm != null ? Math.round((routeDistanceMeters * ratePerKmCents) / 1000) : 0;
-            const bonusEarningsCents = courierRatePerKm != null ? Math.round(courierOrderBonus * 100) : 0;
+            const bonusEarningsCents = (courierRatePerKm != null && !isCommerceDelivery) ? Math.round(courierOrderBonus * 100) : 0;
             const tipEarningsCents = Math.round(tipVal * 100);
-            const courierTotalEarningsCents = distanceEarningsCents + bonusEarningsCents + tipEarningsCents;
-            const courierTotalEarningsFloat = Math.round(courierTotalEarningsCents) / 100;
-            const courierDistanceEarningsFloat = Math.round(distanceEarningsCents) / 100;
-            const courierBonusEarningsFloat = Math.round(bonusEarningsCents) / 100;
+            const courierDistanceEarningsFloat = isCommerceDelivery ? Math.floor((effectiveCourierRate * routeDistanceMeters) / 1000) : (Math.round(distanceEarningsCents) / 100);
+            const courierBonusEarningsFloat = isCommerceDelivery ? 0 : (Math.round(bonusEarningsCents) / 100);
+            const courierTotalEarningsFloat = courierDistanceEarningsFloat + courierBonusEarningsFloat + (Math.round(tipEarningsCents) / 100);
             const pricingSnapshot = {
                 serviceType: "COMMERCE_DELIVERY",
                 customerPricePerKm: customerRatePerKm,
@@ -1582,6 +1582,7 @@ exports.onOrderDelivered = functions.firestore
                     courierId: courierUid,
                     courierName,
                     sourceDomain: "COMMERCE_DELIVERY",
+                    businessDate: new Date().toLocaleDateString("en-CA", { timeZone: "America/Managua" }),
                     orderId,
                     businessId,
                     eventType: "ORDER_CASH_COLLECTED",

@@ -11,7 +11,7 @@ interface EmptyStateConfig {
 }
 
 const emptyStateMap: Record<BSEmptyStateType, EmptyStateConfig> = {
-  orders: { emoji: '🍔', defaultTitle: 'Sin pedidos activos', defaultDescription: 'Los nuevos pedidos recibidos aparecerán automáticamente aquí.', accentBg: 'bg-emerald-500/10 text-emerald-500' },
+  orders: { emoji: '📦', defaultTitle: 'Sin pedidos activos', defaultDescription: 'Los nuevos pedidos recibidos aparecerán automáticamente aquí.', accentBg: 'bg-emerald-500/10 text-emerald-500' },
   inventory: { emoji: '📦', defaultTitle: 'Sin inventario registrado', defaultDescription: 'Comienza agregando productos a tu catálogo comercial.', accentBg: 'bg-sky-500/10 text-sky-500' },
   sales: { emoji: '💰', defaultTitle: 'Sin ventas registradas', defaultDescription: 'No se registran transacciones monetarias en esta jornada.', accentBg: 'bg-amber-500/10 text-amber-500' },
   drivers: { emoji: '🛵', defaultTitle: 'Sin repartidores en ruta', defaultDescription: 'No hay repartidores asignados a entregas en este momento.', accentBg: 'bg-cyan-500/10 text-cyan-500' },

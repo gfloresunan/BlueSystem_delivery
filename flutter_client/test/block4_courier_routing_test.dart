@@ -273,6 +273,7 @@ class MockCashClosureService implements ICourierCashClosureService {
   Future<String> uploadDepositReceipt({
     required String courierId,
     required File imageFile,
+    String? closureId,
   }) async => 'https://storage.googleapis.com/...';
 
   @override
@@ -292,9 +293,27 @@ class MockCashClosureService implements ICourierCashClosureService {
     required String bankReference,
     required String receiptUrl,
     required int totalCollectedCents,
+    String? bankName,
+    String? businessDate,
+    String? shift,
+    String? notes,
   }) async {
     lastInitiatedClosureRef = bankReference;
     return {'status': 'success', 'closureId': 'CLOSURE-TEST-001'};
+  }
+
+  @override
+  Future<Map<String, dynamic>> registerBankDepositReceipt({
+    required String closureId,
+    required String bankName,
+    required String bankReference,
+    required int depositAmountCents,
+    required String receiptDownloadUrl,
+    String? receiptStoragePath,
+    String? depositDate,
+    String? notes,
+  }) async {
+    return {'status': 'success', 'closureId': closureId};
   }
 }
 
@@ -342,6 +361,8 @@ class _StubAuthService implements IAuthService {
   Future<UserProfileEntity> signInWithGoogle() async => throw UnimplementedError();
   @override
   Future<UserProfileEntity> signInWithFacebook() async => throw UnimplementedError();
+  @override
+  Future<UserProfileEntity> signInWithApple() async => throw UnimplementedError();
   @override
   Future<void> sendPasswordReset(String email) async {}
   @override

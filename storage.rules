@@ -95,13 +95,25 @@ service firebase.storage {
       allow delete: if isMerchantOwnerOrManager(businessId) || isPlatformAdmin();
     }
 
+    function isCommerceStaffOrAdmin() {
+      return isAuthenticated() && (
+        isPlatformAdmin() ||
+        request.auth.token.get("role", "") in ["OWNER", "MANAGER", "owner", "manager"] ||
+        request.auth.token.get("eiamRole", "") in ["OWNER", "MANAGER", "owner", "manager"]
+      );
+    }
+
     // ─── /media/{allPaths=**} & /products/{allPaths=**} ─────────────────
     match /media/{allPaths=**} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if isCommerceStaffOrAdmin() && isValidCommerceImage();
+      allow delete: if isCommerceStaffOrAdmin();
     }
 
     match /products/{allPaths=**} {
-      allow read, write: if true;
+      allow read: if true;
+      allow create, update: if isCommerceStaffOrAdmin() && isValidCommerceImage();
+      allow delete: if isCommerceStaffOrAdmin();
     }
 
     // ─── /vouchers/{orderId}/{fileName} (Comprobantes de Transferencia Bancaria) ──

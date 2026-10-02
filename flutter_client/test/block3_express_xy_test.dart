@@ -160,6 +160,10 @@ class MockUserService implements IUserService {
   Future<void> setDefaultAddress(String uid, String addressId) async {}
   @override
   Future<void> deleteAddress(String uid, String addressId) async {}
+  @override
+  Stream<Set<String>> watchFavoriteBusinessIds(String uid) => Stream.value(<String>{});
+  @override
+  Future<void> toggleFavoriteBusiness(String uid, String businessId, {String? businessName}) async {}
 }
 
 class DummySessionState extends SessionState {
@@ -206,6 +210,8 @@ class _StubAuthService implements IAuthService {
   Future<UserProfileEntity> signInWithGoogle() async => throw UnimplementedError();
   @override
   Future<UserProfileEntity> signInWithFacebook() async => throw UnimplementedError();
+  @override
+  Future<UserProfileEntity> signInWithApple() async => throw UnimplementedError();
   @override
   Future<void> sendPasswordReset(String email) async {}
   @override

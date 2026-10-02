@@ -56,7 +56,7 @@ data class UbicacionRepartidor(
     val motorizadoId: String = "",
     val coordenadas: Coordenadas = Coordenadas(),
     val geohash: String = "",
-    val ultimaActualizacion: String = "",
+    val ultimaActualizacion: Any? = null,
     val estadoDisponibilidad: String = "" // "disponible", "en_ruta", "offline"
 )
 
@@ -92,6 +92,7 @@ data class Pedido(
     val total: Double = 0.0,
     val deliveryFee: Double = 0.0,
     val subtotal: Double = 0.0,
+    val merchantGrossSales: Double = 0.0,
     val discountAmount: Double = 0.0,
     val additionalChargeAmount: Double = 0.0,
     val tipAmount: Double = 0.0,
@@ -201,6 +202,7 @@ fun parsePedidoManual(doc: com.google.firebase.firestore.DocumentSnapshot): Pedi
     val total = (doc.get("total") as? Number)?.toDouble() ?: 0.0
     val deliveryFee = (doc.get("deliveryFee") as? Number)?.toDouble() ?: 0.0
     val subtotal = (doc.get("subtotal") as? Number)?.toDouble() ?: 0.0
+    val merchantGrossSales = (doc.get("merchantGrossSales") as? Number)?.toDouble() ?: 0.0
     val discountAmount = (doc.get("discountAmount") as? Number)?.toDouble() ?: (doc.get("couponDiscount") as? Number)?.toDouble() ?: 0.0
     val additionalChargeAmount = (doc.get("additionalChargeAmount") as? Number)?.toDouble() ?: (doc.get("additionalCharge") as? Number)?.toDouble() ?: (doc.get("cargosAdicionales") as? Number)?.toDouble() ?: 0.0
     val tipAmount = (doc.get("tipAmount") as? Number)?.toDouble() ?: (doc.get("tip") as? Number)?.toDouble() ?: (doc.get("propina") as? Number)?.toDouble() ?: 0.0
@@ -262,6 +264,7 @@ fun parsePedidoManual(doc: com.google.firebase.firestore.DocumentSnapshot): Pedi
         total = total,
         deliveryFee = deliveryFee,
         subtotal = subtotal,
+        merchantGrossSales = merchantGrossSales,
         discountAmount = discountAmount,
         additionalChargeAmount = additionalChargeAmount,
         tipAmount = tipAmount,

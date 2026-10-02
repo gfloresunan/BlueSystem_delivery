@@ -16,7 +16,20 @@ object RealRoutingEngine {
     const val COSTO_POR_KM_NIO = 15.0
     const val MANAGUA_ROAD_TORTUOSITY_FACTOR = 1.28
 
-    private val localCache = mutableMapOf<String, RouteSnapshot>()
+    const val ROUTE_CACHE_TTL_MS = 60_000L // TTL de 60 segundos concordante con routingService.ts
+
+    private data class CachedRoute(
+        val snapshot: RouteSnapshot,
+        val timestamp: Long
+    )
+
+    private val localCache = mutableMapOf<String, CachedRoute>()
+
+    fun clearCache() {
+        synchronized(localCache) {
+            localCache.clear()
+        }
+    }
 
     /**
      * Calcula la tarifa oficial autoritativa según la distancia en kilómetros.
@@ -90,7 +103,17 @@ object RealRoutingEngine {
         transportProfile: String = "TWO_WHEELER"
     ): RouteSnapshot {
         val cacheKey = String.format(Locale.US, "%.4f,%.4f->%.4f,%.4f:%s", originLat, originLng, destLat, destLng, transportProfile)
-        localCache[cacheKey]?.let { return it }
+        val now = System.currentTimeMillis()
+        synchronized(localCache) {
+            val cached = localCache[cacheKey]
+            if (cached != null) {
+                if (now - cached.timestamp < ROUTE_CACHE_TTL_MS) {
+                    return cached.snapshot
+                } else {
+                    localCache.remove(cacheKey)
+                }
+            }
+        }
 
         val functions = FirebaseFunctions.getInstance()
         val payload = mapOf(
@@ -175,7 +198,9 @@ object RealRoutingEngine {
             calculatedAt = calculatedAt
         )
 
-        localCache[cacheKey] = snapshot
+        synchronized(localCache) {
+            localCache[cacheKey] = CachedRoute(snapshot, System.currentTimeMillis())
+        }
         return snapshot
     }
 
@@ -191,7 +216,17 @@ object RealRoutingEngine {
         transportProfile: String = "TWO_WHEELER"
     ): RouteSnapshot {
         val cacheKey = String.format(Locale.US, "COMMERCE:%.4f,%.4f->%.4f,%.4f:%s", originLat, originLng, destLat, destLng, transportProfile)
-        localCache[cacheKey]?.let { return it }
+        val now = System.currentTimeMillis()
+        synchronized(localCache) {
+            val cached = localCache[cacheKey]
+            if (cached != null) {
+                if (now - cached.timestamp < ROUTE_CACHE_TTL_MS) {
+                    return cached.snapshot
+                } else {
+                    localCache.remove(cacheKey)
+                }
+            }
+        }
 
         val functions = FirebaseFunctions.getInstance()
         val payload = mapOf(
@@ -220,8 +255,9 @@ object RealRoutingEngine {
         val polyline = data["polyline"] as? String ?: ""
         val calculatedAt = data["calculatedAt"] as? String ?: System.currentTimeMillis().toString()
 
-        val snapMap = data["pricingSnapshot"] as? Map<*, *>
-            ?: throw IllegalStateException("PRICING_SNAPSHOT_MISSING: El backend autoritativo no proveyó pricingSnapshot.")
+        val snapMap = (data["commercePricingSnapshot"] as? Map<*, *>)
+            ?: (data["pricingSnapshot"] as? Map<*, *>)
+            ?: throw IllegalStateException("PRICING_SNAPSHOT_MISSING: El backend autoritativo no proveyó pricingSnapshot ni commercePricingSnapshot.")
 
         val baseFee = (snapMap["baseFee"] as? Number)?.toDouble() ?: 0.0
         val pricePerKm = (snapMap["customerPricePerKm"] as? Number)?.toDouble()
@@ -233,10 +269,10 @@ object RealRoutingEngine {
         val distM = (snapMap["distanceMeters"] as? Number)?.toLong() ?: distanceMeters
         val amount = (snapMap["deliveryFee"] as? Number)?.toDouble()
             ?: (snapMap["calculatedAmount"] as? Number)?.toDouble()
-            ?: (kotlin.math.round(distKm * pricePerKm * 100.0) / 100.0)
+            ?: (if (distKm > 0.0) kotlin.math.ceil(distKm * pricePerKm) else 0.0)
         val courierEarn = (snapMap["courierEarnings"] as? Number)?.toDouble()
             ?: (snapMap["courierEarningsFloat"] as? Number)?.toDouble()
-            ?: (kotlin.math.round(distKm * 7.0 * 100.0) / 100.0)
+            ?: (if (distKm > 0.0) kotlin.math.floor(distKm * 7.0) else 0.0)
         val currency = snapMap["currency"] as? String ?: "NIO"
         val policy = snapMap["pricingPolicy"] as? String ?: "KM_BLOCK_2DEC"
         val pVersion = snapMap["pricingVersion"] as? String ?: "v2.2-commerce"
@@ -272,7 +308,9 @@ object RealRoutingEngine {
             calculatedAt = calculatedAt
         )
 
-        localCache[cacheKey] = snapshot
+        synchronized(localCache) {
+            localCache[cacheKey] = CachedRoute(snapshot, System.currentTimeMillis())
+        }
         return snapshot
     }
 }

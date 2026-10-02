@@ -811,6 +811,281 @@ EmailTemplateEngine.defaultTemplates = {
         ],
         status: "ACTIVE",
     },
+    // 13. Liquidaciones: Depósito de Cierre Diario Registrado (Pendiente de Verificación)
+    courier_closure_submitted: {
+        templateId: "courier_closure_submitted",
+        version: 1,
+        name: "Liquidaciones — Depósito de Cierre Registrado",
+        description: "Notificación a supervisores y finanzas cuando un motorizado registra comprobante de depósito bancario.",
+        audience: "ADMIN",
+        eventType: "COURIER_CLOSURE_SUBMITTED",
+        subject: "🔔 Cierre y Depósito Pendiente — {{courierName}} (C$ {{depositAmount}}) | {{platformName}}",
+        title: "DEPÓSITO BANCARIO DE CIERRE REGISTRADO",
+        htmlContent: `
+        <p>Hola,</p>
+        <p>El motorizado <strong>{{courierName}}</strong> ha registrado su comprobante de depósito bancario para el cierre operacional de fecha <strong>{{businessDate}}</strong>. El expediente se encuentra en estado <strong>PENDIENTE DE VERIFICACIÓN</strong>.</p>
+        <div style="background-color: #0F172A; border-radius: 12px; padding: 18px; margin: 20px 0; border: 1px solid #3B82F6;">
+          <h3 style="color: #60A5FA; font-size: 13px; margin: 0 0 12px 0; text-transform: uppercase;">Detalles del Motorizado & Depósito</h3>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Motorizado:</strong> {{courierName}} (ID: <span style="font-family: monospace; color: #38BDF8;">{{courierId}}</span>)</p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Placa / Teléfono:</strong> {{plate}} | {{phone}}</p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Cierre ID:</strong> <span style="font-family: monospace; color: #94A3B8;">{{closureId}}</span></p>
+          <hr style="border: 0; border-top: 1px solid #334155; margin: 12px 0;" />
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Monto Esperado (Custodia Sistema):</strong> <span style="font-weight: 700; color: #94A3B8;">C$ {{expectedAmount}}</span></p>
+          <p style="margin: 4px 0; font-size: 14px; color: #CBD5E1;"><strong>Monto Depositado en Banco:</strong> <span style="font-weight: 700; color: #34D399; font-size: 15px;">C$ {{depositAmount}}</span></p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Diferencia Calculada:</strong> <span style="font-weight: 700; color: #F59E0B;">C$ {{discrepancyAmount}}</span></p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Institución Bancaria:</strong> {{bankName}}</p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Referencia de Transferencia:</strong> <span style="font-family: monospace; color: #FBBF24;">{{bankReference}}</span></p>
+          <hr style="border: 0; border-top: 1px solid #334155; margin: 12px 0;" />
+          <p style="margin: 4px 0; font-size: 12px; color: #94A3B8;"><strong>Resumen Operacional:</strong> {{totalOrders}} pedidos restaurante, {{totalTrips}} entregas express | Ganancia Courier: C$ {{courierEarnings}} | Custodia Neta: C$ {{netCustody}}</p>
+          <p style="margin: 4px 0; font-size: 12px; color: #94A3B8;"><strong>Estado Conciliación:</strong> <span style="font-weight: 700; color: #38BDF8;">{{reconciliationStatus}}</span></p>
+        </div>
+        <p style="color: #94A3B8; font-size: 12px; line-height: 1.5;">
+          El comprobante bancario adjunto y el arqueo completo están disponibles para revisión y aprobación en el Panel Administrativo.
+        </p>
+      `,
+        buttonLabel: "REVISAR Y APROBAR CIERRE",
+        buttonUrl: "{{adminDashboardUrl}}",
+        allowedVariables: [
+            "courierName",
+            "courierId",
+            "plate",
+            "phone",
+            "closureId",
+            "businessDate",
+            "expectedAmount",
+            "depositAmount",
+            "discrepancyAmount",
+            "bankName",
+            "bankReference",
+            "courierEarnings",
+            "netCustody",
+            "totalOrders",
+            "totalTrips",
+            "reconciliationStatus",
+            "adminDashboardUrl",
+            "platformName",
+            "tenantName",
+            "supportEmail",
+            "year",
+        ],
+        status: "ACTIVE",
+    },
+    courier_daily_closure_submitted: {
+        templateId: "courier_daily_closure_submitted",
+        version: 1,
+        name: "Liquidaciones — Depósito de Cierre Registrado (Canónico)",
+        description: "Alias canónico de courier_closure_submitted.",
+        audience: "ADMIN",
+        eventType: "COURIER_CLOSURE_SUBMITTED",
+        subject: "🔔 Cierre y Depósito Pendiente — {{courierName}} (C$ {{depositAmount}}) | {{platformName}}",
+        title: "DEPÓSITO BANCARIO DE CIERRE REGISTRADO",
+        htmlContent: `
+        <p>Hola,</p>
+        <p>El motorizado <strong>{{courierName}}</strong> ha registrado su comprobante de depósito bancario para el cierre operacional de fecha <strong>{{businessDate}}</strong>. El expediente se encuentra en estado <strong>PENDIENTE DE VERIFICACIÓN</strong>.</p>
+        <div style="background-color: #0F172A; border-radius: 12px; padding: 18px; margin: 20px 0; border: 1px solid #3B82F6;">
+          <h3 style="color: #60A5FA; font-size: 13px; margin: 0 0 12px 0; text-transform: uppercase;">Detalles del Motorizado & Depósito</h3>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Motorizado:</strong> {{courierName}} (ID: <span style="font-family: monospace; color: #38BDF8;">{{courierId}}</span>)</p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Placa / Teléfono:</strong> {{plate}} | {{phone}}</p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Cierre ID:</strong> <span style="font-family: monospace; color: #94A3B8;">{{closureId}}</span></p>
+          <hr style="border: 0; border-top: 1px solid #334155; margin: 12px 0;" />
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Monto Esperado:</strong> <span style="font-weight: 700; color: #94A3B8;">C$ {{expectedAmount}}</span></p>
+          <p style="margin: 4px 0; font-size: 14px; color: #CBD5E1;"><strong>Monto Depositado en Banco:</strong> <span style="font-weight: 700; color: #34D399; font-size: 15px;">C$ {{depositAmount}}</span></p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Diferencia Calculada:</strong> <span style="font-weight: 700; color: #F59E0B;">C$ {{discrepancyAmount}}</span></p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Institución Bancaria:</strong> {{bankName}}</p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Referencia de Transferencia:</strong> <span style="font-family: monospace; color: #FBBF24;">{{bankReference}}</span></p>
+          <hr style="border: 0; border-top: 1px solid #334155; margin: 12px 0;" />
+          <p style="margin: 4px 0; font-size: 12px; color: #94A3B8;"><strong>Resumen Operacional:</strong> {{totalOrders}} pedidos restaurante, {{totalTrips}} entregas express | Ganancia Courier: C$ {{courierEarnings}} | Custodia Neta: C$ {{netCustody}}</p>
+          <p style="margin: 4px 0; font-size: 12px; color: #94A3B8;"><strong>Estado Conciliación:</strong> <span style="font-weight: 700; color: #38BDF8;">{{reconciliationStatus}}</span></p>
+        </div>
+      `,
+        buttonLabel: "REVISAR Y APROBAR CIERRE",
+        buttonUrl: "{{adminDashboardUrl}}",
+        allowedVariables: [
+            "courierName",
+            "courierId",
+            "plate",
+            "phone",
+            "closureId",
+            "businessDate",
+            "expectedAmount",
+            "depositAmount",
+            "discrepancyAmount",
+            "bankName",
+            "bankReference",
+            "courierEarnings",
+            "netCustody",
+            "totalOrders",
+            "totalTrips",
+            "reconciliationStatus",
+            "adminDashboardUrl",
+            "platformName",
+            "tenantName",
+            "supportEmail",
+            "year",
+        ],
+        status: "ACTIVE",
+    },
+    // 14. Liquidaciones: Depósito y Cierre Diario Verificado y Liquidado
+    courier_deposit_verified: {
+        templateId: "courier_deposit_verified",
+        version: 1,
+        name: "Liquidaciones — Cierre y Depósito Verificado",
+        description: "Notificación oficial al motorizado y administración al verificar y liquidar el cierre diario.",
+        audience: "COURIER",
+        eventType: "COURIER_CLOSURE_VERIFIED",
+        subject: "✅ Cierre Diario Verificado y Liquidado — Acta {{actNumber}} | {{platformName}}",
+        title: "CIERRE DIARIO Y DEPÓSITO LIQUIDADO",
+        htmlContent: `
+        <p>Estimado/a <strong>{{courierName}}</strong>,</p>
+        <p>Te informamos que tu cierre de caja diario del <strong>{{businessDate}}</strong> ha sido <strong>verificado y liquidado formalmente</strong> por la administración financiera. El saldo de efectivo bajo custodia ha sido conciliado en el balance.</p>
+        <div style="background-color: #0F172A; border-radius: 12px; padding: 20px; margin: 20px 0; border: 1px solid #10B981;">
+          <h3 style="color: #34D399; font-size: 13px; margin: 0 0 12px 0; text-transform: uppercase;">Acta Oficial de Liquidación</h3>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Número de Acta:</strong> <span style="font-family: monospace; color: #38BDF8; font-weight: 700;">{{actNumber}}</span></p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Código de Validación:</strong> <span style="font-family: monospace; color: #FBBF24;">{{verificationCode}}</span></p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Monto Liquidado / Conciliado:</strong> <span style="font-weight: 700; color: #34D399;">C$ {{depositAmount}}</span></p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Verificado por:</strong> {{verifiedByName}}</p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Fecha y Hora de Verificación:</strong> {{verifiedAt}}</p>
+        </div>
+        <p style="color: #94A3B8; font-size: 12px; line-height: 1.5;">
+          El Acta Oficial en formato PDF se encuentra disponible para consulta y descarga tanto en la aplicación de repartidores como en el panel administrativo.
+        </p>
+      `,
+        buttonLabel: "VER ACTA OFICIAL",
+        buttonUrl: "{{adminDashboardUrl}}",
+        allowedVariables: [
+            "courierName",
+            "courierId",
+            "closureId",
+            "businessDate",
+            "depositAmount",
+            "expectedAmount",
+            "actNumber",
+            "verificationCode",
+            "verifiedByName",
+            "verifiedAt",
+            "adminDashboardUrl",
+            "platformName",
+            "tenantName",
+            "supportEmail",
+            "year",
+        ],
+        status: "ACTIVE",
+    },
+    courier_daily_closure_verified: {
+        templateId: "courier_daily_closure_verified",
+        version: 1,
+        name: "Liquidaciones — Cierre y Depósito Verificado (Canónico)",
+        description: "Alias canónico de courier_deposit_verified.",
+        audience: "COURIER",
+        eventType: "COURIER_CLOSURE_VERIFIED",
+        subject: "✅ Cierre Diario Verificado y Liquidado — Acta {{actNumber}} | {{platformName}}",
+        title: "CIERRE DIARIO Y DEPÓSITO LIQUIDADO",
+        htmlContent: `
+        <p>Estimado/a <strong>{{courierName}}</strong>,</p>
+        <p>Tu cierre de caja diario del <strong>{{businessDate}}</strong> ha sido verificado y liquidado formalmente.</p>
+        <div style="background-color: #0F172A; border-radius: 12px; padding: 20px; margin: 20px 0; border: 1px solid #10B981;">
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Número de Acta:</strong> <span style="font-family: monospace; color: #38BDF8;">{{actNumber}}</span></p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Código de Validación:</strong> {{verificationCode}}</p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Monto Liquidado:</strong> C$ {{depositAmount}}</p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Verificado por:</strong> {{verifiedByName}}</p>
+          <p style="margin: 4px 0; font-size: 13px; color: #CBD5E1;"><strong>Fecha:</strong> {{verifiedAt}}</p>
+        </div>
+      `,
+        buttonLabel: "VER ACTA OFICIAL",
+        buttonUrl: "{{adminDashboardUrl}}",
+        allowedVariables: [
+            "courierName",
+            "courierId",
+            "closureId",
+            "businessDate",
+            "depositAmount",
+            "expectedAmount",
+            "actNumber",
+            "verificationCode",
+            "verifiedByName",
+            "verifiedAt",
+            "adminDashboardUrl",
+            "platformName",
+            "tenantName",
+            "supportEmail",
+            "year",
+        ],
+        status: "ACTIVE",
+    },
+    // 15. Liquidaciones: Cierre Diario Rechazado / Observado
+    courier_closure_rejected: {
+        templateId: "courier_closure_rejected",
+        version: 1,
+        name: "Liquidaciones — Cierre Diario Observado o Rechazado",
+        description: "Notificación al motorizado cuando el cierre diario no es aprobado y requiere subsanación.",
+        audience: "COURIER",
+        eventType: "COURIER_CLOSURE_REJECTED",
+        subject: "⚠️ Cierre Diario Observado — {{courierName}} | {{platformName}}",
+        title: "CIERRE DIARIO OBSERVADO O NO APROBADO",
+        htmlContent: `
+        <p>Estimado/a <strong>{{courierName}}</strong>,</p>
+        <p>Te informamos que tu cierre de caja diario correspondiente a la fecha <strong>{{businessDate}}</strong> (ID: <span style="font-family: monospace;">{{closureId}}</span>) ha sido <strong>observado o rechazado</strong> por el equipo de supervisión.</p>
+        <div style="background-color: #0F172A; border-radius: 12px; padding: 18px; margin: 20px 0; border-left: 4px solid #EF4444; border: 1px solid #334155;">
+          <h3 style="color: #F87171; font-size: 13px; margin: 0 0 10px 0; text-transform: uppercase;">Motivo de la Observación</h3>
+          <p style="margin: 0; font-size: 14px; color: #E2E8F0; line-height: 1.5;">{{rejectionReason}}</p>
+          <hr style="border: 0; border-top: 1px solid #334155; margin: 12px 0;" />
+          <p style="margin: 4px 0; font-size: 12px; color: #94A3B8;"><strong>Revisado por:</strong> {{reviewedByName}}</p>
+        </div>
+        <p style="color: #94A3B8; font-size: 12px; line-height: 1.5;">
+          Por favor comunícate a la brevedad con tu supervisor de operaciones o acércate a la mesa de control para regularizar la discrepancia de efectivo o comprobante.
+        </p>
+      `,
+        buttonLabel: "CONSULTAR ESTADO",
+        buttonUrl: "{{adminDashboardUrl}}",
+        allowedVariables: [
+            "courierName",
+            "courierId",
+            "closureId",
+            "businessDate",
+            "rejectionReason",
+            "reviewedByName",
+            "adminDashboardUrl",
+            "platformName",
+            "tenantName",
+            "supportEmail",
+            "year",
+        ],
+        status: "ACTIVE",
+    },
+    courier_daily_closure_rejected: {
+        templateId: "courier_daily_closure_rejected",
+        version: 1,
+        name: "Liquidaciones — Cierre Diario Observado o Rechazado (Canónico)",
+        description: "Alias canónico de courier_closure_rejected.",
+        audience: "COURIER",
+        eventType: "COURIER_CLOSURE_REJECTED",
+        subject: "⚠️ Cierre Diario Observado — {{courierName}} | {{platformName}}",
+        title: "CIERRE DIARIO OBSERVADO",
+        htmlContent: `
+        <p>Estimado/a <strong>{{courierName}}</strong>,</p>
+        <p>Tu cierre de caja diario del <strong>{{businessDate}}</strong> ha sido observado.</p>
+        <div style="background-color: #0F172A; border-radius: 12px; padding: 18px; margin: 20px 0; border-left: 4px solid #EF4444;">
+          <p style="margin: 0; font-size: 14px; color: #E2E8F0;">{{rejectionReason}}</p>
+          <p style="margin: 6px 0 0 0; font-size: 12px; color: #94A3B8;">Revisado por: {{reviewedByName}}</p>
+        </div>
+      `,
+        buttonLabel: "CONSULTAR ESTADO",
+        buttonUrl: "{{adminDashboardUrl}}",
+        allowedVariables: [
+            "courierName",
+            "courierId",
+            "closureId",
+            "businessDate",
+            "rejectionReason",
+            "reviewedByName",
+            "adminDashboardUrl",
+            "platformName",
+            "tenantName",
+            "supportEmail",
+            "year",
+        ],
+        status: "ACTIVE",
+    },
 };
 EmailTemplateEngine.customDb = null;
 // ─── 5. Servicio Principal: EmailService (Singleton con Idempotencia Atómica) ───

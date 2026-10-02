@@ -72,14 +72,9 @@ data class CouponModel(
 )
 
 data class WalletInfo(
-    val balance: Double = 520.00,
+    val balance: Double = 0.0,
     val currency: String = "C$",
-    val movements: List<WalletTransaction> = listOf(
-        WalletTransaction("1", "Reembolso", 120.00, "15/07/2026", "Reembolso pedido #ORD-8492"),
-        WalletTransaction("2", "Bonificación", 50.00, "10/07/2026", "Bono de Fidelización Cliente Oro"),
-        WalletTransaction("3", "Recarga Wallet", 500.00, "01/07/2026", "Recarga vía Tarjeta de Débito"),
-        WalletTransaction("4", "Pago Pedido", -150.00, "02/07/2026", "Pago de pedido en Tip Top")
-    )
+    val movements: List<WalletTransaction> = emptyList()
 )
 
 data class WalletTransaction(
@@ -201,14 +196,7 @@ class ProfileManagerRepository(
 
     private fun loadMockDefaults() {
         _coupons.value = emptyList()
-
-        _timeline.value = listOf(
-            ActivityTimelineItem("t1", "pedido", "Pedido #ORD-9821 Entregado 🛵", "Tip Top Metrocentro • C$ 340.00", "Hoy, 1:15 PM", "C$ 340.00"),
-            ActivityTimelineItem("t2", "puntos", "Ganaste +34 Puntos de Fidelidad ⭐", "Acumulado por tu compra en Tip Top", "Hoy, 1:15 PM", "+34 pts"),
-            ActivityTimelineItem("t3", "cupon", "Cupón Aplicado: GERALD20 🎟️", "Ahorraste C$ 68.00 en tu pedido", "Hoy, 12:45 PM", "-C$ 68.00"),
-            ActivityTimelineItem("t4", "favorito", "Agregado a Favoritos ❤️", "Café Las Flores Santo Domingo", "Ayer, 4:20 PM", "Favorito"),
-            ActivityTimelineItem("t5", "reembolso", "Reembolso acreditado a Saldo BlueSystem 💰", "Resolución de caso de asistencia #CS-104", "15/07/2026", "+C$ 120.00")
-        )
+        _timeline.value = emptyList()
     }
 
     fun updateSettings(newSettings: CustomerSettings) {

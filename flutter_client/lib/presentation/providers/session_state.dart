@@ -223,6 +223,23 @@ class SessionState extends ChangeNotifier {
     }
   }
 
+  Future<void> signInWithAppleFederated() async {
+    try {
+      _status = AuthStatus.authenticating;
+      _errorMessage = null;
+      notifyListeners();
+
+      final user = await _authService.signInWithApple();
+      await _hydrateSession(user);
+    } catch (e, st) {
+      AppLogger.error('SessionState', 'Apple federated sign in failed', e, st);
+      _status = AuthStatus.unauthenticated;
+      _errorMessage = e.toString();
+      notifyListeners();
+      rethrow;
+    }
+  }
+
   Future<void> sendPasswordReset(String email) async {
     await _authService.sendPasswordReset(email);
   }
@@ -236,6 +253,14 @@ class SessionState extends ChangeNotifier {
 
   Future<void> signOut() async {
     try {
+      final currentUid = _currentUser?.uid;
+      if (currentUid != null && _notificationService != null) {
+        try {
+          await _notificationService!.unbindDeviceToken(uid: currentUid);
+        } catch (notifErr) {
+          AppLogger.warn('SessionState', 'Failed unbinding device token on logout: $notifErr');
+        }
+      }
       await _authService.signOut();
       _currentUser = null;
       _claims = null;

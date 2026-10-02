@@ -1393,46 +1393,135 @@ fun PedidosEntrantesScreen(
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(18.dp))
+                            Spacer(modifier = Modifier.height(14.dp))
 
-                            // CAJA DE GANANCIA PREMIUM ESTILO PEDIDOSYA
-                            Row(
+                            // CAJA DE GANANCIA Y DESGLOSE FINANCIERO MOTORIZADO
+                            Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .background(Color(0xFFF8FAFC), RoundedCornerShape(16.dp))
                                     .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(16.dp))
                                     .padding(14.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Column {
-                                    Text(
-                                        text = "Ganancia neta del envío",
-                                        fontSize = 12.sp,
-                                        color = Color(0xFF64748B)
-                                    )
-                                    val distLabel = if (activePedido.distanceKm > 0.0) " • ${String.format(java.util.Locale.US, "%.1f", activePedido.distanceKm)} km" else ""
-                                    Text(
-                                        text = "Método: ${activePedido.pagoMetodo.uppercase()}$distLabel",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF6366F1)
-                                    )
-                                    if (activePedido.tip > 0.0) {
+                                // Fila 1: Tu Ganancia Estimada
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Column {
                                         Text(
-                                            text = "✨ Incluye C$ ${String.format(java.util.Locale.US, "%.2f", activePedido.tip)} propina",
-                                            fontSize = 10.sp,
+                                            text = "Tu Ganancia Estimada",
+                                            fontSize = 11.sp,
                                             fontWeight = FontWeight.SemiBold,
+                                            color = Color(0xFF64748B)
+                                        )
+                                        val distLabel = if (activePedido.distanceKm > 0.0) "${String.format(java.util.Locale.US, "%.1f", activePedido.distanceKm)} km" else ""
+                                        val rateLabel = if (activePedido.courierRatePerKmApplied > 0.0) " • C$ ${activePedido.courierRatePerKmApplied.toInt()}/km" else ""
+                                        Text(
+                                            text = "Envío: $distLabel$rateLabel",
+                                            fontSize = 11.sp,
+                                            color = Color(0xFF475569)
+                                        )
+                                    }
+                                    Text(
+                                        text = "C$ ${String.format(java.util.Locale.US, "%.2f", activePedido.gananciaRepartidor)}",
+                                        fontSize = 22.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = Color(0xFF16A34A)
+                                    )
+                                }
+
+                                // Desglose de Propina si aplica
+                                if (activePedido.tip > 0.0) {
+                                    HorizontalDivider(color = Color(0xFFE2E8F0), thickness = 0.8.dp)
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(
+                                            text = "• Envío por distancia:",
+                                            fontSize = 11.sp,
+                                            color = Color(0xFF64748B)
+                                        )
+                                        Text(
+                                            text = "C$ ${String.format(java.util.Locale.US, "%.2f", activePedido.courierDistanceEarnings)}",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.SemiBold,
+                                            color = Color(0xFF334155)
+                                        )
+                                    }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(
+                                            text = "• Propina del cliente:",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Medium,
+                                            color = Color(0xFF059669)
+                                        )
+                                        Text(
+                                            text = "+ C$ ${String.format(java.util.Locale.US, "%.2f", activePedido.tip)}",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
                                             color = Color(0xFF059669)
                                         )
                                     }
                                 }
-                                Text(
-                                    text = "C$ ${String.format(java.util.Locale.US, "%.2f", activePedido.gananciaRepartidor)}",
-                                    fontSize = 22.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color(0xFF1F2937)
-                                )
+
+                                // Fila 2: Total a cobrar al cliente
+                                HorizontalDivider(color = Color(0xFFE2E8F0), thickness = 0.8.dp)
+
+                                val isCash = activePedido.pagoMetodo.lowercase() in listOf("efectivo", "cash")
+                                if (isCash) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(Color(0xFFFEF3C7).copy(alpha = 0.75f), RoundedCornerShape(10.dp))
+                                            .padding(horizontal = 12.dp, vertical = 9.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "💵 Cobrar al cliente:",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF92400E)
+                                        )
+                                        Text(
+                                            text = "C$ ${String.format(java.util.Locale.US, "%.2f", activePedido.total)}",
+                                            fontSize = 15.sp,
+                                            fontWeight = FontWeight.Black,
+                                            color = Color(0xFF92400E),
+                                            maxLines = 1,
+                                            softWrap = false
+                                        )
+                                    }
+                                } else {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(Color(0xFFDCFCE7).copy(alpha = 0.7f), RoundedCornerShape(10.dp))
+                                            .padding(horizontal = 10.dp, vertical = 8.dp),
+                                        horizontalArrangement = Arrangement.SpaceBetween,
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = "💳 Pago digital (${activePedido.pagoMetodo.uppercase()})",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF166534)
+                                        )
+                                        Text(
+                                            text = "NO COBRAR",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Black,
+                                            color = Color(0xFF166534)
+                                        )
+                                    }
+                                }
                             }
                         }
 

@@ -58,6 +58,8 @@ class DummyAuthService implements IAuthService {
   @override
   Future<UserProfileEntity> signInWithFacebook() async => throw UnimplementedError();
   @override
+  Future<UserProfileEntity> signInWithApple() async => throw UnimplementedError();
+  @override
   Future<void> sendPasswordReset(String email) async {}
   @override
   Future<void> signOut() async {}
@@ -198,6 +200,10 @@ class DummyUserService implements IUserService {
   Future<void> deleteAddress(String uid, String addressId) async {}
   @override
   Future<void> setDefaultAddress(String uid, String addressId) async {}
+  @override
+  Stream<Set<String>> watchFavoriteBusinessIds(String uid) => Stream.value(<String>{});
+  @override
+  Future<void> toggleFavoriteBusiness(String uid, String businessId, {String? businessName}) async {}
 }
 
 class MockCourierCashClosureService implements ICourierCashClosureService {
@@ -229,7 +235,7 @@ class MockCourierCashClosureService implements ICourierCashClosureService {
   Stream<List<CourierDailyClosureEntity>> watchClosureHistory(String courierId) => Stream.value([]);
 
   @override
-  Future<String> uploadDepositReceipt({required String courierId, required dynamic imageFile}) async {
+  Future<String> uploadDepositReceipt({required String courierId, required dynamic imageFile, String? closureId}) async {
     return 'https://storage.googleapis.com/bluesystem-7c9af.appspot.com/courier_deposits/$courierId/123456.jpg';
   }
 
@@ -239,12 +245,30 @@ class MockCourierCashClosureService implements ICourierCashClosureService {
     required String bankReference,
     required String receiptUrl,
     required int totalCollectedCents,
+    String? bankName,
+    String? businessDate,
+    String? shift,
+    String? notes,
   }) async {
     lastCourierId = courierId;
     lastBankReference = bankReference;
     lastReceiptUrl = receiptUrl;
     lastTotalCollectedCents = totalCollectedCents;
     return {'success': true, 'closureId': 'closure_test_123'};
+  }
+
+  @override
+  Future<Map<String, dynamic>> registerBankDepositReceipt({
+    required String closureId,
+    required String bankName,
+    required String bankReference,
+    required int depositAmountCents,
+    required String receiptDownloadUrl,
+    String? receiptStoragePath,
+    String? depositDate,
+    String? notes,
+  }) async {
+    return {'success': true, 'closureId': closureId};
   }
 
   @override

@@ -137,6 +137,8 @@ class MockAuthServiceForBlock5 implements IAuthService {
   @override
   Future<UserProfileEntity> signInWithFacebook() async => throw UnimplementedError();
   @override
+  Future<UserProfileEntity> signInWithApple() async => throw UnimplementedError();
+  @override
   Future<void> sendPasswordReset(String email) async {}
   @override
   Future<void> signOut() async {}
@@ -388,8 +390,8 @@ void main() {
       // Verify 4 KPI Cards
       expect(find.text('Métricas de Hoy'), findsOneWidget);
       expect(find.text('Ventas de Hoy'), findsOneWidget);
-      // Completed order total is 265
-      expect(find.text('C\$ 265'), findsWidgets);
+      // Completed order product subtotal is 220 (deliveryFee 45 is excluded per BSD-MERCHANT-ORDER-FINANCIAL-VISIBILITY)
+      expect(find.text('C\$ 220'), findsWidgets);
 
       expect(find.text('Pedidos Activos'), findsOneWidget);
       // Active orders: pending (1) + preparing (1) = 2

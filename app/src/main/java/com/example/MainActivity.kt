@@ -570,32 +570,119 @@ class MainActivity : FragmentActivity() {
                         )
                     }
 
+                    // ── RUTAS ADMIN ENTERPRISE ──────────────────────────────────────────────
                     composable(Screen.Admin.route) {
                         AdminSurfaceGuard(navController, authManager) {
-                            val coroutineScope = rememberCoroutineScope()
-                            AdminDashboardScreen(
-                                onBack = { navController.popBackStack() },
-                                onNavigateToUsers = { navController.navigate("admin_users") },
-                                onAsignarPedidoBackend = { pedidoId, motorizadoId ->
-                                    coroutineScope.launch {
-                                        firebaseManager.aceptarPedido(pedidoId, motorizadoId)
-                                    }
-                                },
-                                firebaseManager = firebaseManager,
+                            com.example.presentation.admin.AdminDashboardScreen(
+                                onNavigate = { route -> navController.navigate(route) },
                                 onLogout = {
                                     performLogoutCleanup(realtimeOrchestrator, authManager, navController)
-                                }
+                                },
+                                firebaseManager = firebaseManager
                             )
                         }
                     }
-                    
+
+                    composable(com.example.presentation.admin.AdminRoutes.DASHBOARD) {
+                        AdminSurfaceGuard(navController, authManager) {
+                            com.example.presentation.admin.AdminDashboardScreen(
+                                onNavigate = { route -> navController.navigate(route) },
+                                onLogout = {
+                                    performLogoutCleanup(realtimeOrchestrator, authManager, navController)
+                                },
+                                firebaseManager = firebaseManager
+                            )
+                        }
+                    }
+
+                    composable(com.example.presentation.admin.AdminRoutes.MERCHANT_REQUESTS) {
+                        AdminSurfaceGuard(navController, authManager) {
+                            com.example.presentation.admin.AdminMerchantRequestsScreen(
+                                onBack = { navController.popBackStack() },
+                                onNavigateToDetail = { id -> navController.navigate(com.example.presentation.admin.AdminRoutes.merchantRequestDetail(id)) }
+                            )
+                        }
+                    }
+
+                    composable(com.example.presentation.admin.AdminRoutes.COURIER_REQUESTS) {
+                        AdminSurfaceGuard(navController, authManager) {
+                            com.example.presentation.admin.AdminCourierRequestsScreen(
+                                onBack = { navController.popBackStack() },
+                                onNavigateToDetail = { id -> navController.navigate(com.example.presentation.admin.AdminRoutes.courierRequestDetail(id)) }
+                            )
+                        }
+                    }
+
+                    composable(com.example.presentation.admin.AdminRoutes.COURIER_PROFILE_MGMT) {
+                        AdminSurfaceGuard(navController, authManager) {
+                            com.example.presentation.admin.AdminCourierProfileManagementScreen(
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
+                    }
+
+                    composable(com.example.presentation.admin.AdminRoutes.IDENTITY_CENTER) {
+                        AdminSurfaceGuard(navController, authManager) {
+                            com.example.presentation.admin.AdminIdentityCenterScreen(
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
+                    }
+
+                    composable(com.example.presentation.admin.AdminRoutes.SUPPORT_CENTER) {
+                        AdminSurfaceGuard(navController, authManager) {
+                            com.example.presentation.admin.AdminSupportCenterScreen(
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
+                    }
+
+                    composable(com.example.presentation.admin.AdminRoutes.COURIER_CASH_CENTER) {
+                        AdminSurfaceGuard(navController, authManager) {
+                            com.example.presentation.admin.AdminCourierCashCenterScreen(
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
+                    }
+
+                    composable(com.example.presentation.admin.AdminRoutes.LIVE_COURIER_MONITOR) {
+                        AdminSurfaceGuard(navController, authManager) {
+                            com.example.presentation.admin.AdminLiveCourierMonitorScreen(
+                                onBack = { navController.popBackStack() },
+                                firebaseManager = firebaseManager
+                            )
+                        }
+                    }
+
+                    composable(com.example.presentation.admin.AdminRoutes.ENTERPRISE_COMMERCE) {
+                        AdminSurfaceGuard(navController, authManager) {
+                            com.example.presentation.admin.AdminEnterpriseCommerceScreen(
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
+                    }
+
+                    composable(com.example.presentation.admin.AdminRoutes.GLOBAL_CONFIG) {
+                        AdminSurfaceGuard(navController, authManager) {
+                            com.example.presentation.admin.AdminGlobalConfigurationScreen(
+                                onBack = { navController.popBackStack() }
+                            )
+                        }
+                    }
+
+                    composable(com.example.presentation.admin.AdminRoutes.NOTIFICATIONS) {
+                        AdminSurfaceGuard(navController, authManager) {
+                            com.example.presentation.admin.AdminNotificationCenterScreen(
+                                onBack = { navController.popBackStack() },
+                                onNavigate = { route -> navController.navigate(route) }
+                            )
+                        }
+                    }
+
                     composable("admin_users") {
                         AdminSurfaceGuard(navController, authManager) {
-                            val factory = remember { AdminUsersViewModelFactory(firebaseManager) }
-                            val adminUsersViewModel: AdminUsersViewModel = viewModel(factory = factory)
-                            AdminUsersScreen(
-                                navController = navController,
-                                viewModel = adminUsersViewModel
+                            com.example.presentation.admin.AdminIdentityCenterScreen(
+                                onBack = { navController.popBackStack() }
                             )
                         }
                     }

@@ -162,4 +162,51 @@ object FcmManager {
             Log.e("FcmManager", "Error al sincronizar multi-dispositivo en user_devices", e)
         }
     }
+
+    /**
+     * Desvincula el token del dispositivo al cerrar sesión, marcándolo como inactivo en Firestore.
+     * Esto evita que el dispositivo continúe recibiendo notificaciones privadas del usuario saliente (P4-01).
+     */
+    fun unbindCurrentDeviceTokenBlocking(context: Context, uid: String) {
+        if (uid.isBlank() || uid.startsWith("guest_") || uid == "none") return
+        try {
+            val deviceId = getDeviceId(context)
+            val db = FirebaseFirestore.getInstance()
+            val unbindData = hashMapOf<String, Any>(
+                "uid" to uid,
+                "isActive" to false,
+                "tokenStatus" to "unbound_logout",
+                "unbindAt" to FieldValue.serverTimestamp(),
+                "updatedAt" to FieldValue.serverTimestamp()
+            )
+
+            // 1. Desactivar en subcolección de usuario (best effort)
+            try {
+                val userDeviceTask = db.collection("users")
+                    .document(uid)
+                    .collection("devices")
+                    .document(deviceId)
+                    .set(unbindData, SetOptions.merge())
+                com.google.android.gms.tasks.Tasks.await(userDeviceTask, 1500, java.util.concurrent.TimeUnit.MILLISECONDS)
+            } catch (e: Exception) {
+                Log.w("FcmManager", "No se pudo actualizar unbind en subcolección de usuario: ${e.message}")
+            }
+
+            // 2. Desactivar en colección global user_devices
+            val globalDeviceTask = db.collection("user_devices")
+                .document("${uid}_$deviceId")
+                .set(unbindData, SetOptions.merge())
+            com.google.android.gms.tasks.Tasks.await(globalDeviceTask, 2000, java.util.concurrent.TimeUnit.MILLISECONDS)
+
+            Log.d("FcmManager", "Dispositivo $deviceId desvinculado exitosamente en logout para usuario $uid")
+        } catch (e: Exception) {
+            Log.e("FcmManager", "Error al desvincular dispositivo en user_devices durante logout", e)
+        }
+    }
+
+    suspend fun unbindCurrentDeviceToken(context: Context, uid: String) {
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            unbindCurrentDeviceTokenBlocking(context, uid)
+        }
+    }
 }

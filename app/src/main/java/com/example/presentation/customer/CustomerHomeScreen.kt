@@ -223,10 +223,7 @@ fun CustomerHomeScreen(
         val entry = navController.currentBackStackEntry
         val shouldOpenCheckout = entry?.savedStateHandle?.remove<Boolean>("open_checkout") == true
         val shouldOpenCart = entry?.savedStateHandle?.remove<Boolean>("open_cart") == true
-        if (shouldOpenCheckout) {
-            cartModalStep = 2
-            showCartDialog = true
-        } else if (shouldOpenCart) {
+        if (shouldOpenCheckout || shouldOpenCart) {
             cartModalStep = 1
             showCartDialog = true
         }

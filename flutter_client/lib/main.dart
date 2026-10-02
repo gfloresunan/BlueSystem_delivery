@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 
 import 'core/brand/brand_context.dart';
 import 'core/observability/app_logger.dart';
+import 'data/services/admin_service.dart';
 import 'data/services/firestore_operations_service.dart';
 import 'data/services/firebase_auth_service.dart';
 import 'data/services/firestore_platform_service.dart';
@@ -50,6 +51,7 @@ class _BlueSystemDeliveryAppState extends State<BlueSystemDeliveryApp> {
   late final MerchantFirestoreService _merchantService;
   late final BannerFirestoreService _bannerService;
   late final CourierCashClosureService _cashClosureService;
+  late final AdminFirestoreService _adminService;
   late final PlatformNotificationAdapter _notificationAdapter;
   late final SessionState _sessionState;
 
@@ -63,6 +65,7 @@ class _BlueSystemDeliveryAppState extends State<BlueSystemDeliveryApp> {
     _merchantService = MerchantFirestoreService();
     _bannerService = BannerFirestoreService();
     _cashClosureService = CourierCashClosureService();
+    _adminService = AdminFirestoreService();
     _notificationAdapter = PlatformNotificationAdapter();
 
     _sessionState = SessionState(
@@ -113,6 +116,7 @@ class _BlueSystemDeliveryAppState extends State<BlueSystemDeliveryApp> {
             merchantService: _merchantService,
             bannerService: _bannerService,
             cashClosureService: _cashClosureService,
+            adminService: _adminService,
             notificationService: _notificationAdapter,
           ),
         );

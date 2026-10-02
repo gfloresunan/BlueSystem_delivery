@@ -901,7 +901,7 @@ fun MoocEnterpriseOrderCard(
                     OrderTypePill(label = "🛵 Delivery", color = Color(0xFF0369A1))
                     OrderTypePill(label = "💳 ${order.paymentMethod}", color = Color(0xFF334155))
                     Spacer(modifier = Modifier.weight(1f))
-                    Text("💰 C$ ${order.totalAmount.toInt()}", fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, color = BluePrimary)
+                    Text("💰 C$ ${order.productSubtotal.toInt()}", fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, color = BluePrimary)
                 }
             }
 
@@ -914,7 +914,7 @@ fun MoocEnterpriseOrderCard(
             ) {
                 Box(modifier = Modifier.padding(if (isKitchenMode) 6.dp else 0.dp)) {
                     Text(
-                        "🍔 ${order.itemsSummary}",
+                        "📦 ${order.itemsSummary}",
                         fontSize = if (isKitchenMode) 13.sp else 11.sp,
                         fontWeight = if (isKitchenMode) FontWeight.ExtraBold else FontWeight.Medium,
                         color = if (isKitchenMode) Color(0xFF9A3412) else Color(0xFF334155),
@@ -1279,7 +1279,7 @@ fun MoocListView(
                     ) {
                         Column {
                             Text("#${order.displayOrderCode.removePrefix("#")} — ${order.customerName}", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-                            Text("${order.itemsSummary} • C$ ${order.totalAmount.toInt()}", fontSize = 11.sp, color = Color.Gray)
+                            Text("${order.itemsSummary} • C$ ${order.productSubtotal.toInt()}", fontSize = 11.sp, color = Color.Gray)
                         }
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(order.rawPedido.status.uppercase(), fontSize = 11.sp, fontWeight = FontWeight.ExtraBold, color = BluePrimary)
@@ -1386,9 +1386,9 @@ fun MoocOrderDetailDrawer(
 
             HorizontalDivider()
 
-            Text("Productos Solicitados 🍔", fontWeight = FontWeight.Bold, fontSize = 13.sp)
+            Text("Productos Solicitados 📦", fontWeight = FontWeight.Bold, fontSize = 13.sp)
             Text(order.itemsSummary, fontSize = 11.sp, color = Color(0xFF334155))
-            Text("Total: C$ ${order.totalAmount.toInt()} (${order.paymentMethod})", fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, color = BluePrimary)
+            Text("Valor Productos: C$ ${order.productSubtotal.toInt()} (${order.paymentMethod})", fontWeight = FontWeight.ExtraBold, fontSize = 13.sp, color = BluePrimary)
 
             Spacer(modifier = Modifier.height(10.dp))
 

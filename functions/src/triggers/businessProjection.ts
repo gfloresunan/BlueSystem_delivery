@@ -120,7 +120,7 @@ export async function projectSingleStore(userId: string, data: any): Promise<voi
   const ratingCount = typeof rawCount === "number" ? rawCount : (rawCount ? Number(rawCount) : 0);
   const rawRating = data.averageRating !== undefined ? data.averageRating : data.rating;
   const rating = ratingCount > 0 ? Number(rawRating || 0) : 0;
-  const deliveryFee = Number(data.deliveryFee || data.costoEnvioBase || 35);
+  const deliveryFee = Number(data.deliveryFee ?? data.costoEnvioBase ?? 35);
   const estimatedDeliveryTime = Number(data.avgPrepTimeMinutes || data.tiempoEstimadoMinutos || 15);
   const isOpen = data.isOpen === true || data.abierto === true;
   const isFeatured = data.isFeatured !== undefined

@@ -75,20 +75,25 @@ fun CourierFinancesScreen(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Column {
+                    Column(modifier = Modifier.weight(1f, fill = false)) {
                         Text(
                             text = "💰 MIS INGRESOS",
                             fontSize = 20.sp,
                             fontWeight = FontWeight.Black,
                             color = Color.White,
-                            letterSpacing = 0.5.sp
+                            letterSpacing = 0.5.sp,
+                            maxLines = 1,
+                            softWrap = false
                         )
                         Text(
                             text = "Finanzas consolidadas por línea de negocio",
                             fontSize = 12.sp,
-                            color = Color(0xFF94A3B8)
+                            color = Color(0xFF94A3B8),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     }
+                    Spacer(modifier = Modifier.width(8.dp))
                     Surface(
                         shape = RoundedCornerShape(10.dp),
                         color = Color(0xFF0F172A),
@@ -100,7 +105,7 @@ fun CourierFinancesScreen(
                         ) {
                             Icon(Icons.Default.Verified, contentDescription = null, tint = Color(0xFF38BDF8), modifier = Modifier.size(14.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("SSOT", fontSize = 10.sp, fontWeight = FontWeight.Black, color = Color(0xFF38BDF8))
+                            Text("SSOT", fontSize = 10.sp, fontWeight = FontWeight.Black, color = Color(0xFF38BDF8), maxLines = 1, softWrap = false)
                         }
                     }
                 }
@@ -320,7 +325,7 @@ fun CourierFinancesScreen(
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column {
+                            Column(modifier = Modifier.weight(1f, fill = false)) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text("💵", fontSize = 14.sp)
                                     Spacer(modifier = Modifier.width(6.dp))
@@ -329,7 +334,9 @@ fun CourierFinancesScreen(
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Black,
                                         color = Color(0xFFFBBF24),
-                                        letterSpacing = 0.5.sp
+                                        letterSpacing = 0.5.sp,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
                                     )
                                 }
                                 Spacer(modifier = Modifier.height(4.dp))
@@ -337,16 +344,28 @@ fun CourierFinancesScreen(
                                     text = "C$ ${String.format(Locale.US, "%.2f", financesState.totalGeneralRequiredDeposit)}",
                                     fontSize = 22.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = Color.White
+                                    color = Color.White,
+                                    maxLines = 1,
+                                    softWrap = false
                                 )
                             }
+
+                            Spacer(modifier = Modifier.width(8.dp))
 
                             Button(
                                 onClick = onNavigateToClosure,
                                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E293B)),
-                                shape = RoundedCornerShape(8.dp)
+                                shape = RoundedCornerShape(8.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp)
                             ) {
-                                Text("Arqueo / Cierre →", fontSize = 11.sp, color = Color(0xFF38BDF8), fontWeight = FontWeight.Bold)
+                                Text(
+                                    text = "Arqueo / Cierre →",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF38BDF8),
+                                    fontWeight = FontWeight.Bold,
+                                    maxLines = 1,
+                                    softWrap = false
+                                )
                             }
                         }
 

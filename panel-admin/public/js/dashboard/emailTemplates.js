@@ -80,6 +80,7 @@ window.emailTemplatesModule = {
                                 <button onclick="window.emailTemplatesModule.setFilter('CUSTOMER')" class="filter-btn text-xs px-3 py-1 rounded-lg font-bold transition text-slate-400 hover:text-white" id="filter-btn-CUSTOMER">Clientes</button>
                                 <button onclick="window.emailTemplatesModule.setFilter('MERCHANT')" class="filter-btn text-xs px-3 py-1 rounded-lg font-bold transition text-slate-400 hover:text-white" id="filter-btn-MERCHANT">Comercios</button>
                                 <button onclick="window.emailTemplatesModule.setFilter('COURIER')" class="filter-btn text-xs px-3 py-1 rounded-lg font-bold transition text-slate-400 hover:text-white" id="filter-btn-COURIER">Motorizados</button>
+                                <button onclick="window.emailTemplatesModule.setFilter('ADMIN')" class="filter-btn text-xs px-3 py-1 rounded-lg font-bold transition text-slate-400 hover:text-white" id="filter-btn-ADMIN">Admin & Finanzas</button>
                                 <button onclick="window.emailTemplatesModule.setFilter('SYSTEM')" class="filter-btn text-xs px-3 py-1 rounded-lg font-bold transition text-slate-400 hover:text-white" id="filter-btn-SYSTEM">Sistema & Auth</button>
                             </div>
                         </div>

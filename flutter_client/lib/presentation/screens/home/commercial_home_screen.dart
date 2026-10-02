@@ -12,11 +12,13 @@
 /// - Explicit error states (no silent empty lists on Firestore errors)
 /// - Navigation to real MerchantDetailScreen on tap (Zero Mock Menus)
 
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../../../core/design_system/bsds_theme.dart';
 import '../../../core/engine/operating_hours_resolver.dart';
 import '../../../core/utils/geo_utils.dart';
+import '../../../data/services/user_firestore_service.dart';
 import '../../../domain/entities/banner_entity.dart';
 import '../../../domain/entities/catalog_entity.dart';
 import '../../../domain/services/core_service_interfaces.dart';
@@ -29,6 +31,7 @@ class CommercialHomeScreen extends StatefulWidget {
   final Function(String routeName) onNavigate;
   final IBannerService? bannerService;
   final IMerchantService? merchantService;
+  final IUserService? userService;
   final Function(ProductEntity product, String businessName)? onAddToCart;
   final VoidCallback? onCartClick;
   final VoidCallback? onNotificationsClick;
@@ -40,6 +43,7 @@ class CommercialHomeScreen extends StatefulWidget {
     required this.onNavigate,
     this.bannerService,
     this.merchantService,
+    this.userService,
     this.onAddToCart,
     this.onCartClick,
     this.onNotificationsClick,
@@ -55,25 +59,74 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
   final Set<String> _favoriteBusinessIds = {};
+  StreamSubscription<Set<String>>? _favsSubscription;
 
   // Benchmark reference coordinates (Managua center) matching Android NearbyMerchantEngine
   static const double _customerLat = 12.1364;
   static const double _customerLng = -86.2514;
 
   @override
+  void initState() {
+    super.initState();
+    _initFavoritesListener();
+  }
+
+  @override
+  void didUpdateWidget(covariant CommercialHomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.sessionState.currentUser?.uid != widget.sessionState.currentUser?.uid) {
+      _initFavoritesListener();
+    }
+  }
+
+  void _initFavoritesListener() {
+    _favsSubscription?.cancel();
+    final uid = widget.sessionState.currentUser?.uid;
+    if (uid != null && uid.isNotEmpty && !uid.startsWith('guest_')) {
+      final userSvc = widget.userService ?? UserFirestoreService();
+      _favsSubscription = userSvc.watchFavoriteBusinessIds(uid).listen((favs) {
+        if (mounted) {
+          setState(() {
+            _favoriteBusinessIds.clear();
+            _favoriteBusinessIds.addAll(favs);
+          });
+        }
+      });
+    }
+  }
+
+  @override
   void dispose() {
+    _favsSubscription?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
-  void _toggleFavorite(String businessId) {
+  void _toggleFavorite(String businessId, {String? businessName}) {
+    final uid = widget.sessionState.currentUser?.uid;
+    final isFav = _favoriteBusinessIds.contains(businessId);
     setState(() {
-      if (_favoriteBusinessIds.contains(businessId)) {
+      if (isFav) {
         _favoriteBusinessIds.remove(businessId);
       } else {
         _favoriteBusinessIds.add(businessId);
       }
     });
+
+    if (uid != null && uid.isNotEmpty && !uid.startsWith('guest_')) {
+      final userSvc = widget.userService ?? UserFirestoreService();
+      userSvc.toggleFavoriteBusiness(uid, businessId, businessName: businessName).catchError((err) {
+        if (mounted) {
+          setState(() {
+            if (isFav) {
+              _favoriteBusinessIds.add(businessId);
+            } else {
+              _favoriteBusinessIds.remove(businessId);
+            }
+          });
+        }
+      });
+    }
   }
 
   void _openMerchantById(String businessId, {String? businessName, String? productId}) {

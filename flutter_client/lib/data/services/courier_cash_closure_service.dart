@@ -18,12 +18,27 @@ abstract class ICourierCashClosureService {
   Future<String> uploadDepositReceipt({
     required String courierId,
     required File imageFile,
+    String? closureId,
   });
   Future<Map<String, dynamic>> initiateDailyClosure({
     required String courierId,
     required String bankReference,
     required String receiptUrl,
     required int totalCollectedCents,
+    String? bankName,
+    String? businessDate,
+    String? shift,
+    String? notes,
+  });
+  Future<Map<String, dynamic>> registerBankDepositReceipt({
+    required String closureId,
+    required String bankName,
+    required String bankReference,
+    required int depositAmountCents,
+    required String receiptDownloadUrl,
+    String? receiptStoragePath,
+    String? depositDate,
+    String? notes,
   });
   Future<String> generateOfficialActDocument({
     required String courierId,
@@ -112,9 +127,12 @@ class CourierCashClosureService implements ICourierCashClosureService {
   Future<String> uploadDepositReceipt({
     required String courierId,
     required File imageFile,
+    String? closureId,
   }) async {
     final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final path = 'courier_deposits/$courierId/$timestamp.jpg';
+    final path = (closureId != null && closureId.isNotEmpty)
+        ? 'courier_closures/$courierId/$closureId/voucher_$timestamp.jpg'
+        : 'courier_deposits/$courierId/$timestamp.jpg';
 
     try {
       final ref = _storageRef.ref().child(path);
@@ -122,6 +140,7 @@ class CourierCashClosureService implements ICourierCashClosureService {
         contentType: 'image/jpeg',
         customMetadata: {
           'courierId': courierId,
+          if (closureId != null && closureId.isNotEmpty) 'closureId': closureId,
           'uploadedAt': timestamp.toString(),
           'platform': 'iOS',
         },
@@ -143,21 +162,90 @@ class CourierCashClosureService implements ICourierCashClosureService {
     required String bankReference,
     required String receiptUrl,
     required int totalCollectedCents,
+    String? bankName,
+    String? businessDate,
+    String? shift,
+    String? notes,
   }) async {
     try {
-      final callable = _funcs.httpsCallable('initiateCourierDailyClosure');
-      final result = await callable.call<Map<String, dynamic>>({
+      final now = DateTime.now();
+      final dateStr = businessDate ??
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final opId = 'cop_${now.millisecondsSinceEpoch}_${courierId.hashCode.abs()}';
+
+      // 1. Iniciar cierre formal canónico
+      final initCallable = _funcs.httpsCallable('initiateCourierDailyClosure');
+      final initResult = await initCallable.call<Map<String, dynamic>>({
+        'closureOperationId': opId,
         'courierId': courierId,
-        'bankReference': bankReference,
-        'depositReceiptUrl': receiptUrl,
-        'totalCollectedCents': totalCollectedCents,
+        'businessDate': dateStr,
+        'shift': shift ?? 'FULL_DAY',
+        'expectedAmountCents': totalCollectedCents,
         'platform': 'iOS',
       });
 
-      AppLogger.info('CourierCashClosureService', 'Closure initiated successfully');
-      return Map<String, dynamic>.from(result.data);
+      final initData = Map<String, dynamic>.from(initResult.data);
+      final closureId = initData['closureId'] as String? ?? '';
+
+      // 2. Si se suministró referencia bancaria o comprobante, registrar depósito bancario formal
+      if (closureId.isNotEmpty && (bankReference.isNotEmpty || receiptUrl.isNotEmpty)) {
+        await registerBankDepositReceipt(
+          closureId: closureId,
+          bankName: (bankName != null && bankName.isNotEmpty) ? bankName : 'BANCO_TRANSFERENCIA',
+          bankReference: bankReference.trim(),
+          depositAmountCents: totalCollectedCents,
+          depositDate: dateStr,
+          receiptDownloadUrl: receiptUrl.trim(),
+          notes: notes?.trim() ?? 'Registrado desde iOS Flutter Client',
+        );
+      }
+
+      AppLogger.info('CourierCashClosureService', 'Closure initiated successfully: $closureId');
+      return {
+        'success': true,
+        'closureId': closureId,
+        ...initData,
+      };
     } catch (e, st) {
       AppLogger.error('CourierCashClosureService', 'Error in initiateDailyClosure callable', e, st);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> registerBankDepositReceipt({
+    required String closureId,
+    required String bankName,
+    required String bankReference,
+    required int depositAmountCents,
+    required String receiptDownloadUrl,
+    String? receiptStoragePath,
+    String? depositDate,
+    String? notes,
+  }) async {
+    try {
+      final now = DateTime.now();
+      final dateStr = depositDate ??
+          '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+      final timeStr = '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+
+      final callable = _funcs.httpsCallable('registerBankDepositReceipt');
+      final result = await callable.call<Map<String, dynamic>>({
+        'closureId': closureId,
+        'bankName': bankName.trim(),
+        'bankReference': bankReference.trim(),
+        'depositAmountCents': depositAmountCents,
+        'depositDate': dateStr,
+        'depositTime': timeStr,
+        'receiptStoragePath': receiptStoragePath ?? '',
+        'receiptDownloadUrl': receiptDownloadUrl.trim(),
+        'notes': notes?.trim() ?? '',
+      });
+
+      AppLogger.info('CourierCashClosureService', 'Bank deposit receipt registered successfully: $closureId');
+      return Map<String, dynamic>.from(result.data);
+    } catch (e, st) {
+      AppLogger.error('CourierCashClosureService', 'Error in registerBankDepositReceipt callable', e, st);
       rethrow;
     }
   }

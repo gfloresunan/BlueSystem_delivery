@@ -477,17 +477,26 @@ class FirebaseManager {
 
             // COURIER-RATE-SSOT-REMEDIATION-004 (CR-005 CLOSED): No invented rate. 0.0 = no valid snapshot.
             val courierRatePerKmApplied = safeParseDouble(doc.get("courierRatePerKmApplied"))?.takeIf { it > 0.0 } ?: 0.0
-            val courierOrderBonusApplied = safeParseDouble(doc.get("courierOrderBonusApplied")) ?: 0.0
-            val courierDistanceEarnings = safeParseDouble(doc.get("courierDistanceEarnings"))
-                ?: (if (routeDistanceKm > 0.0) kotlin.math.round((routeDistanceKm * courierRatePerKmApplied) * 100.0) / 100.0 else 0.0)
-            val courierBonusEarnings = safeParseDouble(doc.get("courierBonusEarnings")) ?: courierOrderBonusApplied
+            val courierOrderBonusApplied = if (serviceType == "X_TO_Y_DELIVERY") (safeParseDouble(doc.get("courierOrderBonusApplied")) ?: 0.0) else 0.0
+            val snapshotCourierEarnings = safeParseDouble(pricingSnapshotMap?.get("courierEarnings"))
+            val snapshotCourierRate = safeParseDouble(pricingSnapshotMap?.get("courierPricePerKm")) ?: courierRatePerKmApplied
+            val rawDistEarnings = safeParseDouble(doc.get("courierDistanceEarnings"))
+                ?: (if (routeDistanceKm > 0.0 && snapshotCourierRate > 0.0) routeDistanceKm * snapshotCourierRate else 0.0)
+            val courierDistanceEarnings = if (serviceType != "X_TO_Y_DELIVERY") {
+                if (snapshotCourierEarnings != null && snapshotCourierEarnings > 0.0) kotlin.math.floor(snapshotCourierEarnings)
+                else if (rawDistEarnings > 0.0) kotlin.math.floor(rawDistEarnings)
+                else 0.0
+            } else {
+                rawDistEarnings
+            }
+            val courierBonusEarnings = if (serviceType == "X_TO_Y_DELIVERY") (safeParseDouble(doc.get("courierBonusEarnings")) ?: courierOrderBonusApplied) else 0.0
             val courierTipEarnings = safeParseDouble(doc.get("courierTipEarnings")) ?: tip
             val calculatedCourierTotal = kotlin.math.round((courierDistanceEarnings + courierBonusEarnings + courierTipEarnings) * 100.0) / 100.0
 
             val courierTotalEarnings = safeParseDouble(doc.get("courierTotalEarnings"))
                 ?: safeParseDouble(doc.get("courierEarnings"))
-                ?: (if (calculatedCourierTotal > courierTipEarnings || calculatedCourierTotal > 0.0) calculatedCourierTotal else (gananciaRepartidor + courierTipEarnings))
-            val compensatedAmount = safeParseDouble(doc.get("compensatedAmount")) ?: safeParseDouble(doc.get("totalCompensated")) ?: (if (courierTotalEarnings > 0.0) courierTotalEarnings else gananciaRepartidor)
+                ?: calculatedCourierTotal
+            val compensatedAmount = safeParseDouble(doc.get("compensatedAmount")) ?: safeParseDouble(doc.get("totalCompensated")) ?: calculatedCourierTotal
             val distanceSource = doc.getString("distanceSource") ?: (if (routeDistanceKm > 0.0) "FALLBACK_ESTIMATED" else "")
             val orderCode = doc.getString("orderCode") ?: doc.getString("orderNumber") ?: ""
             val orderShortCode = doc.getString("orderShortCode") ?: (if (orderCode.isNotBlank()) orderCode.takeLast(4) else "")
@@ -496,14 +505,14 @@ class FirebaseManager {
 
             val effectiveGananciaRepartidor = if (serviceType == "X_TO_Y_DELIVERY") {
                 val ps = doc.get("pricingSnapshot") as? Map<String, Any>
-                val snapshotCourierEarnings = safeParseDouble(ps?.get("courierEarnings"))
+                val x2yCourierEarnings = safeParseDouble(ps?.get("courierEarnings"))
                 val pPerKm = safeParseDouble(ps?.get("pricePerKm")) ?: safeParseDouble(ps?.get("perKmRate")) ?: 0.0
                 val distKm = safeParseDouble(ps?.get("routeDistanceKm")) ?: safeParseDouble(ps?.get("distanceKm")) ?: routeDistanceKm
                 val baseFee = safeParseDouble(ps?.get("baseFee"))
                 val tipAmount = safeParseDouble(doc.get("tipAmount")) ?: safeParseDouble(doc.get("tip")) ?: 0.0
 
-                val baseEarnings = if (snapshotCourierEarnings != null && snapshotCourierEarnings > 0.0) {
-                    snapshotCourierEarnings
+                val baseEarnings = if (x2yCourierEarnings != null && x2yCourierEarnings > 0.0) {
+                    x2yCourierEarnings
                 } else if (pPerKm > 0.0 && distKm > 0.0) {
                     kotlin.math.round((pPerKm * distKm) * 100.0) / 100.0
                 } else if (baseFee != null && baseFee > 0.0) {
@@ -513,12 +522,8 @@ class FirebaseManager {
                     0.0
                 }
                 baseEarnings + tipAmount
-            } else if (courierTotalEarnings > 0.0) {
-                courierTotalEarnings
-            } else if (gananciaRepartidor > 0.0) {
-                gananciaRepartidor + courierTipEarnings
             } else {
-                (customerOffer ?: calculatedFee)
+                courierDistanceEarnings + courierTipEarnings
             }
 
             return PedidoOfrecido(
@@ -654,7 +659,9 @@ class FirebaseManager {
                     val isUnassigned = order.assignedCourierId.isEmpty() && order.motorizadoId.isEmpty()
                     val isCommerce = order.serviceType != "X_TO_Y_DELIVERY"
 
-                    val isSameTenant = courierTenantId.isBlank() || order.tenantId.isBlank() || courierTenantId == order.tenantId
+                    val isSameTenant = courierTenantId.isBlank() || order.tenantId.isBlank() ||
+                        courierTenantId == order.tenantId ||
+                        (courierTenantId in listOf("ten_bluesystem_core", "default", "") && (order.tenantId.isBlank() || order.tenantId in listOf("ten_bluesystem_core", "default")))
                     val courierEffectiveMuni = courierMuniId.ifBlank { courierCityId }.trim().uppercase()
                     val orderEffectiveMuni = order.municipalityId.ifBlank { order.cityId }.trim().uppercase()
                     val isSameMunicipality = courierEffectiveMuni.isNotBlank() && orderEffectiveMuni.isNotBlank() && courierEffectiveMuni == orderEffectiveMuni
@@ -739,7 +746,7 @@ class FirebaseManager {
                 .whereEqualTo("commercialMunicipalityId", normMuni)
                 .whereIn("status", listOf("ready", "READY", "listo", "LISTO"))
 
-            if (normTenant.isNotBlank()) {
+            if (normTenant.isNotBlank() && normTenant !in listOf("ten_bluesystem_core", "default")) {
                 poolQuery = poolQuery.whereEqualTo("commercialTenantId", normTenant)
             }
 
@@ -1298,16 +1305,38 @@ class FirebaseManager {
                 
                 if (snapshot != null) {
                     val motorizados = snapshot.documents.mapNotNull { doc ->
-                        val ubicacion = doc.toObject(UbicacionRepartidor::class.java)
-                        if (ubicacion != null) {
-                            MotorizadoActivo(
-                                id = doc.id,
-                                nombre = "Motorizado ${doc.id.takeLast(4)}",
-                                latitud = ubicacion.coordenadas.latitud,
-                                longitud = ubicacion.coordenadas.longitud,
-                                estado = ubicacion.estadoDisponibilidad.ifEmpty { "activo" }
-                            )
-                        } else {
+                        try {
+                            val ubicacion = doc.toObject(UbicacionRepartidor::class.java)
+                            val docName = doc.getString("nombre")
+                                ?: doc.getString("name")
+                                ?: doc.getString("motorizadoNombre")
+                                ?: doc.getString("courierName")
+                                ?: ""
+
+                            if (ubicacion != null) {
+                                val courierId = if (ubicacion.motorizadoId.isNotBlank()) ubicacion.motorizadoId else doc.id
+                                MotorizadoActivo(
+                                    id = courierId,
+                                    nombre = if (docName.isNotBlank()) docName else "Motorizado ${doc.id.takeLast(4)}",
+                                    latitud = ubicacion.coordenadas.latitud,
+                                    longitud = ubicacion.coordenadas.longitud,
+                                    estado = ubicacion.estadoDisponibilidad.ifEmpty { "activo" }
+                                )
+                            } else {
+                                val coordsMap = doc.get("coordenadas") as? Map<*, *>
+                                val lat = (coordsMap?.get("latitud") as? Number)?.toDouble() ?: 0.0
+                                val lng = (coordsMap?.get("longitud") as? Number)?.toDouble() ?: 0.0
+                                val estado = doc.getString("estadoDisponibilidad") ?: "activo"
+                                MotorizadoActivo(
+                                    id = doc.id,
+                                    nombre = if (docName.isNotBlank()) docName else "Motorizado ${doc.id.takeLast(4)}",
+                                    latitud = lat,
+                                    longitud = lng,
+                                    estado = estado
+                                )
+                            }
+                        } catch (e: Exception) {
+                            Log.w("FirebaseManager", "Fallo al deserializar ubicacion de motorizado doc: ${doc.id}", e)
                             null
                         }
                     }
@@ -1404,7 +1433,6 @@ class FirebaseManager {
 
     fun listenToDrivers(): Flow<List<DriverUser>> = callbackFlow {
         val listener = db.collection("users")
-            .whereIn("userType", listOf("driver", "motorizado"))
             .addSnapshotListener { snapshot, error ->
                 if (error != null) {
                     Log.e("FirebaseManager", "Error in listenToDrivers", error)
@@ -1414,19 +1442,40 @@ class FirebaseManager {
                 if (snapshot != null) {
                     val drivers = snapshot.documents.mapNotNull { doc ->
                         try {
-                            val email = doc.getString("email") ?: ""
-                            val nombre = doc.getString("nombre") ?: doc.getString("name") ?: ""
-                            val telefono = doc.getString("telefono") ?: doc.getString("phone") ?: ""
-                            val userType = doc.getString("userType") ?: "driver"
-                            val active = doc.getBoolean("active") ?: true // default to active if not set
-                            DriverUser(
-                                uid = doc.id,
-                                nombre = nombre,
-                                email = email,
-                                telefono = telefono,
-                                userType = userType,
-                                active = active
-                            )
+                            val r = listOfNotNull(
+                                doc.getString("role"),
+                                doc.getString("eiamRole"),
+                                doc.getString("rol"),
+                                doc.getString("userType"),
+                                doc.getString("tipo")
+                            ).joinToString(" ").lowercase()
+
+                            val isDriver = r.contains("motorizado") ||
+                                    r.contains("courier") ||
+                                    r.contains("driver") ||
+                                    r.contains("repartidor")
+
+                            if (isDriver) {
+                                val email = doc.getString("email") ?: ""
+                                val nombre = doc.getString("nombre")
+                                    ?: doc.getString("name")
+                                    ?: doc.getString("displayName")
+                                    ?: ""
+                                val telefono = doc.getString("telefono")
+                                    ?: doc.getString("phone")
+                                    ?: doc.getString("celular")
+                                    ?: ""
+                                val userType = doc.getString("userType") ?: doc.getString("role") ?: "driver"
+                                val active = doc.getBoolean("active") ?: true
+                                DriverUser(
+                                    uid = doc.id,
+                                    nombre = nombre,
+                                    email = email,
+                                    telefono = telefono,
+                                    userType = userType,
+                                    active = active
+                                )
+                            } else null
                         } catch (e: Exception) {
                             Log.e("FirebaseManager", "Error parsing DriverUser", e)
                             null

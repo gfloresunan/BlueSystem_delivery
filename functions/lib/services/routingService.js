@@ -509,8 +509,12 @@ function buildCommercePricingSnapshot(distanceMeters, config) {
     if (typeof (config === null || config === void 0 ? void 0 : config.minimumCustomerDeliveryFee) === "number" && rawDeliveryFee < config.minimumCustomerDeliveryFee && distanceMeters > 0) {
         rawDeliveryFee = config.minimumCustomerDeliveryFee;
     }
-    const deliveryFee = Math.round(rawDeliveryFee * 100) / 100;
-    const courierEarnings = Math.round(rawCourierEarnings * 100) / 100;
+    // Redondeo a números enteros según directiva:
+    // - Cliente: redondeado hacia arriba al entero superior (Math.ceil), e.g. 50.94 -> 51
+    // - Motorizado: redondeado hacia abajo al entero inferior (Math.floor), e.g. 45.70 -> 45, 80.20 -> 80
+    // - El diferencial de centavos se acumula a favor de la plataforma admin como ingresos por servicios de app
+    const deliveryFee = distanceMeters > 0 ? Math.ceil(rawDeliveryFee) : 0;
+    const courierEarnings = distanceMeters > 0 ? Math.floor(rawCourierEarnings) : 0;
     const pricingSnapshot = {
         serviceType: "COMMERCE_DELIVERY",
         customerPricePerKm: customerRate,
@@ -556,6 +560,20 @@ async function calculateCommerceDeliveryRoute(options) {
         functions.logger.info(`[COMMERCE_ROUTING] Cache HIT para ${cacheKey}`);
         return cached.result;
     }
+    // Helper to convert CommercePricingSnapshot to legacy PricingSnapshot
+    const toPricingSnapshot = (cps) => ({
+        baseFee: 0,
+        pricePerKm: cps.customerPricePerKm,
+        distanceKm: cps.distanceKm,
+        distanceMeters: cps.distanceMeters,
+        calculatedAmount: cps.deliveryFee,
+        currency: cps.currency,
+        pricingPolicy: cps.pricingPolicy,
+        pricingVersion: cps.pricingVersion,
+        calculatedAt: cps.calculatedAt,
+        courierEarnings: cps.courierEarnings,
+        platformRevenue: Math.max(0, Math.round((cps.deliveryFee - cps.courierEarnings) * 100) / 100),
+    });
     // 3. Intento 1: Google Routes API v2
     const apiKey = googleApiKey || process.env.GOOGLE_MAPS_API_KEY || process.env.ROUTES_API_KEY;
     if (apiKey) {
@@ -568,6 +586,7 @@ async function calculateCommerceDeliveryRoute(options) {
                 straightLineDistanceMeters,
                 calculatedFee: deliveryFee,
                 commercePricingSnapshot,
+                pricingSnapshot: toPricingSnapshot(commercePricingSnapshot),
                 routingProvider: "GOOGLE_ROUTES_V2",
                 routingVersion: "v1.0",
                 isFallback: false,
@@ -594,6 +613,7 @@ async function calculateCommerceDeliveryRoute(options) {
             straightLineDistanceMeters,
             calculatedFee: deliveryFee,
             commercePricingSnapshot,
+            pricingSnapshot: toPricingSnapshot(commercePricingSnapshot),
             routingProvider: "OSRM_ENGINE",
             routingVersion: "v1.0",
             isFallback: false,
@@ -620,6 +640,7 @@ async function calculateCommerceDeliveryRoute(options) {
         straightLineDistanceMeters,
         calculatedFee: fallbackDeliveryFee,
         commercePricingSnapshot: fallbackPricing,
+        pricingSnapshot: toPricingSnapshot(fallbackPricing),
         routingProvider: "FALLBACK_ESTIMATED",
         routingVersion: "v1.0",
         isFallback: true,

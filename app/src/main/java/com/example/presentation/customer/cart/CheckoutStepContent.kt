@@ -285,10 +285,6 @@ fun CheckoutStepContent(
                         Text("${String.format(java.util.Locale.US, "%.2f", commerceQuote.routeDistanceKm)} km", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
                     }
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Tarifa por km", fontSize = 12.sp, color = Color(0xFF475569))
-                        Text("C$ ${String.format(java.util.Locale.US, "%.2f", commerceQuote.customerPricePerKm)}", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
-                    }
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Costo de envío", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
                         Text("C$ ${String.format(java.util.Locale.US, "%.2f", commerceQuote.deliveryFee)}", fontSize = 13.sp, fontWeight = FontWeight.Black, color = Color(0xFF0284C7))
                     }

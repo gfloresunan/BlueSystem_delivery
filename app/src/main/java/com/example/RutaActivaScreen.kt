@@ -107,7 +107,9 @@ fun RutaActivaScreen(
     var changeNeededState by remember { mutableStateOf(0.0) }
     var totalOrderState by remember { mutableStateOf(0.0) }
     var deliveryFeeState by remember { mutableStateOf(0.0) }
+    var courierEarningsState by remember { mutableStateOf(0.0) }
     var cashReceivedInput by remember { mutableStateOf("") }
+    var orderProductsListState by remember { mutableStateOf<List<Pair<String, Int>>>(emptyList()) }
     var mostrarExitoDialog by remember { mutableStateOf(false) }
 
     // BSD-COURIER-REAL-ROAD-ROUTING-ETA-001: Arquitectura de Routing desacoplada
@@ -473,9 +475,46 @@ fun RutaActivaScreen(
                             if (deliveryFeeState == 0.0) {
                                 deliveryFeeState = parseDoubleField("customerOffer")
                             }
+
+                            val pSnapMap = snapshot.get("pricingSnapshot") as? Map<*, *>
+                            val parseFromSnap = { key: String ->
+                                val v = pSnapMap?.get(key)
+                                when (v) {
+                                    is Number -> v.toDouble()
+                                    is String -> v.replace("[^0-9.]".toRegex(), "").toDoubleOrNull() ?: 0.0
+                                    else -> 0.0
+                                }
+                            }
+                            val rawCourierEarn = parseDoubleField("courierEarnings")
+                                .let { if (it > 0) it else parseDoubleField("courierTotalEarnings") }
+                                .let { if (it > 0) it else parseDoubleField("gananciaRepartidor") }
+                                .let { if (it > 0) it else parseDoubleField("gananciaMotorizado") }
+                                .let { if (it > 0) it else parseDoubleField("courierDistanceEarnings") }
+                                .let { if (it > 0) it else parseFromSnap("courierEarnings") }
+
+                            courierEarningsState = if (serviceTypeState == "X_TO_Y_DELIVERY") {
+                                if (rawCourierEarn > 0) rawCourierEarn else deliveryFeeState
+                            } else {
+                                if (rawCourierEarn > 0) kotlin.math.floor(rawCourierEarn) else 0.0
+                            }
                             val name = snapshot.getString("customerName") ?: snapshot.getString("recipientName") ?: (destinoMap?.get("nombreCliente") as? String)
                             if (!name.isNullOrEmpty()) {
                                 customerNameState = name
+                            }
+
+                            val rawItems = (snapshot.get("items") ?: snapshot.get("productos")) as? List<*>
+                            if (rawItems != null) {
+                                orderProductsListState = rawItems.mapNotNull { itemRaw ->
+                                    if (itemRaw is Map<*, *>) {
+                                        val itemName = (itemRaw["productName"] ?: itemRaw["name"] ?: itemRaw["nombre"] ?: itemRaw["title"] ?: itemRaw["producto"] ?: itemRaw["product_name"] ?: itemRaw["descripcion"] ?: itemRaw["description"]) as? String ?: "Producto"
+                                        val itemQty = when (val q = itemRaw["quantity"] ?: itemRaw["cantidad"] ?: itemRaw["qty"]) {
+                                            is Number -> q.toInt()
+                                            is String -> q.toIntOrNull() ?: 1
+                                            else -> 1
+                                        }
+                                        Pair(itemName, itemQty)
+                                    } else null
+                                }
                             }
                             
                             faseActual = when {
@@ -1098,6 +1137,35 @@ fun RutaActivaScreen(
                         )
                     ) {
                         Column(modifier = Modifier.padding(14.dp)) {
+                            if (orderProductsListState.isNotEmpty()) {
+                                Surface(
+                                    color = Color(0xFFF1F5F9),
+                                    shape = RoundedCornerShape(10.dp),
+                                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                                    modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
+                                ) {
+                                    Column(modifier = Modifier.padding(10.dp)) {
+                                        Text(
+                                            text = "🛍️ PRODUCTOS A LLEVAR (${orderProductsListState.sumOf { it.second }})",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Black,
+                                            color = Color(0xFF334155),
+                                            letterSpacing = 0.5.sp
+                                        )
+                                        Spacer(modifier = Modifier.height(4.dp))
+                                        orderProductsListState.forEach { (pName, pQty) ->
+                                            Text(
+                                                text = "• ${pQty}x $pName",
+                                                fontSize = 13.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF0F172A),
+                                                modifier = Modifier.padding(vertical = 2.dp)
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+
                             if (packageDescriptionState.isNotEmpty()) {
                                 Surface(
                                     color = Color(0xFFF1F5F9),
@@ -1141,8 +1209,8 @@ fun RutaActivaScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text("💰 COBRO EN DESTINO", fontWeight = FontWeight.Black, fontSize = 11.sp, color = Color(0xFFC2410C))
-                                        Text("COBRAR: C$ ${String.format("%.2f", totalOrderState)}", fontWeight = FontWeight.Black, fontSize = 15.sp, color = Color(0xFF9A3412))
+                                        Text("💰 Cobro en destino:", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color(0xFF9A3412))
+                                        Text("C$ ${String.format(java.util.Locale.US, "%.2f", totalOrderState)}", fontWeight = FontWeight.Black, fontSize = 15.sp, color = Color(0xFF9A3412), maxLines = 1, softWrap = false)
                                     }
                                 }
                             } else if (isEfectivo) {
@@ -1152,8 +1220,8 @@ fun RutaActivaScreen(
                                         horizontalArrangement = Arrangement.SpaceBetween,
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text("COBRO EN EFECTIVO", fontWeight = FontWeight.Black, fontSize = 11.sp, color = Color(0xFFC2410C))
-                                        Text("TOTAL: C$ ${String.format("%.2f", totalOrderState)}", fontWeight = FontWeight.Black, fontSize = 16.sp, color = Color(0xFF9A3412))
+                                        Text("💵 Cobro en efectivo:", fontWeight = FontWeight.Bold, fontSize = 12.sp, color = Color(0xFF9A3412))
+                                        Text("C$ ${String.format(java.util.Locale.US, "%.2f", totalOrderState)}", fontWeight = FontWeight.Black, fontSize = 15.sp, color = Color(0xFF9A3412), maxLines = 1, softWrap = false)
                                     }
                                     if (tipAmountState > 0) {
                                         Text("Incluye C$ ${String.format("%.2f", tipAmountState)} de propina para vos 🎉", fontSize = 11.sp, color = Color(0xFFD97706), fontWeight = FontWeight.Bold)
@@ -1575,19 +1643,32 @@ fun RutaActivaScreen(
                                 .border(1.dp, Color(0xFFDCFCE7), RoundedCornerShape(12.dp))
                                 .padding(12.dp)
                         ) {
+                            val effectiveGain = if (courierEarningsState > 0.0) courierEarningsState
+                                else if (serviceTypeState == "X_TO_Y_DELIVERY" && deliveryFeeState > 0.0) deliveryFeeState
+                                else 0.0
+                            val totalCourierEarn = effectiveGain + tipAmountState
+
                             Column {
                                 Text(
-                                    text = "GANANCIA DEL ENVÍO",
+                                    text = "TU GANANCIA POR ESTE ENVÍO",
                                     fontSize = 10.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF15803D)
                                 )
                                 Text(
-                                    text = if (deliveryFeeState > 0.0) "C$ ${String.format(java.util.Locale.US, "%.2f", deliveryFeeState)}" else "C$ 0.00",
+                                    text = "C$ ${String.format(java.util.Locale.US, "%.2f", totalCourierEarn)}",
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Black,
                                     color = Color(0xFF166534)
                                 )
+                                if (tipAmountState > 0.0) {
+                                    Text(
+                                        text = "Envío: C$ ${String.format(java.util.Locale.US, "%.2f", effectiveGain)} + Propina: C$ ${String.format(java.util.Locale.US, "%.2f", tipAmountState)}",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF047857)
+                                    )
+                                }
                             }
                         }
                     }

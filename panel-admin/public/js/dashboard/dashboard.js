@@ -309,6 +309,10 @@ const dashboardController = {
         if (newBtn) {
             newBtn.classList.remove('text-slate-400');
             newBtn.classList.add('bg-indigo-600/20', 'text-indigo-300', 'border', 'border-indigo-500/30');
+            const titleEl = document.getElementById('headerCurrentTabTitle');
+            if (titleEl) {
+                titleEl.textContent = newBtn.textContent.trim();
+            }
         }
 
         dashboardController.currentTab = tabId;

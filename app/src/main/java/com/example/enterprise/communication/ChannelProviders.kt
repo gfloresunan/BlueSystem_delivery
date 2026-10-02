@@ -48,7 +48,7 @@ class WhatsAppChannelProvider : IChannelProvider {
     override val channel: CommunicationChannel = CommunicationChannel.WHATSAPP
 
     override suspend fun deliverMessage(message: CommunicationMessage): DeliveryReport {
-        return DeliveryReport(message.messageId, channel, true, "WA_API_SENT")
+        return DeliveryReport(message.messageId, channel, false, "NOT_IMPLEMENTED")
     }
 }
 
@@ -56,7 +56,7 @@ class SmsChannelProvider : IChannelProvider {
     override val channel: CommunicationChannel = CommunicationChannel.SMS
 
     override suspend fun deliverMessage(message: CommunicationMessage): DeliveryReport {
-        return DeliveryReport(message.messageId, channel, true, "SMS_GATEWAY_DELIVERED")
+        return DeliveryReport(message.messageId, channel, false, "NOT_IMPLEMENTED")
     }
 }
 
@@ -64,7 +64,7 @@ class TelegramChannelProvider : IChannelProvider {
     override val channel: CommunicationChannel = CommunicationChannel.TELEGRAM
 
     override suspend fun deliverMessage(message: CommunicationMessage): DeliveryReport {
-        return DeliveryReport(message.messageId, channel, true, "TELEGRAM_BOT_DELIVERED")
+        return DeliveryReport(message.messageId, channel, false, "NOT_IMPLEMENTED")
     }
 }
 
@@ -72,6 +72,7 @@ class WebhookChannelProvider : IChannelProvider {
     override val channel: CommunicationChannel = CommunicationChannel.WEBHOOK
 
     override suspend fun deliverMessage(message: CommunicationMessage): DeliveryReport {
-        return DeliveryReport(message.messageId, channel, true, "WEBHOOK_POST_200_OK")
+        return DeliveryReport(message.messageId, channel, false, "NOT_IMPLEMENTED")
     }
 }
+

@@ -190,6 +190,18 @@ object NotificationRouter {
             normalizedPath.startsWith("merchant/settlements") || normalizedPath.startsWith("merchant/finance") -> "business_dashboard"
             fullPath.startsWith("courier") || normalizedPath.startsWith("courier") -> Screen.Courier.route
             fullPath.startsWith("business_dashboard") || normalizedPath.startsWith("business_dashboard") -> "business_dashboard"
+            // Deep Links Administrativos Enterprise
+            fullPath.startsWith("admin/merchant-request") || fullPath.startsWith("admin/merchant_requests") -> com.example.presentation.admin.AdminRoutes.MERCHANT_REQUESTS
+            fullPath.startsWith("admin/courier-request") || fullPath.startsWith("admin/courier_requests") -> com.example.presentation.admin.AdminRoutes.COURIER_REQUESTS
+            fullPath.startsWith("admin/courier") || fullPath.startsWith("admin/courier_profile_mgmt") -> com.example.presentation.admin.AdminRoutes.COURIER_PROFILE_MGMT
+            fullPath.startsWith("admin/support") || fullPath.startsWith("admin/support_center") -> com.example.presentation.admin.AdminRoutes.SUPPORT_CENTER
+            fullPath.startsWith("admin/courier-closure") || fullPath.startsWith("admin/courier_cash_center") -> com.example.presentation.admin.AdminRoutes.COURIER_CASH_CENTER
+            fullPath.startsWith("admin/commerce") || fullPath.startsWith("admin/enterprise_commerce") -> com.example.presentation.admin.AdminRoutes.ENTERPRISE_COMMERCE
+            fullPath.startsWith("admin/configuration") || fullPath.startsWith("admin/global_config") -> com.example.presentation.admin.AdminRoutes.GLOBAL_CONFIG
+            fullPath.startsWith("admin/live_courier_monitor") || fullPath.startsWith("admin/couriers_live") -> com.example.presentation.admin.AdminRoutes.LIVE_COURIER_MONITOR
+            fullPath.startsWith("admin/identity") || fullPath.startsWith("admin/identity_center") -> com.example.presentation.admin.AdminRoutes.IDENTITY_CENTER
+            fullPath.startsWith("admin/notifications") -> com.example.presentation.admin.AdminRoutes.NOTIFICATIONS
+            fullPath.startsWith("admin") || normalizedPath.startsWith("admin") -> Screen.Admin.route
             else -> null
         }
     }
@@ -214,11 +226,30 @@ object NotificationRouter {
         userRole: String
     ): String {
         val appRole = com.example.domain.model.AppRole.fromString(userRole)
+        val isAdmin = appRole == com.example.domain.model.AppRole.ADMIN
         val isCourier = appRole == com.example.domain.model.AppRole.COURIER
         val isMerchant = appRole == com.example.domain.model.AppRole.MERCHANT
         val isCustomer = appRole == com.example.domain.model.AppRole.CUSTOMER
 
         Log.d(TAG, "Resolviendo destino: type=$type, destType=$destinationType, action=$action, orderId=$orderId, role=$appRole")
+
+        // 0. ROLE GUARD: Administradores Enterprise
+        if (isAdmin) {
+            when (type.uppercase().trim()) {
+                "ADMIN_NEW_MERCHANT_REQUEST" -> return com.example.presentation.admin.AdminRoutes.MERCHANT_REQUESTS
+                "ADMIN_NEW_COURIER_REQUEST" -> return com.example.presentation.admin.AdminRoutes.COURIER_REQUESTS
+                "ADMIN_COURIER_PROFILE_CHANGE" -> return com.example.presentation.admin.AdminRoutes.COURIER_PROFILE_MGMT
+                "ADMIN_SUPPORT_TICKET_CREATED", "ADMIN_SUPPORT_TICKET_PRIORITY" -> return com.example.presentation.admin.AdminRoutes.SUPPORT_CENTER
+                "ADMIN_COURIER_CLOSURE_SUBMITTED", "ADMIN_COURIER_CASH_DIFFERENCE" -> return com.example.presentation.admin.AdminRoutes.COURIER_CASH_CENTER
+                "ADMIN_COMMERCE_STATUS_CHANGED" -> return com.example.presentation.admin.AdminRoutes.ENTERPRISE_COMMERCE
+                "ADMIN_CONFIGURATION_CHANGED" -> return com.example.presentation.admin.AdminRoutes.GLOBAL_CONFIG
+                "ADMIN_SYSTEM_ALERT", "ADMIN_INCIDENT_CRITICAL" -> return com.example.presentation.admin.AdminRoutes.NOTIFICATIONS
+            }
+            if (destinationRoute.isNotBlank() && isKnownInternalRoute(destinationRoute)) {
+                return destinationRoute
+            }
+            return Screen.Admin.route
+        }
 
         // 1. ROLE GUARD: Couriers jamás van a Customer OrderDetail
         if (isCourier) {
@@ -423,7 +454,9 @@ object NotificationRouter {
             "loyalty_level",
             "security_settings",
             "biometric_unlock",
-            "customer"
+            "customer",
+            "admin",
+            "admin_users"
         )
     }
 

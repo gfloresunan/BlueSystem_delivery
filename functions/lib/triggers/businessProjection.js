@@ -50,6 +50,7 @@ const VALID_BUSINESS_ROLES = new Set([
  * Auxiliar: Extrae y proyecta un comercio individual desde /users a /businesses y /branches.
  */
 async function projectSingleStore(userId, data) {
+    var _a, _b;
     const isDeletedDoc = !data || data.status === "DELETED" || data.lifecycleStatus === "DELETED" || data.lifecycleStatus === "DEPROVISIONED" || data.isDeleted === true;
     if (isDeletedDoc) {
         // Si el documento fue eliminado explícitamente, borrar su proyección en /businesses y sus sucursales
@@ -139,7 +140,7 @@ async function projectSingleStore(userId, data) {
     const ratingCount = typeof rawCount === "number" ? rawCount : (rawCount ? Number(rawCount) : 0);
     const rawRating = data.averageRating !== undefined ? data.averageRating : data.rating;
     const rating = ratingCount > 0 ? Number(rawRating || 0) : 0;
-    const deliveryFee = Number(data.deliveryFee || data.costoEnvioBase || 35);
+    const deliveryFee = Number((_b = (_a = data.deliveryFee) !== null && _a !== void 0 ? _a : data.costoEnvioBase) !== null && _b !== void 0 ? _b : 35);
     const estimatedDeliveryTime = Number(data.avgPrepTimeMinutes || data.tiempoEstimadoMinutos || 15);
     const isOpen = data.isOpen === true || data.abierto === true;
     const isFeatured = data.isFeatured !== undefined

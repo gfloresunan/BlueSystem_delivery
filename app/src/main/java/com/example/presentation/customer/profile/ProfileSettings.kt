@@ -12,7 +12,6 @@ import androidx.compose.material.icons.filled.Devices
 import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,6 +19,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.filled.DeleteForever
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.functions.FirebaseFunctions
 import com.example.data.repository.CustomerSettings
 
 @Composable
@@ -171,6 +177,116 @@ fun ProfileSettings(
                         Text("Cerrar otras sesiones activas", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color.Gray)
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Account Deletion Section (Apple 5.1.1(v) & Google Play Data Safety Mandate)
+                var showDeleteAccountDialog by remember { mutableStateOf(false) }
+                var isDeletingAccount by remember { mutableStateOf(false) }
+                val coroutineScope = rememberCoroutineScope()
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { showDeleteAccountDialog = true }
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.DeleteForever, contentDescription = null, tint = Color(0xFFEF4444))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Column {
+                            Text(
+                                "Eliminar mi cuenta",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFEF4444)
+                            )
+                            Text(
+                                "Eliminar datos personales y cuenta permanentemente",
+                                fontSize = 10.sp,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
+                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color(0xFFEF4444))
+                }
+
+                if (showDeleteAccountDialog) {
+                    AlertDialog(
+                        onDismissRequest = { if (!isDeletingAccount) showDeleteAccountDialog = false },
+                        icon = { Icon(Icons.Default.Warning, contentDescription = null, tint = Color(0xFFEF4444)) },
+                        title = {
+                            Text(
+                                text = "¿Eliminar cuenta definitivamente?",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 16.sp
+                            )
+                        },
+                        text = {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text(
+                                    "Esta acción es irreversible y cumple con las políticas de privacidad de Apple y Google Play:",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Text(
+                                    "• Sus datos personales (nombre, teléfono, correo) serán anonimizados de inmediato.\n" +
+                                    "• Sus sesiones activas y tokens de dispositivo serán revocados.\n" +
+                                    "• No debe tener pedidos o viajes en curso al momento de solicitar la baja.",
+                                    fontSize = 11.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                                if (isDeletingAccount) {
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+                                    Text(
+                                        "Eliminando cuenta...",
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    )
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            Button(
+                                onClick = {
+                                    isDeletingAccount = true
+                                    coroutineScope.launch {
+                                        try {
+                                            val functions = FirebaseFunctions.getInstance()
+                                            functions.getHttpsCallable("deleteMyAccount").call().await()
+                                            FirebaseAuth.getInstance().signOut()
+                                            Toast.makeText(context, "Cuenta eliminada correctamente.", Toast.LENGTH_LONG).show()
+                                            showDeleteAccountDialog = false
+                                            onLogout()
+                                        } catch (e: Exception) {
+                                            isDeletingAccount = false
+                                            val errorMsg = e.message ?: "Error al eliminar la cuenta."
+                                            Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+                                        }
+                                    }
+                                },
+                                enabled = !isDeletingAccount,
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444))
+                            ) {
+                                Text("Sí, eliminar definitivamente", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 12.sp)
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = { showDeleteAccountDialog = false },
+                                enabled = !isDeletingAccount
+                            ) {
+                                Text("Cancelar")
+                            }
+                        }
+                    )
                 }
             }
         }

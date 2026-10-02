@@ -174,4 +174,67 @@ class UserFirestoreService implements IUserService {
 
     await batch.commit();
   }
+
+  @override
+  Stream<Set<String>> watchFavoriteBusinessIds(String uid) {
+    final trimmedUid = uid.trim();
+    if (trimmedUid.isEmpty) return Stream.value({});
+    AppLogger.info('UserFirestoreService', 'Watching favorites for uid: $trimmedUid');
+
+    return _firestore
+        .collection('users')
+        .doc(trimmedUid)
+        .collection('favorites')
+        .snapshots()
+        .map((snap) {
+      final bizIds = <String>{};
+      for (final doc in snap.docs) {
+        final data = doc.data();
+        final type = data['type']?.toString().toLowerCase() ?? '';
+        final docId = doc.id;
+        if (type == 'product' || docId.startsWith('prod_') || data.containsKey('productId')) {
+          continue;
+        }
+        final bId = (data['businessId'] ?? data['targetId'] ?? docId.replaceFirst('biz_', '')).toString().trim();
+        if (bId.isNotEmpty) {
+          bizIds.add(bId);
+          bizIds.add(docId);
+        }
+      }
+      return bizIds;
+    });
+  }
+
+  @override
+  Future<void> toggleFavoriteBusiness(String uid, String businessId, {String? businessName}) async {
+    final trimmedUid = uid.trim();
+    final cleanBizId = businessId.trim();
+    if (trimmedUid.isEmpty) throw ArgumentError('uid cannot be empty');
+    if (cleanBizId.isEmpty) throw ArgumentError('businessId cannot be empty');
+
+    final favsColl = _firestore.collection('users').doc(trimmedUid).collection('favorites');
+    final docRef = favsColl.doc(cleanBizId);
+    final docSnap = await docRef.get();
+
+    final batch = _firestore.batch();
+    if (docSnap.exists) {
+      batch.delete(docRef);
+      // Also delete legacy biz_ prefix if exists
+      batch.delete(favsColl.doc('biz_$cleanBizId'));
+      AppLogger.info('UserFirestoreService', 'Removed favorite business: $cleanBizId for uid: $trimmedUid');
+    } else {
+      final data = <String, dynamic>{
+        'type': 'business',
+        'businessId': cleanBizId,
+        'targetId': cleanBizId,
+        'addedAt': FieldValue.serverTimestamp(),
+      };
+      if (businessName != null && businessName.trim().isNotEmpty) {
+        data['name'] = businessName.trim();
+      }
+      batch.set(docRef, data, SetOptions(merge: true));
+      AppLogger.info('UserFirestoreService', 'Added favorite business: $cleanBizId for uid: $trimmedUid');
+    }
+    await batch.commit();
+  }
 }

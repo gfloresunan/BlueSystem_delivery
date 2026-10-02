@@ -141,7 +141,7 @@ class MerchantOrdersViewModel(
         val entregados = orders.filter { it.rawPedido.status.equals("delivered", true) || it.rawPedido.status.equals("completed", true) }
         val cancelados = orders.filter { it.rawPedido.status.equals("cancelled", true) || it.rawPedido.status.equals("rejected", true) }
 
-        val ventasHoy = entregados.sumOf { it.totalAmount }
+        val ventasHoy = entregados.sumOf { it.productSubtotal }
         val sortedOrders = OrderPriorityEngine.sortOrdersByPriority(orders)
 
         val filtered = applyFilters(sortedOrders, _uiState.value.searchQuery, _uiState.value.selectedStatusFilter, _uiState.value.isVipOnlyFilter, _uiState.value.isUrgentOnlyFilter)

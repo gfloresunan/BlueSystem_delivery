@@ -35,6 +35,7 @@ abstract class IAuthService {
   Future<UserProfileEntity> signInWithFacebookToken(String accessToken);
   Future<UserProfileEntity> signInWithGoogle();
   Future<UserProfileEntity> signInWithFacebook();
+  Future<UserProfileEntity> signInWithApple();
   Future<void> sendPasswordReset(String email);
   Future<void> signOut();
   Future<void> refreshIdToken();
@@ -138,6 +139,10 @@ abstract class INotificationService {
     String? role,
     String? deviceId,
   });
+  Future<void> unbindDeviceToken({
+    required String uid,
+    String? deviceId,
+  });
   Stream<Map<String, dynamic>> get onNotificationReceived;
   Stream<Map<String, dynamic>> get onDeepLinkOpened;
   void handleDeepLink(Map<String, dynamic> data);
@@ -163,5 +168,7 @@ abstract class IUserService {
   Future<void> saveAddress(String uid, SavedAddressEntity address);
   Future<void> deleteAddress(String uid, String addressId);
   Future<void> setDefaultAddress(String uid, String addressId);
+  Stream<Set<String>> watchFavoriteBusinessIds(String uid);
+  Future<void> toggleFavoriteBusiness(String uid, String businessId, {String? businessName});
 }
 

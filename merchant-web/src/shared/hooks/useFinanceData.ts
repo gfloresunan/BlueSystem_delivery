@@ -125,18 +125,18 @@ export function useFinanceData(
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  // Porcentaje de comisión resuelto dinámicamente de platform_config/fees
+  // Porcentaje de comisión resuelto dinámicamente desde SSOT canónico (/system_config/global)
   const [platformFeePercent, setPlatformFeePercent] = useState<number>(0.15);
 
   const unsubSummary = useRef<Unsubscribe | null>(null);
   const unsubEvents = useRef<Unsubscribe | null>(null);
 
-  // Resolver configuración de fee una sola vez al montar
+  // Resolver configuración de fee una sola vez al montar desde /system_config/global
   useEffect(() => {
-    getDoc(doc(db, 'platform_config', 'fees'))
+    getDoc(doc(db, 'system_config', 'global'))
       .then((snap) => {
-        if (snap.exists() && snap.data()?.merchantFeePercent != null) {
-          setPlatformFeePercent(Number(snap.data()!.merchantFeePercent));
+        if (snap.exists() && snap.data()?.merchantCommissionRate != null) {
+          setPlatformFeePercent(Number(snap.data()!.merchantCommissionRate));
         }
       })
       .catch(() => {

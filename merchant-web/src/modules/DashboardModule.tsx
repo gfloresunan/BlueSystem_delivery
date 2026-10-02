@@ -8,6 +8,7 @@ import { SkeletonCard, SkeletonTable, SkeletonChart } from '../shared/components
 import { db } from '../shared/services/firebase';
 import { collection, query, where, onSnapshot, orderBy, limit } from 'firebase/firestore';
 import { useAuth } from '../shared/context/AuthContext';
+import { getMerchantOrderFinancials } from '../shared/utils/merchantFinancialMapper';
 
 interface WidgetConfig {
   id: string;
@@ -163,12 +164,9 @@ export const DashboardModule: React.FC = () => {
           const isCancelled = ['cancelled', 'rejected', 'cancelado', 'rechazado'].includes(statusStr);
           const isDelivered = ['delivered', 'completed', 'entregado', 'completado'].includes(statusStr);
 
-          // 1. Venta bruta canónica del comercio
-          const subtotalVal = Number(ord.subtotal || 0);
-          const discountVal = Number(ord.discountAmount || ord.couponDiscount || ord.coupon?.discountAmount || 0);
-          const grossSale = Number(
-            ord.merchantGrossSales ?? (subtotalVal > 0 ? Math.max(0, subtotalVal - discountVal) : (ord.total || ord.totalAmount || 0))
-          );
+          // 1. Venta bruta canónica del comercio (Hardened hierarchy: merchantGrossSales -> subtotal - discount -> items sum -> 0)
+          const financials = getMerchantOrderFinancials(ord);
+          const grossSale = financials.productSubtotal;
 
           // 2. Evaluación de pertenencia a fecha actual (Nicaragua)
           const isToday = isOrderFromToday(ord, nowManaguaStr);
@@ -560,11 +558,8 @@ export const DashboardModule: React.FC = () => {
                             <span className="px-3 py-1 text-xs font-semibold rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30">
                               {(ord.status || ord.estado || 'PENDING').toUpperCase()}
                             </span>
-                            <p className="text-xs text-emerald-400 font-bold mt-1.5" title="Venta de productos del comercio">
-                              C$ {Number(ord.merchantGrossSales ?? (ord.subtotal ? Math.max(0, Number(ord.subtotal) - Number(ord.discountAmount || ord.couponDiscount || 0)) : (ord.total || ord.totalAmount || 0))).toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </p>
-                            <p className="text-[10px] text-slate-400 font-mono">
-                              Total Pago: C$ {Number(ord.total || ord.totalAmount || 0).toLocaleString('es-NI', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            <p className="text-xs text-emerald-400 font-bold mt-1.5" title="Valor de productos del comercio">
+                              {getMerchantOrderFinancials(ord).productSubtotalFormatted}
                             </p>
                           </div>
                         </div>

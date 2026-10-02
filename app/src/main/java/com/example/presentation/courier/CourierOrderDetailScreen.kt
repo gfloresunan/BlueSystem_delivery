@@ -254,7 +254,7 @@ fun CourierOrderDetailScreen(
                                                      else if (pedido.routeDistanceMeters > 0L) pedido.routeDistanceMeters / 1000.0
                                                      else pedido.distanceKm
                                         val rateLabel = if (pedido.courierRatePerKmApplied > 0.0)
-                                            " (${String.format(Locale.US, "%.0f", distKm)} km × C$${String.format(Locale.US, "%.2f", pedido.courierRatePerKmApplied)})"
+                                            " (${String.format(Locale.US, "%.2f", distKm)} km × C$${String.format(Locale.US, "%.2f", pedido.courierRatePerKmApplied)})"
                                         else ""
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
@@ -582,76 +582,74 @@ fun CourierOrderDetailScreen(
                     }
                 }
 
-                // Card 3: Desglose Financiero del Servicio
+                // Card 3: Método de Pago y Cobro
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
                     border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF1E293B))
                 ) {
-                    Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Column(
+                        modifier = Modifier.padding(18.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
                         Text(
-                            text = "DESGLOSE FINANCIERO Y COBRO",
+                            text = "MÉTODO DE PAGO Y COBRO",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Black,
                             color = Color(0xFF38BDF8),
                             letterSpacing = 0.5.sp
                         )
 
-                        if (!isXToY && pedido.subtotalProductos > 0.0) {
-                            FinancialRow(label = "Productos del Comercio", amount = pedido.subtotalProductos)
-                        }
-                        if (pedido.deliveryFee > 0.0) {
-                            FinancialRow(label = "Tarifa de Envío / Flete", amount = pedido.deliveryFee)
-                        }
-                        if (pedido.tip > 0.0) {
-                            FinancialRow(label = "Propina al Motorizado", amount = pedido.tip, highlight = true)
-                        }
-                        if (pedido.additionalCharge > 0.0) {
-                            FinancialRow(label = "Cargos Adicionales", amount = pedido.additionalCharge)
-                        }
-                        if (pedido.discountAmount > 0.0) {
-                            val discLabel = if (pedido.couponCode.isNotBlank()) "Descuento (Cupón: ${pedido.couponCode})" else "Descuento / Promoción"
-                            FinancialRow(label = discLabel, amount = pedido.discountAmount, isDiscount = true)
-                        }
-
-                        HorizontalDivider(color = Color(0xFF1E293B))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text("Total del Servicio", fontWeight = FontWeight.Black, color = Color.White, fontSize = 14.sp)
-                            Text("C$ ${String.format(Locale.US, "%.2f", pedido.total)}", fontWeight = FontWeight.Black, color = Color.White, fontSize = 16.sp)
-                        }
-
-                        Spacer(modifier = Modifier.height(4.dp))
+                        val isCash = pedido.pagoMetodo.lowercase() in listOf("efectivo", "cash")
+                        val amountToCollect = if (pedido.cashReceived > 0.0) pedido.cashReceived else pedido.total
 
                         Surface(
-                            shape = RoundedCornerShape(10.dp),
-                            color = Color(0xFF1E293B),
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (isCash) Color(0xFFF59E0B).copy(alpha = 0.12f) else Color(0xFF3B82F6).copy(alpha = 0.12f),
+                            border = androidx.compose.foundation.BorderStroke(
+                                1.dp,
+                                if (isCash) Color(0xFFF59E0B).copy(alpha = 0.35f) else Color(0xFF3B82F6).copy(alpha = 0.35f)
+                            ),
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(12.dp),
+                                    .padding(horizontal = 14.dp, vertical = 12.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = "Método de Pago: ${pedido.pagoMetodo.uppercase()}",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = if (pedido.pagoMetodo.lowercase() in listOf("efectivo", "cash")) Color(0xFFFBBF24) else Color(0xFF38BDF8)
-                                )
-                                if (pedido.cashReceived > 0.0) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.weight(1f, fill = false)
+                                ) {
                                     Text(
-                                        text = "Recibido: C$ ${String.format(Locale.US, "%.2f", pedido.cashReceived)}",
+                                        text = if (isCash) "💵 Pago en Efectivo:" else "💳 Pago con Tarjeta:",
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isCash) Color(0xFFFBBF24) else Color(0xFF60A5FA)
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = if (isCash) "Cobrado" else "Prepago",
                                         fontSize = 11.sp,
                                         color = Color(0xFF94A3B8),
-                                        fontWeight = FontWeight.SemiBold
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                }
+
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = if (isCash) Color(0xFFF59E0B).copy(alpha = 0.2f) else Color(0xFF3B82F6).copy(alpha = 0.2f),
+                                    modifier = Modifier.padding(start = 8.dp)
+                                ) {
+                                    Text(
+                                        text = if (isCash) "C$ ${String.format(Locale.US, "%.2f", amountToCollect)}" else "C$ 0.00",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Black,
+                                        color = if (isCash) Color(0xFFFBBF24) else Color(0xFF60A5FA),
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp)
                                     )
                                 }
                             }

@@ -101,6 +101,12 @@ class MockUserService implements IUserService {
     _addressesController.add(_addresses);
   }
 
+  @override
+  Stream<Set<String>> watchFavoriteBusinessIds(String uid) => Stream.value(<String>{});
+
+  @override
+  Future<void> toggleFavoriteBusiness(String uid, String businessId, {String? businessName}) async {}
+
   void dispose() {
     _addressesController.close();
   }
@@ -130,6 +136,8 @@ class DummyAuthService implements IAuthService {
   Future<UserProfileEntity> signInWithGoogle() async => throw UnimplementedError();
   @override
   Future<UserProfileEntity> signInWithFacebook() async => throw UnimplementedError();
+  @override
+  Future<UserProfileEntity> signInWithApple() async => throw UnimplementedError();
   @override
   Future<void> sendPasswordReset(String email) async {}
   @override

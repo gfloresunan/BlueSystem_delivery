@@ -253,6 +253,44 @@ class PlatformNotificationAdapter implements INotificationService {
   }
 
   @override
+  Future<void> unbindDeviceToken({
+    required String uid,
+    String? deviceId,
+  }) async {
+    if (uid.isEmpty || uid.startsWith('guest_')) return;
+    try {
+      final resolvedDeviceId = deviceId ?? 'flutter';
+      final unbindData = {
+        'uid': uid,
+        'isActive': false,
+        'tokenStatus': 'unbound_logout',
+        'unbindAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      // 1. Subcolección del usuario (best effort)
+      try {
+        await _firestore
+            .collection('users')
+            .doc(uid)
+            .collection('devices')
+            .doc(resolvedDeviceId)
+            .set(unbindData, SetOptions(merge: true));
+      } catch (e) {
+        AppLogger.warn('PlatformNotificationAdapter', 'Failed updating device unbind in user subcollection: $e');
+      }
+
+      // 2. Colección global indexada user_devices
+      final deviceRef = _firestore.collection('user_devices').doc('${uid}_$resolvedDeviceId');
+      await deviceRef.set(unbindData, SetOptions(merge: true));
+
+      AppLogger.info('PlatformNotificationAdapter', 'Device token unbound successfully on logout for user: $uid');
+    } catch (e, st) {
+      AppLogger.error('PlatformNotificationAdapter', 'Failed unbinding device token on logout', e, st);
+    }
+  }
+
+  @override
   void handleDeepLink(Map<String, dynamic> data) {
     AppLogger.info('PlatformNotificationAdapter', 'Routing deep link: $data');
     _deepLinkController.add(data);

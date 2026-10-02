@@ -34,6 +34,8 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.X2Y_DISPATCH_CONFIG = void 0;
+exports.resetXToYDispatchConfigCache = resetXToYDispatchConfigCache;
+exports.getXToYDispatchConfig = getXToYDispatchConfig;
 exports.calculateHaversineDistanceKm = calculateHaversineDistanceKm;
 exports.discoverEligibleCouriers = discoverEligibleCouriers;
 exports.notifyTargetedCouriers = notifyTargetedCouriers;
@@ -55,6 +57,62 @@ exports.X2Y_DISPATCH_CONFIG = {
     MAX_GPS_STALE_MS: 10 * 60 * 1000, // 10 minutos de frescura GPS
     DEFAULT_CASH_LIMIT_CENTS: 200000, // C$ 2,000.00
 };
+let cachedDispatchConfig = null;
+let cachedDispatchConfigExpiresAt = 0;
+function resetXToYDispatchConfigCache() {
+    cachedDispatchConfig = null;
+    cachedDispatchConfigExpiresAt = 0;
+}
+async function getXToYDispatchConfig() {
+    const now = Date.now();
+    if (cachedDispatchConfig && cachedDispatchConfigExpiresAt > now) {
+        return cachedDispatchConfig;
+    }
+    const fallback = Object.assign({}, exports.X2Y_DISPATCH_CONFIG);
+    try {
+        const snap = await db.collection("system_config").doc("global").get();
+        if (snap.exists) {
+            const data = snap.data();
+            const cfg = data === null || data === void 0 ? void 0 : data.xToYDispatch;
+            if (cfg && typeof cfg === "object") {
+                const radii = cfg.searchRadiiKm;
+                const timeouts = cfg.expansionTimeoutSeconds;
+                const gpsFreshness = cfg.gpsFreshnessMinutes;
+                // Validaciones estrictas de bounds:
+                // 1. Radios: array de 3 números positivos estrictamente crecientes
+                const validRadii = Array.isArray(radii) &&
+                    radii.length === 3 &&
+                    radii.every((r) => typeof r === "number" && r > 0) &&
+                    radii[0] < radii[1] && radii[1] < radii[2];
+                // 2. Timeouts: array de 3 números positivos estrictamente crecientes
+                const validTimeouts = Array.isArray(timeouts) &&
+                    timeouts.length === 3 &&
+                    timeouts.every((t) => typeof t === "number" && t > 0) &&
+                    timeouts[0] < timeouts[1] && timeouts[1] < timeouts[2];
+                // 3. Frescura GPS: número positivo (> 0)
+                const validGps = typeof gpsFreshness === "number" && gpsFreshness > 0;
+                cachedDispatchConfig = {
+                    INITIAL_RADIUS_KM: validRadii ? radii[0] : fallback.INITIAL_RADIUS_KM,
+                    STAGE_2_RADIUS_KM: validRadii ? radii[1] : fallback.STAGE_2_RADIUS_KM,
+                    STAGE_3_RADIUS_KM: validRadii ? radii[2] : fallback.STAGE_3_RADIUS_KM,
+                    STAGE_2_EXPANSION_SECONDS: validTimeouts ? timeouts[0] : fallback.STAGE_2_EXPANSION_SECONDS,
+                    STAGE_3_EXPANSION_SECONDS: validTimeouts ? timeouts[1] : fallback.STAGE_3_EXPANSION_SECONDS,
+                    TIMEOUT_SECONDS: validTimeouts ? timeouts[2] : fallback.TIMEOUT_SECONDS,
+                    MAX_GPS_STALE_MS: validGps ? gpsFreshness * 60 * 1000 : fallback.MAX_GPS_STALE_MS,
+                    DEFAULT_CASH_LIMIT_CENTS: fallback.DEFAULT_CASH_LIMIT_CENTS,
+                };
+                cachedDispatchConfigExpiresAt = now + 60 * 1000;
+                return cachedDispatchConfig;
+            }
+        }
+    }
+    catch (err) {
+        logger_1.Logger.warn("[X2Y_DISPATCH] Error al obtener /system_config/global.xToYDispatch, aplicando fallback", { error: err.message });
+    }
+    cachedDispatchConfig = fallback;
+    cachedDispatchConfigExpiresAt = now + 60 * 1000;
+    return fallback;
+}
 /**
  * Cálculo geodésico Haversine entre dos puntos (km).
  * Métrica operacional exclusiva para Courier Discovery (NO altera Pricing ni Ruta Vial).
@@ -77,13 +135,14 @@ function calculateHaversineDistanceKm(lat1, lon1, lat2, lon2) {
  * Motor de Elegibilidad de Flota X→Y Server-Authoritative
  * Reutiliza e implementa estrictamente las invariantes de FleetEligibilityEngine.kt
  */
-async function discoverEligibleCouriers(originLat, originLng, maxRadiusKm, excludedUids = []) {
+async function discoverEligibleCouriers(originLat, originLng, maxRadiusKm, excludedUids = [], customDispatchConfig) {
     var _a, _b, _c, _d, _e, _f, _g, _h;
     const candidates = [];
     const excludedSet = new Set(excludedUids.map((u) => u.trim()));
     if (!originLat || !originLng) {
         return [];
     }
+    const dispatchConfig = customDispatchConfig || await getXToYDispatchConfig();
     // 1. Consultar telemetría en /ubicaciones_repartidores
     const locationsSnap = await db.collection("ubicaciones_repartidores").limit(100).get();
     if (locationsSnap.empty) {
@@ -117,8 +176,8 @@ async function discoverEligibleCouriers(originLat, originLng, maxRadiusKm, exclu
         else if (data.updatedAt) {
             lastUpdateMs = typeof data.updatedAt.toMillis === "function" ? data.updatedAt.toMillis() : Date.parse(data.updatedAt) || 0;
         }
-        if (lastUpdateMs > 0 && nowMs - lastUpdateMs > exports.X2Y_DISPATCH_CONFIG.MAX_GPS_STALE_MS) {
-            // Ubicación obsoleta (> 10 min)
+        if (lastUpdateMs > 0 && nowMs - lastUpdateMs > dispatchConfig.MAX_GPS_STALE_MS) {
+            // Ubicación obsoleta
             continue;
         }
         // 3. Validación de Distancia Operacional Haversine al Punto X
@@ -143,7 +202,7 @@ async function discoverEligibleCouriers(originLat, originLng, maxRadiusKm, exclu
             const canReceive = bData.canReceiveNewOrders !== false;
             const state = (bData.financialAccessState || "ALLOW").toString().toUpperCase();
             const cashCents = Number(bData.cashOutstandingCents || 0);
-            const limitCents = Number(bData.effectiveCashLimitCents || bData.cashLimitCents || exports.X2Y_DISPATCH_CONFIG.DEFAULT_CASH_LIMIT_CENTS);
+            const limitCents = Number(bData.effectiveCashLimitCents || bData.cashLimitCents || dispatchConfig.DEFAULT_CASH_LIMIT_CENTS);
             const hasOverdue = Boolean(bData.hasOverdueClosure);
             if (!canReceive || state.startsWith("BLOCKED") || hasOverdue || (limitCents > 0 && cashCents >= limitCents)) {
                 continue; // Bloqueado financieramente
@@ -209,8 +268,9 @@ async function notifyTargetedCouriers(tripId, courierUids, originAddress, destin
 async function advanceTripDispatch(tripId) {
     const tripRef = db.collection("deliveryTrips").doc(tripId);
     const orderRef = db.collection("orders").doc(tripId);
+    const dispatchConfig = await getXToYDispatchConfig();
     let targetStage = "SEARCHING_5KM";
-    let targetRadiusKm = exports.X2Y_DISPATCH_CONFIG.INITIAL_RADIUS_KM;
+    let targetRadiusKm = dispatchConfig.INITIAL_RADIUS_KM;
     let shouldCancelTimeout = false;
     let newEligibleUids = [];
     let existingEligibleUids = [];
@@ -269,10 +329,10 @@ async function advanceTripDispatch(tripId) {
         destinationAddress = dest.address || tripData.destinationAddress || "Destino";
         customerOffer = Number(tripData.customerOffer || tripData.deliveryFee || 0);
         // 3. Determinación Autoritativa de Stage según elapsedSeconds
-        if (elapsedSeconds >= exports.X2Y_DISPATCH_CONFIG.TIMEOUT_SECONDS) {
-            // 🔒 TIMEOUT (>= 10:00) -> Cancelación Atómica Definitiva
+        if (elapsedSeconds >= dispatchConfig.TIMEOUT_SECONDS) {
+            // 🔒 TIMEOUT -> Cancelación Atómica Definitiva
             targetStage = "TIMEOUT";
-            targetRadiusKm = exports.X2Y_DISPATCH_CONFIG.STAGE_3_RADIUS_KM;
+            targetRadiusKm = dispatchConfig.STAGE_3_RADIUS_KM;
             shouldCancelTimeout = true;
             const cancelUpdates = {
                 status: "CANCELLED",
@@ -303,21 +363,21 @@ async function advanceTripDispatch(tripId) {
                 reason: "TIMED_OUT_AND_CANCELLED",
             };
         }
-        else if (elapsedSeconds >= exports.X2Y_DISPATCH_CONFIG.STAGE_3_EXPANSION_SECONDS) {
+        else if (elapsedSeconds >= dispatchConfig.STAGE_3_EXPANSION_SECONDS) {
             targetStage = "EXPANDED_30KM";
-            targetRadiusKm = exports.X2Y_DISPATCH_CONFIG.STAGE_3_RADIUS_KM;
+            targetRadiusKm = dispatchConfig.STAGE_3_RADIUS_KM;
         }
-        else if (elapsedSeconds >= exports.X2Y_DISPATCH_CONFIG.STAGE_2_EXPANSION_SECONDS) {
+        else if (elapsedSeconds >= dispatchConfig.STAGE_2_EXPANSION_SECONDS) {
             targetStage = "EXPANDED_15KM";
-            targetRadiusKm = exports.X2Y_DISPATCH_CONFIG.STAGE_2_RADIUS_KM;
+            targetRadiusKm = dispatchConfig.STAGE_2_RADIUS_KM;
         }
         else {
             targetStage = "SEARCHING_5KM";
-            targetRadiusKm = exports.X2Y_DISPATCH_CONFIG.INITIAL_RADIUS_KM;
+            targetRadiusKm = dispatchConfig.INITIAL_RADIUS_KM;
         }
         // 4. Descubrimiento de Candidatos dentro del nuevo radio
         const rejectedBy = tripData.rejectedByCouriers || [];
-        const candidates = await discoverEligibleCouriers(originLat, originLng, targetRadiusKm, rejectedBy);
+        const candidates = await discoverEligibleCouriers(originLat, originLng, targetRadiusKm, rejectedBy, dispatchConfig);
         const candidateUids = candidates.map((c) => c.courierId);
         // Identificar nuevos motorizados para evitar ofertas duplicadas
         const existingSet = new Set(existingEligibleUids);

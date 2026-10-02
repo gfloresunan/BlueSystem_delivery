@@ -91,8 +91,8 @@ const healthModule = {
                     <!-- Disponibilidad del Sistema (Uptime) -->
                     <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-1 shadow">
                         <span class="text-[10px] text-gray-500 uppercase font-semibold">Disponibilidad (Uptime)</span>
-                        <p class="text-2xl font-bold text-green-400 font-mono">99.98%</p>
-                        <span class="text-[10px] text-gray-400">SLA Garantizado</span>
+                        <p class="text-2xl font-bold text-green-400 font-mono">99.9%</p>
+                        <span class="text-[10px] text-gray-400">SLA Objetivo (Nominal)</span>
                     </div>
 
                     <!-- Pedidos en Curso -->
@@ -102,18 +102,18 @@ const healthModule = {
                         <span class="text-[10px] text-gray-400">En preparación / En ruta</span>
                     </div>
 
-                    <!-- Tiempo Medio de Sincronización (MTTS) -->
+                    <!-- Latencia DB Firestore (Ping Real) -->
                     <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-1 shadow">
-                        <span class="text-[10px] text-gray-500 uppercase font-semibold">Tiempo Medio Sync (MTTS)</span>
-                        <p class="text-2xl font-bold text-blue-400 font-mono">14 ms</p>
-                        <span class="text-[10px] text-gray-400">Respuesta delta instantánea</span>
+                        <span class="text-[10px] text-gray-500 uppercase font-semibold">Latencia DB (Ping Real)</span>
+                        <p class="text-2xl font-bold text-blue-400 font-mono" id="kpi-db-latency">-- ms</p>
+                        <span class="text-[10px] text-gray-400" id="kpi-db-status">Ping horario activo</span>
                     </div>
 
                     <!-- Tasa de Éxito Cloud Functions -->
                     <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 space-y-1 shadow">
-                        <span class="text-[10px] text-gray-500 uppercase font-semibold">Éxito Cloud Functions</span>
-                        <p class="text-2xl font-bold text-green-400 font-mono">100.0%</p>
-                        <span class="text-[10px] text-gray-400">0 errores en producción</span>
+                        <span class="text-[10px] text-gray-500 uppercase font-semibold">Cloud Functions</span>
+                        <p class="text-2xl font-bold text-green-400 font-mono">OPERATIVO</p>
+                        <span class="text-[10px] text-gray-400">93 Callables / Triggers</span>
                     </div>
 
                     <!-- Notificaciones Enviadas Hoy -->
@@ -174,14 +174,14 @@ const healthModule = {
                         <h3 class="text-sm font-semibold text-gray-200">📊 Tasa de Errores & Tráfico por Hora</h3>
                         <div class="grid grid-cols-2 gap-4">
                             <div class="bg-gray-950 border border-gray-800 rounded-lg p-4 space-y-1">
-                                <span class="text-[10px] text-gray-500 uppercase font-semibold">Errores / Hora</span>
-                                <p class="text-2xl font-bold text-green-400 font-mono">0.00</p>
-                                <span class="text-[10px] text-gray-500">Salud perfecta</span>
+                                <span class="text-[10px] text-gray-500 uppercase font-semibold">Tasa de Errores</span>
+                                <p class="text-base font-bold text-green-400 font-mono">Calibración Post-GoLive</p>
+                                <span class="text-[10px] text-gray-500">Monitoreo inicial</span>
                             </div>
                             <div class="bg-gray-950 border border-gray-800 rounded-lg p-4 space-y-1">
-                                <span class="text-[10px] text-gray-500 uppercase font-semibold">Tasa de Error Sync</span>
-                                <p class="text-2xl font-bold text-green-400 font-mono">0.0%</p>
-                                <span class="text-[10px] text-gray-500">Reintentos exitosos</span>
+                                <span class="text-[10px] text-gray-500 uppercase font-semibold">Crash-Free Rate</span>
+                                <p class="text-base font-bold text-blue-400 font-mono">Medición Vitals</p>
+                                <span class="text-[10px] text-gray-500">Target >99%</span>
                             </div>
                         </div>
                         <div class="bg-gray-950 border border-gray-800 rounded-lg p-4 space-y-2 text-xs font-mono">
@@ -319,6 +319,22 @@ const healthModule = {
             }, (err) => {
                 console.warn("Health sessions snapshot warning:", err);
             });
+
+            // Suscripción reactiva a métricas reales del backend (/system_metrics)
+            db.collection('system_metrics')
+                .orderBy('timestamp', 'desc')
+                .limit(1)
+                .onSnapshot(snap => {
+                    if (!snap.empty) {
+                        const m = snap.docs[0].data();
+                        const latencyEl = document.getElementById('kpi-db-latency');
+                        if (latencyEl && m.dbLatencyMs !== undefined) {
+                            latencyEl.textContent = `${m.dbLatencyMs} ms`;
+                        }
+                    }
+                }, err => {
+                    console.warn("System metrics snapshot notice:", err);
+                });
         } catch (e) {
             console.error("Error loading health data:", e);
         }

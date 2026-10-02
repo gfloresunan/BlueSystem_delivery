@@ -804,10 +804,6 @@ service cloud.firestore {
       allow write: if isPlatformAdmin();
     }
 
-    match /users/{userId}/notifications/{notifId} {
-      allow read, write: if true;
-    }
-
     // ─── /incidents/{incidentId} ─────────────────────────────────────────────
     match /incidents/{incidentId} {
       allow read: if isAuthenticated() && (
@@ -872,8 +868,12 @@ service cloud.firestore {
       allow read: if isAuthenticated() && (
         currentUid() == resource.data.courierId ||
         isPlatformAdmin() ||
-        isBusinessAdmin() ||
-        isSupervisor()
+        (isSupervisor() && (
+          getTenantId() == null ||
+          resource.data.get("tenantId", null) == null ||
+          getTenantId() == resource.data.get("tenantId", null) ||
+          isTenantMember(resource.data.get("tenantId", null))
+        ))
       );
       allow write: if false; // Solo Admin SDK vía Cloud Functions
     }

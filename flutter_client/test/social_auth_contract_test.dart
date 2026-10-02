@@ -17,6 +17,7 @@ import 'package:bluesystem_delivery_flutter/presentation/providers/session_state
 class MockAuthService implements IAuthService {
   bool googleInvoked = false;
   bool facebookInvoked = false;
+  bool appleInvoked = false;
   bool shouldFail = false;
   bool shouldCancel = false;
 
@@ -24,6 +25,17 @@ class MockAuthService implements IAuthService {
     uid: 'google_uid_123',
     email: 'cliente.google@test.com',
     displayName: 'Cliente Google Real',
+    role: EiamRole.client,
+    activeTenantId: 'ten_bluesystem_core',
+    isVerified: true,
+    createdAt: 100000,
+    updatedAt: 100000,
+  );
+
+  final UserProfileEntity mockAppleUser = const UserProfileEntity(
+    uid: 'apple_uid_789',
+    email: 'cliente.apple@test.com',
+    displayName: 'Cliente Apple Real',
     role: EiamRole.client,
     activeTenantId: 'ten_bluesystem_core',
     isVerified: true,
@@ -78,6 +90,18 @@ class MockAuthService implements IAuthService {
       throw Exception('network_error: connection refused');
     }
     return mockFacebookUser;
+  }
+
+  @override
+  Future<UserProfileEntity> signInWithApple() async {
+    appleInvoked = true;
+    if (shouldCancel) {
+      throw Exception('user-cancelled: apple_cancelled');
+    }
+    if (shouldFail) {
+      throw Exception('network_error: connection refused');
+    }
+    return mockAppleUser;
   }
 
   @override
@@ -180,6 +204,18 @@ void main() {
       expect(sessionState.status, AuthStatus.authenticated);
       expect(sessionState.currentUser?.uid, 'facebook_uid_456');
       expect(sessionState.currentUser?.email, 'cliente.facebook@test.com');
+      expect(sessionState.claims?.role, EiamRole.client);
+      expect(sessionState.claims?.tenantId, 'ten_bluesystem_core');
+    });
+
+    test('Sign in with Apple federated success hydrates session and claims', () async {
+      sessionState.requireLogin();
+      await sessionState.signInWithAppleFederated();
+
+      expect(mockAuth.appleInvoked, isTrue);
+      expect(sessionState.status, AuthStatus.authenticated);
+      expect(sessionState.currentUser?.uid, 'apple_uid_789');
+      expect(sessionState.currentUser?.email, 'cliente.apple@test.com');
       expect(sessionState.claims?.role, EiamRole.client);
       expect(sessionState.claims?.tenantId, 'ten_bluesystem_core');
     });
