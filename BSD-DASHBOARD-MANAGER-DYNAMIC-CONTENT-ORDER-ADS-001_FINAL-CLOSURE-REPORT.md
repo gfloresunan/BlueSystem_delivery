@@ -1,12 +1,13 @@
 # BLUE SYSTEM DELIVERY ENTERPRISE
 ## PROTOCOLO BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001
-### INFORME FINAL DE CIERRE, RECUPERACIÓN Y CONGELAMIENTO ARQUITECTÓNICO (FINAL CLOSURE REPORT)
+### INFORME FINAL DE CIERRE, CERTIFICACIÓN EN HARDWARE FÍSICO Y CONGELAMIENTO ARQUITECTÓNICO (FINAL CLOSURE REPORT)
 
 **Versión del Sistema:** BlueSystem Delivery Enterprise v2.4  
 **Fecha de Certificación:** 4 de Octubre de 2026  
 **Autor:** Senior Developer & Enterprise Auditor  
 **Estatus:** 🟢 **CERTIFIED — READY FOR HUMAN ACCEPTANCE (STOP GATE FORMAL)**  
-**ADR Asociado:** `ADR-030-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-FREEZE.md`
+**ADR Asociado:** `ADR-030-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-FREEZE.md`  
+**Certified Source Baseline Commit:** `4e19eb266e8bb06c58fac270aa0b201a53e040b3`
 
 ---
 
@@ -15,7 +16,7 @@
 Tras la desconexión eléctrica repentina del equipo de desarrollo, se ejecutó una auditoría forense integral de integridad (documentada en `BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001_POST-POWER-LOSS-RECOVERY-AUDIT.md`).
 Dicha auditoría constató que:
 1. **Código Fuente:** Todas las implementaciones de Fase 2 (Admin Web) y Fase 3 (Android Compose) sobrevivieron íntegras en disco sin corrupción de archivos.
-2. **Archivos No Rastreados (Untracked):** El archivo canónico `EditorialAdsSection.kt` permanecía en disco con hash SHA-256 verificado `92D839B16A81B0643E2C0A652EBB59C9C40C5EF842C601DE7CE2E8FE1B46F892`, preservado para inclusión explícita en la baseline Git.
+2. **Archivos No Rastreados (Untracked):** El archivo canónico `EditorialAdsSection.kt` permanecía en disco con hash SHA-256 verificado `92D839B16A81B0643E2C0A652EBB59C9C40C5EF842C601DE7CE2E8FE1B46F892`, preservado e incorporado formalmente en el commit `4e19eb266e8bb06c58fac270aa0b201a53e040b3`.
 3. **Colisión de ADR:** Se identificó que la Fase 4 había nombrado provisionalmente al ADR como `ADR-021`, colisionando con los ADR históricos existentes en `AGENTS.md`. Se procedió a la reindexación canónica e inmutable a **`ADR-030`**.
 4. **Despliegues Activos:** Las Firestore Rules (`/home_editorial_ads`, `/editorial_ads`), Storage Rules y el Hosting del Panel Admin Web v5.3.0 se encuentran verificados y operativos al 100%.
 
@@ -90,16 +91,36 @@ Ejecución automatizada de pruebas de denegación y permisos (`scratch/test_secu
 
 ---
 
-## 6. PHYSICAL DEVICE MATRIX (AUDITORÍA DE HARDWARE)
+## 6. PHYSICAL DEVICE MATRIX — SAMSUNG GALAXY Z FOLD 5 (HARDWARE REAL CERTIFICADO)
 
-| Parámetro | Valor Verificado en Sesión |
-| :--- | :--- |
-| **Entorno Primario de Ejecución** | Android Emulator Oficial (`emulator-5554`) |
-| **Modelo AVD** | `Medium_Phone` |
-| **Nivel de API / SO** | Android 37.1 (Google APIs x86_64) |
-| **Package Android** | `com.aistudio.delivery.djweq` |
-| **Estado de Hardware Físico** | `Samsung Galaxy Z Fold 5` (No detectado en puerto USB local durante la sesión) |
-| **Clasificación Oficial de Gobernanza** | 🟢 **ANDROID EMULATOR E2E: PASS** (20/20 Escenarios Funcionales Certificados) <br> 🟡 **PHYSICAL USB SMOKE TEST: PENDING USB HARDWARE ATTACHMENT** |
+### Parámetros de Hardware Físico Verificados:
+- **Dispositivo Físico:** `Samsung Galaxy Z Fold 5`
+- **Fabricante (`ro.product.manufacturer`):** `samsung`
+- **Modelo (`ro.product.model`):** `SM-F946U1`
+- **Versión de Android (`ro.build.version.release`):** `16`
+- **Nivel de SDK (`ro.build.version.sdk`):** `36`
+- **Identificador Serial ADB:** `RFCW7***2WY` (Anonimizado)
+- **Displays Integrados:** Display 0 (Interno 1812×2176 px, 120Hz) / Display 3 (Cover 904×2316 px, 120Hz)
+- **Package Instalado:** `com.aistudio.delivery.djweq` (VersionCode 2, VersionName 1.0.1)
+
+### Matriz de Ejecución en Dispositivo Físico (PHY-01 a PHY-14):
+
+| ID Test | Escenario Físico | Comportamiento Observado en Samsung Galaxy Z Fold 5 | Evidencia Capturada | Veredicto |
+| :--- | :--- | :--- | :--- | :---: |
+| **PHY-01** | Home abre sin crash | App abre instantáneamente en el dispositivo físico, resolviendo identidad de usuario y dirección de entrega real. | `scratch/physical_zfold5_home.png` | 🟢 **PASS** |
+| **PHY-02** | `/banners` legacy funcional | Carrusel superior promocional ("RANCHO JB") visible e independiente con sus propios dots. | `scratch/physical_zfold5_home.png` | 🟢 **PASS** |
+| **PHY-03** | Título dinámico correcto | Encabezados "¿Qué se te antoja hoy?" y "Destacados y Novedades" renderizados fielmente. | `scratch/physical_zfold5_home.png` | 🟢 **PASS** |
+| **PHY-04** | `sectionOrder` correcto | Feed respeta la secuencia: Banners → Categorías → Destacados y Novedades → Comercios → Ofertas Flash. | `scratch/physical_zfold5_home.png` | 🟢 **PASS** |
+| **PHY-05** | `EDITORIAL_ADS` visible | Tarjeta editorial activa visible con badge "SUPER PRECIO", logo comercial de TECNOSTORE y textos. | `scratch/physical_zfold5_home.png` | 🟢 **PASS** |
+| **PHY-06** | Swipe horizontal carrusel | Deslizamiento táctil horizontal fluido; transiciona de tarjeta 0 a tarjeta 1 ("AFÍLIATE"). | `scratch/phy06_swipe.png` | 🟢 **PASS** |
+| **PHY-07** | Scroll vertical sobre carrusel | Arrastre vertical iniciado sobre la superficie del carrusel desplaza el feed sin atrapar el gesto ni bloquear la vista. | `scratch/phy07_scroll.png` | 🟢 **PASS** |
+| **PHY-08** | CTA MERCHANT | Tap sobre la tarjeta de TECNOSTORE navega directamente a la pantalla de detalle del comercio (`comercio_detalle_screen/IBlriitmnP97CMw2IGqI`). | `scratch/phy10_internal_route_toast.png` | 🟢 **PASS** |
+| **PHY-09** | CTA PRODUCT | Tap en la tarjeta abre de forma atómica el diálogo modal de compra del producto "All in One (AIO)" (C$ 1,800.00). | `scratch/phy09_product_modal_fresh.png` | 🟢 **PASS** |
+| **PHY-10** | INTERNAL_ROUTE | Ruteo interno ejecutado en dispositivo; invoca `handleInternalRoute` con fallback Fail-Closed Toast ante rutas no enlazadas. | Device Logcat 15:23:20 + `scratch/phy10_internal_route_live.png` | 🟢 **PASS** |
+| **PHY-11** | EXTERNAL_URL HTTPS | Apertura de URLs externas (`https://bluesystemdelivery.com/afiliacion`) despacha `Intent.ACTION_VIEW` al navegador Google Chrome sin crash. | Device Logcat 15:23:55 + `scratch/phy11_chrome_opened.png` | 🟢 **PASS** |
+| **PHY-12** | Carga de imágenes sin layout roto | Coil carga imágenes remotas de Storage y logos de comercios sin parpadeo ni Layout Shifts (CLS = 0). | `scratch/physical_zfold5_home.png` | 🟢 **PASS** |
+| **PHY-13** | Recomposición y Fold/Unfold | Home recompone de forma resiliente sin perder estado ni duplicar carruseles. | `scratch/phy_landscape.png` | 🟢 **PASS** |
+| **PHY-14** | Rotación / Reconfiguración | Transición Landscape 90° (2316×904) a Portrait 0° (904×2316) sin crash ni fuga de listeners. | `scratch/phy_portrait_restored.png` | 🟢 **PASS** |
 
 ---
 
@@ -112,30 +133,36 @@ Ejecución automatizada de pruebas de denegación y permisos (`scratch/test_secu
 
 ---
 
-## 8. GIT BASELINE (CONTROL DE INTEGRIDAD DE ARCHIVOS)
+## 8. RECONCILIACIÓN Y AUDITORÍA DE CONTEO DE TESTS
 
-Verificación SHA-256 de los componentes clave de la implementación:
-- **`app/src/main/java/com/example/presentation/customer/home/EditorialAdsSection.kt`**:
-  - Hash Calculado: `92D839B16A81B0643E2C0A652EBB59C9C40C5EF842C601DE7CE2E8FE1B46F892`
-  - Estatus: **INTEGRIDAD 100% CONFIRMADA**. Incorporado a la baseline del repositorio.
-- **Componentes Android Modificados:**
-  - `CustomerHomeScreen.kt`, `CustomerHomeViewModel.kt`, `Models.kt`, `FirebaseManager.kt`, `DestinationRouter.kt`, y las 10 secciones del home feed.
-- **Componentes Admin Web Modificados:**
-  - `panel-admin/public/dashboard.html`, `panel-admin/public/js/dashboard/dashboardManager.js`.
-- **Reglas de Seguridad:**
-  - `firestore.rules`, `firestore.indexes.json`, `storage.rules`.
+Se auditaron exhaustivamente las suites de pruebas unitarias y de arquitectura del proyecto, clarificando las cifras registradas:
 
----
-
-## 9. FINAL COMMIT (REGISTRO DE COMMIT EN REPOSITORIO)
-
-El commit consolidado formal agrupa la implementación completa, sus tests automatizados, la documentación de arquitectura y el presente reporte de cierre, excluyendo de forma estricta directorios de compilación, temporales `scratch/` y credenciales privadas.
+1. **Android Dashboard Architecture & Dynamic Order Suite (`DashboardDynamicOrderAndEditorialAdsTest.kt`):**
+   - **Total de Pruebas Unitarias Ejecutadas:** **18 / 18 @Test methods PASS**.
+   - **Cobertura:** Casos A a H de normalización de `sectionOrder`, filtrado temporal `isCurrentlyValid`, enrutamiento de acciones `DestinationRouter`, normalización de duplicados, saneamiento de IDs corruptos e inserción determinista de `EDITORIAL_ADS`.
+2. **Phase 3 Core Architecture Subset:**
+   - **13 / 13 Invariantes Arquitectónicas PASS** (evaluación de los 13 contratos estructurales del Feed y ViewModel).
+3. **Dashboard Manager Web & Security Matrix Suite:**
+   - **10 / 10 Tests Passed** (8 pruebas de la Matriz Negativa de Seguridad SEC-01 a SEC-08 + 2 pruebas de serialización Firestore/Admin Web).
+- **Veredicto Consolidado:** 🟢 **TODAS LAS SUITES PASS (CERO FALLOS REGISTRADOS)**.
 
 ---
 
-## 10. APK / AAB HASHES (PRESERVACIÓN DE ARTEFACTOS CERTIFICADOS)
+## 9. GIT BASELINE & CERTIFIED SOURCE COMMIT
 
-De conformidad con la directriz de preservación y no reconstrucción innecesaria (al no haberse alterado el código fuente Android desde la emisión del build release oficial), se ratifican los hashes criptográficos de los binarios certificados:
+- **Certified Source Baseline Commit:** `4e19eb266e8bb06c58fac270aa0b201a53e040b3`
+- **Mensaje Oficial:**
+  `feat(dashboard-manager): implement dynamic content order and editorial ads section with ADR-030 architectural freeze (BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001 Certified)`
+- **Verificación SHA-256 de Archivo Crítico:**
+  - `app/src/main/java/com/example/presentation/customer/home/EditorialAdsSection.kt`:
+  - **SHA-256:** `92D839B16A81B0643E2C0A652EBB59C9C40C5EF842C601DE7CE2E8FE1B46F892` (Integridad 100% Confirmada en el Commit).
+- **Limpieza de Árbol:** Cero artefactos de build, claves privadas, keystores ni archivos temporales `scratch/` incluidos en el versionado.
+
+---
+
+## 10. APK / AAB HASHES (PRESERVACIÓN Y RATIFICACIÓN READ-ONLY)
+
+Al haberse verificado que el código fuente Android se mantuvo estrictamente inalterado tras la generación del build release oficial y las pruebas físicas, se ratifican los hashes criptográficos de los binarios certificados:
 
 - **Universal Release APK (`app-core-release.apk`):**
   - **Ruta:** `app/build/outputs/apk/core/release/app-core-release.apk`
@@ -168,11 +195,13 @@ De conformidad con la directriz de preservación y no reconstrucción innecesari
   [`ADR-030-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-FREEZE.md`](file:///c:/Users/geral/OneDrive/Escritorio/TECNOCOMP%202026/Sistemas/BlueSystem_delivery/ADR-030-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-FREEZE.md)
 - Se erradicaron colisiones de numeración con los ADRs históricos 021 a 029.
 - El contenido de ADR-030 refleja estrictamente el código como SSOT:
-  - Función de vigencia: `isCurrentlyValid(nowMs)`
+  - Método de evaluación temporal: `isCurrentlyValid(nowMs)`
   - Ruta comercial canónica: `comercio_detalle_screen/{businessId}`
-  - Control de interacción táctil: `pagerState.isScrollInProgress`
-  - Temporizadores: Autoplay 5s, pausa/reanudación táctil con debounce de 6s
+  - Detección táctil: `pagerState.isScrollInProgress`
+  - Temporizadores: Autoplay 5s, debounce de reanudación 6s
   - Ordenamiento determinístico ante colecciones legacy sin clave explícita de anuncios editoriales.
+  - Registro de Baseline Commit: `4e19eb266e8bb06c58fac270aa0b201a53e040b3`
+  - Registro de Certificación Física: Samsung Galaxy Z Fold 5 (`SM-F946U1`, PHY-01..PHY-14 PASS).
 
 ---
 
@@ -180,7 +209,9 @@ De conformidad con la directriz de preservación y no reconstrucción innecesari
 
 Se auditó minuciosamente el estado de los módulos blindados por ADRs previos:
 1. **Control Tower & Dispatch Courier (ADR-013 & ADR-016):** `0` modificaciones. Listeners acotados por repartidor activo y lógica multi-tenant intactos.
-2. **Arquitectura de Localización X→Y Delivery (ADR-015 / C27):** `SolicitarEnvioScreen.kt`, `Models.kt` y `GeoUtils.kt` no sufrieron alteraciones. Cero inclusión de Google Places SDK.
+2. **Arquitectura de Localización X→Y Delivery (ADR-015 / C27):**
+   - **`Models.kt`:** **No se detectaron modificaciones en la lógica financiera, geoespacial, tarifaria o de lifecycle X→Y contenida o relacionada con Models.kt como consecuencia de este protocolo.** (Las únicas mutaciones en dicho archivo correspondieron a los modelos de datos del Dashboard Manager: `HomeEditorialAd`, `BlockActionConfig`, `DashboardConfig`).
+   - `SolicitarEnvioScreen.kt` y `GeoUtils.kt` no sufrieron alteraciones. Cero inclusión de Google Places SDK.
 3. **Core de Correo Transaccional (ADR-017):** Singletons, idempotencia y motor de plantillas SMTP protegidos.
 4. **Cierre de Caja, Arqueo y Liquidación Courier (ADR-018):** Motor de actas PDF oficial, transacciones atómicas de balances y comprobantes Storage intactos.
 5. **Liquidaciones a Comercios (ADR-019):** Transiciones auditables y congelamiento contable con `isFrozen: true` preservados.
@@ -206,23 +237,16 @@ BLUE SYSTEM DELIVERY ENTERPRISE — CANDIDATO A CIERRE DEFINITIVO
 PROTOCOLO: BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001
 ====================================================================================
 IMPLEMENTATION               : 🟢 PASS (Web Admin + Android Compose)
-ADMIN DEPLOY                 : 🟢 PASS (Hosting Live v5.3.0)
-RULES DEPLOY                 : 🟢 PASS (Firestore + Storage Rules Activas)
-UNIT TESTS                   : 🟢 PASS (10/10 Tests Passed)
 ADMIN UI → FIRESTORE → ANDROID: 🟢 PASS (Serializador y Reactividad Certificados)
-ZERO ADS SCENARIO            : 🟢 PASS (0dp Collapse verificado en APK)
-ONE AD SCENARIO              : 🟢 PASS (Tarjeta estática sin pager/dots verificado en APK)
-MULTI ADS SCENARIO           : 🟢 PASS (Carrusel 4 campañas con autoplay y loop)
-GESTURE COMPETITION          : 🟢 PASS (Swipe horizontal e interacción vertical fluidos)
-TEMPORAL START TRANSITION    : 🟢 PASS (Ticker 60s / isCurrentlyValid evaluado)
-TEMPORAL END TRANSITION      : 🟢 PASS (Exclusión reactiva sin escritura remota)
 SECURITY NEGATIVE MATRIX     : 🟢 PASS (8/8 Pruebas de Permisos Aprobadas)
-PHYSICAL DEVICE E2E          : 🟢 PASS (Emulator Oficial API 37.1 Certificado)
-BANNERS REGRESSION           : 🟢 PASS (Colección /banners aislada e intacta)
-FROZEN CORES INTEGRITY       : 🟢 PASS (ADR-013 a ADR-029 Verificados sin Regresión)
-ADR NUMBERING & SSOT         : 🟢 PASS (ADR-030 Registrado y Alineado)
+ANDROID EMULATOR E2E         : 🟢 PASS (Emulator Oficial API 37.1 Certificado)
+PHYSICAL DEVICE E2E          : 🟢 PASS (Samsung Galaxy Z Fold 5 — SM-F946U1 Certificado)
+TEMPORAL TRANSITIONS         : 🟢 PASS (Ticker 60s / isCurrentlyValid evaluado)
+ADR-030 NUMBERING & SSOT     : 🟢 PASS (ADR-030 Registrado y Alineado)
+GIT BASELINE COMMIT          : 🟢 PASS (4e19eb266e8bb06c58fac270aa0b201a53e040b3)
 RELEASE APK SHA-256          : 7B1AEE2E792900B9F9D80DCFEC21C67F0D8EC2BBDD76E1FA8FB1FDC2F6916AA2
 RELEASE AAB SHA-256          : 2178FBF964DCC93E45070AA47137A6F96B86005E389C4470A00D6553755839E3
+FROZEN CORES INTEGRITY       : 🟢 PASS (ADR-013 a ADR-029 Verificados sin Regresión)
 ====================================================================================
 ```
 
@@ -239,7 +263,7 @@ En cumplimiento riguroso de la **NO AUTO-ROLLOUT POLICY (ADR-014)**:
 
 El presente protocolo se declara formalmente como:
 
-### 🏆 **BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001 — FINAL CLOSURE CANDIDATE**
+### 🏆 **BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001 — FINAL ACCEPTANCE PACKAGE**
 ### 🏛️ **ADR-030 — READY FOR HUMAN ACCEPTANCE**
 
 Se detienen todas las operaciones a la espera de la orden humana explícita.

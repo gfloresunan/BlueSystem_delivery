@@ -105,3 +105,18 @@ Cualquier cambio futuro sobre el subsistema cubierto por este ADR requerirá de 
 2. **Prohibición de Refactorings Masivos**: Intervenciones quirúrgicas y auditables únicamente.
 3. **Validación E2E Tripartita**: Admin Web + Firestore + Customer App (Android & Flutter).
 4. **Mantenimiento del Desacoplamiento**: Prohibido unificar `/banners` con `/home_editorial_ads`.
+
+---
+
+## 4. Línea Base Certificada & Integridad de Artefactos
+
+- **Certified Source Baseline Commit:** `4e19eb266e8bb06c58fac270aa0b201a53e040b3`
+- **Physical Device Certification:**
+  - **Hardware:** Samsung Galaxy Z Fold 5 (`SM-F946U1`)
+  - **SO / SDK:** Android 16 (SDK 36)
+  - **Serial:** `RFCW7***2WY` (Anonimizado)
+  - **Estatus:** 🟢 **CERTIFIED PASS (Escenarios PHY-01 a PHY-14)**
+- **Artefactos Release Certificados:**
+  - **APK Universal:** `7B1AEE2E792900B9F9D80DCFEC21C67F0D8EC2BBDD76E1FA8FB1FDC2F6916AA2`
+  - **AAB Bundle:** `2178FBF964DCC93E45070AA47137A6F96B86005E389C4470A00D6553755839E3`
+
