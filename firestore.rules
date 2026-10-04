@@ -1401,6 +1401,12 @@ service cloud.firestore {
       allow write: if isPlatformAdmin();
     }
 
+    // ─── /home_editorial_ads/{adId} (BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001) ───
+    match /home_editorial_ads/{adId} {
+      allow read: if true; // Lectura pública para la sincronización reactiva del slider en Android
+      allow write: if isPlatformAdmin();
+    }
+
     // ─── /dashboard_events/{eventId} (Telemetry & Conversion Analytics) ──────
     match /dashboard_events/{eventId} {
       allow create: if isAuthenticated() &&

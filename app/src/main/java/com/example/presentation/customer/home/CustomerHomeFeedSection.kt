@@ -26,11 +26,21 @@ import com.example.domain.model.Product
 import com.example.Pedido
 import com.example.presentation.customer.BannersSection
 
+import androidx.compose.runtime.key
+import com.example.HomeEditorialAd
+import com.example.service.DestinationRouter
+
 /**
  * Orquestador modular del feed dinámico de Customer Home (Fase 5E.2 - BSD-CUSTOMER-HOME-5E-MOD-001).
  * Itera sobre la lista normalizada de secciones (sectionOrder) y renderiza cada bloque
  * garantizando la preservación estricta de analíticas, navegación, favoritos, carrito,
  * deduplicación M=2 (Addendum P0-04) y gobierno seguro de Envíos Express (X→Y).
+ *
+ * Sprint 18.2 / Protocolo BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001:
+ * - Soporte para EDITORIAL_ADS (anuncios editoriales e institucionales).
+ * - Renderizado reactivo de títulos dinámicos (blockTitles).
+ * - Enrutamiento seguro de acciones de encabezado (blockActions).
+ * - key(sectionId) en el loop dinámico para recomposición quirúrgica eficiente.
  */
 @Composable
 fun CustomerHomeFeedSection(
@@ -54,7 +64,8 @@ fun CustomerHomeFeedSection(
     allProducts: List<Product> = emptyList(),
     recentOrders: List<Pedido> = emptyList(),
     customerLat: Double = 0.0,
-    customerLng: Double = 0.0
+    customerLng: Double = 0.0,
+    editorialAds: List<HomeEditorialAd> = emptyList()
 ) {
     val orderedSections = remember(dashboardConfig) { dashboardConfig.getNormalizedSectionOrder() }
 
@@ -108,208 +119,290 @@ fun CustomerHomeFeedSection(
     }
 
     for (sectionId in orderedSections) {
-        when (sectionId) {
-            "BANNERS" -> {
-                BannersSection(
-                    showBanners = dashboardConfig.showBanners,
-                    banners = banners,
-                    onBannerClick = { banner ->
-                        DashboardAnalyticsTracker.logEvent(
-                            eventType = "click",
-                            itemType = "banner",
-                            itemId = banner.id.ifBlank { banner.getEffectiveActionId() },
-                            itemName = banner.title.ifBlank { "Banner Promocional" }
-                        )
-                        val actionType = banner.getEffectiveActionType()
-                        val actionId = banner.getEffectiveActionId()
-                        if (actionType == "comercio" && actionId.isNotEmpty()) {
-                            navController.navigate("comercio_detalle_screen/$actionId")
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                )
-            }
-            "CATEGORIES" -> {
-                HomeCategoriesSection(
-                    showCategories = dashboardConfig.showCategories,
-                    publicBusinesses = publicBusinesses,
-                    categoriesList = categoriesList,
-                    selectedCategoryFilter = selectedCategoryFilter,
-                    onCategoryClick = onCategoryClick
-                )
-            }
-            "BRANCHES" -> {
-                BranchesSection(
-                    showBranchesBlock = dashboardConfig.showBranchesBlock,
-                    branches = branches,
-                    onBranchClick = { businessId ->
-                        DashboardAnalyticsTracker.logEvent("click", "branch", businessId, "Sucursal Comercio")
-                        navController.navigate("comercio_detalle_screen/$businessId")
-                    }
-                )
-            }
-            "NEARBY" -> {
-                NearbyBusinessesSection(
-                    showNearbySection = dashboardConfig.showNearbyBusinesses,
-                    nearbyResult = nearbyResult,
-                    favoriteIds = favoriteIds,
-                    onBusinessClick = { businessId ->
-                        DashboardAnalyticsTracker.logEvent("click", "business", businessId, "Comercio Cercano")
-                        navController.navigate("comercio_detalle_screen/$businessId")
-                    },
-                    onToggleFavorite = onToggleFavorite,
-                    onAddressClick = {
-                        if (isGuest) navController.navigate(Screen.LoginRegister.route)
-                        else navController.navigate(Screen.AddressManager.route)
-                    }
-                )
-            }
-            "FEATURED_BUSINESSES" -> {
-                FeaturedBusinessesSection(
-                    showFeaturedBusinesses = dashboardConfig.showFeaturedBusinesses,
-                    publicBusinesses = curatedFeedResult.featuredBusinesses,
-                    favoriteIds = favoriteIds,
-                    onBusinessClick = { businessId ->
-                        DashboardAnalyticsTracker.logEvent("click", "business", businessId, "Comercio Destacado")
-                        navController.navigate("comercio_detalle_screen/$businessId")
-                    },
-                    onToggleFavorite = onToggleFavorite
-                )
-            }
-            "FEATURED_PRODUCTS" -> {
-                StarProductsSection(
-                    showFeaturedProducts = dashboardConfig.showFeaturedProducts,
-                    featuredProducts = featuredProducts,
-                    onProductClick = { businessId ->
-                        DashboardAnalyticsTracker.logEvent("click", "product", businessId, "Producto Estrella")
-                        navController.navigate("comercio_detalle_screen/$businessId")
-                    }
-                )
-            }
-            "FLASH_DEALS" -> {
-                FlashDealsSection(
-                    showFlashDeals = dashboardConfig.showFlashDeals,
-                    flashDeals = flashDeals,
-                    onDealClick = { deal ->
-                        DashboardAnalyticsTracker.logEvent("click", "deal", deal.businessId, "Oferta Flash")
-                        val targetProdId = deal.productId.ifBlank { deal.id.removePrefix("fd_") }
-                        if (targetProdId.isNotBlank()) {
-                            navController.navigate("comercio_detalle_screen/${deal.businessId}?productId=$targetProdId")
-                        } else {
-                            navController.navigate("comercio_detalle_screen/${deal.businessId}")
-                        }
-                    }
-                )
-            }
-            "PROMOTIONS" -> {
-                DiscountedProductsSection(
-                    showPromotions = dashboardConfig.showPromotions,
-                    discountedProducts = discountedProducts,
-                    onProductClick = { businessId ->
-                        DashboardAnalyticsTracker.logEvent("click", "product", businessId, "Producto Descuento")
-                        navController.navigate("comercio_detalle_screen/$businessId")
-                    },
-                    onAddToCart = { prod ->
-                        if (isGuest) {
-                            navController.navigate(Screen.LoginRegister.route)
-                        } else {
-                            CartManager.addToCart(
-                                productId = prod.productId.ifBlank { prod.id },
-                                productName = prod.name,
-                                price = prod.price,
-                                quantity = 1,
-                                businessId = prod.businessId,
-                                businessName = prod.businessName
+        key(sectionId) {
+            when (sectionId) {
+                "BANNERS" -> {
+                    BannersSection(
+                        showBanners = dashboardConfig.showBanners,
+                        banners = banners,
+                        onBannerClick = { banner ->
+                            DashboardAnalyticsTracker.logEvent(
+                                eventType = "click",
+                                itemType = "banner",
+                                itemId = banner.id.ifBlank { banner.getEffectiveActionId() },
+                                itemName = banner.title.ifBlank { "Banner Promocional" }
                             )
-                            Toast.makeText(context, "¡${prod.name} agregado al carrito! 🛒", Toast.LENGTH_SHORT).show()
-                        }
-                    }
-                )
-            }
-            "SAME_PRICE" -> {
-                SamePriceSection(
-                    showSamePrice = dashboardConfig.showSamePrice,
-                    publicBusinesses = curatedFeedResult.samePriceBusinesses,
-                    favoriteIds = favoriteIds,
-                    onBusinessClick = { businessId ->
-                        DashboardAnalyticsTracker.logEvent("click", "business", businessId, "Mismo Precio Local")
-                        navController.navigate("comercio_detalle_screen/$businessId")
-                    },
-                    onToggleFavorite = onToggleFavorite
-                )
-            }
-            "TOP_SELLING" -> {
-                TopSellingSection(
-                    showTopSelling = dashboardConfig.showTopSelling,
-                    publicBusinesses = curatedFeedResult.topSellingBusinesses,
-                    favoriteIds = favoriteIds,
-                    onBusinessClick = { businessId ->
-                        DashboardAnalyticsTracker.logEvent("click", "business", businessId, "Los Más Vendidos")
-                        navController.navigate("comercio_detalle_screen/$businessId")
-                    },
-                    onToggleFavorite = onToggleFavorite
-                )
-            }
-            "RECOMMENDED" -> {
-                RecommendedSection(
-                    showRecommended = dashboardConfig.showRecommended,
-                    publicBusinesses = curatedFeedResult.recommendedBusinesses,
-                    favoriteIds = favoriteIds,
-                    onBusinessClick = { businessId ->
-                        DashboardAnalyticsTracker.logEvent("click", "business", businessId, "Recomendado")
-                        navController.navigate("comercio_detalle_screen/$businessId")
-                    },
-                    onToggleFavorite = onToggleFavorite
-                )
-            }
-            "NEW_BUSINESSES" -> {
-                NewBusinessesSection(
-                    showNewBusinesses = dashboardConfig.showNewBusinesses,
-                    publicBusinesses = curatedFeedResult.newBusinesses,
-                    favoriteIds = favoriteIds,
-                    onBusinessClick = { businessId ->
-                        DashboardAnalyticsTracker.logEvent("click", "business", businessId, "Comercio Nuevo")
-                        navController.navigate("comercio_detalle_screen/$businessId")
-                    },
-                    onToggleFavorite = onToggleFavorite
-                )
-            }
-            "QUICK_REORDER" -> {
-                QuickReorderSection(
-                    showQuickReorder = dashboardConfig.showQuickReorder,
-                    recentOrders = recentOrders,
-                    allProducts = allProducts,
-                    publicBusinesses = publicBusinesses,
-                    navController = navController,
-                    context = context
-                )
-            }
-            "EXPRESS_DELIVERY" -> {
-                // Gobiernado estrictamente por showExpressDeliveryBanner Y xToYServiceEnabled (P0-02, P0-03)
-                if (dashboardConfig.showExpressDeliveryBanner && dashboardConfig.xToYServiceEnabled) {
-                    ExpressDeliveryBanner(
-                        onRequestDelivery = {
-                            if (isGuest) {
-                                navController.navigate(Screen.LoginRegister.route)
-                            } else {
-                                navController.navigate("solicitar_envio_form")
+                            val actionType = banner.getEffectiveActionType()
+                            val actionId = banner.getEffectiveActionId()
+                            if (actionType == "comercio" && actionId.isNotEmpty()) {
+                                navController.navigate("comercio_detalle_screen/$actionId")
                             }
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    )
+                }
+                "CATEGORIES" -> {
+                    HomeCategoriesSection(
+                        showCategories = dashboardConfig.showCategories,
+                        publicBusinesses = publicBusinesses,
+                        categoriesList = categoriesList,
+                        selectedCategoryFilter = selectedCategoryFilter,
+                        onCategoryClick = onCategoryClick,
+                        title = dashboardConfig.getDisplayTitle("CATEGORIES", "¿Qué se te antoja hoy?"),
+                        headerAction = dashboardConfig.getBlockAction("CATEGORIES"),
+                        onHeaderActionClick = { action ->
+                            DestinationRouter.navigateBlockAction(context, navController, action)
                         }
                     )
                 }
-            }
-            "FAVORITES" -> {
-                FavoritesBlockSection(
-                    showFavorites = dashboardConfig.showFavoritesBlock,
-                    publicBusinesses = publicBusinesses,
-                    favoriteIds = favoriteIds,
-                    onBusinessClick = { businessId ->
-                        navController.navigate("comercio_detalle_screen/$businessId")
-                    },
-                    onToggleFavorite = onToggleFavorite
-                )
+                "BRANCHES" -> {
+                    BranchesSection(
+                        showBranchesBlock = dashboardConfig.showBranchesBlock,
+                        branches = branches,
+                        onBranchClick = { businessId ->
+                            DashboardAnalyticsTracker.logEvent("click", "branch", businessId, "Sucursal Comercio")
+                            navController.navigate("comercio_detalle_screen/$businessId")
+                        },
+                        title = dashboardConfig.getDisplayTitle("BRANCHES", "Sucursales por Comercio 🏢"),
+                        headerAction = dashboardConfig.getBlockAction("BRANCHES"),
+                        onHeaderActionClick = { action ->
+                            DestinationRouter.navigateBlockAction(context, navController, action)
+                        }
+                    )
+                }
+                "NEARBY" -> {
+                    NearbyBusinessesSection(
+                        showNearbySection = dashboardConfig.showNearbyBusinesses,
+                        nearbyResult = nearbyResult,
+                        favoriteIds = favoriteIds,
+                        onBusinessClick = { businessId ->
+                            DashboardAnalyticsTracker.logEvent("click", "business", businessId, "Comercio Cercano")
+                            navController.navigate("comercio_detalle_screen/$businessId")
+                        },
+                        onToggleFavorite = onToggleFavorite,
+                        onAddressClick = {
+                            if (isGuest) navController.navigate(Screen.LoginRegister.route)
+                            else navController.navigate(Screen.AddressManager.route)
+                        },
+                        title = dashboardConfig.getDisplayTitle("NEARBY", "Comercios Cerca de Ti 🏢"),
+                        headerAction = dashboardConfig.getBlockAction("NEARBY"),
+                        onHeaderActionClick = { action ->
+                            DestinationRouter.navigateBlockAction(context, navController, action)
+                        }
+                    )
+                }
+                "FEATURED_BUSINESSES" -> {
+                    FeaturedBusinessesSection(
+                        showFeaturedBusinesses = dashboardConfig.showFeaturedBusinesses,
+                        publicBusinesses = curatedFeedResult.featuredBusinesses,
+                        favoriteIds = favoriteIds,
+                        onBusinessClick = { businessId ->
+                            DashboardAnalyticsTracker.logEvent("click", "business", businessId, "Comercio Destacado")
+                            navController.navigate("comercio_detalle_screen/$businessId")
+                        },
+                        onToggleFavorite = onToggleFavorite,
+                        title = dashboardConfig.getDisplayTitle("FEATURED_BUSINESSES", "Comercios Destacados ⭐"),
+                        headerAction = dashboardConfig.getBlockAction("FEATURED_BUSINESSES"),
+                        onHeaderActionClick = { action ->
+                            DestinationRouter.navigateBlockAction(context, navController, action)
+                        }
+                    )
+                }
+                "FEATURED_PRODUCTS" -> {
+                    StarProductsSection(
+                        showFeaturedProducts = dashboardConfig.showFeaturedProducts,
+                        featuredProducts = featuredProducts,
+                        onProductClick = { businessId ->
+                            DashboardAnalyticsTracker.logEvent("click", "product", businessId, "Producto Estrella")
+                            navController.navigate("comercio_detalle_screen/$businessId")
+                        },
+                        title = dashboardConfig.getDisplayTitle("FEATURED_PRODUCTS", "Productos Estrella ⭐"),
+                        headerAction = dashboardConfig.getBlockAction("FEATURED_PRODUCTS"),
+                        onHeaderActionClick = { action ->
+                            DestinationRouter.navigateBlockAction(context, navController, action)
+                        }
+                    )
+                }
+                "FLASH_DEALS" -> {
+                    FlashDealsSection(
+                        showFlashDeals = dashboardConfig.showFlashDeals,
+                        flashDeals = flashDeals,
+                        onDealClick = { deal ->
+                            DashboardAnalyticsTracker.logEvent("click", "deal", deal.businessId, "Oferta Flash")
+                            val targetProdId = deal.productId.ifBlank { deal.id.removePrefix("fd_") }
+                            if (targetProdId.isNotBlank()) {
+                                navController.navigate("comercio_detalle_screen/${deal.businessId}?productId=$targetProdId")
+                            } else {
+                                navController.navigate("comercio_detalle_screen/${deal.businessId}")
+                            }
+                        },
+                        title = dashboardConfig.getDisplayTitle("FLASH_DEALS", "Ofertas Flash ⚡ (Tiempo Limitado)"),
+                        headerAction = dashboardConfig.getBlockAction("FLASH_DEALS"),
+                        onHeaderActionClick = { action ->
+                            DestinationRouter.navigateBlockAction(context, navController, action)
+                        }
+                    )
+                }
+                "PROMOTIONS" -> {
+                    DiscountedProductsSection(
+                        showPromotions = dashboardConfig.showPromotions,
+                        discountedProducts = discountedProducts,
+                        onProductClick = { businessId ->
+                            DashboardAnalyticsTracker.logEvent("click", "product", businessId, "Producto Descuento")
+                            navController.navigate("comercio_detalle_screen/$businessId")
+                        },
+                        onAddToCart = { prod ->
+                            if (isGuest) {
+                                navController.navigate(Screen.LoginRegister.route)
+                            } else {
+                                CartManager.addToCart(
+                                    productId = prod.productId.ifBlank { prod.id },
+                                    productName = prod.name,
+                                    price = prod.price,
+                                    quantity = 1,
+                                    businessId = prod.businessId,
+                                    businessName = prod.businessName
+                                )
+                                Toast.makeText(context, "¡${prod.name} agregado al carrito! 🛒", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        title = dashboardConfig.getDisplayTitle("PROMOTIONS", "Productos con Descuentos 🏷️"),
+                        headerAction = dashboardConfig.getBlockAction("PROMOTIONS"),
+                        onHeaderActionClick = { action ->
+                            DestinationRouter.navigateBlockAction(context, navController, action)
+                        }
+                    )
+                }
+                "SAME_PRICE" -> {
+                    SamePriceSection(
+                        showSamePrice = dashboardConfig.showSamePrice,
+                        publicBusinesses = curatedFeedResult.samePriceBusinesses,
+                        favoriteIds = favoriteIds,
+                        onBusinessClick = { businessId ->
+                            DashboardAnalyticsTracker.logEvent("click", "business", businessId, "Mismo Precio Local")
+                            navController.navigate("comercio_detalle_screen/$businessId")
+                        },
+                        onToggleFavorite = onToggleFavorite,
+                        title = dashboardConfig.getDisplayTitle("SAME_PRICE", "Mismo Precio que en Local 💰"),
+                        headerAction = dashboardConfig.getBlockAction("SAME_PRICE"),
+                        onHeaderActionClick = { action ->
+                            DestinationRouter.navigateBlockAction(context, navController, action)
+                        }
+                    )
+                }
+                "TOP_SELLING" -> {
+                    TopSellingSection(
+                        showTopSelling = dashboardConfig.showTopSelling,
+                        publicBusinesses = curatedFeedResult.topSellingBusinesses,
+                        favoriteIds = favoriteIds,
+                        onBusinessClick = { businessId ->
+                            DashboardAnalyticsTracker.logEvent("click", "business", businessId, "Los Más Vendidos")
+                            navController.navigate("comercio_detalle_screen/$businessId")
+                        },
+                        onToggleFavorite = onToggleFavorite,
+                        title = dashboardConfig.getDisplayTitle("TOP_SELLING", "Los Más Vendidos 🔥"),
+                        headerAction = dashboardConfig.getBlockAction("TOP_SELLING"),
+                        onHeaderActionClick = { action ->
+                            DestinationRouter.navigateBlockAction(context, navController, action)
+                        }
+                    )
+                }
+                "RECOMMENDED" -> {
+                    RecommendedSection(
+                        showRecommended = dashboardConfig.showRecommended,
+                        publicBusinesses = curatedFeedResult.recommendedBusinesses,
+                        favoriteIds = favoriteIds,
+                        onBusinessClick = { businessId ->
+                            DashboardAnalyticsTracker.logEvent("click", "business", businessId, "Recomendado")
+                            navController.navigate("comercio_detalle_screen/$businessId")
+                        },
+                        onToggleFavorite = onToggleFavorite,
+                        title = dashboardConfig.getDisplayTitle("RECOMMENDED", "Recomendados para ti 🎯"),
+                        headerAction = dashboardConfig.getBlockAction("RECOMMENDED"),
+                        onHeaderActionClick = { action ->
+                            DestinationRouter.navigateBlockAction(context, navController, action)
+                        }
+                    )
+                }
+                "NEW_BUSINESSES" -> {
+                    NewBusinessesSection(
+                        showNewBusinesses = dashboardConfig.showNewBusinesses,
+                        publicBusinesses = curatedFeedResult.newBusinesses,
+                        favoriteIds = favoriteIds,
+                        onBusinessClick = { businessId ->
+                            DashboardAnalyticsTracker.logEvent("click", "business", businessId, "Comercio Nuevo")
+                            navController.navigate("comercio_detalle_screen/$businessId")
+                        },
+                        onToggleFavorite = onToggleFavorite,
+                        title = dashboardConfig.getDisplayTitle("NEW_BUSINESSES", "Comercios Nuevos 🟢"),
+                        headerAction = dashboardConfig.getBlockAction("NEW_BUSINESSES"),
+                        onHeaderActionClick = { action ->
+                            DestinationRouter.navigateBlockAction(context, navController, action)
+                        }
+                    )
+                }
+                "QUICK_REORDER" -> {
+                    QuickReorderSection(
+                        showQuickReorder = dashboardConfig.showQuickReorder,
+                        recentOrders = recentOrders,
+                        allProducts = allProducts,
+                        publicBusinesses = publicBusinesses,
+                        navController = navController,
+                        context = context,
+                        title = dashboardConfig.getDisplayTitle("QUICK_REORDER", "Volver a Pedir 🔄"),
+                        headerAction = dashboardConfig.getBlockAction("QUICK_REORDER"),
+                        onHeaderActionClick = { action ->
+                            DestinationRouter.navigateBlockAction(context, navController, action)
+                        }
+                    )
+                }
+                "EXPRESS_DELIVERY" -> {
+                    // Gobiernado estrictamente por showExpressDeliveryBanner Y xToYServiceEnabled (P0-02, P0-03)
+                    if (dashboardConfig.showExpressDeliveryBanner && dashboardConfig.xToYServiceEnabled) {
+                        ExpressDeliveryBanner(
+                            onRequestDelivery = {
+                                if (isGuest) {
+                                    navController.navigate(Screen.LoginRegister.route)
+                                } else {
+                                    navController.navigate("solicitar_envio_form")
+                                }
+                            }
+                        )
+                    }
+                }
+                "FAVORITES" -> {
+                    FavoritesBlockSection(
+                        showFavorites = dashboardConfig.showFavoritesBlock,
+                        publicBusinesses = publicBusinesses,
+                        favoriteIds = favoriteIds,
+                        onBusinessClick = { businessId ->
+                            navController.navigate("comercio_detalle_screen/$businessId")
+                        },
+                        onToggleFavorite = onToggleFavorite,
+                        title = dashboardConfig.getDisplayTitle("FAVORITES", "Tus Comercios Favoritos ❤️"),
+                        headerAction = dashboardConfig.getBlockAction("FAVORITES"),
+                        onHeaderActionClick = { action ->
+                            DestinationRouter.navigateBlockAction(context, navController, action)
+                        }
+                    )
+                }
+                "EDITORIAL_ADS" -> {
+                    if (dashboardConfig.showEditorialAds) {
+                        EditorialAdsSection(
+                            ads = editorialAds,
+                            publicBusinesses = publicBusinesses,
+                            navController = navController,
+                            context = context,
+                            title = dashboardConfig.getDisplayTitle("EDITORIAL_ADS", "Destacados y Novedades"),
+                            headerAction = dashboardConfig.getBlockAction("EDITORIAL_ADS"),
+                            onHeaderActionClick = { action ->
+                                DestinationRouter.navigateBlockAction(context, navController, action)
+                            }
+                        )
+                    }
+                }
             }
         }
     }

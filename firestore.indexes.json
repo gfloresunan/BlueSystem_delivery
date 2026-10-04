@@ -1,6 +1,15 @@
 {
   "indexes": [
     {
+      "collectionGroup": "business_categories",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "active", "order": "ASCENDING" },
+        { "fieldPath": "showInOnboarding", "order": "ASCENDING" },
+        { "fieldPath": "sortOrder", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "user_devices",
       "queryScope": "COLLECTION",
       "fields": [

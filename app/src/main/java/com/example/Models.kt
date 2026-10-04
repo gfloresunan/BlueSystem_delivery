@@ -1023,6 +1023,94 @@ fun normalizeOrderStatus(status: String?): String {
 // --- SPRINT 15 ENTERPRISE DASHBOARD MODELS ---
 
 @com.google.firebase.firestore.IgnoreExtraProperties
+data class BlockActionConfig(
+    val type: String = "NONE", // NONE, MERCHANT, PRODUCT, CATEGORY, INTERNAL_ROUTE, EXTERNAL_URL
+    val target: String = "",
+    val label: String = ""
+)
+
+@com.google.firebase.firestore.IgnoreExtraProperties
+data class HomeEditorialAd(
+    val id: String = "",
+    val type: String = "GENERIC_EDITORIAL", // MERCHANT_ACQUISITION, COURIER_RECRUITMENT, MERCHANT_PROMOTION, PRODUCT_PROMOTION, PLATFORM_CAMPAIGN, EVENT, SERVICE_PROMOTION, GENERIC_EDITORIAL
+    val title: String = "",
+    val subtitle: String = "",
+    @get:com.google.firebase.firestore.PropertyName("badgeText")
+    @set:com.google.firebase.firestore.PropertyName("badgeText")
+    var badgeText: String = "",
+    val ctaText: String = "",
+    val imageUrl: String = "",
+    val actionType: String = "NONE", // NONE, MERCHANT, PRODUCT, CATEGORY, INTERNAL_ROUTE, EXTERNAL_URL
+    @get:com.google.firebase.firestore.PropertyName("actionTarget")
+    @set:com.google.firebase.firestore.PropertyName("actionTarget")
+    var actionTarget: String = "",
+    val merchantId: String = "",
+    @get:com.google.firebase.firestore.PropertyName("merchantNameSnapshot")
+    @set:com.google.firebase.firestore.PropertyName("merchantNameSnapshot")
+    var merchantNameSnapshot: String = "",
+    @get:com.google.firebase.firestore.PropertyName("merchantLogoUrlSnapshot")
+    @set:com.google.firebase.firestore.PropertyName("merchantLogoUrlSnapshot")
+    var merchantLogoUrlSnapshot: String = "",
+    val productId: String = "",
+    @get:com.google.firebase.firestore.PropertyName("productNameSnapshot")
+    @set:com.google.firebase.firestore.PropertyName("productNameSnapshot")
+    var productNameSnapshot: String = "",
+    val productPrice: Double? = null,
+    @get:com.google.firebase.firestore.PropertyName("active")
+    @set:com.google.firebase.firestore.PropertyName("active")
+    var active: Boolean = true,
+    val order: Int = 0,
+    val startAt: Long? = null,
+    val endAt: Long? = null,
+    // Future-ready segmentation fields
+    val targetCity: String? = null,
+    val tenantId: String? = null,
+    val targetPlatform: String? = null,
+    val createdAt: Long? = null,
+    val updatedAt: Long? = null,
+    val createdBy: String? = null,
+    // Compat aliases
+    @get:com.google.firebase.firestore.PropertyName("badge")
+    @set:com.google.firebase.firestore.PropertyName("badge")
+    var badge: String? = null,
+    @get:com.google.firebase.firestore.PropertyName("isActive")
+    @set:com.google.firebase.firestore.PropertyName("isActive")
+    var isActive: Boolean? = null,
+    @get:com.google.firebase.firestore.PropertyName("merchantName")
+    @set:com.google.firebase.firestore.PropertyName("merchantName")
+    var merchantName: String? = null,
+    @get:com.google.firebase.firestore.PropertyName("merchantLogoUrl")
+    @set:com.google.firebase.firestore.PropertyName("merchantLogoUrl")
+    var merchantLogoUrl: String? = null,
+    @get:com.google.firebase.firestore.PropertyName("productName")
+    @set:com.google.firebase.firestore.PropertyName("productName")
+    var productName: String? = null,
+    @get:com.google.firebase.firestore.PropertyName("targetId")
+    @set:com.google.firebase.firestore.PropertyName("targetId")
+    var targetId: String? = null,
+    @get:com.google.firebase.firestore.PropertyName("targetRoute")
+    @set:com.google.firebase.firestore.PropertyName("targetRoute")
+    var targetRoute: String? = null,
+    @get:com.google.firebase.firestore.PropertyName("targetUrl")
+    @set:com.google.firebase.firestore.PropertyName("targetUrl")
+    var targetUrl: String? = null
+) {
+    val effectiveBadgeText: String get() = badgeText.ifBlank { badge ?: "" }
+    val effectiveIsActive: Boolean get() = isActive ?: active
+    val effectiveMerchantName: String get() = merchantNameSnapshot.ifBlank { merchantName ?: "" }
+    val effectiveMerchantLogoUrl: String get() = merchantLogoUrlSnapshot.ifBlank { merchantLogoUrl ?: "" }
+    val effectiveProductName: String get() = productNameSnapshot.ifBlank { productName ?: "" }
+    val effectiveActionTarget: String get() = actionTarget.ifBlank { targetUrl ?: targetRoute ?: targetId ?: "" }
+
+    fun isCurrentlyValid(nowMs: Long = System.currentTimeMillis()): Boolean {
+        if (!effectiveIsActive) return false
+        if (startAt != null && nowMs < startAt) return false
+        if (endAt != null && nowMs > endAt) return false
+        return true
+    }
+}
+
+@com.google.firebase.firestore.IgnoreExtraProperties
 data class DashboardConfig(
     val showBanners: Boolean = true,
     val showCategories: Boolean = true,
@@ -1040,13 +1128,22 @@ data class DashboardConfig(
     val showNearbyBusinesses: Boolean = true,
     val showExpressDeliveryBanner: Boolean = false, // FAIL-CLOSED: Oculto por defecto (Addendum P0-02)
     val xToYServiceEnabled: Boolean = false,        // FAIL-CLOSED: Deshabilitado por defecto (Addendum P0-02)
+    val showEditorialAds: Boolean = true,           // Dynamic Editorial Ads (BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001)
     val nearbyInitialRadiusKm: Double = 5.0,
     val nearbySecondaryRadiusKm: Double = 10.0,
     val nearbyMaxRadiusKm: Double = 15.0,
     val nearbyMinimumMerchantCount: Int = 5,
     val nearbyAutoExpandEnabled: Boolean = true,
     val nearbyOrdering: String = "nearest", // "nearest" | "rating"
-    val sectionOrder: List<String> = CANONICAL_DEFAULT_SECTION_ORDER
+    @get:com.google.firebase.firestore.PropertyName("sectionOrder")
+    @set:com.google.firebase.firestore.PropertyName("sectionOrder")
+    var sectionOrder: List<String> = CANONICAL_DEFAULT_SECTION_ORDER,
+    @get:com.google.firebase.firestore.PropertyName("blockTitles")
+    @set:com.google.firebase.firestore.PropertyName("blockTitles")
+    var blockTitles: Map<String, String> = emptyMap(),
+    @get:com.google.firebase.firestore.PropertyName("blockActions")
+    @set:com.google.firebase.firestore.PropertyName("blockActions")
+    var blockActions: Map<String, BlockActionConfig> = emptyMap()
 ) {
     companion object {
         val CANONICAL_DEFAULT_SECTION_ORDER: List<String> = listOf(
@@ -1064,15 +1161,37 @@ data class DashboardConfig(
             "NEW_BUSINESSES",
             "QUICK_REORDER",
             "FAVORITES",
-            "EXPRESS_DELIVERY"
+            "EXPRESS_DELIVERY",
+            "EDITORIAL_ADS"
+        )
+
+        val CANONICAL_DEFAULT_BLOCK_TITLES: Map<String, String> = mapOf(
+            "BANNERS" to "Banners Promocionales",
+            "CATEGORIES" to "¿Qué se te antoja hoy?",
+            "BRANCHES" to "Sucursales por Comercio 🏢",
+            "NEARBY" to "Comercios Cerca de Ti 🏢",
+            "FEATURED_BUSINESSES" to "Comercios Destacados ⭐",
+            "FEATURED_PRODUCTS" to "Productos Estrella ⭐",
+            "FLASH_DEALS" to "Ofertas Flash ⚡ (Tiempo Limitado)",
+            "PROMOTIONS" to "Productos con Descuentos 🏷️",
+            "SAME_PRICE" to "Mismo Precio que en Local 💰",
+            "TOP_SELLING" to "Los Más Vendidos 🔥",
+            "RECOMMENDED" to "Recomendados para ti 🎯",
+            "NEW_BUSINESSES" to "Comercios Nuevos 🟢",
+            "QUICK_REORDER" to "Volver a Pedir 🔄",
+            "FAVORITES" to "Tus Comercios Favoritos ❤️",
+            "EXPRESS_DELIVERY" to "Envíos Express X→Y",
+            "EDITORIAL_ADS" to "Destacados y Novedades"
         )
     }
 
     /**
-     * Normaliza la lista de orden de secciones:
-     * 1. Elimina IDs duplicados conservando la primera aparición válida.
-     * 2. Descarta IDs desconocidos.
-     * 3. Anexa al final cualquier sección canónica faltante para evitar pérdida de bloques.
+     * Normaliza la lista de orden de secciones (BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001):
+     * 1. Respeta el orden remoto válido.
+     * 2. Elimina IDs duplicados conservando la primera aparición válida.
+     * 3. Descarta IDs desconocidos.
+     * 4. Anexa al final cualquier sección canónica faltante de forma determinista.
+     * 5. La identidad siempre es blockId, NUNCA el título visible.
      */
     fun getNormalizedSectionOrder(): List<String> {
         val result = mutableListOf<String>()
@@ -1092,6 +1211,224 @@ data class DashboardConfig(
         }
 
         return result
+    }
+
+    /**
+     * Resuelve el título dinámico con degradación segura:
+     * displayTitle = blockTitles[blockId]?.trim()?.takeIf { it.isNotBlank() } ?: defaultTitle ?: CANONICAL_DEFAULT
+     */
+    fun getDisplayTitle(blockId: String, defaultTitle: String? = null): String {
+        val normalizedId = blockId.trim().uppercase()
+        val custom = blockTitles[normalizedId]?.trim()
+        if (!custom.isNullOrBlank()) {
+            return custom
+        }
+        if (!defaultTitle.isNullOrBlank()) {
+            return defaultTitle
+        }
+        return CANONICAL_DEFAULT_BLOCK_TITLES[normalizedId] ?: blockId
+    }
+
+    /**
+     * Obtiene la acción configurada para el encabezado del bloque.
+     * Retorna null si es NONE o está vacía (Fail-Closed).
+     */
+    fun getBlockAction(blockId: String): BlockActionConfig? {
+        val normalizedId = blockId.trim().uppercase()
+        val action = blockActions[normalizedId] ?: return null
+        if (action.type.equals("NONE", ignoreCase = true) || action.type.isBlank()) {
+            return null
+        }
+        return action
+    }
+}
+
+/**
+ * Parser defensivo de DashboardConfig para evitar que campos malformados o nuevos
+ * descarten la configuración legacy recibida.
+ */
+fun com.google.firebase.firestore.DocumentSnapshot?.toDashboardConfigSafely(): DashboardConfig {
+    if (this == null || !this.exists()) {
+        return DashboardConfig()
+    }
+    return try {
+        val raw = this.toObject(DashboardConfig::class.java) ?: DashboardConfig()
+
+        val rawOrder = when (val o = this.get("sectionOrder")) {
+            is List<*> -> o.filterIsInstance<String>()
+            else -> raw.sectionOrder
+        }
+
+        val rawTitles = when (val t = this.get("blockTitles")) {
+            is Map<*, *> -> t.entries.mapNotNull { (k, v) ->
+                if (k is String && v is String) k to v else null
+            }.toMap()
+            else -> raw.blockTitles
+        }
+
+        val rawActions = when (val a = this.get("blockActions")) {
+            is Map<*, *> -> a.entries.mapNotNull { (k, v) ->
+                if (k is String && v is Map<*, *>) {
+                    val type = (v["type"] as? String) ?: "NONE"
+                    val target = (v["target"] as? String) ?: ""
+                    val label = (v["label"] as? String) ?: ""
+                    k to BlockActionConfig(type = type, target = target, label = label)
+                } else null
+            }.toMap()
+            else -> raw.blockActions
+        }
+
+        raw.copy(
+            showEditorialAds = this.getBoolean("showEditorialAds") ?: raw.showEditorialAds,
+            sectionOrder = if (rawOrder.isNotEmpty()) rawOrder else raw.sectionOrder,
+            blockTitles = rawTitles,
+            blockActions = rawActions
+        )
+    } catch (e: Exception) {
+        android.util.Log.w("DashboardConfig", "Error deserializing DashboardConfig, falling back defensively", e)
+        try {
+            val showBanners = this.getBoolean("showBanners") ?: true
+            val showCategories = this.getBoolean("showCategories") ?: true
+            val showBranchesBlock = this.getBoolean("showBranchesBlock") ?: true
+            val showFeaturedBusinesses = this.getBoolean("showFeaturedBusinesses") ?: true
+            val showFeaturedProducts = this.getBoolean("showFeaturedProducts") ?: true
+            val showPromotions = this.getBoolean("showPromotions") ?: true
+            val showSamePrice = this.getBoolean("showSamePrice") ?: true
+            val showFlashDeals = this.getBoolean("showFlashDeals") ?: true
+            val showTopSelling = this.getBoolean("showTopSelling") ?: true
+            val showRecommended = this.getBoolean("showRecommended") ?: true
+            val showNewBusinesses = this.getBoolean("showNewBusinesses") ?: true
+            val showQuickReorder = this.getBoolean("showQuickReorder") ?: true
+            val showFavoritesBlock = this.getBoolean("showFavoritesBlock") ?: true
+            val showNearbyBusinesses = this.getBoolean("showNearbyBusinesses") ?: true
+            val showExpressDeliveryBanner = this.getBoolean("showExpressDeliveryBanner") ?: false
+            val xToYServiceEnabled = this.getBoolean("xToYServiceEnabled") ?: false
+            val showEditorialAds = this.getBoolean("showEditorialAds") ?: true
+
+            val rawOrder = (this.get("sectionOrder") as? List<*>)?.filterIsInstance<String>()
+                ?: DashboardConfig.CANONICAL_DEFAULT_SECTION_ORDER
+
+            val rawTitles = (this.get("blockTitles") as? Map<*, *>)?.entries?.mapNotNull { (k, v) ->
+                if (k is String && v is String) k to v else null
+            }?.toMap() ?: emptyMap()
+
+            val rawActions = (this.get("blockActions") as? Map<*, *>)?.entries?.mapNotNull { (k, v) ->
+                if (k is String && v is Map<*, *>) {
+                    val type = (v["type"] as? String) ?: "NONE"
+                    val target = (v["target"] as? String) ?: ""
+                    val label = (v["label"] as? String) ?: ""
+                    k to BlockActionConfig(type = type, target = target, label = label)
+                } else null
+            }?.toMap() ?: emptyMap()
+
+            DashboardConfig(
+                showBanners = showBanners,
+                showCategories = showCategories,
+                showBranchesBlock = showBranchesBlock,
+                showFeaturedBusinesses = showFeaturedBusinesses,
+                showFeaturedProducts = showFeaturedProducts,
+                showPromotions = showPromotions,
+                showSamePrice = showSamePrice,
+                showFlashDeals = showFlashDeals,
+                showTopSelling = showTopSelling,
+                showRecommended = showRecommended,
+                showNewBusinesses = showNewBusinesses,
+                showQuickReorder = showQuickReorder,
+                showFavoritesBlock = showFavoritesBlock,
+                showNearbyBusinesses = showNearbyBusinesses,
+                showExpressDeliveryBanner = showExpressDeliveryBanner,
+                xToYServiceEnabled = xToYServiceEnabled,
+                showEditorialAds = showEditorialAds,
+                sectionOrder = rawOrder,
+                blockTitles = rawTitles,
+                blockActions = rawActions
+            )
+        } catch (_: Exception) {
+            DashboardConfig()
+        }
+    }
+}
+
+/**
+ * Parser defensivo para HomeEditorialAd desde DocumentSnapshot de /home_editorial_ads.
+ * Soporta timestamps nativos de Firestore y números epoch, y alias de compatibilidad.
+ */
+fun com.google.firebase.firestore.DocumentSnapshot.toHomeEditorialAdSafely(): HomeEditorialAd? {
+    if (!exists()) return null
+    return try {
+        val id = id
+        val title = getString("title") ?: return null
+        val type = getString("type") ?: "GENERIC_EDITORIAL"
+        val subtitle = getString("subtitle") ?: ""
+        val badgeText = getString("badgeText") ?: getString("badge") ?: ""
+        val ctaText = getString("ctaText") ?: "Ver más"
+        val imageUrl = getString("imageUrl") ?: ""
+        val actionType = getString("actionType") ?: "NONE"
+        val actionTarget = getString("actionTarget") ?: getString("targetUrl") ?: getString("targetRoute") ?: getString("targetId") ?: ""
+        val merchantId = getString("merchantId") ?: getString("targetId") ?: ""
+        val merchantNameSnapshot = getString("merchantNameSnapshot") ?: getString("merchantName") ?: ""
+        val merchantLogoUrlSnapshot = getString("merchantLogoUrlSnapshot") ?: getString("merchantLogoUrl") ?: ""
+        val productId = getString("productId") ?: ""
+        val productNameSnapshot = getString("productNameSnapshot") ?: getString("productName") ?: ""
+        val productPrice = getDouble("productPrice")
+        val active = getBoolean("active") ?: getBoolean("isActive") ?: true
+        val order = getLong("order")?.toInt() ?: 0
+
+        val startAt = when (val s = get("startAt")) {
+            is com.google.firebase.Timestamp -> s.toDate().time
+            is Number -> s.toLong()
+            else -> null
+        }
+        val endAt = when (val e = get("endAt")) {
+            is com.google.firebase.Timestamp -> e.toDate().time
+            is Number -> e.toLong()
+            else -> null
+        }
+        val createdAt = when (val c = get("createdAt")) {
+            is com.google.firebase.Timestamp -> c.toDate().time
+            is Number -> c.toLong()
+            else -> null
+        }
+        val updatedAt = when (val u = get("updatedAt")) {
+            is com.google.firebase.Timestamp -> u.toDate().time
+            is Number -> u.toLong()
+            else -> null
+        }
+        val targetCity = getString("targetCity")
+        val tenantId = getString("tenantId")
+        val targetPlatform = getString("targetPlatform")
+        val createdBy = getString("createdBy")
+
+        HomeEditorialAd(
+            id = id,
+            type = type,
+            title = title,
+            subtitle = subtitle,
+            badgeText = badgeText,
+            ctaText = ctaText,
+            imageUrl = imageUrl,
+            actionType = actionType,
+            actionTarget = actionTarget,
+            merchantId = merchantId,
+            merchantNameSnapshot = merchantNameSnapshot,
+            merchantLogoUrlSnapshot = merchantLogoUrlSnapshot,
+            productId = productId,
+            productNameSnapshot = productNameSnapshot,
+            productPrice = productPrice,
+            active = active,
+            order = order,
+            startAt = startAt,
+            endAt = endAt,
+            targetCity = targetCity,
+            tenantId = tenantId,
+            targetPlatform = targetPlatform,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+            createdBy = createdBy
+        )
+    } catch (e: Exception) {
+        android.util.Log.w("HomeEditorialAd", "Error parsing editorial ad $id", e)
+        null
     }
 }
 

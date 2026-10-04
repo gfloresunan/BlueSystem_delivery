@@ -52,6 +52,9 @@ window.dashboardManagerModule = {
                     <button onclick="window.dashboardManagerModule.switchSubTab('branches')" id="dtab-btn-branches" class="dtab-btn text-slate-400 hover:text-slate-200 px-4 py-2 rounded-xl text-xs font-bold transition">
                         🏢 Sucursales
                     </button>
+                    <button onclick="window.dashboardManagerModule.switchSubTab('editorialAds')" id="dtab-btn-editorialAds" class="dtab-btn text-slate-400 hover:text-slate-200 px-4 py-2 rounded-xl text-xs font-bold transition">
+                        📣 Anuncios del Home
+                    </button>
                     <button onclick="window.dashboardManagerModule.switchSubTab('ordering')" id="dtab-btn-ordering" class="dtab-btn text-slate-400 hover:text-slate-200 px-4 py-2 rounded-xl text-xs font-bold transition">
                         🔀 Orden de Bloques
                     </button>
@@ -68,7 +71,7 @@ window.dashboardManagerModule = {
                                 <h3 class="text-sm font-extrabold text-indigo-400 uppercase tracking-wider">Visibilidad de Bloques en el Dashboard</h3>
                                 <p class="text-xs text-slate-400">Activa o desactiva los bloques. El cambio se envía inmediatamente a las apps de los clientes conectados.</p>
                             </div>
-                            <span class="text-[11px] text-slate-500 font-mono">14 Secciones Dinámicas</span>
+                            <span class="text-[11px] text-slate-500 font-mono">16 Secciones Dinámicas</span>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2" id="visibilityTogglesContainer">
@@ -181,6 +184,47 @@ window.dashboardManagerModule = {
                     </div>
                 </div>
 
+                <!-- Sub-Pestaña: Anuncios Editoriales del Home (BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001) -->
+                <div id="dsubtab-editorialAds" class="dsubtab-content space-y-6 hidden">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900 border border-slate-800 p-5 rounded-2xl shadow-lg">
+                        <div class="space-y-1">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">📣</span>
+                                <h3 class="text-sm font-black text-slate-100 uppercase tracking-wider">Publicidad & Anuncios Editoriales del Home</h3>
+                                <span class="text-[10px] font-mono bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full">
+                                    /home_editorial_ads
+                                </span>
+                            </div>
+                            <p class="text-xs text-slate-400">Superficie de anuncios patrocinados, captación de aliados y promociones con carrusel interactivo en el feed principal del cliente.</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="flex items-center gap-2 bg-slate-950/80 border border-slate-800 px-3 py-1.5 rounded-xl text-xs font-mono">
+                                <span class="text-slate-400">Total:</span>
+                                <span id="editorialAdsCount" class="font-bold text-indigo-400">0</span>
+                                <span class="text-slate-600">|</span>
+                                <span class="text-emerald-400 font-bold" id="editorialAdsActiveCount">0 Activos</span>
+                            </div>
+                            <button onclick="window.dashboardManagerModule.openEditorialAdModal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-lg">
+                                <span>+</span> Crear Anuncio Editorial
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Aviso de Aislamiento Arquitectónico -->
+                    <div class="bg-indigo-950/30 border border-indigo-800/40 p-4 rounded-xl flex items-start gap-3">
+                        <span class="text-lg text-indigo-400">ℹ️</span>
+                        <div class="text-xs text-indigo-200/90 space-y-1">
+                            <p class="font-bold">Aislamiento de Superficie Publicitaria</p>
+                            <p class="text-slate-400">Los <strong>Banners Superiores</strong> (<code class="text-indigo-300">/banners</code>) continúan operando como el carrusel de cabecera independiente. Esta sección administra la colección <code class="text-indigo-300">/home_editorial_ads</code>, la cual se renderiza dentro del feed según la posición asignada al bloque <strong>EDITORIAL_ADS</strong> en la pestaña <em>"🔀 Orden de Bloques"</em>.</p>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor de Anuncios -->
+                    <div id="editorialAdsContainer" class="space-y-3">
+                        <p class="text-xs text-slate-500">Cargando anuncios editoriales...</p>
+                    </div>
+                </div>
+
                 <!-- Sub-Pestaña 5: Orden de Bloques -->
                 <div id="dsubtab-ordering" class="dsubtab-content space-y-6 hidden">
                     <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl space-y-4">
@@ -244,6 +288,7 @@ window.dashboardManagerModule = {
         this.initStarProductsListener();
         this.initFlashDealsListener();
         this.initBranchesListener();
+        this.initEditorialAdsListener();
         this.loadAnalyticsBI();
     },
 
@@ -283,22 +328,23 @@ window.dashboardManagerModule = {
     // ─── Pestaña 1: Configuración & Visibilidad ──────────────────────────────
 
     allToggles: [
-        { key: 'showBanners', label: 'Banners Promocionales Superiores', icon: '🖼️', desc: 'Carrusel superior con anuncios de comercios y ofertas.' },
-        { key: 'showCategories', label: 'Categorías (PedidosYa Style)', icon: '🏷️', desc: 'Barra horizontal de filtros por categorías comerciales.' },
-        { key: 'showBranchesBlock', label: 'Bloque de Sucursales por Comercio 🏢', icon: '🏢', desc: 'Carrusel de sedes específicas para comercios multicentrales.' },
-        { key: 'showNearbyBusinesses', label: 'Comercios Cerca de Ti (Geolocalización) 📍', icon: '📍', desc: 'Descubrimiento geoespacial con radio dinámico expandible.' },
-        { key: 'showFeaturedProducts', label: 'Productos Estrella ⭐', icon: '🍔', desc: 'Platillos destacados fijados para compra directa.' },
-        { key: 'showFeaturedBusinesses', label: 'Comercios Destacados ⭐', icon: '🏪', desc: 'Comercios marcados como favoritos de la plataforma.' },
-        { key: 'showFlashDeals', label: 'Ofertas Flash ⚡', icon: '⏱️', desc: 'Sección de compras de oportunidad con cuenta regresiva.' },
-        { key: 'showPromotions', label: 'Productos con Descuentos 🏷️', icon: '💰', desc: 'Sección de catálogo con rebajas porcentuales activas.' },
-        { key: 'showSamePrice', label: 'Mismo Precio que en Local 🏷️', icon: '💵', desc: 'Comercios garantizados sin sobreprecio de menú.' },
-        { key: 'showTopSelling', label: 'Los Más Vendidos 🔥', icon: '📈', desc: 'Comercios y productos con mayor volumen de pedidos.' },
-        { key: 'showRecommended', label: 'Recomendados para ti 🎯', icon: '❤️', desc: 'Sugerencias personalizadas según hábitos del cliente.' },
-        { key: 'showNewBusinesses', label: 'Comercios Nuevos 🟢', icon: '🆕', desc: 'Nuevos restaurantes y tiendas integrados al marketplace.' },
-        { key: 'showQuickReorder', label: 'Volver a Pedir 🔄', icon: '🛍️', desc: 'Acceso directo para repetir pedidos anteriores.' },
-        { key: 'showFavoritesBlock', label: 'Tus Comercios Favoritos ❤️', icon: '⭐', desc: 'Comercios guardados en favoritos por el cliente.' },
-        { key: 'showExpressDeliveryBanner', label: 'Servicio Encomiendas X→Y (Banner)', icon: '🛵', desc: 'Banner de acceso directo al servicio de envíos express punto a punto.' },
-        { key: 'xToYServiceEnabled', label: 'Servicio Encomiendas X→Y (Habilitación Operativa)', icon: '🚚', desc: 'Control maestro de acceso y disponibilidad operativa al servicio de encomiendas X→Y.' }
+        { key: 'showBanners', sectionId: 'BANNERS', label: 'Banners Promocionales Superiores', icon: '🖼️', desc: 'Carrusel superior con anuncios de comercios y ofertas.' },
+        { key: 'showCategories', sectionId: 'CATEGORIES', label: 'Categorías (PedidosYa Style)', icon: '🏷️', desc: 'Barra horizontal de filtros por categorías comerciales.' },
+        { key: 'showBranchesBlock', sectionId: 'BRANCHES', label: 'Bloque de Sucursales por Comercio 🏢', icon: '🏢', desc: 'Carrusel de sedes específicas para comercios multicentrales.' },
+        { key: 'showNearbyBusinesses', sectionId: 'NEARBY', label: 'Comercios Cerca de Ti (Geolocalización) 📍', icon: '📍', desc: 'Descubrimiento geoespacial con radio dinámico expandible.' },
+        { key: 'showFeaturedProducts', sectionId: 'FEATURED_PRODUCTS', label: 'Productos Estrella ⭐', icon: '🍔', desc: 'Platillos destacados fijados para compra directa.' },
+        { key: 'showFeaturedBusinesses', sectionId: 'FEATURED_BUSINESSES', label: 'Comercios Destacados ⭐', icon: '🏪', desc: 'Comercios marcados como favoritos de la plataforma.' },
+        { key: 'showFlashDeals', sectionId: 'FLASH_DEALS', label: 'Ofertas Flash ⚡', icon: '⏱️', desc: 'Sección de compras de oportunidad con cuenta regresiva.' },
+        { key: 'showPromotions', sectionId: 'PROMOTIONS', label: 'Productos con Descuentos 🏷️', icon: '💰', desc: 'Sección de catálogo con rebajas porcentuales activas.' },
+        { key: 'showSamePrice', sectionId: 'SAME_PRICE', label: 'Mismo Precio que en Local 🏷️', icon: '💵', desc: 'Comercios garantizados sin sobreprecio de menú.' },
+        { key: 'showTopSelling', sectionId: 'TOP_SELLING', label: 'Los Más Vendidos 🔥', icon: '📈', desc: 'Comercios y productos con mayor volumen de pedidos.' },
+        { key: 'showRecommended', sectionId: 'RECOMMENDED', label: 'Recomendados para ti 🎯', icon: '❤️', desc: 'Sugerencias personalizadas según hábitos del cliente.' },
+        { key: 'showNewBusinesses', sectionId: 'NEW_BUSINESSES', label: 'Comercios Nuevos 🟢', icon: '🆕', desc: 'Nuevos restaurantes y tiendas integrados al marketplace.' },
+        { key: 'showQuickReorder', sectionId: 'QUICK_REORDER', label: 'Volver a Pedir 🔄', icon: '🛍️', desc: 'Acceso directo para repetir pedidos anteriores.' },
+        { key: 'showFavoritesBlock', sectionId: 'FAVORITES', label: 'Tus Comercios Favoritos ❤️', icon: '⭐', desc: 'Comercios guardados en favoritos por el cliente.' },
+        { key: 'showExpressDeliveryBanner', sectionId: 'EXPRESS_DELIVERY', label: 'Servicio Encomiendas X→Y (Banner)', icon: '🛵', desc: 'Banner de acceso directo al servicio de envíos express punto a punto.' },
+        { key: 'showEditorialAds', sectionId: 'EDITORIAL_ADS', label: 'Publicidad / Anuncios del Home 📣', icon: '📣', desc: 'Carrusel editorial de promociones y anuncios en el feed principal.' },
+        { key: 'xToYServiceEnabled', sectionId: null, label: 'Servicio Encomiendas X→Y (Habilitación Operativa)', icon: '🚚', desc: 'Control maestro de acceso y disponibilidad operativa al servicio de encomiendas X→Y.' }
     ],
 
     defaultSectionOrder: [
@@ -316,14 +362,19 @@ window.dashboardManagerModule = {
         { id: 'NEW_BUSINESSES', name: 'Comercios Nuevos', icon: '🟢' },
         { id: 'QUICK_REORDER', name: 'Volver a Pedir (Reorder)', icon: '🔄' },
         { id: 'FAVORITES', name: 'Tus Comercios Favoritos', icon: '⭐' },
-        { id: 'EXPRESS_DELIVERY', name: 'Servicio Encomiendas X→Y (Express Delivery)', icon: '🛵' }
+        { id: 'EXPRESS_DELIVERY', name: 'Servicio Encomiendas X→Y (Express Delivery)', icon: '🛵' },
+        { id: 'EDITORIAL_ADS', name: 'Publicidad / Anuncios del Home', icon: '📣' }
     ],
 
     currentSectionOrder: [],
+    currentBlockTitles: {},
+    currentBlockActions: {},
 
     initGeneralConfigListener: function() {
         const unsub = db.collection('dashboard').doc('configuration').onSnapshot(doc => {
             const data = doc.exists ? doc.data() : {};
+            this.currentBlockTitles = data.blockTitles || {};
+            this.currentBlockActions = data.blockActions || {};
             this.renderToggles(data);
             this.populateGeoParams(data);
             this.renderSectionOrder(data.sectionOrder || this.defaultSectionOrder.map(s => s.id));
@@ -337,24 +388,62 @@ window.dashboardManagerModule = {
         const container = document.getElementById('visibilityTogglesContainer');
         if (!container) return;
 
+        const blockTitles = data.blockTitles || {};
+        const blockActions = data.blockActions || {};
+
         container.innerHTML = this.allToggles.map(t => {
             // Fail-closed safe defaults para X→Y (P0-02, P0-03): false si no está presente
             const isChecked = (t.key === 'showExpressDeliveryBanner' || t.key === 'xToYServiceEnabled')
                 ? (data[t.key] === true)
                 : (data[t.key] !== false);
+
+            const hasSectionId = !!t.sectionId;
+            const customTitle = hasSectionId ? blockTitles[t.sectionId] : null;
+            const actionConfig = hasSectionId ? blockActions[t.sectionId] : null;
+            const hasCustomAction = actionConfig && actionConfig.actionType && actionConfig.actionType !== 'NONE';
+
             return `
-                <div class="bg-slate-950/70 border border-slate-800 p-4 rounded-xl flex items-center justify-between gap-3 hover:border-slate-700 transition">
-                    <div class="flex items-start gap-3 min-w-0">
-                        <span class="text-xl p-1 bg-slate-900 rounded-lg border border-slate-800">${t.icon}</span>
-                        <div class="min-w-0">
-                            <h4 class="text-xs font-bold text-slate-200 truncate">${t.label}</h4>
-                            <p class="text-[10px] text-slate-400 line-clamp-1">${t.desc}</p>
+                <div class="bg-slate-950/70 border border-slate-800 p-4 rounded-xl flex flex-col justify-between gap-3 hover:border-slate-700 transition">
+                    <div class="flex items-start justify-between gap-3 min-w-0">
+                        <div class="flex items-start gap-3 min-w-0">
+                            <span class="text-xl p-1 bg-slate-900 rounded-lg border border-slate-800 shrink-0">${t.icon}</span>
+                            <div class="min-w-0">
+                                <h4 class="text-xs font-bold text-slate-200 truncate">${t.label}</h4>
+                                <p class="text-[10px] text-slate-400 line-clamp-1">${t.desc}</p>
+                            </div>
                         </div>
+                        <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                            <input type="checkbox" id="cfg_${t.key}" ${isChecked ? 'checked' : ''} onchange="window.dashboardManagerModule.updateSingleToggle('${t.key}', this.checked)" class="sr-only peer">
+                            <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
                     </div>
-                    <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                        <input type="checkbox" id="cfg_${t.key}" ${isChecked ? 'checked' : ''} onchange="window.dashboardManagerModule.updateSingleToggle('${t.key}', this.checked)" class="sr-only peer">
-                        <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
-                    </label>
+
+                    ${hasSectionId ? `
+                        <div class="pt-2 border-t border-slate-800/80 flex items-center justify-between gap-2 text-[10px]">
+                            <div class="flex items-center gap-1.5 min-w-0 flex-1">
+                                ${customTitle ? `
+                                    <span class="px-2 py-0.5 rounded bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 font-mono truncate max-w-[130px]" title="Título personalizado: ${customTitle}">
+                                        ✏️ "${customTitle}"
+                                    </span>
+                                ` : `
+                                    <span class="text-slate-500 italic truncate">Título default</span>
+                                `}
+                                ${hasCustomAction ? `
+                                    <span class="px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-mono text-[9px] uppercase tracking-wider shrink-0" title="Acción de Encabezado: ${actionConfig.actionType}">
+                                        🔗 CTA: ${actionConfig.actionType}
+                                    </span>
+                                ` : ''}
+                            </div>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button type="button" onclick="window.dashboardManagerModule.openEditBlockTitleModal('${t.sectionId}', '${t.label.replace(/'/g, "\\'")}')" class="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded border border-slate-700/80 transition flex items-center gap-1" title="Personalizar título del bloque en la app móvil">
+                                    <span>✏️</span> Título
+                                </button>
+                                <button type="button" onclick="window.dashboardManagerModule.openEditBlockActionModal('${t.sectionId}', '${t.label.replace(/'/g, "\\'")}')" class="px-2 py-1 bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white rounded border border-slate-700/80 transition flex items-center gap-1" title="Configurar acción del encabezado/CTA">
+                                    <span>🔗</span> Acción
+                                </button>
+                            </div>
+                        </div>
+                    ` : ''}
                 </div>
             `;
         }).join('');
@@ -475,25 +564,40 @@ window.dashboardManagerModule = {
 
         this.currentSectionOrder = items.map(i => i.id);
 
-        container.innerHTML = items.map((item, idx) => `
-            <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-xl flex items-center justify-between gap-3 hover:border-slate-700 transition">
-                <div class="flex items-center gap-3">
-                    <span class="w-6 h-6 rounded-full bg-slate-900 border border-slate-700 text-[11px] font-mono font-bold flex items-center justify-center text-indigo-400">
-                        ${idx + 1}
-                    </span>
-                    <span class="text-base">${item.icon}</span>
-                    <span class="text-xs font-bold text-slate-200">${item.name}</span>
+        container.innerHTML = items.map((item, idx) => {
+            const customTitle = this.currentBlockTitles[item.id];
+            const actionConfig = this.currentBlockActions[item.id];
+            const hasCustomAction = actionConfig && actionConfig.actionType && actionConfig.actionType !== 'NONE';
+
+            return `
+                <div class="bg-slate-950/80 border border-slate-800 p-3 rounded-xl flex items-center justify-between gap-3 hover:border-slate-700 transition">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <span class="w-6 h-6 rounded-full bg-slate-900 border border-slate-700 text-[11px] font-mono font-bold flex items-center justify-center text-indigo-400 shrink-0">
+                            ${idx + 1}
+                        </span>
+                        <span class="text-base shrink-0">${item.icon}</span>
+                        <div class="min-w-0">
+                            <span class="text-xs font-bold text-slate-200 block truncate">${item.name}</span>
+                            ${customTitle ? `<span class="text-[10px] text-indigo-400 font-mono truncate block">✏️ "${customTitle}"</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <button type="button" onclick="window.dashboardManagerModule.openEditBlockTitleModal('${item.id}', '${item.name.replace(/'/g, "\\'")}')" class="p-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg text-xs font-bold transition" title="Editar título del bloque">
+                            ✏️
+                        </button>
+                        <button type="button" onclick="window.dashboardManagerModule.openEditBlockActionModal('${item.id}', '${item.name.replace(/'/g, "\\'")}')" class="p-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-lg text-xs font-bold transition" title="Configurar acción de encabezado">
+                            🔗
+                        </button>
+                        <button onclick="window.dashboardManagerModule.moveSection(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} class="p-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-bold transition" title="Mover arriba">
+                            ▲
+                        </button>
+                        <button onclick="window.dashboardManagerModule.moveSection(${idx}, 1)" ${idx === items.length - 1 ? 'disabled' : ''} class="p-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-bold transition" title="Mover abajo">
+                            ▼
+                        </button>
+                    </div>
                 </div>
-                <div class="flex items-center gap-1">
-                    <button onclick="window.dashboardManagerModule.moveSection(${idx}, -1)" ${idx === 0 ? 'disabled' : ''} class="p-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-bold transition">
-                        ▲
-                    </button>
-                    <button onclick="window.dashboardManagerModule.moveSection(${idx}, 1)" ${idx === items.length - 1 ? 'disabled' : ''} class="p-1.5 bg-slate-900 hover:bg-slate-800 disabled:opacity-30 disabled:cursor-not-allowed text-slate-300 rounded-lg text-xs font-bold transition">
-                        ▼
-                    </button>
-                </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
     },
 
     moveSection: async function(index, delta) {
@@ -527,6 +631,1158 @@ window.dashboardManagerModule = {
         }, { merge: true });
         this.showLiveSyncFeedback();
         if (typeof showToast === 'function') showToast('✅ Orden restaurado', 'success');
+    },
+
+    // ─── Modales: Títulos Dinámicos y Acciones de Encabezado (blockTitles & blockActions) ──
+
+    openEditBlockTitleModal: function(blockId, blockLabel) {
+        const oldModal = document.getElementById('blockTitleModal');
+        if (oldModal) oldModal.remove();
+
+        const currentTitle = this.currentBlockTitles[blockId] || '';
+
+        const modalDiv = document.createElement('div');
+        modalDiv.id = 'blockTitleModal';
+        modalDiv.className = 'fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4';
+        modalDiv.innerHTML = `
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+                        <span>✏️</span> Título Dinámico de Bloque
+                    </h3>
+                    <button onclick="document.getElementById('blockTitleModal').remove()" class="text-slate-400 hover:text-slate-200 text-lg">✕</button>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="bg-slate-950/70 border border-slate-800 p-3 rounded-xl space-y-1">
+                        <span class="text-[10px] font-mono text-indigo-400 uppercase tracking-wider">Identificador de Bloque</span>
+                        <p class="text-xs font-bold text-slate-200">${blockId}</p>
+                        <p class="text-[11px] text-slate-400">${blockLabel}</p>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-300 block">Título Personalizado en la App Móvil</label>
+                        <input type="text" id="modalBlockTitleInput" value="${currentTitle.replace(/"/g, '&quot;')}" placeholder="${blockLabel}" maxlength="60" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                        <p class="text-[10px] text-slate-400">Deja este campo vacío para restaurar el título predeterminado del sistema.</p>
+                    </div>
+
+                    <div class="bg-indigo-950/30 border border-indigo-800/40 p-3 rounded-xl flex items-start gap-2">
+                        <span class="text-sm text-indigo-400">⚡</span>
+                        <p class="text-[11px] text-indigo-300">Este cambio se persiste en <code class="font-mono text-indigo-200">/dashboard/configuration.blockTitles.${blockId}</code> y se transmite en tiempo real a los clientes conectados.</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="document.getElementById('blockTitleModal').remove()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 rounded-xl transition">Cancelar</button>
+                    <button type="button" onclick="window.dashboardManagerModule.saveBlockTitle('${blockId}')" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white rounded-xl shadow-lg transition flex items-center gap-1.5">
+                        <span>💾</span> Guardar Título
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+    },
+
+    saveBlockTitle: async function(blockId) {
+        const input = document.getElementById('modalBlockTitleInput');
+        if (!input) return;
+        const newTitle = input.value.trim();
+
+        try {
+            const updatePayload = {
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            if (newTitle) {
+                updatePayload[`blockTitles.${blockId}`] = newTitle;
+            } else {
+                updatePayload[`blockTitles.${blockId}`] = firebase.firestore.FieldValue.delete();
+            }
+
+            await db.collection('dashboard').doc('configuration').update(updatePayload);
+            document.getElementById('blockTitleModal')?.remove();
+            this.showLiveSyncFeedback();
+            if (typeof showToast === 'function') {
+                showToast(`✅ Título de ${blockId} actualizado`, 'success');
+            }
+        } catch (e) {
+            console.error("Error saving block title:", e);
+            if (typeof showToast === 'function') showToast(`❌ Error: ${e.message}`, 'error');
+        }
+    },
+
+    openEditBlockActionModal: async function(blockId, blockLabel) {
+        const oldModal = document.getElementById('blockActionModal');
+        if (oldModal) oldModal.remove();
+
+        const currentAction = this.currentBlockActions[blockId] || { actionType: 'NONE', label: 'Ver todos' };
+
+        // Cargar comercios y categorías para los selectores dinámicos
+        let businesses = [];
+        let categories = [];
+        try {
+            const [bizSnap, catSnap] = await Promise.all([
+                db.collection('businesses').get(),
+                db.collection('categories').get()
+            ]);
+            businesses = bizSnap.docs.map(d => ({ id: d.id, name: d.data().name || d.data().nombre || d.id }));
+            categories = catSnap.docs.map(d => ({ id: d.id, name: d.data().name || d.data().nombre || d.id }));
+        } catch (err) {
+            console.warn("Could not pre-load businesses/categories for block action modal:", err);
+        }
+
+        const modalDiv = document.createElement('div');
+        modalDiv.id = 'blockActionModal';
+        modalDiv.className = 'fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4';
+        modalDiv.innerHTML = `
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl p-6 space-y-4 animate-in fade-in zoom-in duration-150">
+                <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <h3 class="text-sm font-bold text-slate-100 flex items-center gap-2">
+                        <span>🔗</span> Acción de Encabezado / CTA del Bloque
+                    </h3>
+                    <button onclick="document.getElementById('blockActionModal').remove()" class="text-slate-400 hover:text-slate-200 text-lg">✕</button>
+                </div>
+
+                <!-- ALERTA DE SEMÁNTICA DEL ENCABEZADO -->
+                <div class="bg-amber-950/40 border border-amber-800/40 p-3 rounded-xl flex items-start gap-2.5">
+                    <span class="text-base text-amber-400 shrink-0">⚠️</span>
+                    <div class="text-[11px] text-amber-200/90 space-y-0.5">
+                        <p class="font-bold">Acción Exclusiva del Encabezado (Header CTA)</p>
+                        <p class="text-slate-400">Esta acción aplica <strong>únicamente al botón de acción del encabezado</strong> (ej: "Ver todos", "Conocer más"). <strong>NO</strong> convierte la superficie del bloque en un enlace ni altera la navegación propia de sus tarjetas o productos internos.</p>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="bg-slate-950/70 border border-slate-800 p-3 rounded-xl space-y-1">
+                        <span class="text-[10px] font-mono text-indigo-400 uppercase tracking-wider">Bloque</span>
+                        <p class="text-xs font-bold text-slate-200">${blockId} — ${blockLabel}</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-300 block">Texto del Botón CTA</label>
+                            <input type="text" id="modalActionLabel" value="${(currentAction.label || 'Ver todos').replace(/"/g, '&quot;')}" placeholder="Ver todos" maxlength="30" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-300 block">Tipo de Acción (actionType)</label>
+                            <select id="modalActionType" onchange="window.dashboardManagerModule.handleActionTypeChange(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                                <option value="NONE" ${currentAction.actionType === 'NONE' ? 'selected' : ''}>NONE — Sin acción (Ocultar CTA)</option>
+                                <option value="CATEGORY" ${currentAction.actionType === 'CATEGORY' ? 'selected' : ''}>CATEGORY — Abrir Categoría Comercial</option>
+                                <option value="MERCHANT" ${currentAction.actionType === 'MERCHANT' ? 'selected' : ''}>MERCHANT — Abrir Comercio Específico</option>
+                                <option value="INTERNAL_ROUTE" ${currentAction.actionType === 'INTERNAL_ROUTE' ? 'selected' : ''}>INTERNAL_ROUTE — Ruta Interna de la App</option>
+                                <option value="EXTERNAL_URL" ${currentAction.actionType === 'EXTERNAL_URL' ? 'selected' : ''}>EXTERNAL_URL — Enlace Web Seguro (HTTPS)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor dinámico según tipo de acción -->
+                    <div id="modalActionDynamicContainer" class="space-y-3 pt-1">
+                        <!-- Inyectado por handleActionTypeChange -->
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                    <button type="button" onclick="document.getElementById('blockActionModal').remove()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 rounded-xl transition">Cancelar</button>
+                    <button type="button" onclick="window.dashboardManagerModule.saveBlockAction('${blockId}')" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white rounded-xl shadow-lg transition flex items-center gap-1.5">
+                        <span>💾</span> Guardar Acción de Encabezado
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+
+        this._tempBusinesses = businesses;
+        this._tempCategories = categories;
+        this.handleActionTypeChange(currentAction.actionType || 'NONE', currentAction);
+    },
+
+    handleActionTypeChange: function(actionType, currentAction = {}) {
+        const container = document.getElementById('modalActionDynamicContainer');
+        if (!container) return;
+
+        if (actionType === 'NONE') {
+            container.innerHTML = `
+                <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 text-[11px] text-slate-400">
+                    El encabezado no mostrará ningún botón o enlace tipo "Ver todos". El usuario sólo interactuará directamente con el contenido interno del bloque.
+                </div>
+            `;
+        } else if (actionType === 'CATEGORY') {
+            const categories = this._tempCategories || [];
+            container.innerHTML = `
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-300 block">Seleccionar Categoría Destino</label>
+                    <select id="modalActionTargetId" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                        <option value="">-- Selecciona una categoría --</option>
+                        ${categories.map(c => `<option value="${c.id}" ${c.id === currentAction.targetId ? 'selected' : ''}>${c.name}</option>`).join('')}
+                    </select>
+                </div>
+            `;
+        } else if (actionType === 'MERCHANT') {
+            const businesses = this._tempBusinesses || [];
+            container.innerHTML = `
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-300 block">Seleccionar Comercio Destino</label>
+                    <select id="modalActionTargetId" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                        <option value="">-- Selecciona un comercio --</option>
+                        ${businesses.map(b => `<option value="${b.id}" ${b.id === currentAction.targetId ? 'selected' : ''}>${b.name}</option>`).join('')}
+                    </select>
+                </div>
+            `;
+        } else if (actionType === 'INTERNAL_ROUTE') {
+            const routes = [
+                { path: '/categories', label: 'Catálogo de Categorías (/categories)' },
+                { path: '/express_delivery', label: 'Servicio Encomiendas X→Y (/express_delivery)' },
+                { path: '/deals', label: 'Ofertas Flash y Promociones (/deals)' },
+                { path: '/branches', label: 'Sucursales de Comercios (/branches)' },
+                { path: '/orders', label: 'Historial de Pedidos (/orders)' },
+                { path: '/favorites', label: 'Comercios Favoritos (/favorites)' }
+            ];
+            container.innerHTML = `
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-300 block">Seleccionar Ruta de Navegación Interna</label>
+                    <select id="modalActionTargetRoute" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                        ${routes.map(r => `<option value="${r.path}" ${r.path === currentAction.targetRoute ? 'selected' : ''}>${r.label}</option>`).join('')}
+                    </select>
+                </div>
+            `;
+        } else if (actionType === 'EXTERNAL_URL') {
+            container.innerHTML = `
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-300 block">URL Externa Segura (Requiere HTTPS obligatorio)</label>
+                    <input type="url" id="modalActionTargetUrl" value="${(currentAction.targetUrl || '').replace(/"/g, '&quot;')}" placeholder="https://ejemplo.com/campana" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 font-mono focus:outline-none focus:border-indigo-500">
+                    <p class="text-[10px] text-slate-400">Por seguridad de la plataforma y de la aplicación móvil, toda URL debe iniciar estrictamente con <code class="text-emerald-400 font-bold font-mono">https://</code>.</p>
+                </div>
+            `;
+        }
+    },
+
+    saveBlockAction: async function(blockId) {
+        const actionType = document.getElementById('modalActionType')?.value || 'NONE';
+        const label = document.getElementById('modalActionLabel')?.value?.trim() || 'Ver todos';
+
+        const actionPayload = {
+            actionType: actionType,
+            label: label
+        };
+
+        if (actionType === 'CATEGORY' || actionType === 'MERCHANT') {
+            const targetId = document.getElementById('modalActionTargetId')?.value;
+            if (!targetId) {
+                if (typeof showToast === 'function') showToast('❌ Selecciona el elemento de destino', 'error');
+                else alert('Selecciona el elemento de destino');
+                return;
+            }
+            actionPayload.targetId = targetId;
+        } else if (actionType === 'INTERNAL_ROUTE') {
+            const targetRoute = document.getElementById('modalActionTargetRoute')?.value;
+            if (!targetRoute) {
+                if (typeof showToast === 'function') showToast('❌ Selecciona la ruta interna', 'error');
+                else alert('Selecciona la ruta interna');
+                return;
+            }
+            actionPayload.targetRoute = targetRoute;
+        } else if (actionType === 'EXTERNAL_URL') {
+            const targetUrl = document.getElementById('modalActionTargetUrl')?.value?.trim();
+            if (!targetUrl || !targetUrl.startsWith('https://')) {
+                if (typeof showToast === 'function') showToast('❌ La URL externa debe comenzar obligatoriamente con https://', 'error');
+                else alert('La URL externa debe comenzar obligatoriamente con https://');
+                return;
+            }
+            actionPayload.targetUrl = targetUrl;
+        }
+
+        try {
+            const updatePayload = {
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            if (actionType === 'NONE') {
+                updatePayload[`blockActions.${blockId}`] = firebase.firestore.FieldValue.delete();
+            } else {
+                updatePayload[`blockActions.${blockId}`] = actionPayload;
+            }
+
+            await db.collection('dashboard').doc('configuration').update(updatePayload);
+            document.getElementById('blockActionModal')?.remove();
+            this.showLiveSyncFeedback();
+            if (typeof showToast === 'function') {
+                showToast(`✅ Acción de encabezado para ${blockId} guardada`, 'success');
+            }
+        } catch (e) {
+            console.error("Error saving block action:", e);
+            if (typeof showToast === 'function') showToast(`❌ Error: ${e.message}`, 'error');
+        }
+    },
+
+    // ─── Submódulo: Publicidad / Anuncios Editoriales del Home (/home_editorial_ads) ──
+
+    editorialAdsList: [],
+
+    initEditorialAdsListener: function() {
+        const unsub = db.collection('home_editorial_ads').onSnapshot(snapshot => {
+            const container = document.getElementById('editorialAdsContainer');
+            const totalCountEl = document.getElementById('editorialAdsCount');
+            const activeCountEl = document.getElementById('editorialAdsActiveCount');
+
+            if (!container) return;
+
+            const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            // Ordenar por 'order' ascendente
+            docs.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            this.editorialAdsList = docs;
+
+            if (totalCountEl) totalCountEl.textContent = docs.length;
+            if (activeCountEl) {
+                const activeCount = docs.filter(d => d.isActive !== false).length;
+                activeCountEl.textContent = `${activeCount} Activos`;
+            }
+
+            if (docs.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-slate-950/60 border border-slate-800 p-8 rounded-2xl text-center space-y-2">
+                        <span class="text-3xl">📣</span>
+                        <p class="text-xs text-slate-300 font-bold">No hay anuncios editoriales registrados actualmente.</p>
+                        <p class="text-[11px] text-slate-500 max-w-md mx-auto">Haz clic en <strong>"+ Crear Anuncio Editorial"</strong> para programar campañas comerciales, eventos o promociones en el carrusel del home.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const now = new Date();
+
+            container.innerHTML = docs.map((ad, idx) => {
+                const isActive = ad.isActive !== false;
+                
+                // Evaluar programación de fechas
+                let scheduleBadge = '';
+                if (ad.startAt) {
+                    const startDate = ad.startAt.toDate ? ad.startAt.toDate() : new Date(ad.startAt);
+                    if (now < startDate) {
+                        scheduleBadge = `<span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded">PROGRAMADO</span>`;
+                    }
+                }
+                if (ad.endAt) {
+                    const endDate = ad.endAt.toDate ? ad.endAt.toDate() : new Date(ad.endAt);
+                    if (now > endDate) {
+                        scheduleBadge = `<span class="bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[9px] font-mono font-bold px-1.5 py-0.5 rounded">EXPIRADO</span>`;
+                    }
+                }
+
+                const safeImg = ad.imageUrl || '/assets/promo-placeholder.svg';
+                const badgeText = ad.badge || '';
+                const ctaText = ad.ctaText || 'Ver más';
+                const typeLabel = window.dashboardManagerModule.formatCampaignType(ad.type);
+                const actionLabel = window.dashboardManagerModule.formatActionType(ad);
+
+                return `
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 hover:border-slate-700 transition shadow-sm">
+                        <div class="flex items-center gap-4 min-w-0 flex-1">
+                            <!-- Indicador de Orden y Reordenamiento ▲/▼ -->
+                            <div class="flex flex-col items-center justify-center gap-1 shrink-0">
+                                <button onclick="window.dashboardManagerModule.moveEditorialAd('${ad.id}', -1)" ${idx === 0 ? 'disabled' : ''} class="p-1 bg-slate-950 hover:bg-slate-800 disabled:opacity-20 text-slate-300 rounded text-[10px] font-bold transition" title="Mover arriba">
+                                    ▲
+                                </button>
+                                <span class="w-6 h-6 rounded-full bg-slate-950 border border-slate-700 text-[11px] font-mono font-bold flex items-center justify-center text-indigo-400">
+                                    ${ad.order ?? (idx + 1)}
+                                </span>
+                                <button onclick="window.dashboardManagerModule.moveEditorialAd('${ad.id}', 1)" ${idx === docs.length - 1 ? 'disabled' : ''} class="p-1 bg-slate-950 hover:bg-slate-800 disabled:opacity-20 text-slate-300 rounded text-[10px] font-bold transition" title="Mover abajo">
+                                    ▼
+                                </button>
+                            </div>
+
+                            <!-- Miniatura -->
+                            <div class="relative w-24 h-16 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 shrink-0">
+                                <img src="${safeImg}" alt="Ad" class="w-full h-full object-cover" onError="handleImageError(this, 'promo')">
+                                ${badgeText ? `<span class="absolute top-1 left-1 text-[8px] font-bold px-1.5 py-0.2 bg-indigo-600/90 text-white rounded">${badgeText}</span>` : ''}
+                            </div>
+
+                            <!-- Info Principal -->
+                            <div class="space-y-1 min-w-0 flex-1">
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <span class="text-[9px] font-bold px-2 py-0.5 rounded-full ${isActive ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-slate-800 text-slate-400'}">
+                                        ${isActive ? 'ACTIVO' : 'PAUSADO'}
+                                    </span>
+                                    ${scheduleBadge}
+                                    <span class="text-[9px] font-mono bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-1.5 py-0.5 rounded">
+                                        ${typeLabel}
+                                    </span>
+                                </div>
+                                <h4 class="text-xs font-black text-slate-100 truncate">${ad.title || 'Sin título'}</h4>
+                                <p class="text-[11px] text-slate-400 line-clamp-1">${ad.subtitle || 'Sin subtítulo'}</p>
+                                <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-400 pt-0.5">
+                                    <span class="text-indigo-400 font-semibold">${actionLabel}</span>
+                                    <span class="text-slate-600">•</span>
+                                    <span>CTA: <strong class="text-slate-300">${ctaText}</strong></span>
+                                    ${ad.merchantName ? `<span class="text-slate-600">•</span><span class="text-emerald-400 font-semibold">🏪 ${ad.merchantName}</span>` : ''}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botones de Acción -->
+                        <div class="flex items-center gap-1.5 shrink-0 self-end md:self-center">
+                            <button onclick="window.dashboardManagerModule.toggleEditorialAdStatus('${ad.id}', ${!isActive})" class="px-2.5 py-1.5 rounded-xl border text-xs font-bold transition ${isActive ? 'bg-amber-950/40 border-amber-800/40 text-amber-300 hover:bg-amber-900/60' : 'bg-emerald-950/40 border-emerald-800/40 text-emerald-300 hover:bg-emerald-900/60'}" title="${isActive ? 'Pausar anuncio' : 'Activar anuncio'}">
+                                ${isActive ? '⏸️' : '▶️'}
+                            </button>
+                            <button onclick="window.dashboardManagerModule.openEditorialAdModal('${ad.id}')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1" title="Editar anuncio">
+                                ✏️ Editar
+                            </button>
+                            <button onclick="window.dashboardManagerModule.duplicateEditorialAd('${ad.id}')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-slate-700 rounded-xl text-xs font-bold transition flex items-center gap-1" title="Duplicar anuncio">
+                                📋 Duplicar
+                            </button>
+                            <button onclick="window.dashboardManagerModule.deleteEditorialAd('${ad.id}')" class="p-1.5 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/40 rounded-xl text-xs font-bold transition" title="Eliminar anuncio">
+                                🗑️
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }, err => {
+            console.error("Error listening to home_editorial_ads:", err);
+            const container = document.getElementById('editorialAdsContainer');
+            if (container) container.innerHTML = `<p class="text-xs text-rose-400">Error al cargar anuncios editoriales: ${err.message}</p>`;
+        });
+        this._unsubs.push(unsub);
+    },
+
+    formatCampaignType: function(type) {
+        const types = {
+            'MERCHANT_PROMOTION': '🏪 Promo Comercio',
+            'PRODUCT_PROMOTION': '🍔 Promo Producto',
+            'MERCHANT_ACQUISITION': '🤝 Afiliación Comercios',
+            'COURIER_RECRUITMENT': '🛵 Únete como Repartidor',
+            'PLATFORM_CAMPAIGN': '🛡️ Institucional BlueSystem',
+            'EVENT': '🎉 Evento Especial',
+            'SERVICE_PROMOTION': '🚚 Envíos Express X→Y',
+            'GENERIC_EDITORIAL': '📢 Editorial General'
+        };
+        return types[type] || type || 'General';
+    },
+
+    formatActionType: function(ad) {
+        if (!ad.actionType || ad.actionType === 'NONE') return '🔘 Sin Clic';
+        if (ad.actionType === 'MERCHANT') return `🏪 Comercio (${ad.merchantName || ad.targetId || 'ID'})`;
+        if (ad.actionType === 'PRODUCT') return `🍔 Producto (${ad.productName || ad.targetId || 'ID'})`;
+        if (ad.actionType === 'INTERNAL_ROUTE') return `🧭 Ruta (${ad.targetRoute || '/'})`;
+        if (ad.actionType === 'EXTERNAL_URL') return `🌐 Enlace Externo`;
+        return ad.actionType;
+    },
+
+    moveEditorialAd: async function(id, delta) {
+        const list = this.editorialAdsList || [];
+        const index = list.findIndex(a => a.id === id);
+        if (index === -1) return;
+        const targetIndex = index + delta;
+        if (targetIndex < 0 || targetIndex >= list.length) return;
+
+        const currentAd = list[index];
+        const targetAd = list[targetIndex];
+
+        const currentOrder = currentAd.order ?? index;
+        const targetOrder = targetAd.order ?? targetIndex;
+
+        const newCurrentOrder = (currentOrder === targetOrder) ? (delta > 0 ? targetOrder + 1 : targetOrder - 1) : targetOrder;
+        const newTargetOrder = currentOrder;
+
+        try {
+            const batch = db.batch();
+            batch.update(db.collection('home_editorial_ads').doc(currentAd.id), {
+                order: newCurrentOrder,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            batch.update(db.collection('home_editorial_ads').doc(targetAd.id), {
+                order: newTargetOrder,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            await batch.commit();
+            this.showLiveSyncFeedback();
+        } catch (e) {
+            console.error("Error reordering editorial ads:", e);
+            if (typeof showToast === 'function') showToast(`❌ Error al reordenar: ${e.message}`, 'error');
+        }
+    },
+
+    toggleEditorialAdStatus: async function(id, newStatus) {
+        try {
+            await db.collection('home_editorial_ads').doc(id).update({
+                isActive: newStatus,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            this.showLiveSyncFeedback();
+            if (typeof showToast === 'function') {
+                showToast(`📣 Anuncio editorial ${newStatus ? 'activado' : 'pausado'}`, 'success');
+            }
+        } catch (e) {
+            console.error("Error updating editorial ad status:", e);
+            if (typeof showToast === 'function') showToast(`❌ Error: ${e.message}`, 'error');
+        }
+    },
+
+    duplicateEditorialAd: async function(id) {
+        try {
+            const doc = await db.collection('home_editorial_ads').doc(id).get();
+            if (!doc.exists) {
+                if (typeof showToast === 'function') showToast('❌ Anuncio no encontrado', 'error');
+                return;
+            }
+            const data = doc.data();
+            const maxOrder = (this.editorialAdsList || []).reduce((max, a) => Math.max(max, a.order || 0), 0);
+            
+            const newAd = {
+                ...data,
+                title: `${data.title || 'Anuncio'} (Copia)`,
+                order: maxOrder + 1,
+                isActive: false, // Inicia pausado para revisión del admin
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            delete newAd.id;
+
+            await db.collection('home_editorial_ads').add(newAd);
+            this.showLiveSyncFeedback();
+            if (typeof showToast === 'function') showToast('📋 Anuncio duplicado con éxito (pausado)', 'success');
+        } catch (e) {
+            console.error("Error duplicating editorial ad:", e);
+            if (typeof showToast === 'function') showToast(`❌ Error: ${e.message}`, 'error');
+        }
+    },
+
+    deleteEditorialAd: async function(id) {
+        if (!confirm("¿Eliminar definitivamente este anuncio editorial del feed?")) return;
+        try {
+            await db.collection('home_editorial_ads').doc(id).delete();
+            this.showLiveSyncFeedback();
+            if (typeof showToast === 'function') showToast('🗑️ Anuncio editorial eliminado', 'info');
+        } catch (e) {
+            console.error("Error deleting editorial ad:", e);
+            if (typeof showToast === 'function') showToast(`❌ Error: ${e.message}`, 'error');
+        }
+    },
+
+    openEditorialAdModal: async function(adDataOrId = null) {
+        const oldModal = document.getElementById('editorialAdModal');
+        if (oldModal) oldModal.remove();
+
+        let ad = null;
+        if (typeof adDataOrId === 'string') {
+            const found = (this.editorialAdsList || []).find(a => a.id === adDataOrId);
+            if (found) {
+                ad = found;
+            } else {
+                try {
+                    const snap = await db.collection('home_editorial_ads').doc(adDataOrId).get();
+                    if (snap.exists) ad = { id: snap.id, ...snap.data() };
+                } catch (e) {
+                    console.error("Error fetching ad doc:", e);
+                }
+            }
+        } else if (adDataOrId && typeof adDataOrId === 'object') {
+            ad = adDataOrId;
+        }
+
+        const isEdit = !!ad;
+        const defaultOrder = (this.editorialAdsList || []).reduce((max, a) => Math.max(max, a.order || 0), 0) + 1;
+
+        // Cargar comercios y productos
+        let businesses = [];
+        let products = [];
+        try {
+            const [bizSnap, prodSnap] = await Promise.all([
+                db.collection('businesses').get(),
+                db.collection('products').get()
+            ]);
+            businesses = bizSnap.docs.map(d => ({
+                id: d.id,
+                name: d.data().name || d.data().nombre || 'Comercio',
+                logoUrl: d.data().logoUrl || d.data().photoUrl || d.data().image || '',
+                ...d.data()
+            }));
+            products = prodSnap.docs.map(d => ({
+                id: d.id,
+                name: d.data().name || d.data().nombre || 'Producto',
+                businessId: d.data().businessId || d.data().restaurantId || '',
+                price: d.data().price || d.data().precio || 0,
+                imageUrl: d.data().imageUrl || d.data().imagenUrl || ''
+            }));
+        } catch (e) {
+            console.warn("Could not pre-load businesses/products for ad modal:", e);
+        }
+
+        const formatIsoForInput = (timestampOrIso) => {
+            if (!timestampOrIso) return '';
+            try {
+                const date = timestampOrIso.toDate ? timestampOrIso.toDate() : new Date(timestampOrIso);
+                if (isNaN(date.getTime())) return '';
+                const tzOffset = date.getTimezoneOffset() * 60000;
+                return (new Date(date.getTime() - tzOffset)).toISOString().slice(0, 16);
+            } catch (err) {
+                return '';
+            }
+        };
+
+        const modalDiv = document.createElement('div');
+        modalDiv.id = 'editorialAdModal';
+        modalDiv.className = 'fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-3 md:p-6 overflow-y-auto';
+        modalDiv.innerHTML = `
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-4xl rounded-2xl shadow-2xl overflow-hidden flex flex-col my-auto animate-in fade-in zoom-in duration-150">
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between border-b border-slate-800 px-6 py-4 bg-slate-950/60">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-xl">📣</span>
+                        <div>
+                            <h3 class="text-sm font-black text-slate-100 uppercase tracking-wider">
+                                ${isEdit ? 'Editar Anuncio Editorial' : 'Nuevo Anuncio Editorial'}
+                            </h3>
+                            <p class="text-[11px] text-slate-400">Superficie interactiva /home_editorial_ads para el feed del cliente.</p>
+                        </div>
+                    </div>
+                    <button onclick="document.getElementById('editorialAdModal').remove()" class="text-slate-400 hover:text-slate-200 text-lg">✕</button>
+                </div>
+
+                <!-- Modal Body: 2 Columns (Form on left, Mobile Simulator on right) -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 p-6 overflow-y-auto max-h-[75vh]">
+                    <!-- Left Column: Form (7 cols) -->
+                    <div class="lg:col-span-7 space-y-4">
+                        <!-- Título y Subtítulo -->
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-300 block">Título Principal del Anuncio <span class="text-rose-400">*</span></label>
+                            <input type="text" id="modalAdTitle" value="${(ad?.title || '').replace(/"/g, '&quot;')}" placeholder="Ej: ¡2x1 en Todas las Hamburguesas!" maxlength="60" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="text-xs font-bold text-slate-300 block">Subtítulo Descriptivo</label>
+                            <input type="text" id="modalAdSubtitle" value="${(ad?.subtitle || '').replace(/"/g, '&quot;')}" placeholder="Ej: Válido sólo por hoy viernes con entrega express." maxlength="100" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                        </div>
+
+                        <!-- Badge y CTA -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-300 block">Badge / Etiqueta Visual</label>
+                                <input type="text" id="modalAdBadge" value="${(ad?.badge || '').replace(/"/g, '&quot;')}" placeholder="Ej: 🔥 OFERTA, ⭐ EXCLUSIVO" maxlength="25" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-300 block">Texto del Botón CTA</label>
+                                <input type="text" id="modalAdCtaText" value="${(ad?.ctaText || 'Ver más').replace(/"/g, '&quot;')}" placeholder="Ver más" maxlength="25" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                            </div>
+                        </div>
+
+                        <!-- Tipo de Campaña y Acción -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-300 block">Tipo de Campaña</label>
+                                <select id="modalAdType" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                                    <option value="MERCHANT_PROMOTION" ${ad?.type === 'MERCHANT_PROMOTION' ? 'selected' : ''}>🏪 Promo de Comercio</option>
+                                    <option value="PRODUCT_PROMOTION" ${ad?.type === 'PRODUCT_PROMOTION' ? 'selected' : ''}>🍔 Promo de Producto</option>
+                                    <option value="MERCHANT_ACQUISITION" ${ad?.type === 'MERCHANT_ACQUISITION' ? 'selected' : ''}>🤝 Afiliación Comercios</option>
+                                    <option value="COURIER_RECRUITMENT" ${ad?.type === 'COURIER_RECRUITMENT' ? 'selected' : ''}>🛵 Únete como Motorizado</option>
+                                    <option value="PLATFORM_CAMPAIGN" ${ad?.type === 'PLATFORM_CAMPAIGN' ? 'selected' : ''}>🛡️ Campaña Institucional</option>
+                                    <option value="EVENT" ${ad?.type === 'EVENT' ? 'selected' : ''}>🎉 Evento Especial</option>
+                                    <option value="SERVICE_PROMOTION" ${ad?.type === 'SERVICE_PROMOTION' ? 'selected' : ''}>🚚 Envíos Express X→Y</option>
+                                    <option value="GENERIC_EDITORIAL" ${ad?.type === 'GENERIC_EDITORIAL' ? 'selected' : ''}>📢 Editorial General</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-300 block">Acción al Hacer Clic (actionType)</label>
+                                <select id="modalAdActionType" onchange="window.dashboardManagerModule.handleAdActionTypeChange(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                                    <option value="NONE" ${ad?.actionType === 'NONE' ? 'selected' : ''}>NONE — Solo Informativo (Sin Clic)</option>
+                                    <option value="MERCHANT" ${ad?.actionType === 'MERCHANT' ? 'selected' : ''}>MERCHANT — Abrir Comercio</option>
+                                    <option value="PRODUCT" ${ad?.actionType === 'PRODUCT' ? 'selected' : ''}>PRODUCT — Abrir Producto Directo</option>
+                                    <option value="INTERNAL_ROUTE" ${ad?.actionType === 'INTERNAL_ROUTE' ? 'selected' : ''}>INTERNAL_ROUTE — Ruta Interna</option>
+                                    <option value="EXTERNAL_URL" ${ad?.actionType === 'EXTERNAL_URL' ? 'selected' : ''}>EXTERNAL_URL — Enlace Web (HTTPS)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Selector Dinámico de Destino según actionType -->
+                        <div id="modalAdDynamicTargetContainer" class="p-3 bg-slate-950/70 border border-slate-800 rounded-xl space-y-3">
+                            <!-- Inyectado por handleAdActionTypeChange -->
+                        </div>
+
+                        <!-- Creativo Visual (Imagen / Storage) -->
+                        <div class="space-y-2 p-3 bg-slate-950/70 border border-slate-800 rounded-xl">
+                            <label class="text-xs font-bold text-slate-300 block">Creativo Visual (Imagen del Anuncio) <span class="text-rose-400">*</span></label>
+                            
+                            <div class="flex items-center gap-2">
+                                <input type="file" id="modalAdFile" accept="image/jpeg,image/png,image/webp" class="text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer">
+                                <span id="modalAdUploadStatus" class="hidden text-[11px] text-amber-300 font-mono">⏳ Subiendo...</span>
+                            </div>
+
+                            <div class="space-y-1 pt-1">
+                                <label class="text-[10px] text-slate-400 block">O ingresa directamente la URL de la imagen:</label>
+                                <input type="url" id="modalAdImageUrl" value="${(ad?.imageUrl || '').replace(/"/g, '&quot;')}" placeholder="https://firebasestorage.googleapis.com/.../editorial_ads/..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-slate-100 font-mono focus:outline-none focus:border-indigo-500">
+                            </div>
+                            <p class="text-[10px] text-slate-400">Recomendado: 1200×600 px (2:1 o 16:9). Formatos: JPG, PNG, WebP (máx. 5 MB). Se sube de forma segura a <code class="text-indigo-300">/editorial_ads</code>.</p>
+                        </div>
+
+                        <!-- Programación de Fechas -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-300 block">Fecha/Hora de Inicio (startAt)</label>
+                                <input type="datetime-local" id="modalAdStartAt" value="${formatIsoForInput(ad?.startAt)}" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                                <p class="text-[10px] text-slate-400">Opcional. Vacío = inmediato.</p>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-300 block">Fecha/Hora de Fin (endAt)</label>
+                                <input type="datetime-local" id="modalAdEndAt" value="${formatIsoForInput(ad?.endAt)}" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                                <p class="text-[10px] text-slate-400">Opcional. Vacío = sin caducidad.</p>
+                            </div>
+                        </div>
+
+                        <!-- Orden y Estado -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 items-center">
+                            <div class="space-y-1">
+                                <label class="text-xs font-bold text-slate-300 block">Orden en Carrusel</label>
+                                <input type="number" id="modalAdOrder" min="1" max="999" value="${ad?.order ?? defaultOrder}" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-2 text-xs text-slate-100 font-mono focus:outline-none focus:border-indigo-500">
+                            </div>
+
+                            <div class="flex items-center justify-between pt-4">
+                                <span class="text-xs font-bold text-slate-200">Anuncio Activo</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="modalAdIsActive" ${ad ? (ad.isActive !== false ? 'checked' : '') : 'checked'} class="sr-only peer">
+                                    <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Live Mobile Simulator Preview (5 cols) -->
+                    <div class="lg:col-span-5 flex flex-col items-center justify-start space-y-3 bg-slate-950/70 border border-slate-800 p-4 rounded-2xl">
+                        <div class="flex items-center gap-2 self-start">
+                            <span class="text-base">📱</span>
+                            <h4 class="text-xs font-extrabold text-slate-200 uppercase tracking-wider">Simulador Móvil en Vivo</h4>
+                        </div>
+                        <p class="text-[10px] text-slate-400 self-start">Previsualización idéntica a la tarjeta que renderizará la Customer App en Android.</p>
+
+                        <!-- Simulated Mobile Card Container -->
+                        <div class="w-full max-w-[340px] pt-2">
+                            <div id="simulatedAdCard" class="relative w-full h-44 rounded-2xl overflow-hidden border border-slate-700 shadow-2xl bg-slate-900 flex flex-col justify-between p-3.5 transition">
+                                <!-- Background Image with Overlay -->
+                                <img id="simAdImg" src="${ad?.imageUrl || '/assets/promo-placeholder.svg'}" class="absolute inset-0 w-full h-full object-cover z-0" onError="handleImageError(this, 'promo')">
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent z-10"></div>
+
+                                <!-- Top Row: Badge & Type -->
+                                <div class="relative z-20 flex items-center justify-between gap-2">
+                                    <span id="simAdBadge" class="bg-indigo-600/90 text-white font-black text-[9px] px-2 py-0.5 rounded-full shadow-md uppercase tracking-wide">
+                                        ${ad?.badge || '🔥 DESTACADO'}
+                                    </span>
+                                    <span id="simAdCampaignType" class="bg-slate-900/80 backdrop-blur-sm text-indigo-300 text-[8px] font-mono px-2 py-0.5 rounded-full border border-indigo-500/30">
+                                        ${window.dashboardManagerModule.formatCampaignType(ad?.type || 'MERCHANT_PROMOTION')}
+                                    </span>
+                                </div>
+
+                                <!-- Bottom Row: Content & CTA -->
+                                <div class="relative z-20 space-y-1.5">
+                                    <div id="simAdMerchantRow" class="flex items-center gap-1.5">
+                                        <img id="simAdMerchantLogo" src="${ad?.merchantLogoUrl || '/assets/store-placeholder.svg'}" class="w-4 h-4 rounded-full object-cover bg-slate-800 border border-slate-700" onError="handleImageError(this, 'store')">
+                                        <span id="simAdMerchantName" class="text-[10px] font-bold text-slate-200 truncate">${ad?.merchantName || 'BlueSystem Delivery'}</span>
+                                    </div>
+
+                                    <div>
+                                        <h4 id="simAdTitle" class="text-xs font-black text-white leading-tight drop-shadow-md truncate">
+                                            ${ad?.title || 'Título del Anuncio'}
+                                        </h4>
+                                        <p id="simAdSubtitle" class="text-[10px] text-slate-300 line-clamp-1 drop-shadow-sm">
+                                            ${ad?.subtitle || 'Subtítulo o descripción de la promoción'}
+                                        </p>
+                                    </div>
+
+                                    <div class="flex items-center justify-between pt-1">
+                                        <span class="text-[9px] text-emerald-400 font-bold font-mono" id="simAdPrice"></span>
+                                        <button type="button" id="simAdCta" class="px-3 py-1 bg-indigo-600 text-white text-[10px] font-black rounded-lg shadow-lg hover:bg-indigo-500 transition">
+                                            ${ad?.ctaText || 'Ver más'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-[10px] text-slate-400 text-center pt-2">
+                            <span>Autoplay: <strong>5s</strong> • Pausa por toque • Reanudación tras <strong>6s</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-800 bg-slate-950/60">
+                    <button type="button" onclick="document.getElementById('editorialAdModal').remove()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-300 rounded-xl transition">
+                        Cancelar
+                    </button>
+                    <button type="button" id="modalAdSaveBtn" onclick="window.dashboardManagerModule.saveEditorialAd(${isEdit ? `'${ad.id}'` : 'null'})" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-500 text-xs font-bold text-white rounded-xl shadow-lg transition flex items-center gap-1.5">
+                        <span>💾</span> ${isEdit ? 'Guardar Cambios' : 'Crear Anuncio Editorial'}
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalDiv);
+
+        this._tempBusinesses = businesses;
+        this._tempProducts = products;
+
+        // Inyectar subcampos de actionType
+        this.handleAdActionTypeChange(ad?.actionType || 'NONE', ad);
+
+        // Configurar listener de subida de archivo Storage
+        const fileInput = document.getElementById('modalAdFile');
+        const uploadStatus = document.getElementById('modalAdUploadStatus');
+        const urlInput = document.getElementById('modalAdImageUrl');
+
+        if (fileInput) {
+            fileInput.addEventListener('change', async (e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+
+                if (uploadStatus) {
+                    uploadStatus.classList.remove('hidden');
+                    uploadStatus.textContent = '⏳ Subiendo a /editorial_ads...';
+                }
+
+                try {
+                    if (typeof storageService !== 'undefined' && storageService.uploadImage) {
+                        const downloadUrl = await storageService.uploadImage(file, 'editorial_ads');
+                        if (urlInput) urlInput.value = downloadUrl;
+                        if (uploadStatus) {
+                            uploadStatus.textContent = '✅ Subida exitosa';
+                            uploadStatus.className = 'text-[11px] text-emerald-400 font-mono';
+                        }
+                        this.updateMobilePreview();
+                    } else {
+                        throw new Error('Servicio de almacenamiento (storageService) no disponible');
+                    }
+                } catch (err) {
+                    console.error("Storage upload error:", err);
+                    if (uploadStatus) {
+                        uploadStatus.textContent = `❌ ${err.message}`;
+                        uploadStatus.className = 'text-[11px] text-rose-400 font-mono';
+                    }
+                    if (typeof showToast === 'function') showToast(`❌ Error al subir: ${err.message}`, 'error');
+                }
+            });
+        }
+
+        // Configurar listeners reactivos en vivo para el simulador móvil
+        ['modalAdTitle', 'modalAdSubtitle', 'modalAdBadge', 'modalAdCtaText', 'modalAdType', 'modalAdImageUrl'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', () => this.updateMobilePreview());
+                el.addEventListener('change', () => this.updateMobilePreview());
+            }
+        });
+
+        this.updateMobilePreview();
+    },
+
+    handleAdActionTypeChange: function(actionType, ad = {}) {
+        const container = document.getElementById('modalAdDynamicTargetContainer');
+        if (!container) return;
+
+        const businesses = this._tempBusinesses || [];
+        const products = this._tempProducts || [];
+
+        if (actionType === 'NONE') {
+            container.innerHTML = `
+                <p class="text-[11px] text-slate-400">Anuncio estático institucional / informativo. No realizará ninguna acción de navegación al tocarlo.</p>
+            `;
+        } else if (actionType === 'MERCHANT') {
+            container.innerHTML = `
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-300 block">Comercio Asociado</label>
+                    <select id="modalAdMerchantSelect" onchange="window.dashboardManagerModule.updateMobilePreview()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                        <option value="">-- Selecciona el comercio (${businesses.length}) --</option>
+                        ${businesses.map(b => `<option value="${b.id}" data-name="${b.name}" data-logo="${b.logoUrl || ''}" ${b.id === (ad.merchantId || ad.targetId) ? 'selected' : ''}>${b.name}</option>`).join('')}
+                    </select>
+                </div>
+            `;
+        } else if (actionType === 'PRODUCT') {
+            const initialBizId = ad.merchantId || '';
+            const filteredProds = initialBizId ? products.filter(p => p.businessId === initialBizId) : products;
+
+            container.innerHTML = `
+                <div class="space-y-2">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-300 block">1. Filtrar por Comercio</label>
+                        <select id="modalAdMerchantSelect" onchange="window.dashboardManagerModule.handleAdMerchantChange(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                            <option value="">-- Todos los Comercios (${businesses.length}) --</option>
+                            ${businesses.map(b => `<option value="${b.id}" data-name="${b.name}" data-logo="${b.logoUrl || ''}" ${b.id === initialBizId ? 'selected' : ''}>${b.name}</option>`).join('')}
+                        </select>
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold text-slate-300 block">2. Producto Específico del Catálogo</label>
+                        <select id="modalAdProductSelect" onchange="window.dashboardManagerModule.handleAdProductChange(this.value)" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                            <option value="">-- Selecciona un producto (${filteredProds.length}) --</option>
+                            ${filteredProds.map(p => {
+                                const b = businesses.find(bz => bz.id === p.businessId);
+                                const bName = b ? b.name : 'Comercio';
+                                return `<option value="${p.id}" data-bizid="${p.businessId}" data-bizname="${bName}" data-name="${p.name}" data-price="${p.price}" data-img="${p.imageUrl}" ${p.id === (ad.productId || ad.targetId) ? 'selected' : ''}>[${bName}] ${p.name} — C$ ${p.price}</option>`;
+                            }).join('')}
+                        </select>
+                    </div>
+                </div>
+            `;
+        } else if (actionType === 'INTERNAL_ROUTE') {
+            const routes = [
+                { path: '/express_delivery', label: '🚚 Servicio Encomiendas X→Y (/express_delivery)' },
+                { path: '/categories', label: '🏷️ Catálogo de Categorías (/categories)' },
+                { path: '/deals', label: '⚡ Ofertas Flash y Promociones (/deals)' },
+                { path: '/branches', label: '🏢 Sucursales (/branches)' },
+                { path: '/orders', label: '🛍️ Historial de Pedidos (/orders)' },
+                { path: '/favorites', label: '❤️ Comercios Favoritos (/favorites)' }
+            ];
+            container.innerHTML = `
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-300 block">Ruta de Navegación Interna</label>
+                    <select id="modalAdInternalRoute" onchange="window.dashboardManagerModule.updateMobilePreview()" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 focus:outline-none focus:border-indigo-500">
+                        ${routes.map(r => `<option value="${r.path}" ${r.path === ad.targetRoute ? 'selected' : ''}>${r.label}</option>`).join('')}
+                    </select>
+                </div>
+            `;
+        } else if (actionType === 'EXTERNAL_URL') {
+            container.innerHTML = `
+                <div class="space-y-1">
+                    <label class="text-xs font-bold text-slate-300 block">URL Externa Segura (Requiere HTTPS)</label>
+                    <input type="url" id="modalAdExternalUrl" value="${(ad.targetUrl || '').replace(/"/g, '&quot;')}" placeholder="https://ejemplo.com/promocion" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-xs text-slate-100 font-mono focus:outline-none focus:border-indigo-500">
+                    <p class="text-[10px] text-slate-400">Por seguridad estricta, la URL debe comenzar obligatoriamente con <code class="text-emerald-400 font-bold font-mono">https://</code>.</p>
+                </div>
+            `;
+        }
+
+        this.updateMobilePreview();
+    },
+
+    handleAdMerchantChange: function(merchantId) {
+        const prodSelect = document.getElementById('modalAdProductSelect');
+        if (!prodSelect) return;
+
+        const products = this._tempProducts || [];
+        const businesses = this._tempBusinesses || [];
+
+        const filtered = merchantId ? products.filter(p => p.businessId === merchantId) : products;
+        prodSelect.innerHTML = `<option value="">-- Selecciona un producto (${filtered.length}) --</option>` +
+            filtered.map(p => {
+                const b = businesses.find(bz => bz.id === p.businessId);
+                const bName = b ? b.name : 'Comercio';
+                return `<option value="${p.id}" data-bizid="${p.businessId}" data-bizname="${bName}" data-name="${p.name}" data-price="${p.price}" data-img="${p.imageUrl}">[${bName}] ${p.name} — C$ ${p.price}</option>`;
+            }).join('');
+
+        this.updateMobilePreview();
+    },
+
+    handleAdProductChange: function(productId) {
+        const prodSelect = document.getElementById('modalAdProductSelect');
+        const selectedOpt = prodSelect?.selectedOptions?.[0];
+        if (!selectedOpt || !productId) return;
+
+        // Auto-completar título e imagen si están vacíos
+        const titleInput = document.getElementById('modalAdTitle');
+        const imgInput = document.getElementById('modalAdImageUrl');
+
+        const pName = selectedOpt.getAttribute('data-name');
+        const pImg = selectedOpt.getAttribute('data-img');
+        const bizId = selectedOpt.getAttribute('data-bizid');
+
+        if (titleInput && !titleInput.value.trim() && pName) {
+            titleInput.value = pName;
+        }
+        if (imgInput && !imgInput.value.trim() && pImg) {
+            imgInput.value = pImg;
+        }
+
+        const bizSelect = document.getElementById('modalAdMerchantSelect');
+        if (bizSelect && bizId) {
+            bizSelect.value = bizId;
+        }
+
+        this.updateMobilePreview();
+    },
+
+    updateMobilePreview: function() {
+        const title = document.getElementById('modalAdTitle')?.value?.trim() || 'Título del Anuncio';
+        const subtitle = document.getElementById('modalAdSubtitle')?.value?.trim() || 'Subtítulo o descripción de la promoción';
+        const badge = document.getElementById('modalAdBadge')?.value?.trim();
+        const ctaText = document.getElementById('modalAdCtaText')?.value?.trim() || 'Ver más';
+        const type = document.getElementById('modalAdType')?.value || 'MERCHANT_PROMOTION';
+        const imageUrl = document.getElementById('modalAdImageUrl')?.value?.trim() || '/assets/promo-placeholder.svg';
+
+        const simTitle = document.getElementById('simAdTitle');
+        const simSubtitle = document.getElementById('simAdSubtitle');
+        const simBadge = document.getElementById('simAdBadge');
+        const simCta = document.getElementById('simAdCta');
+        const simType = document.getElementById('simAdCampaignType');
+        const simImg = document.getElementById('simAdImg');
+        const simMerchantName = document.getElementById('simAdMerchantName');
+        const simMerchantLogo = document.getElementById('simAdMerchantLogo');
+        const simPrice = document.getElementById('simAdPrice');
+
+        if (simTitle) simTitle.textContent = title;
+        if (simSubtitle) simSubtitle.textContent = subtitle;
+        if (simCta) simCta.textContent = ctaText;
+        if (simType) simType.textContent = this.formatCampaignType(type);
+
+        if (simBadge) {
+            if (badge) {
+                simBadge.textContent = badge;
+                simBadge.classList.remove('hidden');
+            } else {
+                simBadge.classList.add('hidden');
+            }
+        }
+
+        if (simImg && imageUrl) {
+            simImg.src = imageUrl;
+        }
+
+        // Resolver comercio y producto
+        const merchantSelect = document.getElementById('modalAdMerchantSelect');
+        const productSelect = document.getElementById('modalAdProductSelect');
+
+        if (productSelect && productSelect.value) {
+            const opt = productSelect.selectedOptions?.[0];
+            const price = opt?.getAttribute('data-price');
+            const bizName = opt?.getAttribute('data-bizname');
+            if (simPrice && price) simPrice.textContent = `C$ ${price}`;
+            if (simMerchantName && bizName) simMerchantName.textContent = bizName;
+        } else if (merchantSelect && merchantSelect.value) {
+            const opt = merchantSelect.selectedOptions?.[0];
+            const bName = opt?.getAttribute('data-name');
+            const bLogo = opt?.getAttribute('data-logo');
+            if (simPrice) simPrice.textContent = '';
+            if (simMerchantName && bName) simMerchantName.textContent = bName;
+            if (simMerchantLogo && bLogo) simMerchantLogo.src = bLogo;
+        } else {
+            if (simPrice) simPrice.textContent = '';
+            if (simMerchantName) simMerchantName.textContent = 'BlueSystem Delivery';
+        }
+    },
+
+    saveEditorialAd: async function(adId = null) {
+        const title = document.getElementById('modalAdTitle')?.value?.trim();
+        const subtitle = document.getElementById('modalAdSubtitle')?.value?.trim() || '';
+        const badge = document.getElementById('modalAdBadge')?.value?.trim() || '';
+        const ctaText = document.getElementById('modalAdCtaText')?.value?.trim() || 'Ver más';
+        const type = document.getElementById('modalAdType')?.value || 'MERCHANT_PROMOTION';
+        const actionType = document.getElementById('modalAdActionType')?.value || 'NONE';
+        const imageUrl = document.getElementById('modalAdImageUrl')?.value?.trim();
+        const startAtInput = document.getElementById('modalAdStartAt')?.value;
+        const endAtInput = document.getElementById('modalAdEndAt')?.value;
+        const orderVal = parseInt(document.getElementById('modalAdOrder')?.value, 10) || 0;
+        const isActive = document.getElementById('modalAdIsActive')?.checked ?? true;
+
+        if (!title) {
+            if (typeof showToast === 'function') showToast('❌ Ingresa el título del anuncio', 'error');
+            else alert('Ingresa el título del anuncio');
+            return;
+        }
+
+        if (!imageUrl) {
+            if (typeof showToast === 'function') showToast('❌ Ingresa o sube una imagen para el anuncio', 'error');
+            else alert('Ingresa o sube una imagen para el anuncio');
+            return;
+        }
+
+        const payload = {
+            title: title,
+            subtitle: subtitle,
+            badge: badge,
+            ctaText: ctaText,
+            type: type,
+            actionType: actionType,
+            imageUrl: imageUrl,
+            order: orderVal,
+            isActive: isActive,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        // Procesar fechas
+        if (startAtInput) {
+            payload.startAt = firebase.firestore.Timestamp.fromDate(new Date(startAtInput));
+        } else {
+            payload.startAt = null;
+        }
+
+        if (endAtInput) {
+            payload.endAt = firebase.firestore.Timestamp.fromDate(new Date(endAtInput));
+        } else {
+            payload.endAt = null;
+        }
+
+        // Procesar acción
+        if (actionType === 'MERCHANT') {
+            const bizSelect = document.getElementById('modalAdMerchantSelect');
+            const merchantId = bizSelect?.value;
+            if (!merchantId) {
+                if (typeof showToast === 'function') showToast('❌ Selecciona el comercio para el anuncio', 'error');
+                else alert('Selecciona el comercio');
+                return;
+            }
+            const selectedOpt = bizSelect.selectedOptions?.[0];
+            payload.targetId = merchantId;
+            payload.merchantId = merchantId;
+            payload.merchantName = selectedOpt?.getAttribute('data-name') || null;
+            payload.merchantLogoUrl = selectedOpt?.getAttribute('data-logo') || null;
+        } else if (actionType === 'PRODUCT') {
+            const prodSelect = document.getElementById('modalAdProductSelect');
+            const productId = prodSelect?.value;
+            if (!productId) {
+                if (typeof showToast === 'function') showToast('❌ Selecciona el producto para el anuncio', 'error');
+                else alert('Selecciona el producto');
+                return;
+            }
+            const selectedOpt = prodSelect.selectedOptions?.[0];
+            const bizId = selectedOpt?.getAttribute('data-bizid') || document.getElementById('modalAdMerchantSelect')?.value;
+
+            payload.targetId = productId;
+            payload.productId = productId;
+            payload.productName = selectedOpt?.getAttribute('data-name') || null;
+            payload.productPrice = parseFloat(selectedOpt?.getAttribute('data-price')) || null;
+            payload.merchantId = bizId || null;
+            payload.merchantName = selectedOpt?.getAttribute('data-bizname') || null;
+        } else if (actionType === 'INTERNAL_ROUTE') {
+            const route = document.getElementById('modalAdInternalRoute')?.value;
+            if (!route) {
+                if (typeof showToast === 'function') showToast('❌ Selecciona la ruta interna', 'error');
+                else alert('Selecciona la ruta interna');
+                return;
+            }
+            payload.targetRoute = route;
+        } else if (actionType === 'EXTERNAL_URL') {
+            const url = document.getElementById('modalAdExternalUrl')?.value?.trim();
+            if (!url || !url.startsWith('https://')) {
+                if (typeof showToast === 'function') showToast('❌ La URL externa debe comenzar con https://', 'error');
+                else alert('La URL externa debe comenzar con https://');
+                return;
+            }
+            payload.targetUrl = url;
+        }
+
+        const saveBtn = document.getElementById('modalAdSaveBtn');
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span>⏳</span> Guardando...';
+        }
+
+        try {
+            if (adId) {
+                await db.collection('home_editorial_ads').doc(adId).set(payload, { merge: true });
+            } else {
+                payload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                await db.collection('home_editorial_ads').add(payload);
+            }
+
+            document.getElementById('editorialAdModal')?.remove();
+            this.showLiveSyncFeedback();
+            if (typeof showToast === 'function') {
+                showToast(`✅ Anuncio editorial ${adId ? 'actualizado' : 'creado'} con éxito`, 'success');
+            }
+        } catch (e) {
+            console.error("Error saving editorial ad:", e);
+            if (typeof showToast === 'function') showToast(`❌ Error: ${e.message}`, 'error');
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<span>💾</span> Guardar';
+            }
+        }
     },
 
     // ─── Pestaña 2: Productos Estrella ──────────────────────────────────────

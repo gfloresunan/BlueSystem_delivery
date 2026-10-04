@@ -125,6 +125,7 @@ fun CustomerHomeScreen(
     val trendingBusinesses by viewModel.trendingBusinesses.collectAsState()
     val allProducts by viewModel.allProducts.collectAsState()
     val recentOrders by viewModel.recentOrders.collectAsState()
+    val editorialAds by viewModel.validEditorialAds.collectAsState()
 
     val commerceQuote by viewModel.commerceDeliveryQuote.collectAsState()
     val isCalculatingCommerceQuote by viewModel.isCalculatingCommerceQuote.collectAsState()
@@ -603,7 +604,8 @@ fun CustomerHomeScreen(
                                     allProducts = allProducts,
                                     recentOrders = recentOrders,
                                     customerLat = customerLat,
-                                    customerLng = customerLng
+                                    customerLng = customerLng,
+                                    editorialAds = editorialAds
                                 )
                                 Spacer(modifier = Modifier.height(32.dp))
                             }

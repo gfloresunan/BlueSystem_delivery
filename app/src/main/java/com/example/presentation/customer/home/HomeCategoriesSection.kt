@@ -9,6 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -22,6 +23,8 @@ import com.example.data.repository.BusinessInfo
 import com.example.domain.model.Category
 import com.example.ui.theme.BluePrimary
 
+import com.example.BlockActionConfig
+
 @Composable
 fun HomeCategoriesSection(
     showCategories: Boolean,
@@ -29,7 +32,10 @@ fun HomeCategoriesSection(
     categoriesList: List<Category>,
     selectedCategoryFilter: String,
     onCategoryClick: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String = "¿Qué se te antoja hoy?",
+    headerAction: BlockActionConfig? = null,
+    onHeaderActionClick: ((BlockActionConfig) -> Unit)? = null
 ) {
     if (!showCategories) return
 
@@ -64,13 +70,34 @@ fun HomeCategoriesSection(
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = "Categorías",
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 18.sp,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f, fill = false)
+            )
+            if (headerAction != null && !headerAction.type.equals("NONE", ignoreCase = true) && headerAction.type.isNotBlank()) {
+                TextButton(
+                    onClick = { onHeaderActionClick?.invoke(headerAction) },
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                ) {
+                    Text(
+                        text = headerAction.label.ifBlank { "Ver más ›" },
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
         Spacer(modifier = Modifier.height(10.dp))
 
         LazyRow(

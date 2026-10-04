@@ -176,4 +176,133 @@ object DestinationRouter {
         }
         return false
     }
+
+    /**
+     * Enruta de forma segura una acción configurada en el encabezado de un bloque (blockActions).
+     * Gobierna ÚNICAMENTE el CTA del encabezado sin convertir toda la sección en superficie clickeable.
+     * Enlaces externos exigen estrictamente HTTPS (Fail-Closed).
+     */
+    fun navigateBlockAction(
+        context: Context,
+        navController: NavController,
+        action: com.example.BlockActionConfig
+    ): Boolean {
+        val actionType = action.type.trim().uppercase()
+        if (actionType == "NONE" || actionType.isBlank()) {
+            return false
+        }
+        val target = action.target.trim()
+        if (target.isBlank()) {
+            Log.w(TAG, "Block action target vacío para tipo $actionType")
+            return false
+        }
+        return try {
+            when (actionType) {
+                "MERCHANT", "BUSINESS", "COMMERCE" -> handleCommerce(navController, target)
+                "PRODUCT" -> {
+                    if (target.contains("?productId=")) {
+                        navController.navigate("comercio_detalle_screen/$target")
+                        true
+                    } else if (target.contains("/")) {
+                        val bizId = target.substringBefore("/")
+                        val prodId = target.substringAfter("/")
+                        navController.navigate("comercio_detalle_screen/$bizId?productId=$prodId")
+                        true
+                    } else {
+                        handleCommerce(navController, target)
+                    }
+                }
+                "CATEGORY" -> {
+                    handleInternalRoute(context, navController, "customer_home")
+                }
+                "INTERNAL_ROUTE", "ROUTE" -> handleInternalRoute(context, navController, target)
+                "EXTERNAL_URL", "URL", "WEB" -> {
+                    if (!target.startsWith("https://", ignoreCase = true)) {
+                        Log.w(TAG, "⛔ External URL rechazada: debe ser HTTPS estrictamente: $target")
+                        Toast.makeText(context, "Solo se permiten enlaces seguros HTTPS", Toast.LENGTH_SHORT).show()
+                        false
+                    } else {
+                        handleExternalUrl(context, target)
+                    }
+                }
+                else -> {
+                    Log.w(TAG, "Tipo de blockAction no reconocido: $actionType")
+                    false
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error ejecutando blockAction '$actionType' -> '$target': ${e.message}", e)
+            false
+        }
+    }
+
+    /**
+     * Enruta de forma segura el clic de un anuncio editorial (/home_editorial_ads).
+     * Resuelve identidades de comercio y producto de forma directa.
+     * Enlaces externos exigen estrictamente HTTPS (Fail-Closed).
+     */
+    fun navigateEditorialAd(
+        context: Context,
+        navController: NavController,
+        ad: com.example.HomeEditorialAd
+    ): Boolean {
+        val actionType = ad.actionType.trim().uppercase()
+        if (actionType == "NONE" || actionType.isBlank()) {
+            return false
+        }
+        val target = ad.effectiveActionTarget.trim()
+        return try {
+            when (actionType) {
+                "MERCHANT", "BUSINESS", "COMMERCE" -> {
+                    val bizId = ad.merchantId.ifBlank { target }
+                    if (bizId.isNotBlank()) {
+                        handleCommerce(navController, bizId)
+                    } else {
+                        Log.w(TAG, "EditorialAd MERCHANT sin merchantId válido")
+                        false
+                    }
+                }
+                "PRODUCT" -> {
+                    val bizId = ad.merchantId.ifBlank {
+                        if (target.contains("?productId=")) target.substringBefore("?productId=")
+                        else if (target.contains("/")) target.substringBefore("/")
+                        else target
+                    }
+                    val prodId = ad.productId.ifBlank {
+                        if (target.contains("?productId=")) target.substringAfter("?productId=")
+                        else if (target.contains("/")) target.substringAfter("/")
+                        else ""
+                    }
+                    if (bizId.isNotBlank()) {
+                        if (prodId.isNotBlank()) {
+                            navController.navigate("comercio_detalle_screen/$bizId?productId=$prodId")
+                            true
+                        } else {
+                            handleCommerce(navController, bizId)
+                        }
+                    } else {
+                        Log.w(TAG, "EditorialAd PRODUCT sin businessId válido")
+                        false
+                    }
+                }
+                "INTERNAL_ROUTE", "ROUTE" -> handleInternalRoute(context, navController, target)
+                "EXTERNAL_URL", "URL", "WEB" -> {
+                    if (!target.startsWith("https://", ignoreCase = true)) {
+                        Log.w(TAG, "⛔ External URL de anuncio rechazada: debe ser HTTPS: $target")
+                        Toast.makeText(context, "Solo se permiten enlaces seguros HTTPS", Toast.LENGTH_SHORT).show()
+                        false
+                    } else {
+                        handleExternalUrl(context, target)
+                    }
+                }
+                else -> {
+                    Log.w(TAG, "Tipo de acción editorial no reconocido: $actionType")
+                    false
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error ejecutando navegación de anuncio editorial: ${e.message}", e)
+            false
+        }
+    }
 }

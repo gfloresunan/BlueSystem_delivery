@@ -46,6 +46,13 @@ service firebase.storage {
       allow write: if isPlatformAdmin();
     }
 
+    // ─── /editorial_ads/{fileName} (BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001) ───
+    match /editorial_ads/{fileName} {
+      allow read: if true;
+      allow create, update: if isPlatformAdmin() && isValidCommerceImage();
+      allow delete: if isPlatformAdmin();
+    }
+
     // ─── /campaign_images/{fileName} (Admin Notification Banners - Sprint 18.2) ──
     // Escritura: solo Platform Admin autenticado + MIME image + límite 1MB (Sprint 18.2).
     // Lectura pública: la URL es consumida por Android (downloadBitmap via HttpURLConnection

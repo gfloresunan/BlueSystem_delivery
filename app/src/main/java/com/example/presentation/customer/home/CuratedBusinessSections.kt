@@ -5,12 +5,14 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.BlockActionConfig
 import com.example.data.repository.BusinessInfo
 import com.example.presentation.customer.components.PublicBusinessCard
 
@@ -18,7 +20,44 @@ import com.example.presentation.customer.components.PublicBusinessCard
  * BLUE SYSTEM DELIVERY ENTERPRISE — CURATED BUSINESS SECTIONS
  * Protocolo: BSD-C2D-CUSTOMER-DASHBOARD-IMPLEMENTATION-001
  * Implementa las reglas semánticas y contratos de P0-04, P0-05, P0-06, S-02, S-03.
+ * Compatible con Dashboard Manager Enterprise 2.0 (títulos dinámicos y blockActions).
  */
+
+@Composable
+private fun CuratedSectionHeader(
+    title: String,
+    headerAction: BlockActionConfig? = null,
+    onHeaderActionClick: ((BlockActionConfig) -> Unit)? = null
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            fontWeight = FontWeight.ExtraBold,
+            fontSize = 18.sp,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.weight(1f, fill = false)
+        )
+        if (headerAction != null && !headerAction.type.equals("NONE", ignoreCase = true) && headerAction.type.isNotBlank()) {
+            TextButton(
+                onClick = { onHeaderActionClick?.invoke(headerAction) },
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+            ) {
+                Text(
+                    text = headerAction.label.ifBlank { "Ver más ›" },
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun SamePriceSection(
@@ -27,7 +66,10 @@ fun SamePriceSection(
     favoriteIds: Set<String>,
     onBusinessClick: (businessId: String) -> Unit,
     onToggleFavorite: (businessId: String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String = "Mismo Precio que en Local 💰",
+    headerAction: BlockActionConfig? = null,
+    onHeaderActionClick: ((BlockActionConfig) -> Unit)? = null
 ) {
     if (!showSamePrice) return
 
@@ -46,12 +88,10 @@ fun SamePriceSection(
     if (samePriceList.isEmpty()) return
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = "Mismo Precio que en Local 💰",
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 18.sp,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 16.dp)
+        CuratedSectionHeader(
+            title = title,
+            headerAction = headerAction,
+            onHeaderActionClick = onHeaderActionClick
         )
         Spacer(modifier = Modifier.height(12.dp))
         LazyRow(
@@ -78,7 +118,10 @@ fun TopSellingSection(
     favoriteIds: Set<String>,
     onBusinessClick: (businessId: String) -> Unit,
     onToggleFavorite: (businessId: String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String = "Los Más Vendidos 🔥",
+    headerAction: BlockActionConfig? = null,
+    onHeaderActionClick: ((BlockActionConfig) -> Unit)? = null
 ) {
     if (!showTopSelling) return
 
@@ -91,12 +134,10 @@ fun TopSellingSection(
     if (topList.isEmpty()) return
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = "Los Más Vendidos 🔥",
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 18.sp,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 16.dp)
+        CuratedSectionHeader(
+            title = title,
+            headerAction = headerAction,
+            onHeaderActionClick = onHeaderActionClick
         )
         Spacer(modifier = Modifier.height(12.dp))
         LazyRow(
@@ -123,7 +164,10 @@ fun RecommendedSection(
     favoriteIds: Set<String>,
     onBusinessClick: (businessId: String) -> Unit,
     onToggleFavorite: (businessId: String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String = "Recomendados para ti 🎯",
+    headerAction: BlockActionConfig? = null,
+    onHeaderActionClick: ((BlockActionConfig) -> Unit)? = null
 ) {
     if (!showRecommended) return
 
@@ -134,12 +178,10 @@ fun RecommendedSection(
     if (recommendedList.isEmpty()) return
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = "Recomendados para ti 🎯",
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 18.sp,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 16.dp)
+        CuratedSectionHeader(
+            title = title,
+            headerAction = headerAction,
+            onHeaderActionClick = onHeaderActionClick
         )
         Spacer(modifier = Modifier.height(12.dp))
         LazyRow(
@@ -166,7 +208,10 @@ fun NewBusinessesSection(
     favoriteIds: Set<String>,
     onBusinessClick: (businessId: String) -> Unit,
     onToggleFavorite: (businessId: String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String = "Comercios Nuevos 🟢",
+    headerAction: BlockActionConfig? = null,
+    onHeaderActionClick: ((BlockActionConfig) -> Unit)? = null
 ) {
     if (!showNewBusinesses) return
 
@@ -182,12 +227,10 @@ fun NewBusinessesSection(
     if (newList.isEmpty()) return
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = "Comercios Nuevos 🟢",
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 18.sp,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 16.dp)
+        CuratedSectionHeader(
+            title = title,
+            headerAction = headerAction,
+            onHeaderActionClick = onHeaderActionClick
         )
         Spacer(modifier = Modifier.height(12.dp))
         LazyRow(
@@ -214,7 +257,10 @@ fun FavoritesBlockSection(
     favoriteIds: Set<String>,
     onBusinessClick: (businessId: String) -> Unit,
     onToggleFavorite: (businessId: String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String = "Tus Comercios Favoritos ❤️",
+    headerAction: BlockActionConfig? = null,
+    onHeaderActionClick: ((BlockActionConfig) -> Unit)? = null
 ) {
     if (!showFavorites || favoriteIds.isEmpty()) return
 
@@ -225,12 +271,10 @@ fun FavoritesBlockSection(
     if (favList.isEmpty()) return
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = "Tus Comercios Favoritos ❤️",
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 18.sp,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.padding(horizontal = 16.dp)
+        CuratedSectionHeader(
+            title = title,
+            headerAction = headerAction,
+            onHeaderActionClick = onHeaderActionClick
         )
         Spacer(modifier = Modifier.height(12.dp))
         LazyRow(

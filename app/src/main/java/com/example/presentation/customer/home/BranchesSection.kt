@@ -23,12 +23,17 @@ import coil.compose.AsyncImage
 import com.example.BranchItem
 import com.example.ui.theme.BluePrimary
 
+import com.example.BlockActionConfig
+
 @Composable
 fun BranchesSection(
     showBranchesBlock: Boolean,
     branches: List<BranchItem>,
     onBranchClick: (businessId: String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String = "Sucursales por Comercio 🏢",
+    headerAction: BlockActionConfig? = null,
+    onHeaderActionClick: ((BlockActionConfig) -> Unit)? = null
 ) {
     if (!showBranchesBlock || branches.isEmpty()) return
 
@@ -46,23 +51,38 @@ fun BranchesSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Sucursales por Comercio 🏢",
+                text = title,
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 18.sp,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f, fill = false)
             )
-            Surface(
-                shape = RoundedCornerShape(8.dp),
-                color = BluePrimary.copy(alpha = 0.1f),
-                border = BorderStroke(1.dp, BluePrimary.copy(alpha = 0.3f))
-            ) {
-                Text(
-                    text = "${branchList.size} sedes",
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = BluePrimary,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                )
+            if (headerAction != null && !headerAction.type.equals("NONE", ignoreCase = true) && headerAction.type.isNotBlank()) {
+                TextButton(
+                    onClick = { onHeaderActionClick?.invoke(headerAction) },
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                ) {
+                    Text(
+                        text = headerAction.label.ifBlank { "Ver más ›" },
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            } else {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = BluePrimary.copy(alpha = 0.1f),
+                    border = BorderStroke(1.dp, BluePrimary.copy(alpha = 0.3f))
+                ) {
+                    Text(
+                        text = "${branchList.size} sedes",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = BluePrimary,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
             }
         }
 

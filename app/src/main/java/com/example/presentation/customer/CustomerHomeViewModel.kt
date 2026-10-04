@@ -15,8 +15,16 @@ import com.google.firebase.Timestamp
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import com.example.HomeEditorialAd
 
 data class CommerceDeliveryQuote(
     val routeDistanceKm: Double = 0.0,
@@ -120,6 +128,24 @@ class CustomerHomeViewModel : ViewModel() {
 
     private val _dashboardConfig = MutableStateFlow(com.example.DashboardConfig())
     val dashboardConfig: StateFlow<com.example.DashboardConfig> = _dashboardConfig.asStateFlow()
+
+    // Dynamic Editorial Ads (BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001)
+    private val _homeEditorialAds = MutableStateFlow<List<HomeEditorialAd>>(emptyList())
+    val homeEditorialAds: StateFlow<List<HomeEditorialAd>> = _homeEditorialAds.asStateFlow()
+
+    private val _temporalTick = MutableStateFlow(System.currentTimeMillis())
+    val temporalTick: StateFlow<Long> = _temporalTick.asStateFlow()
+
+    val validEditorialAds: StateFlow<List<HomeEditorialAd>> = combine(
+        _homeEditorialAds,
+        _temporalTick
+    ) { ads, nowMs ->
+        ads.filter { it.isCurrentlyValid(nowMs) }
+    }.stateIn(
+        viewModelScope,
+        SharingStarted.WhileSubscribed(5000),
+        emptyList()
+    )
 
     private val _featuredProducts = MutableStateFlow<List<com.example.FeaturedProduct>>(emptyList())
     val featuredProducts: StateFlow<List<com.example.FeaturedProduct>> = _featuredProducts.asStateFlow()
@@ -264,6 +290,7 @@ class CustomerHomeViewModel : ViewModel() {
             }
     }
 
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     private fun listenToDashboardData() {
         viewModelScope.launch {
             val fm = com.example.FirebaseManager()
@@ -271,9 +298,24 @@ class CustomerHomeViewModel : ViewModel() {
             promoRepo.startListening()
             launch { promoRepo.promotions.collect { _promotions.value = it } }
             launch {
-                _currentUserProfile.collect { user ->
-                    val tenantId = user?.tenantId
-                    fm.listenToDashboardConfig(tenantId).collect { _dashboardConfig.value = it }
+                _currentUserProfile
+                    .map { it?.tenantId }
+                    .distinctUntilChanged()
+                    .flatMapLatest { tenantId ->
+                        fm.listenToDashboardConfig(tenantId)
+                    }
+                    .collect { config ->
+                        _dashboardConfig.value = config
+                    }
+            }
+            launch {
+                fm.listenToHomeEditorialAds().collect { _homeEditorialAds.value = it }
+            }
+            // Reevaluación temporal liviana cada 60s sobre snapshot local en memoria (Zero Firestore polling)
+            launch {
+                while (true) {
+                    delay(60_000L)
+                    _temporalTick.value = System.currentTimeMillis()
                 }
             }
             launch { fm.listenToFeaturedProducts().collect { _featuredProducts.value = it } }

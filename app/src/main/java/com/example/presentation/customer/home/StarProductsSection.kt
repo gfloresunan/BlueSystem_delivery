@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.BlockActionConfig
 import com.example.FeaturedProduct
 import com.example.presentation.customer.components.StarProductCard
 
@@ -21,7 +22,10 @@ fun StarProductsSection(
     showFeaturedProducts: Boolean,
     featuredProducts: List<FeaturedProduct>,
     onProductClick: (businessId: String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String = "Productos Estrella ⭐",
+    headerAction: BlockActionConfig? = null,
+    onHeaderActionClick: ((BlockActionConfig) -> Unit)? = null
 ) {
     if (!showFeaturedProducts) return
 
@@ -30,13 +34,34 @@ fun StarProductsSection(
     }
 
     Column(modifier = modifier.fillMaxWidth()) {
-        Text(
-            text = "Productos Estrella ⭐",
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 18.sp,
-            color = Color(0xFF0F172A),
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        ) {
+            Text(
+                text = title,
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 18.sp,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f, fill = false)
+            )
+            if (headerAction != null && !headerAction.type.equals("NONE", ignoreCase = true) && headerAction.type.isNotBlank()) {
+                TextButton(
+                    onClick = { onHeaderActionClick?.invoke(headerAction) },
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                ) {
+                    Text(
+                        text = headerAction.label.ifBlank { "Ver más ›" },
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            }
+        }
         Spacer(modifier = Modifier.height(10.dp))
 
         if (starList.isEmpty()) {

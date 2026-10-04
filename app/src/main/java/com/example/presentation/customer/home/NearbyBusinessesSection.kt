@@ -24,6 +24,8 @@ import com.example.ui.theme.BluePrimary
  * Componente Modular de UI: Sección Comercios Cerca de Ti (Actividad #18 Enterprise)
  * PROTOCOL ID: BSDEL-C18-NEARBY-MERCHANTS
  */
+import com.example.BlockActionConfig
+
 @Composable
 fun NearbyBusinessesSection(
     showNearbySection: Boolean,
@@ -32,7 +34,10 @@ fun NearbyBusinessesSection(
     onBusinessClick: (businessId: String) -> Unit,
     onToggleFavorite: (businessId: String) -> Unit,
     onAddressClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String = "Comercios Cerca de Ti 🏢",
+    headerAction: BlockActionConfig? = null,
+    onHeaderActionClick: ((BlockActionConfig) -> Unit)? = null
 ) {
     if (!showNearbySection) return
 
@@ -46,13 +51,26 @@ fun NearbyBusinessesSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Comercios Cerca de Ti 🏢",
+                text = title,
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 18.sp,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f, fill = false)
             )
 
-            if (nearbyResult.hasCustomerCoordinates && nearbyResult.items.isNotEmpty()) {
+            if (headerAction != null && !headerAction.type.equals("NONE", ignoreCase = true) && headerAction.type.isNotBlank()) {
+                TextButton(
+                    onClick = { onHeaderActionClick?.invoke(headerAction) },
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                ) {
+                    Text(
+                        text = headerAction.label.ifBlank { "Ver más ›" },
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
+            } else if (nearbyResult.hasCustomerCoordinates && nearbyResult.items.isNotEmpty()) {
                 Surface(
                     shape = RoundedCornerShape(8.dp),
                     color = if (nearbyResult.wasExpanded) Color(0xFFFEF3C7) else Color(0xFFEFF6FF),

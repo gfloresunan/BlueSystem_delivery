@@ -1844,61 +1844,68 @@ class FirebaseManager {
     fun listenToDashboardConfig(tenantId: String? = null): Flow<DashboardConfig> = callbackFlow {
         val effectiveTenantId = tenantId?.trim()?.takeIf { it.isNotEmpty() && it != "GLOBAL" }
         var globalRegistration: com.google.firebase.firestore.ListenerRegistration? = null
+        var tenantRegistration: com.google.firebase.firestore.ListenerRegistration? = null
+
+        fun listenGlobal() {
+            if (globalRegistration != null) return
+            globalRegistration = db.collection("dashboard").document("configuration")
+                .addSnapshotListener { globalSnapshot, globalError ->
+                    if (globalError != null) {
+                        Log.e("FirebaseManager", "Error loading Global DashboardConfig", globalError)
+                        trySend(DashboardConfig())
+                        return@addSnapshotListener
+                    }
+                    trySend(globalSnapshot.toDashboardConfigSafely())
+                }
+        }
 
         if (effectiveTenantId != null) {
             val tenantDocRef = db.collection("tenants").document(effectiveTenantId)
                 .collection("dashboard").document("configuration")
 
-            val tenantRegistration = tenantDocRef.addSnapshotListener { tenantSnapshot, tenantError ->
+            tenantRegistration = tenantDocRef.addSnapshotListener { tenantSnapshot, tenantError ->
                 if (tenantError == null && tenantSnapshot != null && tenantSnapshot.exists()) {
-                    try {
-                        val config = tenantSnapshot.toObject(DashboardConfig::class.java) ?: DashboardConfig()
-                        trySend(config)
-                        return@addSnapshotListener
-                    } catch (e: Exception) {
-                        Log.w("FirebaseManager", "Error parsing tenant DashboardConfig for $effectiveTenantId, falling back to global", e)
-                    }
+                    // Si existe configuración específica activa del tenant, tiene precedencia
+                    globalRegistration?.remove()
+                    globalRegistration = null
+                    trySend(tenantSnapshot.toDashboardConfigSafely())
+                } else {
+                    // Fallback a Global Default si el tenant no tiene documento de configuración
+                    listenGlobal()
                 }
-                // Fallback reactivo a Global Default si no existe override de tenant
-                if (globalRegistration == null) {
-                    globalRegistration = db.collection("dashboard").document("configuration")
-                        .addSnapshotListener { globalSnapshot, globalError ->
-                            if (globalError != null) {
-                                Log.e("FirebaseManager", "Error loading Global DashboardConfig", globalError)
-                                trySend(DashboardConfig())
-                                return@addSnapshotListener
-                            }
-                            val config = globalSnapshot?.toObject(DashboardConfig::class.java) ?: DashboardConfig()
-                            trySend(config)
-                        }
-                }
-            }
-            awaitClose {
-                tenantRegistration.remove()
-                globalRegistration?.remove()
             }
         } else {
-            val listener = db.collection("dashboard").document("configuration")
-                .addSnapshotListener { snapshot, error ->
-                    if (error != null) {
-                        Log.e("FirebaseManager", "Error loading DashboardConfig", error)
-                        trySend(DashboardConfig())
-                        return@addSnapshotListener
-                    }
-                    if (snapshot != null && snapshot.exists()) {
-                        try {
-                            val config = snapshot.toObject(DashboardConfig::class.java) ?: DashboardConfig()
-                            trySend(config)
-                        } catch (e: Exception) {
-                            Log.e("FirebaseManager", "Error parsing DashboardConfig", e)
-                            trySend(DashboardConfig())
-                        }
-                    } else {
-                        trySend(DashboardConfig())
-                    }
-                }
-            awaitClose { listener.remove() }
+            listenGlobal()
         }
+
+        awaitClose {
+            tenantRegistration?.remove()
+            globalRegistration?.remove()
+        }
+    }
+
+    /**
+     * Listener en tiempo real para anuncios editoriales e institucionales del Home (/home_editorial_ads).
+     * Zero N+1: Los documentos se ordenan en memoria por 'order ASC' sin requerir índices compuestos.
+     */
+    fun listenToHomeEditorialAds(): Flow<List<HomeEditorialAd>> = callbackFlow {
+        val listener = db.collection("home_editorial_ads")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    Log.e("FirebaseManager", "Error loading /home_editorial_ads", error)
+                    trySend(emptyList())
+                    return@addSnapshotListener
+                }
+                if (snapshot == null || snapshot.isEmpty) {
+                    trySend(emptyList())
+                    return@addSnapshotListener
+                }
+                val ads = snapshot.documents.mapNotNull { doc ->
+                    doc.toHomeEditorialAdSafely()
+                }.sortedBy { it.order }
+                trySend(ads)
+            }
+        awaitClose { listener.remove() }
     }
 
     private fun parseProductFromDoc(doc: com.google.firebase.firestore.DocumentSnapshot): Product? {
