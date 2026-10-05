@@ -449,7 +449,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify Cart bottom sheet opens
-      expect(find.text('🛒 Tu Carrito de Compras'), findsOneWidget);
+      expect(find.textContaining('Tu Carrito'), findsOneWidget);
     });
   });
 

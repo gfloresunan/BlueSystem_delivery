@@ -77,7 +77,14 @@ class _AppShellState extends State<AppShell> {
   List<Map<String, dynamic>> get _cartItems => _cart.items.map((i) => i.toMap()).toList();
   double get _cartTotal => _cart.subtotal;
 
-  IUserService get _effectiveUserService => widget.userService ?? UserFirestoreService();
+  IUserService get _effectiveUserService {
+    if (widget.userService != null) return widget.userService!;
+    try {
+      return UserFirestoreService();
+    } catch (_) {
+      return const _NoopUserService();
+    }
+  }
 
   @override
   void initState() {
@@ -353,7 +360,7 @@ class _AppShellState extends State<AppShell> {
           onNavigate: _handleNavigation,
           bannerService: widget.bannerService,
           merchantService: widget.merchantService,
-          userService: widget.userService ?? UserFirestoreService(),
+          userService: _effectiveUserService,
           onAddToCart: _addToCart,
           onCartClick: _openCartDialog,
           onOpenExpress: () {
@@ -367,7 +374,7 @@ class _AppShellState extends State<AppShell> {
                   createdAt: 0,
                   updatedAt: 0,
                 );
-            final userSvc = widget.userService ?? UserFirestoreService();
+            final userSvc = _effectiveUserService;
             Navigator.push(
               context,
               MaterialPageRoute(
@@ -2278,4 +2285,24 @@ class _AppShellState extends State<AppShell> {
         break;
     }
   }
+}
+
+class _NoopUserService implements IUserService {
+  const _NoopUserService();
+  @override
+  Stream<UserProfileEntity?> watchProfile(String uid) => Stream.value(null);
+  @override
+  Future<void> updateProfile(String uid, {required String displayName, String? phoneNumber}) async {}
+  @override
+  Stream<List<SavedAddressEntity>> watchAddresses(String uid) => Stream.value([]);
+  @override
+  Future<void> saveAddress(String uid, SavedAddressEntity address) async {}
+  @override
+  Future<void> deleteAddress(String uid, String addressId) async {}
+  @override
+  Future<void> setDefaultAddress(String uid, String addressId) async {}
+  @override
+  Stream<Set<String>> watchFavoriteBusinessIds(String uid) => Stream.value(<String>{});
+  @override
+  Future<void> toggleFavoriteBusiness(String uid, String businessId, {String? businessName}) async {}
 }

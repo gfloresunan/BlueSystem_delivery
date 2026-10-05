@@ -1,7 +1,8 @@
 import React from 'react';
-import { X, Clock, User, Phone, Tag, CheckCircle, RefreshCw, Truck } from 'lucide-react';
+import { X, Clock, User, Phone, Tag, CheckCircle, RefreshCw, Truck, Lock } from 'lucide-react';
 import type { OrderItem } from '../modules/OrdersModule';
 import { resolveItemVisual } from '../shared/utils/categoryIconResolver';
+import { isOrderPricingAuthoritative } from '../shared/utils/pricingValidationPolicy';
 
 interface OrderDetailModalProps {
   order: OrderItem;
@@ -25,6 +26,8 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
   const items = Array.isArray(order.itemsList) && order.itemsList.length > 0
     ? order.itemsList
     : [{ name: order.items, quantity: 1, price: order.merchantGrossSales || 0 }];
+
+  const isAuthoritative = isOrderPricingAuthoritative(order);
 
   return (
     <div 
@@ -64,6 +67,17 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
         {/* Modal Body */}
         <div className="p-4 sm:p-5 overflow-y-auto space-y-4 text-xs sm:text-sm">
           
+          {/* Alerta de Validación Financiera Pendiente */}
+          {!isAuthoritative && (
+            <div className="p-3 bg-rose-950/40 border border-rose-800/50 rounded-xl flex items-center gap-2.5 text-xs text-rose-300">
+              <Lock className="w-4 h-4 text-rose-400 flex-shrink-0" />
+              <div>
+                <p className="font-bold">Validación Financiera Pendiente</p>
+                <p className="text-[11px] text-rose-400/80">Este pedido requiere validación autoritativa antes de poder ser aceptado o preparado.</p>
+              </div>
+            </div>
+          )}
+
           {/* Información del Cliente */}
           <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800 space-y-2">
             <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
@@ -217,10 +231,11 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                     onAdvanceStatus(order.id, 'PREPARING');
                     onClose();
                   }}
-                  disabled={isProcessing}
-                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition shadow-lg shadow-emerald-600/20 disabled:opacity-50 flex items-center gap-1.5"
+                  disabled={isProcessing || !isAuthoritative}
+                  title={!isAuthoritative ? "Validación financiera pendiente: no se puede confirmar el pedido" : undefined}
+                  className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 transition shadow-lg shadow-emerald-600/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
                 >
-                  {isProcessing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+                  {isProcessing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : !isAuthoritative ? <Lock className="w-3.5 h-3.5" /> : <CheckCircle className="w-3.5 h-3.5" />}
                   <span>Confirmar Pedido</span>
                 </button>
               )}
@@ -233,10 +248,11 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 onAdvanceStatus(order.id, 'READY');
                 onClose();
               }}
-              disabled={isProcessing}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 transition shadow-lg shadow-blue-600/20 disabled:opacity-50 flex items-center gap-1.5"
+              disabled={isProcessing || !isAuthoritative}
+              title={!isAuthoritative ? "Validación financiera pendiente: no se puede marcar como listo" : undefined}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 transition shadow-lg shadow-blue-600/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
             >
-              {isProcessing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+              {isProcessing ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : !isAuthoritative ? <Lock className="w-3.5 h-3.5" /> : <CheckCircle className="w-3.5 h-3.5" />}
               <span>Marcar como Listo</span>
             </button>
           )}
@@ -247,8 +263,9 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({
                 onClose();
                 onOpenCourierModal(order);
               }}
-              disabled={isProcessing}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition shadow-lg shadow-indigo-600/20 disabled:opacity-50 flex items-center gap-1.5"
+              disabled={isProcessing || !isAuthoritative}
+              title={!isAuthoritative ? "Validación financiera pendiente: no se puede asignar motorizado" : undefined}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-500 transition shadow-lg shadow-indigo-600/20 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
             >
               <span>🛵 Asignar Motorizado</span>
             </button>

@@ -20,6 +20,7 @@ import 'package:bluesystem_delivery_flutter/domain/entities/courier_location_ent
 import 'package:bluesystem_delivery_flutter/domain/entities/order_entity.dart';
 import 'package:bluesystem_delivery_flutter/domain/entities/trip_entity.dart';
 import 'package:bluesystem_delivery_flutter/domain/entities/user_profile_entity.dart';
+import 'package:bluesystem_delivery_flutter/domain/entities/saved_address_entity.dart';
 import 'package:bluesystem_delivery_flutter/domain/services/core_service_interfaces.dart';
 import 'package:bluesystem_delivery_flutter/presentation/providers/session_state.dart';
 import 'package:bluesystem_delivery_flutter/presentation/screens/shell/app_shell.dart';
@@ -301,6 +302,25 @@ class MockMerchantService implements IMerchantService {
       Stream.value([]);
 }
 
+class MockUserServiceForBlock6 implements IUserService {
+  @override
+  Stream<UserProfileEntity?> watchProfile(String uid) => Stream.value(null);
+  @override
+  Future<void> updateProfile(String uid, {required String displayName, String? phoneNumber}) async {}
+  @override
+  Stream<List<SavedAddressEntity>> watchAddresses(String uid) => Stream.value([]);
+  @override
+  Future<void> saveAddress(String uid, SavedAddressEntity address) async {}
+  @override
+  Future<void> deleteAddress(String uid, String addressId) async {}
+  @override
+  Future<void> setDefaultAddress(String uid, String addressId) async {}
+  @override
+  Stream<Set<String>> watchFavoriteBusinessIds(String uid) => Stream.value(<String>{});
+  @override
+  Future<void> toggleFavoriteBusiness(String uid, String businessId, {String? businessName}) async {}
+}
+
 class MockSessionStateForBlock6 extends SessionState {
   final CanonicalCustomClaimsV3? _mockClaims;
   final UserProfileEntity? _mockUser;
@@ -474,6 +494,7 @@ void main() {
             fleetService: MockFleetService(),
             merchantService: MockMerchantService(),
             notificationService: mockNotifs,
+            userService: MockUserServiceForBlock6(),
           ),
         ),
       );

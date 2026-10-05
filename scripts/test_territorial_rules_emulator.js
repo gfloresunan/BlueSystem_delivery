@@ -147,12 +147,28 @@ async function runTerritorialRulesEmulatorTests() {
       assert(false, `SEC-TERR-08 failed: ${e.message}`);
     }
 
-    // ── SEC-QUOTE-01: Customer read on /pricing_quotes -> DENY (Minimum privilege) ──
+    // ── SEC-QUOTE-01: Customer read on /pricing_quotes -> DENY (Zero Customer Read) ──
     try {
       await testing.assertFails(customerDb.collection('pricing_quotes').doc(QUOTE_ID).get());
       assert(true, 'SEC-QUOTE-01: Customer read on /pricing_quotes -> DENY (Zero Customer Read)');
     } catch (e) {
       assert(false, `SEC-QUOTE-01 failed: ${e.message}`);
+    }
+
+    // ── SEC-QUOTE-01b: Courier read on /pricing_quotes -> DENY ──
+    try {
+      await testing.assertFails(courierDb.collection('pricing_quotes').doc(QUOTE_ID).get());
+      assert(true, 'SEC-QUOTE-01b: Courier read on /pricing_quotes -> DENY');
+    } catch (e) {
+      assert(false, `SEC-QUOTE-01b failed: ${e.message}`);
+    }
+
+    // ── SEC-QUOTE-01c: Merchant read on /pricing_quotes -> DENY ──
+    try {
+      await testing.assertFails(merchantDb.collection('pricing_quotes').doc(QUOTE_ID).get());
+      assert(true, 'SEC-QUOTE-01c: Merchant read on /pricing_quotes -> DENY');
+    } catch (e) {
+      assert(false, `SEC-QUOTE-01c failed: ${e.message}`);
     }
 
     // ── SEC-QUOTE-02: Platform Admin read on /pricing_quotes -> ALLOW (Audit/Support) ──

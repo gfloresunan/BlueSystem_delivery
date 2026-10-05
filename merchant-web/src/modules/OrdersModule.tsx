@@ -9,6 +9,7 @@ import { db } from '../shared/services/firebase';
 import { useAuth } from '../shared/context/AuthContext';
 import { getMerchantOrderFinancials } from '../shared/utils/merchantFinancialMapper';
 import { OrderDetailModal } from '../components/OrderDetailModal';
+import { isOrderPricingAuthoritative } from '../shared/utils/pricingValidationPolicy';
 import { 
   collection, 
   query, 
@@ -113,6 +114,8 @@ export interface OrderItem {
   isPendingResolution?: boolean;
   isScheduled?: boolean;
   pendingReason?: string;
+  pricingValidationStatus?: string;
+  isPricingAuthoritative?: boolean;
 }
 
 // ─── CANONICAL STATUS NORMALIZER ─────────────────────────────────────────────
@@ -437,6 +440,13 @@ export const OrdersModule: React.FC = () => {
 
   const handleConfirmAssignCourier = async (courier: CourierOption) => {
     if (!activeSelectedOrder) return;
+    if (!isOrderPricingAuthoritative(activeSelectedOrder)) {
+      setActionFeedback({
+        message: `⚠️ Pedido #${activeSelectedOrder.orderNumber} no cuenta con validación financiera autoritativa. No es elegible para despacho.`,
+        isError: true
+      });
+      return;
+    }
     const orderId = activeSelectedOrder.id;
     const orderNumber = activeSelectedOrder.orderNumber;
     setAssigningCourierId(courier.id);
@@ -453,6 +463,9 @@ export const OrdersModule: React.FC = () => {
         }
 
         const data = orderSnap.data();
+        if (!isOrderPricingAuthoritative(data)) {
+          throw new Error('Asignación rechazada: El pedido no cuenta con validación financiera autoritativa.');
+        }
         const existingCourierId = data.assignedCourierId || data.motorizadoId || data.courierId;
 
         if (existingCourierId === courier.id) {
@@ -703,7 +716,9 @@ export const OrdersModule: React.FC = () => {
               branchId: d.branchId || undefined,
               isPendingResolution: Boolean(d.isPendingResolution || d.holdReason || d.isPaused),
               isScheduled: Boolean(d.isScheduled || d.scheduledFor),
-              pendingReason: d.pendingReason || d.holdReason || undefined
+              pendingReason: d.pendingReason || d.holdReason || undefined,
+              pricingValidationStatus: d.pricingValidationStatus || d.pricingSnapshot?.pricingValidationStatus || undefined,
+              isPricingAuthoritative: isOrderPricingAuthoritative(d)
             } as OrderItem;
           })
           .filter((item): item is OrderItem => item !== null);
@@ -742,6 +757,14 @@ export const OrdersModule: React.FC = () => {
   const handleAdvanceStatus = async (id: string, nextStatus: CanonicalOrderStatus) => {
     const order = orders.find((o) => o.id === id);
     if (!order || processingOrderId === id) return;
+
+    if (!isOrderPricingAuthoritative(order)) {
+      setActionFeedback({
+        message: `⚠️ Pedido #${order.orderNumber} no cuenta con validación financiera autoritativa. No se puede avanzar de estado.`,
+        isError: true
+      });
+      return;
+    }
 
     let dbStatus = '';
     let dbEstado = '';
@@ -1130,15 +1153,29 @@ export const OrdersModule: React.FC = () => {
                       )}
                     </div>
 
+                    {/* Alerta de Validación Financiera Pendiente */}
+                    {!o.isPricingAuthoritative && (
+                      <div className="bg-rose-950/40 border border-rose-800/40 p-2 rounded-lg text-[11px] text-rose-300 font-bold flex items-center gap-1.5">
+                        <Lock className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />
+                        <span>Validación financiera pendiente</span>
+                      </div>
+                    )}
+
                     {/* Botones de Acción */}
                     <div className="flex gap-2 pt-2">
                       <button
                         onClick={() => handleAdvanceStatus(o.id, 'PREPARING')}
-                        disabled={processingOrderId === o.id}
-                        className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold py-2 px-2 rounded-lg transition flex items-center justify-center gap-1 shadow-md shadow-emerald-600/20"
+                        disabled={processingOrderId === o.id || !o.isPricingAuthoritative}
+                        title={!o.isPricingAuthoritative ? "Validación financiera pendiente: no se puede confirmar el pedido" : undefined}
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold py-2 px-2 rounded-lg transition flex items-center justify-center gap-1 shadow-md shadow-emerald-600/20"
                       >
                         {processingOrderId === o.id ? (
                           <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        ) : !o.isPricingAuthoritative ? (
+                          <>
+                            <Lock className="w-3.5 h-3.5" />
+                            <span>Validación pendiente</span>
+                          </>
                         ) : (
                           <span>✓ Confirmar pedido</span>
                         )}
@@ -1216,11 +1253,20 @@ export const OrdersModule: React.FC = () => {
                       </div>
                     </div>
 
+                    {/* Alerta de Validación Financiera Pendiente */}
+                    {!o.isPricingAuthoritative && (
+                      <div className="bg-rose-950/40 border border-rose-800/40 p-2 rounded-lg text-[11px] text-rose-300 font-bold flex items-center gap-1.5">
+                        <Lock className="w-3.5 h-3.5 text-rose-400 flex-shrink-0" />
+                        <span>Validación financiera pendiente</span>
+                      </div>
+                    )}
+
                     <div className="flex gap-2 pt-2">
                       <button
                         onClick={() => handleAdvanceStatus(o.id, 'PREPARING')}
-                        disabled={processingOrderId === o.id}
-                        className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-bold py-2 rounded-lg transition"
+                        disabled={processingOrderId === o.id || !o.isPricingAuthoritative}
+                        title={!o.isPricingAuthoritative ? "Validación financiera pendiente: no se puede confirmar el pedido" : undefined}
+                        className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold py-2 rounded-lg transition"
                       >
                         ✓ Confirmar pedido
                       </button>
@@ -1298,11 +1344,17 @@ export const OrdersModule: React.FC = () => {
 
                     <button
                       onClick={() => handleAdvanceStatus(o.id, 'READY')}
-                      disabled={processingOrderId === o.id}
-                      className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-bold py-2 rounded-lg transition flex items-center justify-center gap-1 shadow-md shadow-blue-600/20"
+                      disabled={processingOrderId === o.id || !o.isPricingAuthoritative}
+                      title={!o.isPricingAuthoritative ? "Validación financiera pendiente: no se puede marcar como listo" : undefined}
+                      className="w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-bold py-2 rounded-lg transition flex items-center justify-center gap-1 shadow-md shadow-blue-600/20"
                     >
                       {processingOrderId === o.id ? (
                         <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      ) : !o.isPricingAuthoritative ? (
+                        <>
+                          <Lock className="w-3.5 h-3.5" />
+                          <span>Validación pendiente</span>
+                        </>
                       ) : (
                         <span>✓ Marcar como listo</span>
                       )}
@@ -1402,8 +1454,9 @@ export const OrdersModule: React.FC = () => {
                         </div>
                         <button
                           onClick={() => handleOpenCourierModal(o)}
-                          disabled={processingOrderId === o.id}
-                          className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition shadow-lg shadow-indigo-600/20"
+                          disabled={processingOrderId === o.id || !o.isPricingAuthoritative}
+                          title={!o.isPricingAuthoritative ? "Validación financiera pendiente: no se puede asignar motorizado" : undefined}
+                          className="w-full bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition shadow-lg shadow-indigo-600/20"
                         >
                           <span>🛵 ASIGNAR MOTORIZADO</span>
                         </button>
@@ -1548,7 +1601,9 @@ export const OrdersModule: React.FC = () => {
                       ) : o.canonicalStatus === 'READY' ? (
                         <button
                           onClick={() => handleOpenCourierModal(o)}
-                          className="text-[11px] bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600 hover:text-white px-2.5 py-1 rounded-lg border border-indigo-500/30 transition font-semibold"
+                          disabled={processingOrderId === o.id || !o.isPricingAuthoritative}
+                          title={!o.isPricingAuthoritative ? "Validación financiera pendiente: no se puede asignar motorizado" : undefined}
+                          className="text-[11px] bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed px-2.5 py-1 rounded-lg border border-indigo-500/30 transition font-semibold"
                         >
                           🛵 Asignar
                         </button>

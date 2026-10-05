@@ -130,7 +130,11 @@ class CartProvider extends ChangeNotifier {
 
   /// In Paso 1 / Unquoted state, returns null (or 0.0 for fallback display if requested).
   double? get authoritativeDeliveryFee => isQuoted ? _dynamicDeliveryFee : null;
-  double get deliveryFee => isQuoted ? (_dynamicDeliveryFee ?? 0.0) : 0.0;
+  double get deliveryFee {
+    if (_items.isEmpty) return 0.0;
+    if (isQuoted) return _dynamicDeliveryFee ?? 0.0;
+    return _activeBusiness?.deliveryFee ?? 45.0;
+  }
 
   double get total {
     if (_items.isEmpty) return 0.0;
