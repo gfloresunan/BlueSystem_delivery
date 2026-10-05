@@ -25,6 +25,7 @@ import '../../../domain/services/core_service_interfaces.dart';
 import '../../providers/session_state.dart';
 import '../../theme/brand_theme_builder.dart';
 import '../merchant/merchant_detail_screen.dart';
+import '../../widgets/editorial/editorial_ads_carousel_widget.dart';
 
 class CommercialHomeScreen extends StatefulWidget {
   final SessionState sessionState;
@@ -83,15 +84,24 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
     _favsSubscription?.cancel();
     final uid = widget.sessionState.currentUser?.uid;
     if (uid != null && uid.isNotEmpty && !uid.startsWith('guest_')) {
-      final userSvc = widget.userService ?? UserFirestoreService();
-      _favsSubscription = userSvc.watchFavoriteBusinessIds(uid).listen((favs) {
-        if (mounted) {
-          setState(() {
-            _favoriteBusinessIds.clear();
-            _favoriteBusinessIds.addAll(favs);
-          });
+      IUserService? userSvc = widget.userService;
+      if (userSvc == null) {
+        try {
+          userSvc = UserFirestoreService();
+        } catch (_) {
+          userSvc = null;
         }
-      });
+      }
+      if (userSvc != null) {
+        _favsSubscription = userSvc.watchFavoriteBusinessIds(uid).listen((favs) {
+          if (mounted) {
+            setState(() {
+              _favoriteBusinessIds.clear();
+              _favoriteBusinessIds.addAll(favs);
+            });
+          }
+        }, onError: (_) {});
+      }
     }
   }
 
@@ -152,6 +162,197 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
     _openMerchantById(business.businessId, businessName: business.name, productId: productId);
   }
 
+  void _handleBlockActionClick(BlockActionConfigEntity? action) {
+    if (action == null) return;
+    final actionType = action.type.trim().toUpperCase();
+    if (actionType.isEmpty || actionType == 'NONE') return;
+    final target = action.target.trim();
+
+    switch (actionType) {
+      case 'MERCHANT':
+      case 'BUSINESS':
+      case 'COMMERCE':
+        if (target.isNotEmpty) {
+          _openMerchantById(target);
+        }
+        break;
+      case 'PRODUCT':
+        if (target.contains('?productId=')) {
+          final bizId = target.substring(0, target.indexOf('?productId='));
+          final prodId = target.substring(target.indexOf('?productId=') + 11);
+          _openMerchantById(bizId, productId: prodId);
+        } else if (target.contains('/')) {
+          final parts = target.split('/');
+          _openMerchantById(parts[0], productId: parts.length > 1 ? parts[1] : null);
+        } else {
+          _openMerchantById(target);
+        }
+        break;
+      case 'CATEGORY':
+        setState(() {
+          _selectedCategory = target;
+        });
+        break;
+      case 'INTERNAL_ROUTE':
+      case 'ROUTE':
+        final clean = target.replaceAll(RegExp(r'^/+'), '').toLowerCase();
+        if (clean == 'orders' || clean == 'mis_pedidos' || clean == 'pedidos') {
+          widget.onNavigate('orders');
+        } else if (clean == 'profile' || clean == 'perfil') {
+          widget.onNavigate('profile');
+        } else if (clean == 'express' || clean == 'envios' || clean == 'x_to_y') {
+          if (widget.onOpenExpress != null) {
+            widget.onOpenExpress!();
+          } else {
+            widget.onNavigate('express');
+          }
+        } else {
+          widget.onNavigate(target);
+        }
+        break;
+      case 'EXTERNAL_URL':
+      case 'URL':
+      case 'WEB':
+        if (!target.toLowerCase().startsWith('https://')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Solo se permiten enlaces seguros HTTPS'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Abriendo enlace: $target'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        break;
+    }
+  }
+
+  void _handleEditorialAdClick(HomeEditorialAdEntity ad) {
+    final actionType = ad.actionType.trim().toUpperCase();
+    if (actionType.isEmpty || actionType == 'NONE') return;
+    final target = ad.effectiveActionTarget.trim();
+
+    switch (actionType) {
+      case 'MERCHANT':
+      case 'BUSINESS':
+      case 'COMMERCE':
+        final bizId = ad.merchantId.isNotEmpty ? ad.merchantId : target;
+        if (bizId.isNotEmpty) {
+          _openMerchantById(bizId);
+        }
+        break;
+      case 'PRODUCT':
+        String bizId = ad.merchantId;
+        String prodId = ad.productId;
+        if (bizId.isEmpty) {
+          if (target.contains('?productId=')) {
+            bizId = target.substring(0, target.indexOf('?productId='));
+            prodId = target.substring(target.indexOf('?productId=') + 11);
+          } else if (target.contains('/')) {
+            final parts = target.split('/');
+            bizId = parts[0];
+            if (prodId.isEmpty && parts.length > 1) prodId = parts[1];
+          } else {
+            bizId = target;
+          }
+        }
+        if (bizId.isNotEmpty) {
+          _openMerchantById(bizId, productId: prodId.isNotEmpty ? prodId : null);
+        }
+        break;
+      case 'INTERNAL_ROUTE':
+      case 'ROUTE':
+        final clean = target.replaceAll(RegExp(r'^/+'), '').toLowerCase();
+        if (clean == 'orders' || clean == 'mis_pedidos') {
+          widget.onNavigate('orders');
+        } else if (clean == 'profile' || clean == 'perfil') {
+          widget.onNavigate('profile');
+        } else if (clean == 'express' || clean == 'envios' || clean == 'x_to_y') {
+          if (widget.onOpenExpress != null) {
+            widget.onOpenExpress!();
+          } else {
+            widget.onNavigate('express');
+          }
+        } else {
+          widget.onNavigate(target);
+        }
+        break;
+      case 'EXTERNAL_URL':
+      case 'URL':
+      case 'WEB':
+        if (!target.toLowerCase().startsWith('https://')) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Solo se permiten enlaces seguros HTTPS'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Abriendo enlace: $target'),
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+        break;
+    }
+  }
+
+  Widget _buildActionHeaderButton(BlockActionConfigEntity? action) {
+    if (action == null || !action.isActionable) return const SizedBox.shrink();
+    return InkWell(
+      onTap: () => _handleBlockActionClick(action),
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+        child: Text(
+          action.label.isNotEmpty ? action.label : 'Ver más ›',
+          style: const TextStyle(
+            color: BrandColors.bluePrimary,
+            fontWeight: FontWeight.w700,
+            fontSize: 13,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader({
+    required String title,
+    BlockActionConfigEntity? action,
+    Widget? trailing,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: 18,
+                color: BrandColors.textPrimaryLight,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          if (trailing != null) trailing,
+          if (trailing == null && action != null && action.isActionable)
+            _buildActionHeaderButton(action),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = widget.sessionState.currentUser;
@@ -204,6 +405,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
                   builder: (context, configSnapshot) {
                     final config = configSnapshot.data ?? const DashboardConfigEntity();
                     final orderedSections = config.getNormalizedSectionOrder();
+                    final containsAllBusinessesInOrder = orderedSections.contains('ALL_BUSINESSES');
 
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -211,10 +413,11 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
                         for (final sectionId in orderedSections)
                           _renderDynamicSection(sectionId, config, tenantId),
 
-                        // Catálogo General (Inmunidad semántica absoluta 1:1 Android)
-                        if (config.showAllBusinesses) ...[
+                        // Catálogo General (Legacy fallback determinista si no está en orderedSections)
+                        // Garantiza single-render: si orderedSections ya contiene ALL_BUSINESSES, no se duplica.
+                        if (!containsAllBusinessesInOrder && config.showAllBusinesses) ...[
                           const SizedBox(height: 20),
-                          _buildAllBusinessesSection(tenantId),
+                          _buildAllBusinessesSection(tenantId, config),
                         ],
                       ],
                     );
@@ -250,7 +453,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
             ? Column(
                 children: [
                   const SizedBox(height: 18),
-                  _buildCategoriesSection(tenantId),
+                  _buildCategoriesSection(tenantId, config),
                 ],
               )
             : const SizedBox.shrink();
@@ -260,7 +463,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
             ? Column(
                 children: [
                   const SizedBox(height: 20),
-                  _buildBranchesSection(tenantId),
+                  _buildBranchesSection(tenantId, config),
                 ],
               )
             : const SizedBox.shrink();
@@ -280,7 +483,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
             ? Column(
                 children: [
                   const SizedBox(height: 20),
-                  _buildFeaturedBusinessesSection(tenantId),
+                  _buildFeaturedBusinessesSection(tenantId, config),
                 ],
               )
             : const SizedBox.shrink();
@@ -290,7 +493,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
             ? Column(
                 children: [
                   const SizedBox(height: 20),
-                  _buildStarProductsSection(tenantId),
+                  _buildStarProductsSection(tenantId, config),
                 ],
               )
             : const SizedBox.shrink();
@@ -300,7 +503,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
             ? Column(
                 children: [
                   const SizedBox(height: 20),
-                  _buildFlashDealsSection(tenantId),
+                  _buildFlashDealsSection(tenantId, config),
                 ],
               )
             : const SizedBox.shrink();
@@ -310,7 +513,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
             ? Column(
                 children: [
                   const SizedBox(height: 20),
-                  _buildDiscountedProductsSection(tenantId),
+                  _buildDiscountedProductsSection(tenantId, config),
                 ],
               )
             : const SizedBox.shrink();
@@ -320,7 +523,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
             ? Column(
                 children: [
                   const SizedBox(height: 20),
-                  _buildSamePriceSection(tenantId),
+                  _buildSamePriceSection(tenantId, config),
                 ],
               )
             : const SizedBox.shrink();
@@ -330,7 +533,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
             ? Column(
                 children: [
                   const SizedBox(height: 20),
-                  _buildTopSellingSection(tenantId),
+                  _buildTopSellingSection(tenantId, config),
                 ],
               )
             : const SizedBox.shrink();
@@ -340,7 +543,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
             ? Column(
                 children: [
                   const SizedBox(height: 20),
-                  _buildRecommendedSection(tenantId),
+                  _buildRecommendedSection(tenantId, config),
                 ],
               )
             : const SizedBox.shrink();
@@ -350,7 +553,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
             ? Column(
                 children: [
                   const SizedBox(height: 20),
-                  _buildNewBusinessesSection(tenantId),
+                  _buildNewBusinessesSection(tenantId, config),
                 ],
               )
             : const SizedBox.shrink();
@@ -360,7 +563,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
             ? Column(
                 children: [
                   const SizedBox(height: 20),
-                  _buildQuickReorderSection(tenantId),
+                  _buildQuickReorderSection(tenantId, config),
                 ],
               )
             : const SizedBox.shrink();
@@ -370,7 +573,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
             ? Column(
                 children: [
                   const SizedBox(height: 20),
-                  _buildFavoritesSection(tenantId),
+                  _buildFavoritesSection(tenantId, config),
                 ],
               )
             : const SizedBox.shrink();
@@ -382,6 +585,26 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
                 children: [
                   const SizedBox(height: 14),
                   _buildExpressDeliveryBanner(),
+                ],
+              )
+            : const SizedBox.shrink();
+
+      case 'EDITORIAL_ADS':
+        return config.showEditorialAds
+            ? Column(
+                children: [
+                  const SizedBox(height: 16),
+                  _buildEditorialAdsSection(tenantId, config),
+                ],
+              )
+            : const SizedBox.shrink();
+
+      case 'ALL_BUSINESSES':
+        return config.showAllBusinesses
+            ? Column(
+                children: [
+                  const SizedBox(height: 20),
+                  _buildAllBusinessesSection(tenantId, config),
                 ],
               )
             : const SizedBox.shrink();
@@ -723,6 +946,40 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
+  // SECTION: EDITORIAL ADS (ADR-030 /home_editorial_ads 1:1 Parity)
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildEditorialAdsSection(String tenantId, DashboardConfigEntity config) {
+    if (widget.merchantService == null) return const SizedBox.shrink();
+
+    return StreamBuilder<List<HomeEditorialAdEntity>>(
+      stream: widget.merchantService!.watchHomeEditorialAds(tenantId: tenantId),
+      builder: (context, adSnapshot) {
+        if (adSnapshot.hasError) {
+          return const SizedBox.shrink();
+        }
+        final ads = adSnapshot.data ?? [];
+        if (ads.isEmpty) return const SizedBox.shrink();
+
+        // Pass public businesses in-memory cache to avoid N+1 queries (Zero N+1)
+        return StreamBuilder<List<BusinessEntity>>(
+          stream: widget.merchantService!.watchBusinesses(tenantId: tenantId),
+          builder: (context, bizSnapshot) {
+            final businesses = bizSnapshot.data ?? [];
+            return EditorialAdsCarouselWidget(
+              ads: ads,
+              publicBusinesses: businesses,
+              title: config.getDisplayTitle('EDITORIAL_ADS', defaultTitle: 'Destacados y Novedades'),
+              headerAction: config.getBlockAction('EDITORIAL_ADS'),
+              onHeaderActionClick: () => _handleBlockActionClick(config.getBlockAction('EDITORIAL_ADS')),
+              onAdClick: _handleEditorialAdClick,
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
   // SECTION: EXPRESS X→Y DIRECT PROMOTIONAL BANNER (GAP-HOM-01 / ADR-015 / ADR-026)
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildExpressDeliveryBanner() {
@@ -866,8 +1123,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   // ═══════════════════════════════════════════════════════════════════════════
   // SECTION: CATEGORIES (Streaming Firestore /categories)
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildCategoriesSection(String tenantId) {
+  Widget _buildCategoriesSection(String tenantId, [DashboardConfigEntity? config]) {
     if (widget.merchantService == null) return const SizedBox.shrink();
+    final cfg = config ?? const DashboardConfigEntity();
 
     return StreamBuilder<List<CategoryEntity>>(
       stream: widget.merchantService!.watchCategories(tenantId: tenantId),
@@ -881,16 +1139,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Categorías',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                  color: BrandColors.textPrimaryLight,
-                ),
-              ),
+            _buildSectionHeader(
+              title: cfg.getDisplayTitle('CATEGORIES', defaultTitle: 'Categorías'),
+              action: cfg.getBlockAction('CATEGORIES'),
             ),
             const SizedBox(height: 10),
             SizedBox(
@@ -954,8 +1205,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   // ═══════════════════════════════════════════════════════════════════════════
   // SECTION: BRANCHES / SUCURSALES (1:1 Android BranchesSection.kt)
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildBranchesSection(String tenantId) {
+  Widget _buildBranchesSection(String tenantId, [DashboardConfigEntity? config]) {
     if (widget.merchantService == null) return const SizedBox.shrink();
+    final cfg = config ?? const DashboardConfigEntity();
 
     return StreamBuilder<List<BranchEntity>>(
       stream: widget.merchantService!.watchAllBranches(tenantId: tenantId),
@@ -969,16 +1221,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Sucursales Disponibles 📍',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                  color: BrandColors.textPrimaryLight,
-                ),
-              ),
+            _buildSectionHeader(
+              title: cfg.getDisplayTitle('BRANCHES', defaultTitle: 'Sucursales Disponibles 📍'),
+              action: cfg.getBlockAction('BRANCHES'),
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -1116,14 +1361,19 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Comercios Cerca de Ti 🏢',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 18,
-                      color: BrandColors.textPrimaryLight,
+                  Expanded(
+                    child: Text(
+                      config.getDisplayTitle('NEARBY', defaultTitle: 'Comercios Cerca de Ti 🏢'),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                        color: BrandColors.textPrimaryLight,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
@@ -1147,6 +1397,10 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
                       ],
                     ),
                   ),
+                  if (config.getBlockAction('NEARBY')?.isActionable == true) ...[
+                    const SizedBox(width: 6),
+                    _buildActionHeaderButton(config.getBlockAction('NEARBY')),
+                  ],
                 ],
               ),
             ),
@@ -1173,8 +1427,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   // ═══════════════════════════════════════════════════════════════════════════
   // SECTION: FEATURED BUSINESSES (FeaturedBusinessesSection.kt)
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildFeaturedBusinessesSection(String tenantId) {
+  Widget _buildFeaturedBusinessesSection(String tenantId, [DashboardConfigEntity? config]) {
     if (widget.merchantService == null) return const SizedBox.shrink();
+    final cfg = config ?? const DashboardConfigEntity();
 
     return StreamBuilder<List<BusinessEntity>>(
       stream: widget.merchantService!.watchBusinesses(tenantId: tenantId),
@@ -1189,16 +1444,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Comercios Destacados ⭐',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                  color: BrandColors.textPrimaryLight,
-                ),
-              ),
+            _buildSectionHeader(
+              title: cfg.getDisplayTitle('FEATURED_BUSINESSES', defaultTitle: 'Comercios Destacados ⭐'),
+              action: cfg.getBlockAction('FEATURED_BUSINESSES'),
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -1223,8 +1471,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   // ═══════════════════════════════════════════════════════════════════════════
   // SECTION: STAR PRODUCTS (StarProductsSection.kt)
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildStarProductsSection(String tenantId) {
+  Widget _buildStarProductsSection(String tenantId, [DashboardConfigEntity? config]) {
     if (widget.merchantService == null) return const SizedBox.shrink();
+    final cfg = config ?? const DashboardConfigEntity();
 
     return StreamBuilder<List<ProductEntity>>(
       stream: widget.merchantService!.watchFeaturedProducts(tenantId: tenantId),
@@ -1238,16 +1487,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Productos Estrella ⭐',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                  color: BrandColors.textPrimaryLight,
-                ),
-              ),
+            _buildSectionHeader(
+              title: cfg.getDisplayTitle('FEATURED_PRODUCTS', defaultTitle: 'Productos Estrella ⭐'),
+              action: cfg.getBlockAction('FEATURED_PRODUCTS'),
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -1272,8 +1514,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   // ═══════════════════════════════════════════════════════════════════════════
   // SECTION: FLASH DEALS (FlashDealsSection.kt)
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildFlashDealsSection(String tenantId) {
+  Widget _buildFlashDealsSection(String tenantId, [DashboardConfigEntity? config]) {
     if (widget.merchantService == null) return const SizedBox.shrink();
+    final cfg = config ?? const DashboardConfigEntity();
 
     return StreamBuilder<List<FlashDealEntity>>(
       stream: widget.merchantService!.watchFlashDeals(tenantId: tenantId),
@@ -1292,26 +1535,39 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 children: [
-                  const Text(
-                    'Ofertas Flash ⚡',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 18,
-                      color: BrandColors.textPrimaryLight,
+                  Expanded(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            cfg.getDisplayTitle('FLASH_DEALS', defaultTitle: 'Ofertas Flash ⚡'),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 18,
+                              color: BrandColors.textPrimaryLight,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEF4444),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'TIEMPO LIMITADO',
+                            style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEF4444),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Text(
-                      'TIEMPO LIMITADO',
-                      style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900),
-                    ),
-                  ),
+                  if (cfg.getBlockAction('FLASH_DEALS')?.isActionable == true)
+                    _buildActionHeaderButton(cfg.getBlockAction('FLASH_DEALS')),
                 ],
               ),
             ),
@@ -1338,8 +1594,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   // ═══════════════════════════════════════════════════════════════════════════
   // SECTION: PROMOTIONS / DISCOUNTED PRODUCTS (DiscountedProductsSection.kt)
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildDiscountedProductsSection(String tenantId) {
+  Widget _buildDiscountedProductsSection(String tenantId, [DashboardConfigEntity? config]) {
     if (widget.merchantService == null) return const SizedBox.shrink();
+    final cfg = config ?? const DashboardConfigEntity();
 
     return StreamBuilder<List<ProductEntity>>(
       stream: widget.merchantService!.watchDiscountedProducts(tenantId: tenantId),
@@ -1353,16 +1610,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Productos con Descuento 🏷️',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                  color: BrandColors.textPrimaryLight,
-                ),
-              ),
+            _buildSectionHeader(
+              title: cfg.getDisplayTitle('PROMOTIONS', defaultTitle: 'Productos con Descuento 🏷️'),
+              action: cfg.getBlockAction('PROMOTIONS'),
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -1387,8 +1637,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   // ═══════════════════════════════════════════════════════════════════════════
   // SECTION: SAME PRICE (SamePriceSection.kt)
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildSamePriceSection(String tenantId) {
+  Widget _buildSamePriceSection(String tenantId, [DashboardConfigEntity? config]) {
     if (widget.merchantService == null) return const SizedBox.shrink();
+    final cfg = config ?? const DashboardConfigEntity();
 
     return StreamBuilder<List<BusinessEntity>>(
       stream: widget.merchantService!.watchBusinesses(tenantId: tenantId),
@@ -1407,26 +1658,39 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Row(
                 children: [
-                  const Text(
-                    'Mismo Precio que en el Local 🏷️',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 18,
-                      color: BrandColors.textPrimaryLight,
+                  Expanded(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Flexible(
+                          child: Text(
+                            cfg.getDisplayTitle('SAME_PRICE', defaultTitle: 'Mismo Precio que en el Local 🏷️'),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 18,
+                              color: BrandColors.textPrimaryLight,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF10B981),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'PRECIO LOCAL',
+                            style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF10B981),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Text(
-                      'PRECIO LOCAL',
-                      style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w900),
-                    ),
-                  ),
+                  if (cfg.getBlockAction('SAME_PRICE')?.isActionable == true)
+                    _buildActionHeaderButton(cfg.getBlockAction('SAME_PRICE')),
                 ],
               ),
             ),
@@ -1453,8 +1717,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   // ═══════════════════════════════════════════════════════════════════════════
   // SECTION: TOP SELLING (TopSellingSection.kt)
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildTopSellingSection(String tenantId) {
+  Widget _buildTopSellingSection(String tenantId, [DashboardConfigEntity? config]) {
     if (widget.merchantService == null) return const SizedBox.shrink();
+    final cfg = config ?? const DashboardConfigEntity();
 
     return StreamBuilder<List<BusinessEntity>>(
       stream: widget.merchantService!.watchBusinesses(tenantId: tenantId),
@@ -1470,16 +1735,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Los Más Vendidos 🔥',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                  color: BrandColors.textPrimaryLight,
-                ),
-              ),
+            _buildSectionHeader(
+              title: cfg.getDisplayTitle('TOP_SELLING', defaultTitle: 'Los Más Vendidos 🔥'),
+              action: cfg.getBlockAction('TOP_SELLING'),
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -1504,8 +1762,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   // ═══════════════════════════════════════════════════════════════════════════
   // SECTION: RECOMMENDED (RecommendedSection.kt)
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildRecommendedSection(String tenantId) {
+  Widget _buildRecommendedSection(String tenantId, [DashboardConfigEntity? config]) {
     if (widget.merchantService == null) return const SizedBox.shrink();
+    final cfg = config ?? const DashboardConfigEntity();
 
     return StreamBuilder<List<BusinessEntity>>(
       stream: widget.merchantService!.watchBusinesses(tenantId: tenantId),
@@ -1520,16 +1779,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Recomendados para Ti ✨',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                  color: BrandColors.textPrimaryLight,
-                ),
-              ),
+            _buildSectionHeader(
+              title: cfg.getDisplayTitle('RECOMMENDED', defaultTitle: 'Recomendados para Ti ✨'),
+              action: cfg.getBlockAction('RECOMMENDED'),
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -1554,8 +1806,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   // ═══════════════════════════════════════════════════════════════════════════
   // SECTION: NEW BUSINESSES (NewBusinessesSection.kt)
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildNewBusinessesSection(String tenantId) {
+  Widget _buildNewBusinessesSection(String tenantId, [DashboardConfigEntity? config]) {
     if (widget.merchantService == null) return const SizedBox.shrink();
+    final cfg = config ?? const DashboardConfigEntity();
 
     return StreamBuilder<List<BusinessEntity>>(
       stream: widget.merchantService!.watchBusinesses(tenantId: tenantId),
@@ -1579,16 +1832,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Nuevos en la App 🆕',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                  color: BrandColors.textPrimaryLight,
-                ),
-              ),
+            _buildSectionHeader(
+              title: cfg.getDisplayTitle('NEW_BUSINESSES', defaultTitle: 'Nuevos en la App 🆕'),
+              action: cfg.getBlockAction('NEW_BUSINESSES'),
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -1613,8 +1859,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   // ═══════════════════════════════════════════════════════════════════════════
   // SECTION: QUICK REORDER (QuickReorderSection.kt)
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildQuickReorderSection(String tenantId) {
+  Widget _buildQuickReorderSection(String tenantId, [DashboardConfigEntity? config]) {
     if (widget.merchantService == null) return const SizedBox.shrink();
+    final cfg = config ?? const DashboardConfigEntity();
 
     return StreamBuilder<List<ProductEntity>>(
       stream: widget.merchantService!.watchFeaturedProducts(tenantId: tenantId),
@@ -1625,16 +1872,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Pedir de Nuevo 🔁',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                  color: BrandColors.textPrimaryLight,
-                ),
-              ),
+            _buildSectionHeader(
+              title: cfg.getDisplayTitle('QUICK_REORDER', defaultTitle: 'Pedir de Nuevo 🔁'),
+              action: cfg.getBlockAction('QUICK_REORDER'),
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -1659,8 +1899,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   // ═══════════════════════════════════════════════════════════════════════════
   // SECTION: FAVORITES (FavoritesBlockSection.kt)
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildFavoritesSection(String tenantId) {
+  Widget _buildFavoritesSection(String tenantId, [DashboardConfigEntity? config]) {
     if (widget.merchantService == null || _favoriteBusinessIds.isEmpty) return const SizedBox.shrink();
+    final cfg = config ?? const DashboardConfigEntity();
 
     return StreamBuilder<List<BusinessEntity>>(
       stream: widget.merchantService!.watchBusinesses(tenantId: tenantId),
@@ -1672,16 +1913,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                'Tus Favoritos ❤️',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                  color: BrandColors.textPrimaryLight,
-                ),
-              ),
+            _buildSectionHeader(
+              title: cfg.getDisplayTitle('FAVORITES', defaultTitle: 'Tus Favoritos ❤️'),
+              action: cfg.getBlockAction('FAVORITES'),
             ),
             const SizedBox(height: 12),
             SizedBox(
@@ -1706,8 +1940,9 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   // ═══════════════════════════════════════════════════════════════════════════
   // SECTION: ALL BUSINESSES (AllBusinessesSection.kt)
   // ═══════════════════════════════════════════════════════════════════════════
-  Widget _buildAllBusinessesSection(String tenantId) {
+  Widget _buildAllBusinessesSection(String tenantId, [DashboardConfigEntity? config]) {
     if (widget.merchantService == null) return const SizedBox.shrink();
+    final cfg = config ?? const DashboardConfigEntity();
 
     return StreamBuilder<List<BusinessEntity>>(
       stream: widget.merchantService!.watchBusinesses(tenantId: tenantId),
@@ -1726,14 +1961,19 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Todos los Comercios 🏪',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 18,
-                      color: BrandColors.textPrimaryLight,
+                  Expanded(
+                    child: Text(
+                      cfg.getDisplayTitle('ALL_BUSINESSES', defaultTitle: 'Todos los Comercios 🏪'),
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 18,
+                        color: BrandColors.textPrimaryLight,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
+                  const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
@@ -1750,6 +1990,10 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
                       ),
                     ),
                   ),
+                  if (cfg.getBlockAction('ALL_BUSINESSES')?.isActionable == true) ...[
+                    const SizedBox(width: 6),
+                    _buildActionHeaderButton(cfg.getBlockAction('ALL_BUSINESSES')),
+                  ],
                 ],
               ),
             ),

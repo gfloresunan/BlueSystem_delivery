@@ -11,8 +11,10 @@ import 'package:cloud_functions/cloud_functions.dart';
 
 import '../../../core/auth/auth_context.dart';
 import '../../../core/design_system/bsds_theme.dart';
+import '../../../core/observability/app_logger.dart';
 import '../../../domain/entities/catalog_entity.dart';
 import '../../../domain/services/core_service_interfaces.dart';
+import '../../../data/services/cloud_functions_service.dart';
 import '../../../data/services/courier_cash_closure_service.dart';
 import '../../../data/services/user_firestore_service.dart';
 import '../../../domain/entities/saved_address_entity.dart';
@@ -1471,17 +1473,25 @@ class _AppShellState extends State<AppShell> {
 
 
   // ═════════════════════════════════════════════════════════════════════════════
-  // MODAL DE CARRITO DE COMPRAS
+  // MODAL DE CARRITO DE COMPRAS (DECOUPLED 2-STEP CHECKOUT + A->B DYNAMIC QUOTING)
   // ═════════════════════════════════════════════════════════════════════════════
   void _openCartDialog() {
+    _cart.clearCommerceQuote();
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
+        int cartStep = 1; // 1: Revisión de Items (Solo Subtotal), 2: Dirección y Cotización A->B
         bool isSubmittingOrder = false;
         String selectedPaymentMethod = 'efectivo';
         final addressController = TextEditingController(text: 'Colonia Centroamérica, Managua');
+        final deliveryNoteController = TextEditingController();
+        double selectedDestLat = 12.1364;
+        double selectedDestLng = -86.2514;
+        String? selectedAddressId;
+        bool hasInitialQuoteRun = false;
 
         return StatefulBuilder(
           builder: (context, setModalState) {
@@ -1497,12 +1507,102 @@ class _AppShellState extends State<AppShell> {
               builder: (context, snapshot) {
                 final business = snapshot.data;
                 _cart.setActiveBusiness(business);
-                // GATE-01: Dynamic deliveryFee from SSOT /businesses/{id}.deliveryFee, fallback C$45.00. NEVER C$35.00
-                final double deliveryFee = _cart.deliveryFee;
-                final totalWithDelivery = _cart.total;
+
+                final bizLat = business?.latitude ?? 0.0;
+                final bizLng = business?.longitude ?? 0.0;
+                final bizName = business?.name.isNotEmpty == true
+                    ? business!.name
+                    : (_cartItems.isNotEmpty ? (_cartItems.first['business'] as String? ?? 'Comercio') : 'Comercio');
+                final bizAddress = business?.address ?? '';
+                final tenantId = business?.tenantId.isNotEmpty == true
+                    ? business!.tenantId
+                    : (_cartItems.isNotEmpty ? (_cartItems.first['tenantId'] as String? ?? 'default') : 'default');
+                final defaultBizFee = business?.deliveryFee ?? 45.0;
+
+                Future<void> requestCommerceQuote(double destLat, double destLng) async {
+                  _cart.setCalculatingQuote();
+                  setModalState(() {});
+                  try {
+                    if (bizLat == 0.0 || bizLng == 0.0 || destLat == 0.0 || destLng == 0.0) {
+                      _cart.setCommerceQuote(
+                        deliveryFee: defaultBizFee,
+                        routeDistanceKm: 0.0,
+                        customerPricePerKm: 8.0,
+                        courierPricePerKm: 7.0,
+                        courierDistanceEarnings: 0.0,
+                        pricingSnapshot: {
+                          'serviceType': 'COMMERCE_DELIVERY',
+                          'routingProvider': 'FALLBACK_MERCHANT_SSOT',
+                          'isFallback': true,
+                        },
+                      );
+                      if (ctx.mounted) setModalState(() {});
+                      return;
+                    }
+
+                    final res = await CloudFunctionsService().calculateDeliveryRoute(
+                      originLat: bizLat,
+                      originLng: bizLng,
+                      destLat: destLat,
+                      destLng: destLng,
+                      tenantId: tenantId,
+                      serviceType: 'COMMERCE_DELIVERY',
+                    );
+
+                    final data = (res['data'] as Map<dynamic, dynamic>?)?.cast<String, dynamic>() ?? res;
+                    final fee = (data['calculatedFee'] as num?)?.toDouble() ?? defaultBizFee;
+                    final distKm = (data['routeDistanceKm'] as num?)?.toDouble() ??
+                        (((data['routeDistanceMeters'] as num?)?.toDouble() ?? 0.0) / 1000.0);
+                    final pSnap = (data['pricingSnapshot'] as Map<dynamic, dynamic>?)?.cast<String, dynamic>();
+                    final custRate = (pSnap?['pricePerKm'] as num?)?.toDouble() ?? 8.0;
+                    final courierRate = (pSnap?['courierPricePerKm'] as num?)?.toDouble() ?? 7.0;
+                    final courierEarnings = (pSnap?['courierEarnings'] as num?)?.toDouble() ?? (distKm * courierRate);
+
+                    _cart.setCommerceQuote(
+                      deliveryFee: fee,
+                      routeDistanceKm: distKm,
+                      customerPricePerKm: custRate,
+                      courierPricePerKm: courierRate,
+                      courierDistanceEarnings: courierEarnings,
+                      pricingSnapshot: pSnap ?? {
+                        'serviceType': 'COMMERCE_DELIVERY',
+                        'routeDistanceKm': distKm,
+                        'deliveryFee': fee,
+                        'routingProvider': data['routingProvider'] ?? 'REAL_ROUTING',
+                      },
+                    );
+                  } catch (e) {
+                    AppLogger.error('CartCheckout', 'Failed to quote route, falling back to merchant default fee: $e');
+                    _cart.setCommerceQuote(
+                      deliveryFee: defaultBizFee,
+                      routeDistanceKm: 0.0,
+                      customerPricePerKm: 8.0,
+                      courierPricePerKm: 7.0,
+                      courierDistanceEarnings: 0.0,
+                      pricingSnapshot: {
+                        'serviceType': 'COMMERCE_DELIVERY',
+                        'routingProvider': 'FALLBACK_MERCHANT_SSOT',
+                        'isFallback': true,
+                      },
+                    );
+                  }
+                  if (ctx.mounted) {
+                    setModalState(() {});
+                  }
+                }
+
+                if (cartStep == 2 && !hasInitialQuoteRun) {
+                  hasInitialQuoteRun = true;
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    requestCommerceQuote(selectedDestLat, selectedDestLng);
+                  });
+                }
+
+                final effectiveDeliveryFee = _cart.isQuoted ? _cart.deliveryFee : defaultBizFee;
+                final currentTotal = _cartTotal + (cartStep == 1 ? 0.0 : effectiveDeliveryFee);
 
                 return Container(
-                  height: MediaQuery.of(context).size.height * 0.75,
+                  height: MediaQuery.of(context).size.height * 0.82,
                   decoration: BoxDecoration(
                     color: theme.colorScheme.surface,
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
@@ -1521,15 +1621,33 @@ class _AppShellState extends State<AppShell> {
                           ),
                         ),
                       ),
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 14),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            '🛒 Tu Carrito de Compras',
-                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          Row(
+                            children: [
+                              if (cartStep == 2)
+                                IconButton(
+                                  icon: const Icon(Icons.arrow_back),
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  onPressed: () {
+                                    setModalState(() {
+                                      cartStep = 1;
+                                      hasInitialQuoteRun = false;
+                                      _cart.clearCommerceQuote();
+                                    });
+                                  },
+                                ),
+                              if (cartStep == 2) const SizedBox(width: 8),
+                              Text(
+                                cartStep == 1 ? '🛒 Tu Carrito (Paso 1/2)' : '📍 Entrega y Pago (Paso 2/2)',
+                                style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
-                          if (_cartItems.isNotEmpty)
+                          if (_cartItems.isNotEmpty && cartStep == 1)
                             TextButton(
                               onPressed: () {
                                 _clearCart();
@@ -1540,6 +1658,10 @@ class _AppShellState extends State<AppShell> {
                         ],
                       ),
                       const Divider(),
+
+                      // ═════════════════════════════════════════════════════════════
+                      // PASO 1: REVISIÓN DE PRODUCTOS (SUBTOTAL EXCLUSIVO)
+                      // ═════════════════════════════════════════════════════════════
                       if (_cartItems.isEmpty)
                         Expanded(
                           child: Center(
@@ -1555,7 +1677,7 @@ class _AppShellState extends State<AppShell> {
                             ),
                           ),
                         )
-                      else
+                      else if (cartStep == 1) ...[
                         Expanded(
                           child: ListView.separated(
                             itemCount: _cartItems.length,
@@ -1618,139 +1740,318 @@ class _AppShellState extends State<AppShell> {
                             },
                           ),
                         ),
-                      if (_cartItems.isNotEmpty) ...[
                         const Divider(),
-                        // Delivery Address selector (GAP-UI-01)
-                        const Row(
-                          children: [
-                            Icon(Icons.location_on, size: 16, color: Color(0xFF10B981)),
-                            SizedBox(width: 4),
-                            Text('Dirección de entrega:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        if (widget.sessionState.currentUser != null &&
-                            !widget.sessionState.isGuestMode)
-                          StreamBuilder<List<SavedAddressEntity>>(
-                            stream: _effectiveUserService.watchAddresses(widget.sessionState.currentUser!.uid),
-                            builder: (context, addrSnap) {
-                              final savedAddrs = addrSnap.data ?? [];
-                              if (savedAddrs.isEmpty) return const SizedBox.shrink();
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 6),
-                                child: SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
-                                    children: savedAddrs.map((sa) {
-                                      return Padding(
-                                        padding: const EdgeInsets.only(right: 6),
-                                        child: ActionChip(
-                                          key: Key('quick_select_address_${sa.id}'),
-                                          avatar: Icon(
-                                            sa.isDefault ? Icons.check_circle : Icons.location_on,
-                                            size: 14,
-                                            color: BrandColors.bluePrimary,
-                                          ),
-                                          label: Text(
-                                            '${sa.label}: ${sa.fullAddress}',
-                                            style: const TextStyle(fontSize: 11),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          onPressed: () {
-                                            setModalState(() {
-                                              addressController.text = sa.fullAddress;
-                                            });
-                                          },
-                                        ),
-                                      );
-                                    }).toList(),
-                                  ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.shade50,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.blue.shade200),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(Icons.info_outline, size: 18, color: Colors.blue.shade700),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'La tarifa de envío y tiempo de entrega se calcularán en el siguiente paso con tu ubicación exacta.',
+                                  style: TextStyle(fontSize: 11, color: Colors.blue.shade900),
                                 ),
-                              );
-                            },
+                              ),
+                            ],
                           ),
-                        TextField(
-                          key: const Key('checkout_delivery_address_field'),
-                          controller: addressController,
-                          decoration: InputDecoration(
-                            isDense: true,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                            hintText: 'Ingresa tu dirección de entrega...',
-                          ),
-                          style: const TextStyle(fontSize: 12),
-                        ),
-                        const SizedBox(height: 8),
-
-                        // Payment Method selector (GAP-UI-02)
-                        const Row(
-                          children: [
-                            Icon(Icons.payment, size: 16, color: Color(0xFF2563EB)),
-                            SizedBox(width: 4),
-                            Text('Método de pago:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            ChoiceChip(
-                              key: const Key('checkout_payment_cash_chip'),
-                              label: const Text('Efectivo', style: TextStyle(fontSize: 11)),
-                              selected: selectedPaymentMethod == 'efectivo',
-                              onSelected: (val) {
-                                if (val) setModalState(() => selectedPaymentMethod = 'efectivo');
-                              },
-                            ),
-                            const SizedBox(width: 6),
-                            ChoiceChip(
-                              key: const Key('checkout_payment_transfer_chip'),
-                              label: const Text('Transferencia', style: TextStyle(fontSize: 11)),
-                              selected: selectedPaymentMethod == 'transferencia',
-                              onSelected: (val) {
-                                if (val) setModalState(() => selectedPaymentMethod = 'transferencia');
-                              },
-                            ),
-                            const SizedBox(width: 6),
-                            ChoiceChip(
-                              key: const Key('checkout_payment_card_chip'),
-                              label: const Text('Tarjeta', style: TextStyle(fontSize: 11)),
-                              selected: selectedPaymentMethod == 'tarjeta',
-                              onSelected: (val) {
-                                if (val) setModalState(() => selectedPaymentMethod = 'tarjeta');
-                              },
-                            ),
-                          ],
                         ),
                         const SizedBox(height: 10),
-
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            const Text('Subtotal:'),
-                            Text('C\$ ${_cartTotal.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Tarifa de Envío:'),
-                            Text('C\$ ${deliveryFee.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
-                          ],
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text('Total a Pagar:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                            Text(
-                              'C\$ ${totalWithDelivery.toInt()}',
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2563EB)),
-                            ),
+                            const Text('Subtotal de Productos:', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
+                            Text('C\$ ${_cartTotal.toInt()}', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2563EB))),
                           ],
                         ),
                         const SizedBox(height: 14),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2563EB),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                            ),
+                            icon: const Icon(Icons.arrow_forward, size: 18),
+                            label: const Text('Continuar a Entrega (Paso 2)',
+                                style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                            onPressed: () {
+                              if (widget.sessionState.isGuestMode ||
+                                  widget.sessionState.currentUser == null) {
+                                Navigator.pop(ctx);
+                                setState(() => _selectedIndex = 3);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Por favor inicia sesión para continuar con la entrega.'),
+                                    duration: Duration(seconds: 3),
+                                  ),
+                                );
+                                return;
+                              }
+                              setModalState(() {
+                                cartStep = 2;
+                              });
+                            },
+                          ),
+                        ),
+                      ]
+
+                      // ═════════════════════════════════════════════════════════════
+                      // PASO 2: DIRECCIÓN, COTIZACIÓN REACTIVA A->B Y MÉTODO DE PAGO
+                      // ═════════════════════════════════════════════════════════════
+                      else if (cartStep == 2) ...[
+                        Expanded(
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Row(
+                                  children: [
+                                    Icon(Icons.location_on, size: 16, color: Color(0xFF10B981)),
+                                    SizedBox(width: 4),
+                                    Text('Dirección de entrega:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                if (widget.sessionState.currentUser != null &&
+                                    !widget.sessionState.isGuestMode)
+                                  StreamBuilder<List<SavedAddressEntity>>(
+                                    stream: _effectiveUserService.watchAddresses(widget.sessionState.currentUser!.uid),
+                                    builder: (context, addrSnap) {
+                                      final savedAddrs = addrSnap.data ?? [];
+                                      if (savedAddrs.isEmpty) return const SizedBox.shrink();
+                                      return Padding(
+                                        padding: const EdgeInsets.only(bottom: 6),
+                                        child: SingleChildScrollView(
+                                          scrollDirection: Axis.horizontal,
+                                          child: Row(
+                                            children: savedAddrs.map((sa) {
+                                              final isSelected = selectedAddressId == sa.id;
+                                              return Padding(
+                                                padding: const EdgeInsets.only(right: 6),
+                                                child: ChoiceChip(
+                                                  key: Key('quick_select_address_${sa.id}'),
+                                                  selected: isSelected,
+                                                  avatar: Icon(
+                                                    sa.isDefault ? Icons.check_circle : Icons.location_on,
+                                                    size: 14,
+                                                    color: isSelected ? Colors.white : BrandColors.bluePrimary,
+                                                  ),
+                                                  label: Text(
+                                                    '${sa.label}: ${sa.fullAddress}',
+                                                    style: TextStyle(fontSize: 11, color: isSelected ? Colors.white : null),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
+                                                  ),
+                                                  onSelected: (val) {
+                                                    if (val) {
+                                                      setModalState(() {
+                                                        selectedAddressId = sa.id;
+                                                        addressController.text = sa.fullAddress;
+                                                        if (sa.latitude != 0.0 && sa.longitude != 0.0) {
+                                                          selectedDestLat = sa.latitude;
+                                                          selectedDestLng = sa.longitude;
+                                                        }
+                                                        if (sa.instructions.isNotEmpty) {
+                                                          deliveryNoteController.text = sa.instructions;
+                                                        }
+                                                      });
+                                                      requestCommerceQuote(selectedDestLat, selectedDestLng);
+                                                    }
+                                                  },
+                                                ),
+                                              );
+                                            }).toList(),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                TextField(
+                                  key: const Key('checkout_delivery_address_field'),
+                                  controller: addressController,
+                                  decoration: InputDecoration(
+                                    isDense: true,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    hintText: 'Ingresa tu dirección de entrega...',
+                                    suffixIcon: IconButton(
+                                      icon: const Icon(Icons.refresh, size: 18),
+                                      tooltip: 'Recalcular tarifa de entrega',
+                                      onPressed: () => requestCommerceQuote(selectedDestLat, selectedDestLng),
+                                    ),
+                                  ),
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                const SizedBox(height: 10),
+
+                                // Tarjeta de Cotización Reactiva
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: _cart.isCalculatingQuote
+                                        ? Colors.amber.shade50
+                                        : (_cart.isQuoted ? Colors.green.shade50 : Colors.grey.shade100),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(
+                                      color: _cart.isCalculatingQuote
+                                          ? Colors.amber.shade300
+                                          : (_cart.isQuoted ? Colors.green.shade300 : Colors.grey.shade300),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      if (_cart.isCalculatingQuote)
+                                        const SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.orange),
+                                        )
+                                      else
+                                        Icon(
+                                          _cart.isQuoted ? Icons.verified : Icons.route,
+                                          size: 20,
+                                          color: _cart.isQuoted ? const Color(0xFF10B981) : Colors.grey.shade700,
+                                        ),
+                                      const SizedBox(width: 10),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              _cart.isCalculatingQuote
+                                                  ? 'Calculando ruta y tarifa A ➔ B...'
+                                                  : (_cart.isQuoted
+                                                      ? 'Tarifa autorizada de entrega'
+                                                      : 'Cotización estándar de entrega'),
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                                color: _cart.isQuoted ? const Color(0xFF047857) : Colors.black87,
+                                              ),
+                                            ),
+                                            if (_cart.isQuoted && _cart.routeDistanceKm != null && _cart.routeDistanceKm! > 0)
+                                              Text(
+                                                'Distancia de ruta: ${_cart.routeDistanceKm!.toStringAsFixed(1)} km',
+                                                style: TextStyle(fontSize: 11, color: Colors.grey.shade700),
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      Text(
+                                        'C\$ ${effectiveDeliveryFee.toInt()}',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color: _cart.isQuoted ? const Color(0xFF047857) : Colors.black87,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+
+                                // Payment Method selector
+                                const Row(
+                                  children: [
+                                    Icon(Icons.payment, size: 16, color: Color(0xFF2563EB)),
+                                    SizedBox(width: 4),
+                                    Text('Método de pago:', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    ChoiceChip(
+                                      key: const Key('checkout_payment_cash_chip'),
+                                      label: const Text('Efectivo', style: TextStyle(fontSize: 11)),
+                                      selected: selectedPaymentMethod == 'efectivo',
+                                      onSelected: (val) {
+                                        if (val) setModalState(() => selectedPaymentMethod = 'efectivo');
+                                      },
+                                    ),
+                                    const SizedBox(width: 6),
+                                    ChoiceChip(
+                                      key: const Key('checkout_payment_transfer_chip'),
+                                      label: const Text('Transferencia', style: TextStyle(fontSize: 11)),
+                                      selected: selectedPaymentMethod == 'transferencia',
+                                      onSelected: (val) {
+                                        if (val) setModalState(() => selectedPaymentMethod = 'transferencia');
+                                      },
+                                    ),
+                                    const SizedBox(width: 6),
+                                    ChoiceChip(
+                                      key: const Key('checkout_payment_card_chip'),
+                                      label: const Text('Tarjeta', style: TextStyle(fontSize: 11)),
+                                      selected: selectedPaymentMethod == 'tarjeta',
+                                      onSelected: (val) {
+                                        if (val) setModalState(() => selectedPaymentMethod = 'tarjeta');
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+
+                                // Notas para el repartidor
+                                const Row(
+                                  children: [
+                                    Icon(Icons.edit_note, size: 16, color: Colors.grey),
+                                    SizedBox(width: 4),
+                                    Text('Instrucciones para el repartidor (opcional):', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                TextField(
+                                  controller: deliveryNoteController,
+                                  decoration: InputDecoration(
+                                    isDense: true,
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                                    hintText: 'Ej. Casa esquinera portón negro...',
+                                  ),
+                                  style: const TextStyle(fontSize: 12),
+                                ),
+                                const SizedBox(height: 12),
+
+                                // Desglose Financiero
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('Subtotal:'),
+                                    Text('C\$ ${_cartTotal.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                                const SizedBox(height: 4),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('Tarifa de Envío:'),
+                                    Text('C\$ ${effectiveDeliveryFee.toInt()}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                  ],
+                                ),
+                                const SizedBox(height: 6),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const Text('Total a Pagar:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                    Text(
+                                      'C\$ ${currentTotal.toInt()}',
+                                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF2563EB)),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
@@ -1760,22 +2061,9 @@ class _AppShellState extends State<AppShell> {
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                             ),
-                            onPressed: isSubmittingOrder
+                            onPressed: (isSubmittingOrder || _cart.isCalculatingQuote)
                                 ? null
                                 : () async {
-                                    if (widget.sessionState.isGuestMode ||
-                                        widget.sessionState.currentUser == null) {
-                                      Navigator.pop(ctx);
-                                      setState(() => _selectedIndex = 3);
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        const SnackBar(
-                                          content: Text('Por favor inicia sesión para confirmar y enviar tu pedido.'),
-                                          duration: Duration(seconds: 3),
-                                        ),
-                                      );
-                                      return;
-                                    }
-
                                     setModalState(() => isSubmittingOrder = true);
 
                                     final user = widget.sessionState.currentUser!;
@@ -1786,15 +2074,6 @@ class _AppShellState extends State<AppShell> {
                                     final bizId = business?.businessId.isNotEmpty == true
                                         ? business!.businessId
                                         : businessId;
-                                    final bizName = business?.name.isNotEmpty == true
-                                        ? business!.name
-                                        : (_cartItems.first['business'] as String? ?? 'Comercio');
-                                    final bizAddress = business?.address ?? '';
-                                    final bizLat = business?.latitude ?? 0.0;
-                                    final bizLng = business?.longitude ?? 0.0;
-                                    final tenantId = business?.tenantId.isNotEmpty == true
-                                        ? business!.tenantId
-                                        : (_cartItems.first['tenantId'] as String? ?? 'default');
 
                                     final orderItems = _cartItems.map((item) {
                                       final qty = item['quantity'] as int;
@@ -1815,6 +2094,7 @@ class _AppShellState extends State<AppShell> {
                                     }).toList();
 
                                     final subtotal = _cartTotal;
+                                    final deliveryFee = effectiveDeliveryFee;
                                     final total = subtotal + deliveryFee;
 
                                     final words = bizName.trim().split(RegExp(r'\s+')).where((w) => w.isNotEmpty).toList();
@@ -1828,6 +2108,7 @@ class _AppShellState extends State<AppShell> {
                                         ? addressController.text.trim()
                                         : 'Colonia Centroamérica, Managua';
                                     final effectivePaymentMethod = selectedPaymentMethod;
+                                    final notes = deliveryNoteController.text.trim();
 
                                     final orderPayload = <String, dynamic>{
                                       'customerId': customerId,
@@ -1846,11 +2127,12 @@ class _AppShellState extends State<AppShell> {
                                       'cityId': business?.city ?? 'MANAGUA',
                                       'city': business?.city ?? 'Managua',
                                       'cityName': business?.city ?? 'Managua',
-                                      'routeDistanceMeters': 0,
-                                      'routeDistanceKm': 0.0,
-                                      'distanceKm': 0.0,
-                                      'distanceSource': 'FALLBACK_ESTIMATED',
-                                      'routingProvider': 'FALLBACK_ESTIMATED',
+                                      'routeDistanceMeters': ((_cart.routeDistanceKm ?? 0.0) * 1000).toInt(),
+                                      'routeDistanceKm': _cart.routeDistanceKm ?? 0.0,
+                                      'distanceKm': _cart.routeDistanceKm ?? 0.0,
+                                      'distanceSource': _cart.isQuoted ? 'CORE_ROUTING' : 'FALLBACK_ESTIMATED',
+                                      'routingProvider': _cart.pricingSnapshot?['routingProvider'] ?? (_cart.isQuoted ? 'CORE_ROUTING' : 'FALLBACK_ESTIMATED'),
+                                      'pricingSnapshot': _cart.pricingSnapshot ?? <String, dynamic>{},
                                       'items': orderItems,
                                       'subtotal': subtotal,
                                       'merchantGrossSales': subtotal,
@@ -1865,10 +2147,10 @@ class _AppShellState extends State<AppShell> {
                                       'additionalCharge': 0.0,
                                       'tipAmount': 0.0,
                                       'tip': 0.0,
-                                      'deliveryNote': '',
-                                      'notes': '',
-                                      'instructions': '',
-                                      'deliveryInstructions': '',
+                                      'deliveryNote': notes,
+                                      'notes': notes,
+                                      'instructions': notes,
+                                      'deliveryInstructions': notes,
                                       'total': total,
                                       'customerTotal': total,
                                       'valoresMonetarios': {
@@ -1887,26 +2169,26 @@ class _AppShellState extends State<AppShell> {
                                       'paymentMethod': effectivePaymentMethod,
                                       'paymentStatus': 'pending',
                                       'paymentVerified': false,
-                                      'addressId': '',
+                                      'addressId': selectedAddressId ?? '',
                                       'address': effectiveAddress,
                                       'deliveryAddress': effectiveAddress,
                                       'destinationAddress': effectiveAddress,
                                       'fullAddress': effectiveAddress,
-                                      'latitude': 12.1364,
-                                      'longitude': -86.2514,
-                                      'destinationLatitude': 12.1364,
-                                      'destinationLongitude': -86.2514,
+                                      'latitude': selectedDestLat,
+                                      'longitude': selectedDestLng,
+                                      'destinationLatitude': selectedDestLat,
+                                      'destinationLongitude': selectedDestLng,
                                       'destino': {
                                         'direccion': effectiveAddress,
                                         'coordenadas': {
-                                          'latitud': 12.1364,
-                                          'longitud': -86.2514,
+                                          'latitud': selectedDestLat,
+                                          'longitud': selectedDestLng,
                                         },
                                       },
                                       'destination': {
                                         'address': effectiveAddress,
-                                        'latitude': 12.1364,
-                                        'longitude': -86.2514,
+                                        'latitude': selectedDestLat,
+                                        'longitude': selectedDestLng,
                                       },
                                       'origen': {
                                         'nombreComercio': bizName,
@@ -1931,6 +2213,7 @@ class _AppShellState extends State<AppShell> {
                                     try {
                                       final orderId = await widget.orderService.createOrder(orderPayload);
                                       _clearCart();
+                                      _cart.clearCommerceQuote();
                                       if (ctx.mounted) {
                                         Navigator.pop(ctx);
                                       }
@@ -1966,8 +2249,8 @@ class _AppShellState extends State<AppShell> {
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Text('Confirmar y Enviar Pedido',
-                                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                                : Text('Confirmar Pedido (C\$ ${currentTotal.toInt()})',
+                                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
                           ),
                         ),
                       ],

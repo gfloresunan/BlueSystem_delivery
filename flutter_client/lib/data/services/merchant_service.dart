@@ -421,29 +421,32 @@ class MerchantFirestoreService implements IMerchantService {
         : null;
 
     if (effectiveTenantId != null) {
+      // 1:1 Android FirebaseManager.kt: Continuously track global config as base and merge tenant overrides
       return _firestore
-          .collection('tenants')
-          .doc(effectiveTenantId)
           .collection('dashboard')
           .doc('configuration')
           .snapshots()
-          .asyncExpand((tenantSnap) {
-        if (tenantSnap.exists && tenantSnap.data() != null) {
-          try {
-            return Stream.value(DashboardConfigEntity.fromMap(tenantSnap.data()!));
-          } catch (e) {
-            AppLogger.warn('MerchantFirestoreService', 'Error parsing tenant config, fallback to global: $e');
-          }
-        }
+          .asyncExpand((globalSnap) {
+        final globalConfig = (globalSnap.exists && globalSnap.data() != null)
+            ? DashboardConfigEntity.fromMap(globalSnap.data()!)
+            : const DashboardConfigEntity();
+
         return _firestore
+            .collection('tenants')
+            .doc(effectiveTenantId)
             .collection('dashboard')
             .doc('configuration')
             .snapshots()
-            .map((globalSnap) {
-          if (globalSnap.exists && globalSnap.data() != null) {
-            return DashboardConfigEntity.fromMap(globalSnap.data()!);
+            .map((tenantSnap) {
+          if (tenantSnap.exists && tenantSnap.data() != null) {
+            try {
+              return DashboardConfigEntity.fromMap(tenantSnap.data()!, base: globalConfig);
+            } catch (e) {
+              AppLogger.warn('MerchantFirestoreService', 'Error parsing tenant config, fallback to global: $e');
+              return globalConfig;
+            }
           }
-          return const DashboardConfigEntity();
+          return globalConfig;
         });
       });
     }
@@ -700,6 +703,40 @@ class MerchantFirestoreService implements IMerchantService {
         .where('isActive', isEqualTo: true)
         .snapshots()
         .map((snap) => snap.docs.map((d) => PromotionEntity.fromMap(d.data(), d.id)).toList());
+  }
+
+  @override
+  Stream<List<HomeEditorialAdEntity>> watchHomeEditorialAds({String? tenantId}) {
+    AppLogger.info('MerchantFirestoreService', 'Watching home editorial ads from /home_editorial_ads');
+    return _firestore
+        .collection('home_editorial_ads')
+        .snapshots()
+        .map((snap) {
+          final ads = snap.docs.map((d) => HomeEditorialAdEntity.fromMap(d.data(), id: d.id)).where((ad) {
+            // 1. In-memory Active Status & Temporal Filter (1:1 Android parity)
+            if (!ad.isCurrentlyValid()) return false;
+
+            // 2. Multi-Tenant Scope Isolation (if tenant specified on ad)
+            if (tenantId != null &&
+                tenantId.isNotEmpty &&
+                tenantId != 'GLOBAL' &&
+                ad.tenantId != null &&
+                ad.tenantId!.isNotEmpty &&
+                ad.tenantId != 'GLOBAL' &&
+                ad.tenantId != tenantId) {
+              return false;
+            }
+            return true;
+          }).toList();
+
+          // 3. Deterministic order sorting (ascending)
+          ads.sort((a, b) => a.order.compareTo(b.order));
+          return ads;
+        })
+        .handleError((e, st) {
+          AppLogger.error('MerchantFirestoreService', 'Error in watchHomeEditorialAds', e, st);
+          return <HomeEditorialAdEntity>[];
+        });
   }
 
   @override

@@ -35,6 +35,7 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.calculateDeliveryRouteCallable = void 0;
 const functions = __importStar(require("firebase-functions"));
+const admin = __importStar(require("firebase-admin"));
 const routingService_1 = require("../services/routingService");
 /**
  * Callable HTTPS: calculateDeliveryRouteCallable
@@ -42,7 +43,7 @@ const routingService_1 = require("../services/routingService");
  * Soporta DOMINIO A (COMMERCE_DELIVERY) y DOMINIO B (X_TO_Y_DELIVERY) con contratos canónicos separados.
  */
 exports.calculateDeliveryRouteCallable = functions.https.onCall(async (data, context) => {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0;
     // Verificación opcional de autenticación (requerido para clientes autenticados)
     const callerUid = context.auth ? context.auth.uid : "ANONYMOUS_CLIENT";
     const originLat = Number((_b = (_a = data === null || data === void 0 ? void 0 : data.origin) === null || _a === void 0 ? void 0 : _a.latitude) !== null && _b !== void 0 ? _b : data === null || data === void 0 ? void 0 : data.originLat);
@@ -57,16 +58,82 @@ exports.calculateDeliveryRouteCallable = functions.https.onCall(async (data, con
         throw new functions.https.HttpsError("invalid-argument", "MISSING_OR_INVALID_COORDINATES: Se requieren origin y destination con latitude y longitude válidas.");
     }
     try {
+        const departmentId = ((data === null || data === void 0 ? void 0 : data.departmentId) || (data === null || data === void 0 ? void 0 : data.originDepartmentId) || "").toString().trim() || undefined;
+        const municipalityId = ((data === null || data === void 0 ? void 0 : data.municipalityId) || (data === null || data === void 0 ? void 0 : data.originMunicipalityId) || (data === null || data === void 0 ? void 0 : data.cityId) || "").toString().trim() || undefined;
+        const businessId = ((data === null || data === void 0 ? void 0 : data.businessId) || (data === null || data === void 0 ? void 0 : data.storeId) || (data === null || data === void 0 ? void 0 : data.comercioId) || "").toString().trim() || undefined;
+        const branchId = ((data === null || data === void 0 ? void 0 : data.branchId) || (data === null || data === void 0 ? void 0 : data.sucursalId) || "").toString().trim() || undefined;
         const options = {
             origin: { latitude: originLat, longitude: originLng },
             destination: { latitude: destLat, longitude: destLng },
             transportProfile,
             tenantId,
+            departmentId,
+            municipalityId,
+            businessId,
+            branchId,
         };
         const routingResult = isCommerce
             ? await (0, routingService_1.calculateCommerceDeliveryRoute)(options)
             : await (0, routingService_1.calculateDeliveryRoute)(options);
-        functions.logger.info(`[ROUTING_CALLABLE] Rutas calculadas para caller=${callerUid} (service=${isCommerce ? "COMMERCE" : "X_TO_Y"}): dist=${routingResult.routeDistanceMeters}m, dur=${routingResult.routeDurationSeconds}s, fee=C$${routingResult.calculatedFee}, provider=${routingResult.routingProvider}`);
+        let quoteId = null;
+        let quoteExpiresAt = null;
+        // FEATURE GATE: /pricing_quotes solo se genera cuando la resolución territorial es FLAT y el usuario está autenticado.
+        // Esto garantiza que Gate A sea 100% inerte para todos los municipios DISTANCE (cero writes, cero reads, cero costo adicional).
+        const isFlatPolicyApplied = isCommerce &&
+            ((_l = routingResult.pricingSnapshot) === null || _l === void 0 ? void 0 : _l.pricingMode) === "FLAT" &&
+            ((_m = routingResult.pricingSnapshot) === null || _m === void 0 ? void 0 : _m.fixedDeliveryFee) != null &&
+            routingResult.calculatedFee != null;
+        const authenticatedUid = (_o = context.auth) === null || _o === void 0 ? void 0 : _o.uid;
+        if (isFlatPolicyApplied && authenticatedUid) {
+            try {
+                const quoteRef = admin.firestore().collection("pricing_quotes").doc();
+                quoteId = quoteRef.id;
+                const now = Date.now();
+                const expiresAtDate = new Date(now + 15 * 60 * 1000); // 15 minutos de vigencia para redimir
+                const ttlExpiresAtDate = new Date(now + 24 * 60 * 60 * 1000); // 24 horas para retención/auditoría y purga TTL
+                quoteExpiresAt = expiresAtDate.toISOString();
+                const quoteDeptId = (options.departmentId || ((_p = routingResult.pricingSnapshot) === null || _p === void 0 ? void 0 : _p.departmentId) || "").toString().trim() || null;
+                const quoteMuniId = (options.municipalityId || ((_q = routingResult.pricingSnapshot) === null || _q === void 0 ? void 0 : _q.municipalityId) || "").toString().trim() || null;
+                const quoteBizId = (options.businessId || "").toString().trim() || null;
+                const quoteBranchId = (options.branchId || "").toString().trim() || null;
+                await quoteRef.set({
+                    quoteId,
+                    customerId: authenticatedUid,
+                    businessId: quoteBizId,
+                    branchId: quoteBranchId,
+                    departmentId: quoteDeptId,
+                    municipalityId: quoteMuniId,
+                    countryCode: (((_r = routingResult.pricingSnapshot) === null || _r === void 0 ? void 0 : _r.countryCode) || "NI").toString().trim().toUpperCase(),
+                    deliveryFee: routingResult.calculatedFee,
+                    courierEarnings: (_t = (_s = routingResult.pricingSnapshot) === null || _s === void 0 ? void 0 : _s.courierEarnings) !== null && _t !== void 0 ? _t : 0,
+                    pricingMode: "FLAT",
+                    pricingPolicyId: (_v = (_u = routingResult.pricingSnapshot) === null || _u === void 0 ? void 0 : _u.pricingPolicyId) !== null && _v !== void 0 ? _v : null,
+                    pricingPolicyVersion: (_x = (_w = routingResult.pricingSnapshot) === null || _w === void 0 ? void 0 : _w.pricingPolicyVersion) !== null && _x !== void 0 ? _x : null,
+                    distanceMeters: routingResult.routeDistanceMeters,
+                    distanceKm: (_z = (_y = routingResult.pricingSnapshot) === null || _y === void 0 ? void 0 : _y.distanceKm) !== null && _z !== void 0 ? _z : (routingResult.routeDistanceMeters / 1000),
+                    originLat: Math.round(options.origin.latitude * 10000) / 10000,
+                    originLng: Math.round(options.origin.longitude * 10000) / 10000,
+                    destLat: Math.round(options.destination.latitude * 10000) / 10000,
+                    destLng: Math.round(options.destination.longitude * 10000) / 10000,
+                    currency: ((_0 = routingResult.pricingSnapshot) === null || _0 === void 0 ? void 0 : _0.currency) || "NIO",
+                    expiresAt: admin.firestore.Timestamp.fromDate(expiresAtDate),
+                    ttlExpiresAt: admin.firestore.Timestamp.fromDate(ttlExpiresAtDate),
+                    used: false,
+                    orderId: null,
+                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                });
+                routingResult.quoteId = quoteId;
+                routingResult.quoteExpiresAt = quoteExpiresAt;
+                if (routingResult.pricingSnapshot) {
+                    routingResult.pricingSnapshot.quoteId = quoteId;
+                    routingResult.pricingSnapshot.quoteExpiresAt = quoteExpiresAt;
+                }
+            }
+            catch (qErr) {
+                functions.logger.warn(`[ROUTING_CALLABLE] Error al persistir server-side quote: ${qErr.message}`);
+            }
+        }
+        functions.logger.info(`[ROUTING_CALLABLE] Rutas calculadas para caller=${callerUid} (service=${isCommerce ? "COMMERCE" : "X_TO_Y"}): dist=${routingResult.routeDistanceMeters}m, dur=${routingResult.routeDurationSeconds}s, fee=C$${routingResult.calculatedFee}, quoteId=${quoteId || "none"}, provider=${routingResult.routingProvider}`);
         return {
             success: true,
             data: routingResult,

@@ -259,6 +259,99 @@ const configModule = {
                     </div>
                 </div>
 
+                <!-- Sección: Políticas Territoriales Municipales de Entrega (Territorial Municipal Pricing SSOT) -->
+                <div class="bg-gray-900 border border-blue-900/40 rounded-2xl p-5 shadow-xl space-y-5">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-800 pb-3">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xl">🏛️</span>
+                                <h3 class="text-sm font-bold text-gray-100">Políticas Territoriales Municipales de Entrega (SSOT Commerce Delivery)</h3>
+                                <span class="text-[9px] bg-blue-950 text-blue-300 border border-blue-800 px-2 py-0.5 rounded-full font-bold">Fase 1: Municipal SSOT</span>
+                            </div>
+                            <p class="text-xs text-gray-400 mt-0.5">Gobernanza autoritativa de tarifas por <strong class="text-blue-300">MUNICIPIO</strong> (nunca por comercio). Los comercios heredan automáticamente la política municipal vigente.</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="configModule.setupCiudadDarioCanary()" class="px-3 py-1.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs rounded-xl font-bold transition shadow-lg flex items-center gap-1.5">
+                                <span>⚡</span> <span>Canary Ciudad Darío (C$40 FLAT)</span>
+                            </button>
+                            <button type="button" onclick="configModule.loadTerritorialPolicies()" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 text-xs rounded-xl font-semibold transition flex items-center gap-1">
+                                <span>🔄</span> Refrescar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Formulario de Configuración Territorial -->
+                    <div class="bg-gray-950 border border-gray-800 rounded-xl p-4 space-y-4">
+                        <h4 class="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                            <span>📍</span> <span>Configurar o Modificar Política Municipal</span>
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3 items-end">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-semibold text-gray-400">1. Departamento:</label>
+                                <select id="territorial-dept-select" onchange="configModule.onTerritorialDepartmentChange(this.value)" class="w-full bg-gray-900 border border-gray-800 rounded-lg p-2 text-xs text-gray-200 font-semibold focus:outline-none focus:border-blue-500">
+                                    <option value="">Seleccione Departamento...</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-semibold text-gray-400">2. Municipio:</label>
+                                <select id="territorial-muni-select" class="w-full bg-gray-900 border border-gray-800 rounded-lg p-2 text-xs text-gray-200 font-semibold focus:outline-none focus:border-blue-500">
+                                    <option value="">Seleccione Municipio...</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-semibold text-gray-400">3. Modo de Tarifa:</label>
+                                <select id="territorial-pricing-mode" onchange="configModule.onTerritorialPricingModeChange(this.value)" class="w-full bg-gray-900 border border-gray-800 rounded-lg p-2 text-xs text-gray-200 font-semibold focus:outline-none focus:border-blue-500">
+                                    <option value="DISTANCE">DISTANCE (Tarifa por Km)</option>
+                                    <option value="FLAT">FLAT (Tarifa Plana Fija)</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-semibold text-gray-400">4. Tarifa Plana (C$):</label>
+                                <div class="relative">
+                                    <input type="number" id="territorial-fixed-fee" step="1" min="0" placeholder="0.00" disabled class="w-full bg-gray-900/60 border border-gray-800 rounded-lg p-2 text-xs text-amber-300 font-bold pr-12 focus:outline-none focus:border-amber-500">
+                                    <span class="absolute right-2 top-2 text-[10px] text-gray-500 font-mono">NIO</span>
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3">
+                                <label class="flex items-center gap-1.5 text-xs text-gray-300 cursor-pointer p-2 bg-gray-900 border border-gray-800 rounded-lg">
+                                    <input type="checkbox" id="territorial-is-active" checked class="w-4 h-4 accent-blue-600 rounded">
+                                    <span class="font-semibold text-[11px]">Activa</span>
+                                </label>
+                                <button type="button" id="save-territorial-btn" onclick="configModule.saveTerritorialPolicy()" class="flex-1 py-2 px-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-1">
+                                    <span>💾</span> Guardar Política
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Políticas Territoriales SSOT -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead>
+                                <tr class="bg-gray-950 text-gray-400 uppercase tracking-wider border-b border-gray-800">
+                                    <th class="py-3 px-4 font-semibold">ID Política (SSOT)</th>
+                                    <th class="py-3 px-4 font-semibold">Departamento</th>
+                                    <th class="py-3 px-4 font-semibold">Municipio</th>
+                                    <th class="py-3 px-4 font-semibold text-center">Modo de Tarifa</th>
+                                    <th class="py-3 px-4 font-semibold text-center">Tarifa Cliente</th>
+                                    <th class="py-3 px-4 font-semibold text-center">Estado</th>
+                                    <th class="py-3 px-4 font-semibold text-center">Versión</th>
+                                    <th class="py-3 px-4 font-semibold text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="territorial-policies-table-body" class="divide-y divide-gray-800/60 font-mono">
+                                <tr>
+                                    <td colspan="8" class="text-center py-6 text-gray-500 font-sans">Cargando políticas territoriales...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- Sección: Comisiones Específicas por Comercio (Overrides y Herencia) -->
                 <div class="bg-gray-900 border border-gray-800 rounded-2xl p-5 shadow-xl space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-800 pb-3">
@@ -297,6 +390,8 @@ const configModule = {
 
         configModule.loadConfig();
         configModule.loadBusinesses();
+        configModule.populateTerritorialGeoDropdowns();
+        configModule.loadTerritorialPolicies();
     },
 
     loadConfig: () => {
@@ -663,6 +758,299 @@ const configModule = {
             btn.textContent = '💾 Guardar Configuración Global';
             btn.disabled = false;
         }
+    },
+
+    // ─── Gobernanza Territorial Municipal SSOT (BSD-TERRITORIAL-MUNICIPAL-PRICING-POLICY-001) ───
+    territorialPoliciesList: [],
+
+    populateTerritorialGeoDropdowns: () => {
+        const deptSelect = document.getElementById('territorial-dept-select');
+        if (!deptSelect || !window.GeoCatalog) return;
+
+        deptSelect.innerHTML = '<option value="">Seleccione Departamento...</option>';
+        window.GeoCatalog.NICARAGUA_DEPARTMENTS.forEach(d => {
+            deptSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+        });
+    },
+
+    onTerritorialDepartmentChange: (deptId) => {
+        const muniSelect = document.getElementById('territorial-muni-select');
+        if (!muniSelect) return;
+
+        muniSelect.innerHTML = '<option value="">Seleccione Municipio...</option>';
+        if (!deptId || !window.GeoCatalog) return;
+
+        const munis = window.GeoCatalog.getMunicipalities(deptId);
+        munis.forEach(m => {
+            muniSelect.innerHTML += `<option value="${m.id}">${m.name}</option>`;
+        });
+    },
+
+    onTerritorialPricingModeChange: (mode) => {
+        const feeInput = document.getElementById('territorial-fixed-fee');
+        if (!feeInput) return;
+        if (mode === 'FLAT') {
+            feeInput.disabled = false;
+            feeInput.classList.remove('bg-gray-900/60');
+            feeInput.classList.add('bg-gray-900');
+            if (!feeInput.value || parseFloat(feeInput.value) <= 0) {
+                feeInput.value = '40.00';
+            }
+        } else {
+            feeInput.disabled = true;
+            feeInput.classList.add('bg-gray-900/60');
+            feeInput.classList.remove('bg-gray-900');
+            feeInput.value = '';
+        }
+    },
+
+    loadTerritorialPolicies: async () => {
+        const tbody = document.getElementById('territorial-policies-table-body');
+        if (!tbody) return;
+
+        try {
+            const snap = await db.collection('territorial_pricing_policies').get();
+            const policies = [];
+            snap.forEach(doc => {
+                policies.push({ id: doc.id, ...doc.data() });
+            });
+            configModule.territorialPoliciesList = policies;
+            configModule.renderTerritorialPoliciesTable(policies);
+        } catch (err) {
+            console.error('[TERRITORIAL_PRICING] Error cargando políticas:', err);
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center py-4 text-red-400">Error al cargar políticas: ${err.message}</td></tr>`;
+        }
+    },
+
+    renderTerritorialPoliciesTable: (policies) => {
+        const tbody = document.getElementById('territorial-policies-table-body');
+        if (!tbody) return;
+
+        if (!policies || policies.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="text-center py-6 text-gray-500 font-sans">
+                        No hay políticas territoriales personalizadas registradas.<br>
+                        <span class="text-xs text-gray-400">Todos los municipios operan bajo el modo predeterminado <strong>DISTANCE</strong>.</span>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        let html = '';
+        policies.forEach(p => {
+            const isFlat = p.pricingMode === 'FLAT';
+            const isActive = p.isActive === true;
+            const modeBadge = isFlat
+                ? '<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800">FLAT (Fijo)</span>'
+                : '<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-950 text-blue-300 border border-blue-800">DISTANCE</span>';
+            const statusBadge = isActive
+                ? '<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-green-950 text-green-300 border border-green-800">ACTIVA</span>'
+                : '<span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-rose-950 text-rose-300 border border-rose-800">INACTIVA</span>';
+            const feeDisplay = isFlat
+                ? `<span class="text-amber-300 font-bold">C$ ${(Number(p.fixedDeliveryFee || 0)).toFixed(2)}</span>`
+                : '<span class="text-gray-500">Dinámica / Km</span>';
+
+            html += `
+                <tr class="hover:bg-gray-800/30 transition">
+                    <td class="py-3 px-4 font-semibold text-gray-300 text-xs">${p.policyId || p.id}</td>
+                    <td class="py-3 px-4 text-gray-400 font-sans">${p.departmentName || p.departmentId}</td>
+                    <td class="py-3 px-4 text-gray-200 font-sans font-bold">${p.municipalityName || p.municipalityId}</td>
+                    <td class="py-3 px-4 text-center font-sans">${modeBadge}</td>
+                    <td class="py-3 px-4 text-center">${feeDisplay}</td>
+                    <td class="py-3 px-4 text-center font-sans">${statusBadge}</td>
+                    <td class="py-3 px-4 text-center text-gray-400">v${p.version || 1}</td>
+                    <td class="py-3 px-4 text-right space-x-1 font-sans">
+                        <button onclick="configModule.editTerritorialPolicy('${p.id}')" class="px-2 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded text-xs transition" title="Cargar en Formulario">✏️</button>
+                        <button onclick="configModule.toggleTerritorialPolicyStatus('${p.id}', ${isActive})" class="px-2 py-1 ${isActive ? 'bg-amber-900/40 text-amber-300 hover:bg-amber-900/60' : 'bg-green-900/40 text-green-300 hover:bg-green-900/60'} rounded text-xs transition" title="${isActive ? 'Desactivar Política' : 'Activar Política'}">
+                            ${isActive ? '⏸️ Pausar' : '▶️ Activar'}
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+    },
+
+    editTerritorialPolicy: (policyId) => {
+        const policy = configModule.territorialPoliciesList.find(p => (p.policyId || p.id) === policyId);
+        if (!policy) return;
+
+        const deptSelect = document.getElementById('territorial-dept-select');
+        if (deptSelect) {
+            deptSelect.value = policy.departmentId;
+            configModule.onTerritorialDepartmentChange(policy.departmentId);
+        }
+        const muniSelect = document.getElementById('territorial-muni-select');
+        if (muniSelect) {
+            muniSelect.value = policy.municipalityId;
+        }
+        const modeSelect = document.getElementById('territorial-pricing-mode');
+        if (modeSelect) {
+            modeSelect.value = policy.pricingMode;
+            configModule.onTerritorialPricingModeChange(policy.pricingMode);
+        }
+        const feeInput = document.getElementById('territorial-fixed-fee');
+        if (feeInput && policy.fixedDeliveryFee != null) {
+            feeInput.value = policy.fixedDeliveryFee;
+        }
+        const activeCheck = document.getElementById('territorial-is-active');
+        if (activeCheck) {
+            activeCheck.checked = policy.isActive === true;
+        }
+        toast.show(`Política cargada: ${policy.municipalityName || policy.municipalityId}`);
+    },
+
+    saveTerritorialPolicy: async () => {
+        const deptSelect = document.getElementById('territorial-dept-select');
+        const muniSelect = document.getElementById('territorial-muni-select');
+        const modeSelect = document.getElementById('territorial-pricing-mode');
+        const feeInput = document.getElementById('territorial-fixed-fee');
+        const activeCheck = document.getElementById('territorial-is-active');
+        const saveBtn = document.getElementById('save-territorial-btn');
+
+        const departmentId = deptSelect?.value?.trim().toUpperCase();
+        const municipalityId = muniSelect?.value?.trim().toUpperCase();
+        const pricingMode = modeSelect?.value?.trim().toUpperCase() || 'DISTANCE';
+        const isActive = activeCheck ? activeCheck.checked : true;
+
+        if (!departmentId || !municipalityId) {
+            toast.show('Debe seleccionar Departamento y Municipio válidos.', 'error');
+            return;
+        }
+
+        let fixedFee = null;
+        if (pricingMode === 'FLAT') {
+            const rawFee = parseFloat(feeInput?.value);
+            if (isNaN(rawFee) || rawFee <= 0) {
+                toast.show('Para tarifa FLAT debe especificar una tarifa fija válida mayor a C$ 0.', 'error');
+                return;
+            }
+            fixedFee = Math.round(rawFee * 100) / 100;
+        }
+
+        const policyId = `NI_${departmentId}_${municipalityId}`;
+        const departmentName = window.GeoCatalog ? window.GeoCatalog.getDepartmentName(departmentId) : departmentId;
+        const municipalityName = window.GeoCatalog ? window.GeoCatalog.getMunicipalityName(departmentId, municipalityId) : municipalityId;
+
+        const existing = configModule.territorialPoliciesList.find(p => (p.policyId || p.id) === policyId);
+        const version = existing ? (Number(existing.version || 1) + 1) : 1;
+
+        if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span>⏳</span> Guardando...';
+        }
+
+        try {
+            const policyPayload = {
+                policyId,
+                countryCode: 'NI',
+                departmentId,
+                departmentName,
+                municipalityId,
+                municipalityName,
+                pricingMode,
+                fixedDeliveryFee: fixedFee,
+                currency: 'NIO',
+                isActive,
+                version,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedBy: firebase.auth().currentUser?.email || 'ADMIN'
+            };
+
+            if (!existing) {
+                policyPayload.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                policyPayload.createdBy = firebase.auth().currentUser?.email || 'ADMIN';
+            }
+
+            await db.collection('territorial_pricing_policies').doc(policyId).set(policyPayload, { merge: true });
+
+            await db.collection('audit_events').add({
+                event: 'TERRITORIAL_PRICING_POLICY_SAVED',
+                policyId,
+                countryCode: 'NI',
+                departmentId,
+                departmentName,
+                municipalityId,
+                municipalityName,
+                pricingMode,
+                fixedDeliveryFee: fixedFee,
+                currency: 'NIO',
+                isActive,
+                version,
+                actorUid: firebase.auth().currentUser?.uid || null,
+                changedBy: firebase.auth().currentUser?.email || 'ADMIN',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            toast.show(`Política territorial para ${municipalityName} guardada exitosamente (v${version}).`);
+            await configModule.loadTerritorialPolicies();
+        } catch (err) {
+            console.error('[TERRITORIAL_PRICING] Error guardando política:', err);
+            toast.show(`Error al guardar política: ${err.message}`, 'error');
+        } finally {
+            if (saveBtn) {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<span>💾</span> Guardar Política';
+            }
+        }
+    },
+
+    toggleTerritorialPolicyStatus: async (policyId, currentActive) => {
+        const nextActive = !currentActive;
+        const actionLabel = nextActive ? 'activar' : 'pausar (retorna a DISTANCE)';
+        if (!confirm(`¿Confirma que desea ${actionLabel} la política ${policyId}?`)) return;
+
+        try {
+            await db.collection('territorial_pricing_policies').doc(policyId).update({
+                isActive: nextActive,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                updatedBy: firebase.auth().currentUser?.email || 'ADMIN'
+            });
+
+            await db.collection('audit_events').add({
+                event: 'TERRITORIAL_PRICING_POLICY_TOGGLED',
+                policyId,
+                isActive: nextActive,
+                actorUid: firebase.auth().currentUser?.uid || null,
+                changedBy: firebase.auth().currentUser?.email || 'ADMIN',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            toast.show(`Estado de ${policyId} actualizado a ${nextActive ? 'ACTIVA' : 'INACTIVA'}.`);
+            await configModule.loadTerritorialPolicies();
+        } catch (err) {
+            console.error('[TERRITORIAL_PRICING] Error cambiando estado:', err);
+            toast.show(`Error: ${err.message}`, 'error');
+        }
+    },
+
+    setupCiudadDarioCanary: () => {
+        const deptSelect = document.getElementById('territorial-dept-select');
+        if (deptSelect) {
+            deptSelect.value = 'MATAGALPA';
+            configModule.onTerritorialDepartmentChange('MATAGALPA');
+        }
+        const muniSelect = document.getElementById('territorial-muni-select');
+        if (muniSelect) {
+            muniSelect.value = 'CIUDAD_DARIO';
+        }
+        const modeSelect = document.getElementById('territorial-pricing-mode');
+        if (modeSelect) {
+            modeSelect.value = 'FLAT';
+            configModule.onTerritorialPricingModeChange('FLAT');
+        }
+        const feeInput = document.getElementById('territorial-fixed-fee');
+        if (feeInput) {
+            feeInput.value = '40.00';
+        }
+        const activeCheck = document.getElementById('territorial-is-active');
+        if (activeCheck) {
+            activeCheck.checked = true;
+        }
+
+        toast.show('Canary cargado: Matagalpa -> Ciudad Darío (C$40.00 FLAT). Revise y haga clic en Guardar.');
     }
 };
 

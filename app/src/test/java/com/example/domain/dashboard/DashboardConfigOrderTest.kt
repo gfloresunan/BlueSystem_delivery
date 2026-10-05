@@ -9,9 +9,9 @@ import org.junit.Test
 class DashboardConfigOrderTest {
 
     @Test
-    fun `canonical default section order contains exactly 15 defined sections`() {
+    fun `canonical default section order contains exactly 17 defined sections`() {
         val canonical = DashboardConfig.CANONICAL_DEFAULT_SECTION_ORDER
-        assertEquals(15, canonical.size)
+        assertEquals(17, canonical.size)
         assertTrue(canonical.contains("BANNERS"))
         assertTrue(canonical.contains("CATEGORIES"))
         assertTrue(canonical.contains("BRANCHES"))
@@ -27,6 +27,8 @@ class DashboardConfigOrderTest {
         assertTrue(canonical.contains("QUICK_REORDER"))
         assertTrue(canonical.contains("FAVORITES"))
         assertTrue(canonical.contains("EXPRESS_DELIVERY"))
+        assertTrue(canonical.contains("EDITORIAL_ADS"))
+        assertTrue(canonical.contains("ALL_BUSINESSES"))
     }
 
     @Test
@@ -44,6 +46,12 @@ class DashboardConfigOrderTest {
     }
 
     @Test
+    fun `default DashboardConfig has visible-by-default for all businesses`() {
+        val config = DashboardConfig()
+        assertTrue("showAllBusinesses must default to true for backward compatibility", config.showAllBusinesses)
+    }
+
+    @Test
     fun `custom reordered sections are strictly preserved at top`() {
         val customOrder = listOf("FLASH_DEALS", "FEATURED_BUSINESSES", "CATEGORIES", "BANNERS")
         val config = DashboardConfig(sectionOrder = customOrder)
@@ -55,11 +63,13 @@ class DashboardConfigOrderTest {
         assertEquals("BANNERS", normalized[3])
 
         // Missing canonical sections must be appended
-        assertEquals(15, normalized.size)
+        assertEquals(17, normalized.size)
         assertTrue(normalized.contains("NEARBY"))
         assertTrue(normalized.contains("PROMOTIONS"))
         assertTrue(normalized.contains("FAVORITES"))
         assertTrue(normalized.contains("EXPRESS_DELIVERY"))
+        assertTrue(normalized.contains("EDITORIAL_ADS"))
+        assertTrue(normalized.contains("ALL_BUSINESSES"))
     }
 
     @Test
@@ -72,7 +82,7 @@ class DashboardConfigOrderTest {
         assertFalse(normalized.contains("INVALID_BLOCK"))
         assertEquals("FLASH_DEALS", normalized[0])
         assertEquals("BANNERS", normalized[1])
-        assertEquals(15, normalized.size)
+        assertEquals(17, normalized.size)
     }
 
     @Test
@@ -81,8 +91,8 @@ class DashboardConfigOrderTest {
         val config = DashboardConfig(sectionOrder = duplicateOrder)
         val normalized = config.getNormalizedSectionOrder()
 
-        assertEquals(15, normalized.size)
-        assertEquals(15, normalized.toSet().size) // No duplicates
+        assertEquals(17, normalized.size)
+        assertEquals(17, normalized.toSet().size) // No duplicates
         assertEquals("BANNERS", normalized[0])
         assertEquals("FLASH_DEALS", normalized[1])
         assertEquals("CATEGORIES", normalized[2])
@@ -97,6 +107,6 @@ class DashboardConfigOrderTest {
         assertEquals("FLASH_DEALS", normalized[0])
         assertEquals("BANNERS", normalized[1])
         assertEquals("CATEGORIES", normalized[2])
-        assertEquals(15, normalized.size)
+        assertEquals(17, normalized.size)
     }
 }

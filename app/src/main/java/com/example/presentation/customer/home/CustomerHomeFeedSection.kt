@@ -403,18 +403,43 @@ fun CustomerHomeFeedSection(
                         )
                     }
                 }
+                "ALL_BUSINESSES" -> {
+                    if (dashboardConfig.showAllBusinesses) {
+                        AllBusinessesSection(
+                            publicBusinesses = publicBusinesses,
+                            favoriteIds = favoriteIds,
+                            onBusinessClick = { businessId ->
+                                navController.navigate("comercio_detalle_screen/$businessId")
+                            },
+                            onToggleFavorite = onToggleFavorite,
+                            title = dashboardConfig.getDisplayTitle("ALL_BUSINESSES", "Todos los Comercios 🏪"),
+                            headerAction = dashboardConfig.getBlockAction("ALL_BUSINESSES"),
+                            onHeaderActionClick = { action ->
+                                DestinationRouter.navigateBlockAction(context, navController, action)
+                            }
+                        )
+                    }
+                }
             }
         }
     }
 
-    // CATÁLOGO GENERAL DE COMERCIOS (BSD-CUSTOMER-MARKETPLACE-CATALOG-UNIFICATION-001)
-    // Inmunidad semántica absoluta (Addendum P0-04)
-    AllBusinessesSection(
-        publicBusinesses = publicBusinesses,
-        favoriteIds = favoriteIds,
-        onBusinessClick = { businessId ->
-            navController.navigate("comercio_detalle_screen/$businessId")
-        },
-        onToggleFavorite = onToggleFavorite
-    )
+    // CATÁLOGO GENERAL DE COMERCIOS (Legacy fallback determinista si no está en orderedSections)
+    // Garantiza single-render: si orderedSections ya contiene ALL_BUSINESSES, no se duplica.
+    val containsAllBusinessesInOrder = remember(orderedSections) { orderedSections.contains("ALL_BUSINESSES") }
+    if (!containsAllBusinessesInOrder && dashboardConfig.showAllBusinesses) {
+        AllBusinessesSection(
+            publicBusinesses = publicBusinesses,
+            favoriteIds = favoriteIds,
+            onBusinessClick = { businessId ->
+                navController.navigate("comercio_detalle_screen/$businessId")
+            },
+            onToggleFavorite = onToggleFavorite,
+            title = dashboardConfig.getDisplayTitle("ALL_BUSINESSES", "Todos los Comercios 🏪"),
+            headerAction = dashboardConfig.getBlockAction("ALL_BUSINESSES"),
+            onHeaderActionClick = { action ->
+                DestinationRouter.navigateBlockAction(context, navController, action)
+            }
+        )
+    }
 }

@@ -77,6 +77,8 @@ class MockMerchantServiceForBlock5 implements IMerchantService {
   Stream<List<CategoryEntity>> watchCategories({required String tenantId}) => Stream.value([]);
   @override
   Stream<List<PromotionEntity>> watchPromotions({required String tenantId}) => Stream.value([]);
+  @override
+  Stream<List<HomeEditorialAdEntity>> watchHomeEditorialAds({String? tenantId}) => Stream.value([]);
 }
 
 class MockOrderServiceForBlock5 implements IOrderService {

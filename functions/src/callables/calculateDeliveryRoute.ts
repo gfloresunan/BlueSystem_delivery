@@ -1,4 +1,5 @@
 import * as functions from "firebase-functions";
+import * as admin from "firebase-admin";
 import {
   calculateDeliveryRoute,
   calculateCommerceDeliveryRoute,
@@ -31,19 +32,92 @@ export const calculateDeliveryRouteCallable = functions.https.onCall(async (data
   }
 
   try {
+    const departmentId = (data?.departmentId || data?.originDepartmentId || "").toString().trim() || undefined;
+    const municipalityId = (data?.municipalityId || data?.originMunicipalityId || data?.cityId || "").toString().trim() || undefined;
+    const businessId = (data?.businessId || data?.storeId || data?.comercioId || "").toString().trim() || undefined;
+    const branchId = (data?.branchId || data?.sucursalId || "").toString().trim() || undefined;
+
     const options: RoutingOptions = {
       origin: { latitude: originLat, longitude: originLng },
       destination: { latitude: destLat, longitude: destLng },
       transportProfile,
       tenantId,
+      departmentId,
+      municipalityId,
+      businessId,
+      branchId,
     };
 
     const routingResult = isCommerce
       ? await calculateCommerceDeliveryRoute(options)
       : await calculateDeliveryRoute(options);
 
+    let quoteId: string | null = null;
+    let quoteExpiresAt: string | null = null;
+
+    // FEATURE GATE: /pricing_quotes solo se genera cuando la resolución territorial es FLAT y el usuario está autenticado.
+    // Esto garantiza que Gate A sea 100% inerte para todos los municipios DISTANCE (cero writes, cero reads, cero costo adicional).
+    const isFlatPolicyApplied = isCommerce &&
+      routingResult.pricingSnapshot?.pricingMode === "FLAT" &&
+      routingResult.pricingSnapshot?.fixedDeliveryFee != null &&
+      routingResult.calculatedFee != null;
+
+    const authenticatedUid = context.auth?.uid;
+
+    if (isFlatPolicyApplied && authenticatedUid) {
+      try {
+        const quoteRef = admin.firestore().collection("pricing_quotes").doc();
+        quoteId = quoteRef.id;
+        const now = Date.now();
+        const expiresAtDate = new Date(now + 15 * 60 * 1000); // 15 minutos de vigencia para redimir
+        const ttlExpiresAtDate = new Date(now + 24 * 60 * 60 * 1000); // 24 horas para retención/auditoría y purga TTL
+        quoteExpiresAt = expiresAtDate.toISOString();
+
+        const quoteDeptId = (options.departmentId || routingResult.pricingSnapshot?.departmentId || "").toString().trim() || null;
+        const quoteMuniId = (options.municipalityId || routingResult.pricingSnapshot?.municipalityId || "").toString().trim() || null;
+        const quoteBizId = (options.businessId || "").toString().trim() || null;
+        const quoteBranchId = (options.branchId || "").toString().trim() || null;
+
+        await quoteRef.set({
+          quoteId,
+          customerId: authenticatedUid,
+          businessId: quoteBizId,
+          branchId: quoteBranchId,
+          departmentId: quoteDeptId,
+          municipalityId: quoteMuniId,
+          countryCode: (routingResult.pricingSnapshot?.countryCode || "NI").toString().trim().toUpperCase(),
+          deliveryFee: routingResult.calculatedFee,
+          courierEarnings: routingResult.pricingSnapshot?.courierEarnings ?? 0,
+          pricingMode: "FLAT",
+          pricingPolicyId: routingResult.pricingSnapshot?.pricingPolicyId ?? null,
+          pricingPolicyVersion: routingResult.pricingSnapshot?.pricingPolicyVersion ?? null,
+          distanceMeters: routingResult.routeDistanceMeters,
+          distanceKm: routingResult.pricingSnapshot?.distanceKm ?? (routingResult.routeDistanceMeters / 1000),
+          originLat: Math.round(options.origin.latitude * 10000) / 10000,
+          originLng: Math.round(options.origin.longitude * 10000) / 10000,
+          destLat: Math.round(options.destination.latitude * 10000) / 10000,
+          destLng: Math.round(options.destination.longitude * 10000) / 10000,
+          currency: routingResult.pricingSnapshot?.currency || "NIO",
+          expiresAt: admin.firestore.Timestamp.fromDate(expiresAtDate),
+          ttlExpiresAt: admin.firestore.Timestamp.fromDate(ttlExpiresAtDate),
+          used: false,
+          orderId: null,
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+        (routingResult as any).quoteId = quoteId;
+        (routingResult as any).quoteExpiresAt = quoteExpiresAt;
+        if (routingResult.pricingSnapshot) {
+          (routingResult.pricingSnapshot as any).quoteId = quoteId;
+          (routingResult.pricingSnapshot as any).quoteExpiresAt = quoteExpiresAt;
+        }
+      } catch (qErr: any) {
+        functions.logger.warn(`[ROUTING_CALLABLE] Error al persistir server-side quote: ${qErr.message}`);
+      }
+    }
+
     functions.logger.info(
-      `[ROUTING_CALLABLE] Rutas calculadas para caller=${callerUid} (service=${isCommerce ? "COMMERCE" : "X_TO_Y"}): dist=${routingResult.routeDistanceMeters}m, dur=${routingResult.routeDurationSeconds}s, fee=C$${routingResult.calculatedFee}, provider=${routingResult.routingProvider}`
+      `[ROUTING_CALLABLE] Rutas calculadas para caller=${callerUid} (service=${isCommerce ? "COMMERCE" : "X_TO_Y"}): dist=${routingResult.routeDistanceMeters}m, dur=${routingResult.routeDurationSeconds}s, fee=C$${routingResult.calculatedFee}, quoteId=${quoteId || "none"}, provider=${routingResult.routingProvider}`
     );
 
     return {

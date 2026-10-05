@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MerchantFormData } from '../types';
 import { Building2, ArrowRight, AlertTriangle, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { db } from '../firebase';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, onSnapshot } from 'firebase/firestore';
 
 interface Props {
   formData: MerchantFormData;
@@ -19,6 +19,15 @@ interface CategoryItem {
   showInOnboarding: boolean;
 }
 
+const CANONICAL_FALLBACK_CATEGORIES: CategoryItem[] = [
+  { id: 'restaurante', name: 'Restaurante / Comida', icon: '🍔', sortOrder: 1, active: true, showInOnboarding: true },
+  { id: 'farmacia', name: 'Farmacia', icon: '💊', sortOrder: 2, active: true, showInOnboarding: true },
+  { id: 'supermercado', name: 'Supermercado / Mini Super', icon: '🛒', sortOrder: 3, active: true, showInOnboarding: true },
+  { id: 'licoreria', name: 'Licorería', icon: '🍾', sortOrder: 4, active: true, showInOnboarding: true },
+  { id: 'tienda', name: 'Tienda / Abarrotes', icon: '🏪', sortOrder: 5, active: true, showInOnboarding: true },
+  { id: 'otra', name: 'Otra categoría', icon: '📦', sortOrder: 6, active: true, showInOnboarding: true },
+];
+
 export const Step1GeneralInfo: React.FC<Props> = ({ formData, updateForm, onNext }) => {
   const [catalogStatus, setCatalogStatus] = useState<'LOADING' | 'AUTHORITATIVE' | 'CACHED_OFFLINE' | 'UNAVAILABLE'>('LOADING');
   const [categories, setCategories] = useState<CategoryItem[]>([]);
@@ -26,28 +35,36 @@ export const Step1GeneralInfo: React.FC<Props> = ({ formData, updateForm, onNext
   useEffect(() => {
     setCatalogStatus('LOADING');
 
-    const q = query(
-      collection(db, 'business_categories'),
-      where('active', '==', true),
-      where('showInOnboarding', '==', true),
-      orderBy('sortOrder', 'asc')
-    );
+    // Consulta directa a /business_categories sin condiciones compuestas cruzadas que requieran índice
+    const q = query(collection(db, 'business_categories'));
 
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
         const items: CategoryItem[] = [];
         snapshot.forEach((doc) => {
-          items.push({ id: doc.id, ...(doc.data() as Omit<CategoryItem, 'id'>) });
+          const data = doc.data() as Omit<CategoryItem, 'id'>;
+          // Filtrado en memoria: solo categorías activas y visibles en onboarding
+          if (data.active !== false && data.showInOnboarding !== false) {
+            items.push({ id: doc.id, ...data });
+          }
         });
 
-        setCategories(items);
-        setCatalogStatus('AUTHORITATIVE');
+        // Ordenamiento en memoria garantizado
+        items.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
 
-        try {
-          sessionStorage.setItem('cached_business_categories', JSON.stringify(items));
-        } catch (e) {
-          console.warn('[Onboarding] Error guardando catálogo en sessionStorage:', e);
+        if (items.length > 0) {
+          setCategories(items);
+          setCatalogStatus('AUTHORITATIVE');
+
+          try {
+            sessionStorage.setItem('cached_business_categories', JSON.stringify(items));
+          } catch (e) {
+            console.warn('[Onboarding] Error guardando catálogo en sessionStorage:', e);
+          }
+        } else {
+          setCategories(CANONICAL_FALLBACK_CATEGORIES);
+          setCatalogStatus('AUTHORITATIVE');
         }
       },
       (err) => {
@@ -63,7 +80,9 @@ export const Step1GeneralInfo: React.FC<Props> = ({ formData, updateForm, onNext
             }
           } catch {}
         }
-        setCatalogStatus('UNAVAILABLE');
+        // Resiliencia activa: proveer catálogo canónico para garantizar que el registro nunca se bloquee
+        setCategories(CANONICAL_FALLBACK_CATEGORIES);
+        setCatalogStatus('CACHED_OFFLINE');
       }
     );
 

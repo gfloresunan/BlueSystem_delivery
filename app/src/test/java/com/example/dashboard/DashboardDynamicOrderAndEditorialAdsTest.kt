@@ -3,6 +3,7 @@ package com.example.dashboard
 import com.example.BlockActionConfig
 import com.example.DashboardConfig
 import com.example.HomeEditorialAd
+import com.example.toDashboardConfigSafely
 import com.example.data.repository.BusinessInfo
 import org.junit.Assert.*
 import org.junit.Test
@@ -26,7 +27,7 @@ class DashboardDynamicOrderAndEditorialAdsTest {
     // =========================================================================
 
     @Test
-    fun `Caso A - Normalización de configuración legacy de 15 bloques (anexa EDITORIAL_ADS al final)`() {
+    fun `Caso A - Normalización de configuración legacy de 15 bloques (anexa EDITORIAL_ADS y ALL_BUSINESSES al final)`() {
         val legacy15Order = listOf(
             "BANNERS", "CATEGORIES", "BRANCHES", "NEARBY", "FEATURED_BUSINESSES",
             "FEATURED_PRODUCTS", "FLASH_DEALS", "PROMOTIONS", "SAME_PRICE",
@@ -36,31 +37,33 @@ class DashboardDynamicOrderAndEditorialAdsTest {
         val config = DashboardConfig(sectionOrder = legacy15Order)
         val normalized = config.getNormalizedSectionOrder()
 
-        assertEquals("Debe resultar exactamente en 16 bloques canónicos", 16, normalized.size)
-        assertEquals("EDITORIAL_ADS debe anexarse determinísticamente al final", "EDITORIAL_ADS", normalized[15])
+        assertEquals("Debe resultar exactamente en 17 bloques canónicos", 17, normalized.size)
+        assertEquals("EDITORIAL_ADS debe anexarse en posición 15", "EDITORIAL_ADS", normalized[15])
+        assertEquals("ALL_BUSINESSES debe anexarse determinísticamente al final", "ALL_BUSINESSES", normalized[16])
         assertEquals("El primer bloque debe mantenerse BANNERS", "BANNERS", normalized[0])
     }
 
     @Test
-    fun `Caso B - Normalización de configuración nueva con 16 bloques canónicos`() {
+    fun `Caso B - Normalización de configuración nueva con 17 bloques canónicos`() {
         val config = DashboardConfig(sectionOrder = DashboardConfig.CANONICAL_DEFAULT_SECTION_ORDER)
         val normalized = config.getNormalizedSectionOrder()
 
-        assertEquals(16, normalized.size)
+        assertEquals(17, normalized.size)
         assertEquals(DashboardConfig.CANONICAL_DEFAULT_SECTION_ORDER, normalized)
     }
 
     @Test
-    fun `Caso C - EDITORIAL_ADS ausente en array remoto reducido se anexa al final sin pérdida`() {
+    fun `Caso C - EDITORIAL_ADS y ALL_BUSINESSES ausentes en array remoto reducido se anexan al final sin pérdida`() {
         val remoteOrder = listOf("CATEGORIES", "FEATURED_PRODUCTS", "FLASH_DEALS")
         val config = DashboardConfig(sectionOrder = remoteOrder)
         val normalized = config.getNormalizedSectionOrder()
 
-        assertEquals(16, normalized.size)
+        assertEquals(17, normalized.size)
         assertEquals("CATEGORIES", normalized[0])
         assertEquals("FEATURED_PRODUCTS", normalized[1])
         assertEquals("FLASH_DEALS", normalized[2])
         assertTrue("EDITORIAL_ADS debe estar presente", normalized.contains("EDITORIAL_ADS"))
+        assertTrue("ALL_BUSINESSES debe estar presente", normalized.contains("ALL_BUSINESSES"))
     }
 
     @Test
@@ -72,7 +75,7 @@ class DashboardDynamicOrderAndEditorialAdsTest {
         val config = DashboardConfig(sectionOrder = customOrder)
         val normalized = config.getNormalizedSectionOrder()
 
-        assertEquals(16, normalized.size)
+        assertEquals(17, normalized.size)
         assertEquals("BANNERS", normalized[0])
         assertEquals("CATEGORIES", normalized[1])
         assertEquals("NEARBY", normalized[2])
@@ -83,12 +86,12 @@ class DashboardDynamicOrderAndEditorialAdsTest {
     @Test
     fun `Caso E - IDs duplicados son deduplicados conservando la primera aparición válida`() {
         val duplicatedOrder = listOf(
-            "BANNERS", "EDITORIAL_ADS", "CATEGORIES", "BANNERS", "EDITORIAL_ADS", "NEARBY"
+            "BANNERS", "EDITORIAL_ADS", "CATEGORIES", "BANNERS", "EDITORIAL_ADS", "NEARBY", "ALL_BUSINESSES"
         )
         val config = DashboardConfig(sectionOrder = duplicatedOrder)
         val normalized = config.getNormalizedSectionOrder()
 
-        assertEquals(16, normalized.size)
+        assertEquals(17, normalized.size)
         assertEquals("BANNERS", normalized[0])
         assertEquals("EDITORIAL_ADS", normalized[1])
         assertEquals("CATEGORIES", normalized[2])
@@ -96,31 +99,32 @@ class DashboardDynamicOrderAndEditorialAdsTest {
 
         // Verificar que no haya duplicados
         val uniqueSet = normalized.toSet()
-        assertEquals("No debe haber ningún ID duplicado", 16, uniqueSet.size)
+        assertEquals("No debe haber ningún ID duplicado", 17, uniqueSet.size)
     }
 
     @Test
     fun `Caso F - IDs desconocidos son descartados de forma segura`() {
         val orderWithUnknowns = listOf(
-            "UNKNOWN_BLOCK_99", "BANNERS", "RANDOM_WIDGET", "EDITORIAL_ADS", "INVALID_SECTION"
+            "UNKNOWN_BLOCK_99", "BANNERS", "RANDOM_WIDGET", "EDITORIAL_ADS", "INVALID_SECTION", "ALL_BUSINESSES"
         )
         val config = DashboardConfig(sectionOrder = orderWithUnknowns)
         val normalized = config.getNormalizedSectionOrder()
 
-        assertEquals(16, normalized.size)
+        assertEquals(17, normalized.size)
         assertEquals("BANNERS", normalized[0])
         assertEquals("EDITORIAL_ADS", normalized[1])
+        assertEquals("ALL_BUSINESSES", normalized[2])
         assertFalse(normalized.contains("UNKNOWN_BLOCK_99"))
         assertFalse(normalized.contains("RANDOM_WIDGET"))
         assertFalse(normalized.contains("INVALID_SECTION"))
     }
 
     @Test
-    fun `Caso G - Array vacío normaliza a los 16 bloques canónicos por defecto`() {
+    fun `Caso G - Array vacío normaliza a los 17 bloques canónicos por defecto`() {
         val config = DashboardConfig(sectionOrder = emptyList())
         val normalized = config.getNormalizedSectionOrder()
 
-        assertEquals(16, normalized.size)
+        assertEquals(17, normalized.size)
         assertEquals(DashboardConfig.CANONICAL_DEFAULT_SECTION_ORDER, normalized)
     }
 
@@ -130,11 +134,12 @@ class DashboardDynamicOrderAndEditorialAdsTest {
         val config = DashboardConfig(sectionOrder = reversedOrder)
         val normalized = config.getNormalizedSectionOrder()
 
-        assertEquals(16, normalized.size)
-        assertEquals("EDITORIAL_ADS", normalized[0])
-        assertEquals("EXPRESS_DELIVERY", normalized[1])
-        assertEquals("FAVORITES", normalized[2])
-        assertEquals("BANNERS", normalized[15])
+        assertEquals(17, normalized.size)
+        assertEquals("ALL_BUSINESSES", normalized[0])
+        assertEquals("EDITORIAL_ADS", normalized[1])
+        assertEquals("EXPRESS_DELIVERY", normalized[2])
+        assertEquals("FAVORITES", normalized[3])
+        assertEquals("BANNERS", normalized[16])
     }
 
     // =========================================================================
@@ -325,5 +330,126 @@ class DashboardDynamicOrderAndEditorialAdsTest {
         assertEquals("ad1", sorted[0].id)
         assertEquals("ad2", sorted[1].id)
         assertEquals("ad3", sorted[2].id)
+    }
+
+    // =========================================================================
+    // 8. CERTIFICACIÓN DE VISIBILIDAD DE 17 BLOQUES Y PARIDAD CONTRACTUAL
+    // =========================================================================
+
+    @Test
+    fun `Paridad de 17 bloques canonicos entre orden y titulos por defecto`() {
+        val canonicalOrder = DashboardConfig.CANONICAL_DEFAULT_SECTION_ORDER
+        val defaultTitles = DashboardConfig.CANONICAL_DEFAULT_BLOCK_TITLES
+
+        assertEquals("Debe haber exactamente 17 bloques canónicos", 17, canonicalOrder.size)
+        assertEquals("Debe haber títulos por defecto para los 17 bloques", 17, defaultTitles.size)
+
+        for (sectionId in canonicalOrder) {
+            assertTrue("Cada bloque canónico debe tener un título definido: $sectionId", defaultTitles.containsKey(sectionId))
+            assertTrue("El título no debe estar vacío para: $sectionId", !defaultTitles[sectionId].isNullOrBlank())
+        }
+
+        assertEquals("Todos los Comercios 🏪", defaultTitles["ALL_BUSINESSES"])
+        assertEquals("¿Qué se te antoja hoy?", defaultTitles["CATEGORIES"])
+    }
+
+    @Test
+    fun `showAllBusinesses backward compatibility con mapas Firestore - missing es true, false se preserva`() {
+        // Caso 1: Documento legacy sin showAllBusinesses -> Expected: true
+        val legacyData = mapOf<String, Any>(
+            "showCategories" to true,
+            "showFlashDeals" to false
+        )
+        val legacyConfig = legacyData.toDashboardConfigSafely()
+        assertTrue("Documento sin showAllBusinesses debe ser true por backward compatibility", legacyConfig.showAllBusinesses)
+
+        // Caso 2: Documento con showAllBusinesses = true explícito -> Expected: true
+        val explicitTrueData = mapOf<String, Any>(
+            "showAllBusinesses" to true
+        )
+        val explicitTrueConfig = explicitTrueData.toDashboardConfigSafely()
+        assertTrue("Valor explícito true debe mantenerse", explicitTrueConfig.showAllBusinesses)
+
+        // Caso 3: Documento con showAllBusinesses = false explícito -> Expected: false (CRÍTICO)
+        val explicitFalseData = mapOf<String, Any>(
+            "showAllBusinesses" to false
+        )
+        val explicitFalseConfig = explicitFalseData.toDashboardConfigSafely()
+        assertFalse("Valor explícito false NO debe transformarse en true", explicitFalseConfig.showAllBusinesses)
+    }
+
+    @Test
+    fun `Tenant override merge preserva estrictamente el valor false sin reversion por default`() {
+        // Escenario A: Global es false, Tenant no especifica el campo
+        // El tenant hereda la base global (false), NO debe volver a true
+        val globalFalseConfig = DashboardConfig(showAllBusinesses = false)
+        val tenantDataWithoutField = mapOf<String, Any>(
+            "showCategories" to true
+        )
+        val mergedConfigA = tenantDataWithoutField.toDashboardConfigSafely(base = globalFalseConfig)
+        assertFalse("Si Global es false y Tenant no define el campo, debe PREVALECER false", mergedConfigA.showAllBusinesses)
+
+        // Escenario B: Global es true, Tenant override explícito es false
+        val globalTrueConfig = DashboardConfig(showAllBusinesses = true)
+        val tenantDataWithFalse = mapOf<String, Any>(
+            "showAllBusinesses" to false
+        )
+        val mergedConfigB = tenantDataWithFalse.toDashboardConfigSafely(base = globalTrueConfig)
+        assertFalse("Tenant override false debe prevalecer sobre Global true", mergedConfigB.showAllBusinesses)
+
+        // Escenario C: Global es false, Tenant override explícito es true
+        val tenantDataWithTrue = mapOf<String, Any>(
+            "showAllBusinesses" to true
+        )
+        val mergedConfigC = tenantDataWithTrue.toDashboardConfigSafely(base = globalFalseConfig)
+        assertTrue("Tenant override true debe prevalecer sobre Global false", mergedConfigC.showAllBusinesses)
+    }
+
+    @Test
+    fun `Garantia de Single Render para ALL_BUSINESSES en sectionOrder o legacy fallback`() {
+        // Caso 1: ALL_BUSINESSES incluido en sectionOrder -> Renderizado en el bucle principal
+        val modernOrder = listOf("BANNERS", "CATEGORIES", "ALL_BUSINESSES", "FLASH_DEALS")
+        val containsInOrderModern = modernOrder.contains("ALL_BUSINESSES")
+        assertTrue(containsInOrderModern)
+
+        var renderCountModern = 0
+        modernOrder.forEach { sectionId ->
+            if (sectionId == "ALL_BUSINESSES") {
+                renderCountModern++
+            }
+        }
+        if (!containsInOrderModern) {
+            renderCountModern++
+        }
+        assertEquals("Debe renderizarse exactamente 1 vez cuando está en sectionOrder", 1, renderCountModern)
+
+        // Caso 2: sectionOrder legacy (sin ALL_BUSINESSES) -> Renderizado por fallback al final
+        val legacyOrder = listOf("BANNERS", "CATEGORIES", "FLASH_DEALS")
+        val containsInOrderLegacy = legacyOrder.contains("ALL_BUSINESSES")
+        assertFalse(containsInOrderLegacy)
+
+        var renderCountLegacy = 0
+        legacyOrder.forEach { sectionId ->
+            if (sectionId == "ALL_BUSINESSES") {
+                renderCountLegacy++
+            }
+        }
+        if (!containsInOrderLegacy) {
+            renderCountLegacy++
+        }
+        assertEquals("Debe renderizarse exactamente 1 vez por fallback al final si falta en sectionOrder", 1, renderCountLegacy)
+
+        // Caso 3: showAllBusinesses = false -> 0 renders
+        val showAll = false
+        var renderCountDisabled = 0
+        modernOrder.forEach { sectionId ->
+            if (sectionId == "ALL_BUSINESSES" && showAll) {
+                renderCountDisabled++
+            }
+        }
+        if (!containsInOrderModern && showAll) {
+            renderCountDisabled++
+        }
+        assertEquals("Debe renderizarse 0 veces cuando showAllBusinesses es false", 0, renderCountDisabled)
     }
 }

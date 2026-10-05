@@ -867,5 +867,48 @@ La certificación técnica y documental da por concluido el ciclo de desarrollo 
 **Estado oficial de trabajo:**  
 🟢 **DELIVERY EXPRESS X→Y FULL LIFECYCLE & FINANCIAL CORE — CODE FREEZE / PROTECTED 🔒**
 
+## Regla de Congelamiento Arquitectónico — Dashboard Manager Home Governance & 17-Block Canonical Parity Freeze (ADR-030 / BSD-DASHBOARD-MANAGER-HOME-VISIBILITY-PHYSICAL-E2E-001)
+
+### Principio Fundamental e Inviolable
+El subsistema de **Gobernanza del Home, Visibilidad de Secciones, Ordenamiento Dinámico y Catálogo General de 17 Bloques** (`/dashboard/configuration` y overrides `/tenants/{tenantId}/dashboard/configuration`) queda formalmente **CONGELADO como Baseline Inmutable v2.3 Enterprise (STATUS: FROZEN / PROTECTED 🔒)** bajo el protocolo **`BSD-DASHBOARD-MANAGER-HOME-VISIBILITY-PHYSICAL-E2E-001`**:
+
+```text
+🧊 IDENTIFICADOR: BSD-DASHBOARD-MANAGER-HOME-VISIBILITY-PHYSICAL-E2E-001 / ADR-030
+ESTADO: 🔒 PRODUCTION CLOSED / PHYSICAL E2E CERTIFIED / ARCHITECTURAL FREEZE
+SSOT DE HOME: /dashboard/configuration (Layout, Visibilidad, Títulos, Acciones)
+DISPOSITIVO DE CERTIFICACIÓN FÍSICA: Samsung Galaxy Z Fold 5 (SM-F946U1) — 15/15 Touchpoints PASS
+OBSERVED REGRESSIONS: 0
+PROHIBICIÓN ESTRICTA: Cero mutaciones de código, cero reapertura empírica sin auditoría y autorización humana.
+```
+
+### Componentes Blindados Inmutables (Prohibido Modificar sin Nueva Autorización Humana Explícita):
+1. **Admin Web (`panel-admin/public/js/dashboard/dashboardManager.js`):**
+   - Registro de los 17 bloques canónicos y sincronización semántica (`CATEGORIES` $\rightarrow$ *"Qué se te antoja hoy"*; `ALL_BUSINESSES` $\rightarrow$ *"Todos los Comercios 🏪"* con clave `showAllBusinesses`).
+   - Contador de encabezado `'17 Secciones Dinámicas'` e inmunidad del master service gate `xToYServiceEnabled`.
+   - Persistencia atómica con `currentConfig[key] !== false` y guardado defensivo `set(docRef, payload, { merge: true })`.
+2. **Modelos y Parsers Defensivos Android (`app/src/main/java/com/example/Models.kt`):**
+   - `DashboardConfig.showAllBusinesses: Boolean = true` (backward compatibility para documentos antiguos).
+   - Inclusión de `"ALL_BUSINESSES"` en `CANONICAL_DEFAULT_SECTION_ORDER` y `CANONICAL_DEFAULT_BLOCK_TITLES`.
+   - Parser defensivo `Map<String, Any?>?.toDashboardConfigSafely(base)` y `DocumentSnapshot?.toDashboardConfigSafely(base)` con preservación estricta de `false` mediante `map.containsKey()`.
+3. **Sincronización Reactiva Multi-Tenant (`app/src/main/java/com/example/FirebaseManager.kt`):**
+   - Rastreo continuo de `lastGlobalConfig` y algoritmo de merge campo por campo con la base global para evitar que defaults locales anulen el `false` global.
+4. **Despacho Dinámico de Feed (`app/src/main/java/com/example/presentation/customer/home/CustomerHomeFeedSection.kt`):**
+   - Despacho en bucle de `"ALL_BUSINESSES"` respetando `sectionOrder` dinámico y routing a `DestinationRouter`.
+   - Guard de Single Render determinista: `containsAllBusinessesInOrder` asegura exactamente 1 render en bucle o exactamente 1 render en legacy fallback al pie del feed, y 0 renders cuando `showAllBusinesses == false`.
+5. **Componente de Catálogo General (`app/src/main/java/com/example/presentation/customer/home/AllBusinessesSection.kt`):**
+   - Soporte parametrizado para `title` dinámico (`getDisplayTitle`), `headerAction` (`getBlockAction`) y `onHeaderActionClick`.
+6. **Cliente Flutter / iOS (`flutter_client/lib/`):**
+   - `catalog_entity.dart`: Inclusión de `'ALL_BUSINESSES'` en `canonicalDefaultSectionOrder` (17 bloques) y `fromMap(..., {DashboardConfigEntity? base})` con merge defensivo.
+   - `commercial_home_screen.dart`: Despacho dinámico de `'ALL_BUSINESSES'` en `_renderDynamicSection` y guard determinista de Single Render (`containsAllBusinessesInOrder`).
+   - `merchant_service.dart`: Suscripción `watchDashboardConfig` con rastreo y merge sobre la base de configuración global para aislamiento multi-tenant.
+
+### Matriz de los 17 Bloques Canónicos Blindados:
+`BANNERS`, `CATEGORIES`, `BRANCHES`, `NEARBY`, `FEATURED_BUSINESSES`, `FEATURED_PRODUCTS`, `FLASH_DEALS`, `PROMOTIONS`, `SAME_PRICE`, `TOP_SELLING`, `RECOMMENDED`, `NEW_BUSINESSES`, `QUICK_REORDER`, `FAVORITES`, `EXPRESS_DELIVERY`, `EDITORIAL_ADS`, `ALL_BUSINESSES`.
+
+### 🚫 Regla de Protección Inviolable:
+Queda **TERMINANTEMENTE PROHIBIDO** desincronizar el contrato de 17 bloques entre Admin Web y Android, reintroducir fallbacks con coerción `value || true`, duplicar flags o eliminar el guard de single-render. Cualquier intervención futura requerirá obligatoriamente:  
+`NUEVA SOLICITUD HUMANA EXPLÍCITA → AUDITORÍA FORENSE DE IMPACTO → AUTORIZACIÓN SEPARADA → HOTFIX QUIRÚRGICO → SUITE E2E (30 TESTS + 15 TOUCHPOINTS FÍSICOS) → NUEVA CERTIFICACIÓN`.
+
+
 
 

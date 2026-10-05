@@ -48,6 +48,7 @@ class MockParityMerchantService implements IMerchantService {
   final StreamController<List<FlashDealEntity>> flashDealsController = StreamController.broadcast();
   final StreamController<List<ProductEntity>> discountedProductsController = StreamController.broadcast();
   final StreamController<List<BranchEntity>> allBranchesController = StreamController.broadcast();
+  final StreamController<List<HomeEditorialAdEntity>> editorialAdsController = StreamController.broadcast();
 
   DashboardConfigEntity currentConfig = const DashboardConfigEntity(
     showExpressDeliveryBanner: true,
@@ -60,6 +61,7 @@ class MockParityMerchantService implements IMerchantService {
   List<FlashDealEntity> currentFlashDeals = [];
   List<ProductEntity> currentDiscountedProducts = [];
   List<BranchEntity> currentBranches = [];
+  List<HomeEditorialAdEntity> currentEditorialAds = [];
 
   void emitConfig(DashboardConfigEntity config) {
     currentConfig = config;
@@ -96,6 +98,11 @@ class MockParityMerchantService implements IMerchantService {
     allBranchesController.add(list);
   }
 
+  void emitEditorialAds(List<HomeEditorialAdEntity> list) {
+    currentEditorialAds = list;
+    editorialAdsController.add(list);
+  }
+
   Object? businessError;
 
   void emitErrorOnBusinesses(String error) {
@@ -111,6 +118,7 @@ class MockParityMerchantService implements IMerchantService {
     flashDealsController.close();
     discountedProductsController.close();
     allBranchesController.close();
+    editorialAdsController.close();
   }
 
   @override
@@ -157,6 +165,12 @@ class MockParityMerchantService implements IMerchantService {
   Stream<List<BranchEntity>> watchAllBranches({required String tenantId}) async* {
     yield currentBranches;
     yield* allBranchesController.stream;
+  }
+
+  @override
+  Stream<List<HomeEditorialAdEntity>> watchHomeEditorialAds({String? tenantId}) async* {
+    yield currentEditorialAds;
+    yield* editorialAdsController.stream;
   }
 
   @override
@@ -381,7 +395,10 @@ void main() {
       expect(normalized.contains('QUICK_REORDER'), isTrue);
       expect(normalized.contains('FAVORITES'), isTrue);
       expect(normalized.contains('EXPRESS_DELIVERY'), isTrue);
-      expect(normalized.length, equals(DashboardConfigEntity.canonicalDefaultSectionOrder.length));
+      expect(normalized.contains('EDITORIAL_ADS'), isTrue);
+      expect(normalized.contains('ALL_BUSINESSES'), isTrue);
+      expect(DashboardConfigEntity.canonicalDefaultSectionOrder.length, equals(17));
+      expect(normalized.length, equals(17));
     });
 
     test('TEST 09: Haversine distance engine calculates accurate km matching Android GeoUtils.kt', () {
@@ -950,6 +967,226 @@ void main() {
       expect(find.text('Azúcar Blanca'), findsOneWidget);
       expect(find.text('Azúcar Morena'), findsOneWidget);
       expect(find.text('+C\$ 10'), findsOneWidget);
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ADR-030 / BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001
+  // 1:1 PARITY CONTRACT TESTS (Domain, Data, Widget & Integration)
+  // ═══════════════════════════════════════════════════════════════════════════
+  group('BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001: Editorial Ads & Dynamic Content Parity Tests', () {
+    test('TEST 26: HomeEditorialAdEntity temporal validity, active toggle, and compat aliases', () {
+      final now = DateTime.now().millisecondsSinceEpoch;
+
+      // Inactive ad
+      const inactiveAd = HomeEditorialAdEntity(
+        id: 'ad_inactive',
+        title: 'Anuncio Inactivo',
+        active: false,
+      );
+      expect(inactiveAd.isCurrentlyValid(nowMs: now), isFalse);
+
+      // Future ad
+      final futureAd = HomeEditorialAdEntity(
+        id: 'ad_future',
+        title: 'Anuncio Futuro',
+        active: true,
+        startAt: now + 3600000, // +1 hour
+      );
+      expect(futureAd.isCurrentlyValid(nowMs: now), isFalse);
+
+      // Expired ad
+      final expiredAd = HomeEditorialAdEntity(
+        id: 'ad_expired',
+        title: 'Anuncio Vencido',
+        active: true,
+        endAt: now - 3600000, // -1 hour
+      );
+      expect(expiredAd.isCurrentlyValid(nowMs: now), isFalse);
+
+      // Valid ad with aliases
+      final validAd = HomeEditorialAdEntity(
+        id: 'ad_valid',
+        title: 'Gran Promo',
+        subtitle: '2x1 Especial',
+        badgeText: 'HOT',
+        actionType: 'MERCHANT',
+        actionTarget: 'biz_01',
+        merchantId: 'biz_01',
+        merchantNameSnapshot: 'Hamburguesas Managua',
+        merchantLogoUrlSnapshot: 'https://cdn.example.com/logo.png',
+        active: true,
+        startAt: now - 1000,
+        endAt: now + 100000,
+      );
+      expect(validAd.isCurrentlyValid(nowMs: now), isTrue);
+      expect(validAd.effectiveBadgeText, equals('HOT'));
+      expect(validAd.effectiveMerchantName, equals('Hamburguesas Managua'));
+      expect(validAd.effectiveMerchantLogoUrl, equals('https://cdn.example.com/logo.png'));
+      expect(validAd.effectiveActionTarget, equals('biz_01'));
+    });
+
+    test('TEST 27: DashboardConfigEntity dynamic blockTitles and blockActions resolution (1:1 Android)', () {
+      const config = DashboardConfigEntity(
+        blockTitles: {
+          'CATEGORIES': 'Explora la Gastronomía',
+          'EDITORIAL_ADS': 'Novedades de la Semana',
+        },
+        blockActions: {
+          'EDITORIAL_ADS': BlockActionConfigEntity(
+            type: 'INTERNAL_ROUTE',
+            target: 'promos',
+            label: 'Ver catálogo',
+          ),
+          'NEARBY': BlockActionConfigEntity(
+            type: 'NONE',
+            target: '',
+            label: '',
+          ),
+        },
+      );
+
+      // Custom title override
+      expect(config.getDisplayTitle('CATEGORIES'), equals('Explora la Gastronomía'));
+      expect(config.getDisplayTitle('EDITORIAL_ADS'), equals('Novedades de la Semana'));
+
+      // Section with defaultTitle fallback
+      expect(config.getDisplayTitle('FEATURED_BUSINESSES', defaultTitle: 'Comercios Destacados ⭐'), equals('Comercios Destacados ⭐'));
+
+      // Section fallback to canonical default
+      expect(config.getDisplayTitle('ALL_BUSINESSES'), equals('Todos los Comercios 🏪'));
+
+      // Block action resolution (Fail-closed)
+      final action = config.getBlockAction('EDITORIAL_ADS');
+      expect(action, isNotNull);
+      expect(action!.isActionable, isTrue);
+      expect(action.label, equals('Ver catálogo'));
+
+      // NONE action returns null
+      expect(config.getBlockAction('NEARBY'), isNull);
+      expect(config.getBlockAction('NON_EXISTENT'), isNull);
+    });
+
+    testWidgets('TEST 28: CommercialHomeScreen dynamically renders EDITORIAL_ADS when enabled', (tester) async {
+      await tester.pumpWidget(createTestWidget());
+
+      merchantService.emitConfig(const DashboardConfigEntity(
+        showEditorialAds: true,
+        showAllBusinesses: false,
+        showNearbyBusinesses: false,
+        showFeaturedBusinesses: false,
+        showSamePrice: false,
+        showTopSelling: false,
+        showRecommended: false,
+        showNewBusinesses: false,
+        showCategories: false,
+        showBanners: false,
+        showFlashDeals: false,
+        showPromotions: false,
+        showExpressDeliveryBanner: false,
+        xToYServiceEnabled: false,
+        sectionOrder: ['EDITORIAL_ADS'],
+        blockTitles: {'EDITORIAL_ADS': 'Super Promociones 🚀'},
+      ));
+
+      merchantService.emitEditorialAds([
+        const HomeEditorialAdEntity(
+          id: 'ad_1',
+          title: 'Combo Familiar Pizza',
+          subtitle: 'Solo por hoy C\$ 350',
+          badgeText: 'OFERTA',
+          ctaText: 'Pedir Ahora',
+          actionType: 'MERCHANT',
+          merchantId: 'biz_pizza',
+          merchantNameSnapshot: 'Pizza Italia',
+          active: true,
+          order: 1,
+        ),
+      ]);
+
+      await tester.pumpAndSettle();
+
+      // Custom block title rendered
+      expect(find.text('Super Promociones 🚀'), findsOneWidget);
+      // Card content rendered
+      expect(find.text('Combo Familiar Pizza'), findsOneWidget);
+      expect(find.text('Solo por hoy C\$ 350'), findsOneWidget);
+      expect(find.text('OFERTA'), findsOneWidget);
+      expect(find.text('Pizza Italia'), findsOneWidget);
+      expect(find.textContaining('Pedir Ahora'), findsOneWidget);
+
+      // Now toggle OFF: showEditorialAds = false
+      merchantService.emitConfig(const DashboardConfigEntity(
+        showEditorialAds: false,
+        sectionOrder: ['EDITORIAL_ADS'],
+      ));
+
+      await tester.pumpAndSettle();
+
+      // 0dp collapse: should not find the ad or title anymore
+      expect(find.text('Super Promociones 🚀'), findsNothing);
+      expect(find.text('Combo Familiar Pizza'), findsNothing);
+    });
+
+    testWidgets('TEST 29: Single card renders statically without dots while multiple ads render carousel indicator', (tester) async {
+      await tester.pumpWidget(createTestWidget());
+
+      // 1. Two ads: Carousel mode
+      merchantService.emitConfig(const DashboardConfigEntity(
+        showEditorialAds: true,
+        showAllBusinesses: false,
+        showNearbyBusinesses: false,
+        showFeaturedBusinesses: false,
+        showSamePrice: false,
+        showTopSelling: false,
+        showRecommended: false,
+        showNewBusinesses: false,
+        showCategories: false,
+        showBanners: false,
+        showFlashDeals: false,
+        showPromotions: false,
+        showExpressDeliveryBanner: false,
+        xToYServiceEnabled: false,
+        sectionOrder: ['EDITORIAL_ADS'],
+      ));
+
+      merchantService.emitEditorialAds([
+        const HomeEditorialAdEntity(
+          id: 'ad_1',
+          title: 'Ad Uno',
+          active: true,
+          order: 1,
+        ),
+        const HomeEditorialAdEntity(
+          id: 'ad_2',
+          title: 'Ad Dos',
+          active: true,
+          order: 2,
+        ),
+      ]);
+
+      await tester.pumpAndSettle();
+
+      // Default canonical title
+      expect(find.text('Destacados y Novedades'), findsOneWidget);
+      expect(find.text('Ad Uno'), findsOneWidget);
+      // Pager exists
+      expect(find.byType(PageView), findsOneWidget);
+
+      // 2. Single ad: Static card mode (No PageView)
+      merchantService.emitEditorialAds([
+        const HomeEditorialAdEntity(
+          id: 'ad_1',
+          title: 'Ad Solitario',
+          active: true,
+          order: 1,
+        ),
+      ]);
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ad Solitario'), findsOneWidget);
+      expect(find.byType(PageView), findsNothing);
     });
   });
 }

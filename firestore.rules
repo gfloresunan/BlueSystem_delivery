@@ -1446,6 +1446,24 @@ service cloud.firestore {
       allow update, delete: if false; // Inmutabilidad forense absoluta
     }
 
+    // ─── /territorial_pricing_policies/{policyId} (BSD-TERRITORIAL-MUNICIPAL-PRICING-POLICY-001) ───
+    match /territorial_pricing_policies/{policyId} {
+      // Zero Public Read: Resolución financiera server-side autoritativa via Cloud Functions (Admin SDK)
+      // Lectura y gobernanza restringida exclusivamente a roles administrativos autorizados por EIAM
+      allow read: if isAuthenticated() && isPlatformAdmin();
+      allow create, update: if isAuthenticated() && isPlatformAdmin();
+      allow delete: if isAuthenticated() && isSuperAdmin();
+    }
+
+    // ─── /pricing_quotes/{quoteId} (BSD-TERRITORIAL-MUNICIPAL-PRICING-POLICY-001) ───
+    match /pricing_quotes/{quoteId} {
+      // Server-Side Quotes: Creadas, leídas y mutadas exclusivamente por Cloud Functions (Admin SDK)
+      // Lectura restringida únicamente a administradores de plataforma (EIAM) para soporte/auditoría
+      // CERO lectura pública o de cliente. CERO escritura cliente.
+      allow read: if isAuthenticated() && isPlatformAdmin();
+      allow write: if false; // Escritura pública/cliente estrictamente prohibida
+    }
+
     // ─── Denegar todo lo demás ────────────────────────────────────────────────
 
     match /{document=**} {

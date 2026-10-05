@@ -47,6 +47,7 @@ exports.calculateCommerceAuthoritativeFee = calculateCommerceAuthoritativeFee;
 exports.calculateCommerceDeliveryRoute = calculateCommerceDeliveryRoute;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
+const territorialPricingService_1 = require("./territorialPricingService");
 // In-Memory LRU/TTL Cache (15 minutos)
 const ROUTE_CACHE = new Map();
 const CACHE_TTL_MS = 15 * 60 * 1000;
@@ -120,6 +121,7 @@ async function getCommerceDeliveryPricingConfig(failClosed = false) {
             }
             cachedCommercePricingConfig = {
                 enabled: cfg?.enabled ?? true,
+                territorialPricingEnabled: cfg?.territorialPricingEnabled === true,
                 customerPricePerKm: customerRate ?? exports.COMMERCE_DEFAULT_CUSTOMER_RATE_PER_KM,
                 courierPricePerKm: courierRate ?? exports.COMMERCE_DEFAULT_COURIER_RATE_PER_KM,
                 minimumCustomerDeliveryFee: typeof cfg?.minimumCustomerDeliveryFee === "number" ? cfg.minimumCustomerDeliveryFee : undefined,
@@ -477,10 +479,10 @@ async function calculateDeliveryRoute(options) {
 }
 /**
  * Construye el pricingSnapshot autoritativo del sistema y tarifas canónicas para Commerce Delivery.
- * Customer: distanceKm * customerPricePerKm
- * Courier: distanceKm * courierPricePerKm
+ * Customer: distanceKm * customerPricePerKm (o tarifa fija FLAT si existe política municipal aplicable)
+ * Courier: distanceKm * courierPricePerKm (independiente de la tarifa del cliente)
  */
-function buildCommercePricingSnapshot(distanceMeters, config) {
+function buildCommercePricingSnapshot(distanceMeters, config, territorialResolution) {
     const customerRate = config?.customerPricePerKm ?? exports.COMMERCE_DEFAULT_CUSTOMER_RATE_PER_KM;
     const courierRate = config?.courierPricePerKm ?? exports.COMMERCE_DEFAULT_COURIER_RATE_PER_KM;
     const policy = config?.roundingPrecision || "KM_BLOCK_2DEC";
@@ -507,29 +509,47 @@ function buildCommercePricingSnapshot(distanceMeters, config) {
     // Redondeo a números enteros según directiva:
     // - Cliente: redondeado hacia arriba al entero superior (Math.ceil), e.g. 50.94 -> 51
     // - Motorizado: redondeado hacia abajo al entero inferior (Math.floor), e.g. 45.70 -> 45, 80.20 -> 80
-    // - El diferencial de centavos se acumula a favor de la plataforma admin como ingresos por servicios de app
-    const deliveryFee = distanceMeters > 0 ? Math.ceil(rawDeliveryFee) : 0;
+    // Independencia total de ganancias del courier (courierEarnings ≠ deliveryFee):
     const courierEarnings = distanceMeters > 0 ? Math.floor(rawCourierEarnings) : 0;
+    // Resolución territorial municipal autoritativa (BSD-TERRITORIAL-MUNICIPAL-PRICING-POLICY-001)
+    const isFlat = territorialResolution?.pricingMode === "FLAT" &&
+        territorialResolution.isApplied &&
+        typeof territorialResolution.fixedDeliveryFee === "number" &&
+        territorialResolution.fixedDeliveryFee > 0;
+    const deliveryFee = isFlat
+        ? territorialResolution.fixedDeliveryFee
+        : (distanceMeters > 0 ? Math.ceil(rawDeliveryFee) : 0);
+    const now = new Date();
+    const quoteExpiresAt = new Date(now.getTime() + 15 * 60 * 1000).toISOString(); // 15 minutos de validez de cotización
     const pricingSnapshot = {
         serviceType: "COMMERCE_DELIVERY",
+        pricingMode: isFlat ? "FLAT" : "DISTANCE",
+        pricingPolicyId: territorialResolution?.policyId || null,
+        pricingPolicyVersion: territorialResolution?.pricingPolicyVersion || null,
+        departmentId: territorialResolution?.departmentId || null,
+        municipalityId: territorialResolution?.municipalityId || null,
+        countryCode: territorialResolution?.countryCode || "NI",
+        fixedDeliveryFee: isFlat ? territorialResolution.fixedDeliveryFee : null,
+        quotedDeliveryFee: deliveryFee,
+        quoteExpiresAt,
         customerPricePerKm: customerRate,
         courierPricePerKm: courierRate,
         distanceKm: displayKm,
         distanceMeters,
         deliveryFee,
         courierEarnings,
-        currency: config?.currency || "NIO",
+        currency: config?.currency || territorialResolution?.currency || "NIO",
         pricingPolicy: policy,
         pricingVersion: config?.pricingVersion || "v2.2-commerce",
-        calculatedAt: new Date().toISOString(),
+        calculatedAt: now.toISOString(),
     };
     return { deliveryFee, courierEarnings, pricingSnapshot };
 }
 /**
  * Calcula la tarifa de comercio autoritativa a partir de la distancia real en metros.
  */
-function calculateCommerceAuthoritativeFee(distanceMeters, config) {
-    const res = buildCommercePricingSnapshot(distanceMeters, config);
+function calculateCommerceAuthoritativeFee(distanceMeters, config, territorialResolution) {
+    const res = buildCommercePricingSnapshot(distanceMeters, config, territorialResolution);
     return { deliveryFee: res.deliveryFee, courierEarnings: res.courierEarnings };
 }
 /**
@@ -547,8 +567,31 @@ async function calculateCommerceDeliveryRoute(options) {
     const straightLineDistanceMeters = calculateHaversineDistanceMeters(origin.latitude, origin.longitude, destination.latitude, destination.longitude);
     // 1. Carga de configuración canónica de tarifas Commerce
     const commerceConfig = await getCommerceDeliveryPricingConfig();
-    // 2. Verificación de Caché en Memoria
-    const cacheKey = `COMMERCE:${getCacheKey(origin, destination, transportProfile)}`;
+    // 1.1 Resolución autoritativa de política territorial municipal
+    // FEATURE GATE: Si territorialPricingEnabled NO está habilitado en /system_config/global,
+    // el resolver territorial se omite por completo (0 reads en /territorial_pricing_policies).
+    let territorialResolution = undefined;
+    if (commerceConfig.territorialPricingEnabled === true) {
+        let deptInput = options.departmentId;
+        let muniInput = options.municipalityId;
+        if (!muniInput && options.businessId) {
+            try {
+                const bDoc = await admin.firestore().collection("businesses").doc(options.businessId).get();
+                if (bDoc.exists) {
+                    const bData = bDoc.data() || {};
+                    deptInput = bData.departmentId || bData.departamento || bData.department;
+                    muniInput = bData.municipalityId || bData.municipio || bData.municipality || bData.cityId || bData.city;
+                }
+            }
+            catch (bErr) {
+                functions.logger.warn(`[COMMERCE_ROUTING] No se pudo leer municipio del comercio ${options.businessId}:`, bErr);
+            }
+        }
+        territorialResolution = await (0, territorialPricingService_1.resolveTerritorialPricingPolicy)(deptInput, muniInput);
+    }
+    const muniTag = territorialResolution?.municipalityId || options.municipalityId || "NOMUNI";
+    // 2. Verificación de Caché en Memoria (incorporando municipio para evitar colisiones)
+    const cacheKey = `COMMERCE:${muniTag}:${getCacheKey(origin, destination, transportProfile)}`;
     const cached = ROUTE_CACHE.get(cacheKey);
     const now = Date.now();
     if (cached && cached.expiresAt > now) {
@@ -557,8 +600,8 @@ async function calculateCommerceDeliveryRoute(options) {
     }
     // Helper to convert CommercePricingSnapshot to legacy PricingSnapshot
     const toPricingSnapshot = (cps) => ({
-        baseFee: 0,
-        pricePerKm: cps.customerPricePerKm,
+        baseFee: cps.pricingMode === "FLAT" ? (cps.fixedDeliveryFee ?? 0) : 0,
+        pricePerKm: cps.pricingMode === "FLAT" ? 0 : cps.customerPricePerKm,
         distanceKm: cps.distanceKm,
         distanceMeters: cps.distanceMeters,
         calculatedAmount: cps.deliveryFee,
@@ -568,13 +611,22 @@ async function calculateCommerceDeliveryRoute(options) {
         calculatedAt: cps.calculatedAt,
         courierEarnings: cps.courierEarnings,
         platformRevenue: Math.max(0, Math.round((cps.deliveryFee - cps.courierEarnings) * 100) / 100),
+        pricingMode: cps.pricingMode,
+        pricingPolicyId: cps.pricingPolicyId,
+        pricingPolicyVersion: cps.pricingPolicyVersion,
+        departmentId: cps.departmentId,
+        municipalityId: cps.municipalityId,
+        countryCode: cps.countryCode,
+        fixedDeliveryFee: cps.fixedDeliveryFee,
+        quotedDeliveryFee: cps.quotedDeliveryFee ?? cps.deliveryFee,
+        quoteExpiresAt: cps.quoteExpiresAt,
     });
     // 3. Intento 1: Google Routes API v2
     const apiKey = googleApiKey || process.env.GOOGLE_MAPS_API_KEY || process.env.ROUTES_API_KEY;
     if (apiKey) {
         const googleResult = await computeWithGoogleRoutes(origin, destination, transportProfile, apiKey);
         if (googleResult && googleResult.distanceMeters > 0) {
-            const { deliveryFee, pricingSnapshot: commercePricingSnapshot } = buildCommercePricingSnapshot(googleResult.distanceMeters, commerceConfig);
+            const { deliveryFee, pricingSnapshot: commercePricingSnapshot } = buildCommercePricingSnapshot(googleResult.distanceMeters, commerceConfig, territorialResolution);
             const result = {
                 routeDistanceMeters: googleResult.distanceMeters,
                 routeDurationSeconds: googleResult.durationSeconds,
@@ -601,7 +653,7 @@ async function calculateCommerceDeliveryRoute(options) {
     // 4. Intento 2: OSRM Engine
     const osrmResult = await computeWithOsrm(origin, destination);
     if (osrmResult && osrmResult.distanceMeters > 0) {
-        const { deliveryFee, pricingSnapshot: commercePricingSnapshot } = buildCommercePricingSnapshot(osrmResult.distanceMeters, commerceConfig);
+        const { deliveryFee, pricingSnapshot: commercePricingSnapshot } = buildCommercePricingSnapshot(osrmResult.distanceMeters, commerceConfig, territorialResolution);
         const result = {
             routeDistanceMeters: osrmResult.distanceMeters,
             routeDurationSeconds: osrmResult.durationSeconds,
@@ -627,7 +679,7 @@ async function calculateCommerceDeliveryRoute(options) {
     // 5. Intento 3: Fallback de contingencia con factor 1.28x
     const estimatedRoadDistanceMeters = Math.round(straightLineDistanceMeters * 1.28);
     const estimatedDurationSeconds = Math.round((estimatedRoadDistanceMeters / 1000.0) * 120);
-    const { deliveryFee: fallbackDeliveryFee, pricingSnapshot: fallbackPricing } = buildCommercePricingSnapshot(estimatedRoadDistanceMeters, commerceConfig);
+    const { deliveryFee: fallbackDeliveryFee, pricingSnapshot: fallbackPricing } = buildCommercePricingSnapshot(estimatedRoadDistanceMeters, commerceConfig, territorialResolution);
     functions.logger.warn(`[COMMERCE_ROUTING] Aplicando FALLBACK_ESTIMATED: lineDist=${straightLineDistanceMeters}m, estRoadDist=${estimatedRoadDistanceMeters}m`);
     const fallbackResult = {
         routeDistanceMeters: estimatedRoadDistanceMeters,

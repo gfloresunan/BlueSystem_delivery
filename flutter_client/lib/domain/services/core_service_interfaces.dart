@@ -117,6 +117,8 @@ abstract class IMerchantService {
   Stream<DashboardConfigEntity> watchDashboardConfig({String? tenantId});
   Stream<List<FlashDealEntity>> watchFlashDeals({required String tenantId});
   Stream<List<ProductEntity>> watchDiscountedProducts({required String tenantId});
+  Stream<List<HomeEditorialAdEntity>> watchHomeEditorialAds({String? tenantId}) =>
+      const Stream.empty();
   Future<void> updateProductQuick(
     String productId, {
     required String name,

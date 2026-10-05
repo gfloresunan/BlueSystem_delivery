@@ -61,6 +61,9 @@ class MockMerchantService implements IMerchantService {
 
   @override
   Future<void> updateProductQuick(String productId, {required String name, required double price}) async {}
+
+  @override
+  Stream<List<HomeEditorialAdEntity>> watchHomeEditorialAds({String? tenantId}) => Stream.value([]);
 }
 
 void main() {

@@ -137,6 +137,8 @@ class MockMerchantService implements IMerchantService {
   Future<List<ProductEntity>> getProductsForBusiness(String businessId, {required String tenantId}) async => products;
   @override
   Future<void> updateProductQuick(String productId, {required String name, required double price}) async {}
+  @override
+  Stream<List<HomeEditorialAdEntity>> watchHomeEditorialAds({String? tenantId}) => Stream.value([]);
 }
 
 class MockOrderService implements IOrderService {
@@ -609,6 +611,13 @@ void main() {
       expect(cartBtn, findsOneWidget);
       await tester.tap(cartBtn);
       await tester.pumpAndSettle();
+
+      // In decoupled 2-step checkout, advance to Step 2 (Delivery)
+      final continueBtn = find.text('Continuar a Entrega (Paso 2)');
+      if (continueBtn.evaluate().isNotEmpty) {
+        await tester.tap(continueBtn);
+        await tester.pumpAndSettle();
+      }
 
       // Verify quick select address chip is rendered
       final quickChip = find.byKey(const Key('quick_select_address_addr_1'));

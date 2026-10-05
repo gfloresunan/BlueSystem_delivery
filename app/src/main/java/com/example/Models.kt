@@ -1126,6 +1126,7 @@ data class DashboardConfig(
     val showQuickReorder: Boolean = true,
     val showFavoritesBlock: Boolean = true,
     val showNearbyBusinesses: Boolean = true,
+    val showAllBusinesses: Boolean = true,
     val showExpressDeliveryBanner: Boolean = false, // FAIL-CLOSED: Oculto por defecto (Addendum P0-02)
     val xToYServiceEnabled: Boolean = false,        // FAIL-CLOSED: Deshabilitado por defecto (Addendum P0-02)
     val showEditorialAds: Boolean = true,           // Dynamic Editorial Ads (BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001)
@@ -1162,7 +1163,8 @@ data class DashboardConfig(
             "QUICK_REORDER",
             "FAVORITES",
             "EXPRESS_DELIVERY",
-            "EDITORIAL_ADS"
+            "EDITORIAL_ADS",
+            "ALL_BUSINESSES"
         )
 
         val CANONICAL_DEFAULT_BLOCK_TITLES: Map<String, String> = mapOf(
@@ -1181,7 +1183,8 @@ data class DashboardConfig(
             "QUICK_REORDER" to "Volver a Pedir 🔄",
             "FAVORITES" to "Tus Comercios Favoritos ❤️",
             "EXPRESS_DELIVERY" to "Envíos Express X→Y",
-            "EDITORIAL_ADS" to "Destacados y Novedades"
+            "EDITORIAL_ADS" to "Destacados y Novedades",
+            "ALL_BUSINESSES" to "Todos los Comercios 🏪"
         )
     }
 
@@ -1244,29 +1247,29 @@ data class DashboardConfig(
 }
 
 /**
- * Parser defensivo de DashboardConfig para evitar que campos malformados o nuevos
- * descarten la configuración legacy recibida.
+ * Parser defensivo de DashboardConfig a partir de un Map<String, Any?> (Firestore data o payload de pruebas).
+ * Garantiza backward compatibility (default a base), preservación de false explícito y merge seguro con base.
  */
-fun com.google.firebase.firestore.DocumentSnapshot?.toDashboardConfigSafely(): DashboardConfig {
-    if (this == null || !this.exists()) {
-        return DashboardConfig()
+fun Map<String, Any?>?.toDashboardConfigSafely(base: DashboardConfig = DashboardConfig()): DashboardConfig {
+    if (this == null) {
+        return base
     }
     return try {
-        val raw = this.toObject(DashboardConfig::class.java) ?: DashboardConfig()
+        val map = this
 
-        val rawOrder = when (val o = this.get("sectionOrder")) {
+        val rawOrder = when (val o = map["sectionOrder"]) {
             is List<*> -> o.filterIsInstance<String>()
-            else -> raw.sectionOrder
+            else -> base.sectionOrder
         }
 
-        val rawTitles = when (val t = this.get("blockTitles")) {
+        val rawTitles = when (val t = map["blockTitles"]) {
             is Map<*, *> -> t.entries.mapNotNull { (k, v) ->
                 if (k is String && v is String) k to v else null
             }.toMap()
-            else -> raw.blockTitles
+            else -> base.blockTitles
         }
 
-        val rawActions = when (val a = this.get("blockActions")) {
+        val rawActions = when (val a = map["blockActions"]) {
             is Map<*, *> -> a.entries.mapNotNull { (k, v) ->
                 if (k is String && v is Map<*, *>) {
                     val type = (v["type"] as? String) ?: "NONE"
@@ -1275,77 +1278,49 @@ fun com.google.firebase.firestore.DocumentSnapshot?.toDashboardConfigSafely(): D
                     k to BlockActionConfig(type = type, target = target, label = label)
                 } else null
             }.toMap()
-            else -> raw.blockActions
+            else -> base.blockActions
         }
 
-        raw.copy(
-            showEditorialAds = this.getBoolean("showEditorialAds") ?: raw.showEditorialAds,
-            sectionOrder = if (rawOrder.isNotEmpty()) rawOrder else raw.sectionOrder,
+        DashboardConfig(
+            showBanners = if (map.containsKey("showBanners")) (map["showBanners"] as? Boolean ?: base.showBanners) else base.showBanners,
+            showCategories = if (map.containsKey("showCategories")) (map["showCategories"] as? Boolean ?: base.showCategories) else base.showCategories,
+            showBranchesBlock = if (map.containsKey("showBranchesBlock")) (map["showBranchesBlock"] as? Boolean ?: base.showBranchesBlock) else base.showBranchesBlock,
+            showFeaturedBusinesses = if (map.containsKey("showFeaturedBusinesses")) (map["showFeaturedBusinesses"] as? Boolean ?: base.showFeaturedBusinesses) else base.showFeaturedBusinesses,
+            showFeaturedProducts = if (map.containsKey("showFeaturedProducts")) (map["showFeaturedProducts"] as? Boolean ?: base.showFeaturedProducts) else base.showFeaturedProducts,
+            showPromotions = if (map.containsKey("showPromotions")) (map["showPromotions"] as? Boolean ?: base.showPromotions) else base.showPromotions,
+            showSamePrice = if (map.containsKey("showSamePrice")) (map["showSamePrice"] as? Boolean ?: base.showSamePrice) else base.showSamePrice,
+            showFlashDeals = if (map.containsKey("showFlashDeals")) (map["showFlashDeals"] as? Boolean ?: base.showFlashDeals) else base.showFlashDeals,
+            showTopSelling = if (map.containsKey("showTopSelling")) (map["showTopSelling"] as? Boolean ?: base.showTopSelling) else base.showTopSelling,
+            showRecommended = if (map.containsKey("showRecommended")) (map["showRecommended"] as? Boolean ?: base.showRecommended) else base.showRecommended,
+            showNewBusinesses = if (map.containsKey("showNewBusinesses")) (map["showNewBusinesses"] as? Boolean ?: base.showNewBusinesses) else base.showNewBusinesses,
+            showQuickReorder = if (map.containsKey("showQuickReorder")) (map["showQuickReorder"] as? Boolean ?: base.showQuickReorder) else base.showQuickReorder,
+            showFavoritesBlock = if (map.containsKey("showFavoritesBlock")) (map["showFavoritesBlock"] as? Boolean ?: base.showFavoritesBlock) else base.showFavoritesBlock,
+            showNearbyBusinesses = if (map.containsKey("showNearbyBusinesses")) (map["showNearbyBusinesses"] as? Boolean ?: base.showNearbyBusinesses) else base.showNearbyBusinesses,
+            showAllBusinesses = if (map.containsKey("showAllBusinesses")) (map["showAllBusinesses"] as? Boolean ?: base.showAllBusinesses) else base.showAllBusinesses,
+            showExpressDeliveryBanner = if (map.containsKey("showExpressDeliveryBanner")) (map["showExpressDeliveryBanner"] as? Boolean ?: base.showExpressDeliveryBanner) else base.showExpressDeliveryBanner,
+            xToYServiceEnabled = if (map.containsKey("xToYServiceEnabled")) (map["xToYServiceEnabled"] as? Boolean ?: base.xToYServiceEnabled) else base.xToYServiceEnabled,
+            showEditorialAds = if (map.containsKey("showEditorialAds")) (map["showEditorialAds"] as? Boolean ?: base.showEditorialAds) else base.showEditorialAds,
+            sectionOrder = if (rawOrder.isNotEmpty()) rawOrder else base.sectionOrder,
             blockTitles = rawTitles,
             blockActions = rawActions
         )
-    } catch (e: Exception) {
-        android.util.Log.w("DashboardConfig", "Error deserializing DashboardConfig, falling back defensively", e)
-        try {
-            val showBanners = this.getBoolean("showBanners") ?: true
-            val showCategories = this.getBoolean("showCategories") ?: true
-            val showBranchesBlock = this.getBoolean("showBranchesBlock") ?: true
-            val showFeaturedBusinesses = this.getBoolean("showFeaturedBusinesses") ?: true
-            val showFeaturedProducts = this.getBoolean("showFeaturedProducts") ?: true
-            val showPromotions = this.getBoolean("showPromotions") ?: true
-            val showSamePrice = this.getBoolean("showSamePrice") ?: true
-            val showFlashDeals = this.getBoolean("showFlashDeals") ?: true
-            val showTopSelling = this.getBoolean("showTopSelling") ?: true
-            val showRecommended = this.getBoolean("showRecommended") ?: true
-            val showNewBusinesses = this.getBoolean("showNewBusinesses") ?: true
-            val showQuickReorder = this.getBoolean("showQuickReorder") ?: true
-            val showFavoritesBlock = this.getBoolean("showFavoritesBlock") ?: true
-            val showNearbyBusinesses = this.getBoolean("showNearbyBusinesses") ?: true
-            val showExpressDeliveryBanner = this.getBoolean("showExpressDeliveryBanner") ?: false
-            val xToYServiceEnabled = this.getBoolean("xToYServiceEnabled") ?: false
-            val showEditorialAds = this.getBoolean("showEditorialAds") ?: true
+    } catch (_: Exception) {
+        base
+    }
+}
 
-            val rawOrder = (this.get("sectionOrder") as? List<*>)?.filterIsInstance<String>()
-                ?: DashboardConfig.CANONICAL_DEFAULT_SECTION_ORDER
-
-            val rawTitles = (this.get("blockTitles") as? Map<*, *>)?.entries?.mapNotNull { (k, v) ->
-                if (k is String && v is String) k to v else null
-            }?.toMap() ?: emptyMap()
-
-            val rawActions = (this.get("blockActions") as? Map<*, *>)?.entries?.mapNotNull { (k, v) ->
-                if (k is String && v is Map<*, *>) {
-                    val type = (v["type"] as? String) ?: "NONE"
-                    val target = (v["target"] as? String) ?: ""
-                    val label = (v["label"] as? String) ?: ""
-                    k to BlockActionConfig(type = type, target = target, label = label)
-                } else null
-            }?.toMap() ?: emptyMap()
-
-            DashboardConfig(
-                showBanners = showBanners,
-                showCategories = showCategories,
-                showBranchesBlock = showBranchesBlock,
-                showFeaturedBusinesses = showFeaturedBusinesses,
-                showFeaturedProducts = showFeaturedProducts,
-                showPromotions = showPromotions,
-                showSamePrice = showSamePrice,
-                showFlashDeals = showFlashDeals,
-                showTopSelling = showTopSelling,
-                showRecommended = showRecommended,
-                showNewBusinesses = showNewBusinesses,
-                showQuickReorder = showQuickReorder,
-                showFavoritesBlock = showFavoritesBlock,
-                showNearbyBusinesses = showNearbyBusinesses,
-                showExpressDeliveryBanner = showExpressDeliveryBanner,
-                xToYServiceEnabled = xToYServiceEnabled,
-                showEditorialAds = showEditorialAds,
-                sectionOrder = rawOrder,
-                blockTitles = rawTitles,
-                blockActions = rawActions
-            )
-        } catch (_: Exception) {
-            DashboardConfig()
-        }
+/**
+ * Parser defensivo de DashboardConfig para evitar que campos malformados o nuevos
+ * descarten la configuración legacy recibida. Permite heredar de base (merge seguro).
+ */
+fun com.google.firebase.firestore.DocumentSnapshot?.toDashboardConfigSafely(base: DashboardConfig = DashboardConfig()): DashboardConfig {
+    if (this == null || !this.exists()) {
+        return base
+    }
+    return try {
+        this.data.toDashboardConfigSafely(base)
+    } catch (_: Exception) {
+        base
     }
 }
 

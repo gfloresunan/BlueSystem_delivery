@@ -33,17 +33,22 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onOrderDelivered = exports.onPaymentStatusUpdated = exports.notifyOrderStatusChange = exports.notifyNewOrder = void 0;
+exports.onOrderDelivered = exports.onPaymentStatusUpdated = exports.notifyOrderStatusChange = exports.notifyNewOrder = exports.QUOTE_ORIGIN_TOLERANCE_METERS = exports.QUOTE_DESTINATION_TOLERANCE_METERS = void 0;
 exports.resolveMerchantIsRestaurant = resolveMerchantIsRestaurant;
 const functions = __importStar(require("firebase-functions"));
 const admin = __importStar(require("firebase-admin"));
 const paymentActivationGate_1 = require("../domain/payments/paymentActivationGate");
 const courierAccessPolicy_1 = require("../callables/courierAccessPolicy");
 const geoCatalog_1 = require("../domain/geo/geoCatalog");
+const territorialPricingService_1 = require("../services/territorialPricingService");
+const routingService_1 = require("../services/routingService");
 const orderCodeUtils_1 = require("../shared/orderCodeUtils");
 const db = admin.firestore();
 const messaging = admin.messaging();
 const FieldValue = admin.firestore.FieldValue;
+// ── Parámetros de Seguridad y Tolerancia Geográfica para Cotizaciones Financieras (Gate B) ──
+exports.QUOTE_DESTINATION_TOLERANCE_METERS = 250;
+exports.QUOTE_ORIGIN_TOLERANCE_METERS = 250;
 /**
  * Helper: Obtiene de forma canónica los tokens FCM activos para un usuario (soporta multi-dispositivo)
  */
@@ -172,7 +177,7 @@ async function persistMerchantInAppNotification(params) {
 exports.notifyNewOrder = functions.firestore
     .document("orders/{orderId}")
     .onCreate(async (snap, context) => {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m, _o, _p, _q, _r, _s, _t, _u, _v, _w, _x, _y, _z, _0, _1, _2, _3, _4, _5, _6, _7, _8, _9, _10, _11;
     const order = snap.data();
     const orderId = context.params.orderId;
     if (!order)
@@ -219,6 +224,7 @@ exports.notifyNewOrder = functions.firestore
         functions.logger.warn(`[FCM] Pedido ${orderId} sin businessId y sin serviceType reconocido. Ignorado.`);
         return null;
     }
+    let authoritativeReconciledDeliveryFee = null;
     // ─── ESTAMPADO AUTORITATIVO DE UBICACIÓN & MUNICIPIO DEL COMERCIO ─────────────
     try {
         const bizDoc = await db.collection("businesses").doc(order.businessId).get();
@@ -281,11 +287,13 @@ exports.notifyNewOrder = functions.firestore
             }
             // Step 2: ALWAYS read system_config/global for commerce pricing, courier rate AND commission defaults
             let customerRatePerKm = 8.0;
+            let isTerritorialPricingEnabled = false;
             try {
                 const globalCfgDoc = await db.collection("system_config").doc("global").get();
                 if (globalCfgDoc.exists) {
                     const gData = globalCfgDoc.data() || {};
                     const commercePricing = gData.commerceDeliveryPricing || {};
+                    isTerritorialPricingEnabled = commercePricing.territorialPricingEnabled === true;
                     // Merchant commission defaults (only if no override was set above)
                     if (bizData.commissionOverrideRate === undefined || bizData.commissionOverrideRate === null) {
                         if (gData.merchantCommissionRate != null) {
@@ -412,17 +420,174 @@ exports.notifyNewOrder = functions.firestore
             const courierDistanceEarningsFloat = isCommerceDelivery ? Math.floor((effectiveCourierRate * routeDistanceMeters) / 1000) : (Math.round(distanceEarningsCents) / 100);
             const courierBonusEarningsFloat = isCommerceDelivery ? 0 : (Math.round(bonusEarningsCents) / 100);
             const courierTotalEarningsFloat = courierDistanceEarningsFloat + courierBonusEarningsFloat + (Math.round(tipEarningsCents) / 100);
+            // ── Resolución Territorial Municipal Autoritativa (BSD-TERRITORIAL-MUNICIPAL-PRICING-POLICY-001) ──
+            // FEATURE GATE: Si territorialPricingEnabled NO está activo en /system_config/global,
+            // no se consulta la colección /territorial_pricing_policies (0 lecturas adicionales en Gate A).
+            let territorialResolution = undefined;
+            if (isTerritorialPricingEnabled) {
+                territorialResolution = await (0, territorialPricingService_1.resolveTerritorialPricingPolicy)(deptId, muniId, { bypassCache: true });
+            }
+            const isFlat = (territorialResolution === null || territorialResolution === void 0 ? void 0 : territorialResolution.pricingMode) === "FLAT" &&
+                territorialResolution.isApplied &&
+                typeof territorialResolution.fixedDeliveryFee === "number" &&
+                territorialResolution.fixedDeliveryFee > 0;
+            let finalDeliveryFee;
+            let feeSource;
+            let verifiedQuoteId = null;
+            // 🔒 CONSUMO ATÓMICO EN TRANSACCIÓN FIRESTORE (ANTI-RACE CONDITION & ANTI-REUSE)
+            // El backend NUNCA confía en precios ni snapshots enviados por el cliente.
+            // Se ejecuta una transacción aislada sobre /pricing_quotes/{quoteId}:
+            // Solo un pedido puede consumir la cotización; solicitudes concurrentes son serializadas por Firestore.
+            const providedQuoteId = (order.quoteId || ((_x = order.pricingSnapshot) === null || _x === void 0 ? void 0 : _x.quoteId) || "").toString().trim();
+            let validServerQuote = null;
+            if (providedQuoteId) {
+                try {
+                    const canonicalCustomerId = (order.customerId || order.clienteId || order.userId || "").toString().trim();
+                    const canonicalBusinessId = (order.businessId || "").toString().trim();
+                    const canonicalBranchId = (order.branchId || order.sucursalId || "").toString().trim();
+                    const canonicalDepartmentId = (deptId || "").toString().trim();
+                    const canonicalMunicipalityId = (muniId || "").toString().trim();
+                    const canonicalCountryCode = (order.countryCode || "NI").toString().trim().toUpperCase();
+                    const orderDestLat = Number((_4 = (_1 = (_y = order.destinationLatitude) !== null && _y !== void 0 ? _y : (_0 = (_z = order.rawDestino) === null || _z === void 0 ? void 0 : _z.coordenadas) === null || _0 === void 0 ? void 0 : _0.latitud) !== null && _1 !== void 0 ? _1 : (_3 = (_2 = order.destino) === null || _2 === void 0 ? void 0 : _2.coordenadas) === null || _3 === void 0 ? void 0 : _3.latitud) !== null && _4 !== void 0 ? _4 : order.latitude);
+                    const orderDestLng = Number((_11 = (_8 = (_5 = order.destinationLongitude) !== null && _5 !== void 0 ? _5 : (_7 = (_6 = order.rawDestino) === null || _6 === void 0 ? void 0 : _6.coordenadas) === null || _7 === void 0 ? void 0 : _7.longitud) !== null && _8 !== void 0 ? _8 : (_10 = (_9 = order.destino) === null || _9 === void 0 ? void 0 : _9.coordenadas) === null || _10 === void 0 ? void 0 : _10.longitud) !== null && _11 !== void 0 ? _11 : order.longitude);
+                    const quoteRef = db.collection("pricing_quotes").doc(providedQuoteId);
+                    await db.runTransaction(async (transaction) => {
+                        const quoteDoc = await transaction.get(quoteRef);
+                        if (!quoteDoc.exists) {
+                            functions.logger.warn(`[QUOTE_VERIFY_FAIL] quoteId=${providedQuoteId} no existe en /pricing_quotes`);
+                            return;
+                        }
+                        const qData = quoteDoc.data();
+                        const isUnused = qData.used === false;
+                        const isUnexpired = qData.expiresAt && qData.expiresAt.toMillis() > Date.now();
+                        // FAIL-CLOSED STRICT BINDING (Anti-tampering & Financial Integrity)
+                        // Todos los identificadores DEBEN existir tanto en la cotización como en la orden y coincidir exactamente.
+                        // Missing => INVALID QUOTE (cero tolerancia / nunca fail-open).
+                        const customerMatches = Boolean(qData.customerId && canonicalCustomerId && qData.customerId === canonicalCustomerId);
+                        const businessMatches = Boolean(qData.businessId && canonicalBusinessId && qData.businessId === canonicalBusinessId);
+                        const quotedBranchId = (qData.branchId || "").toString().trim();
+                        const branchMatches = (!canonicalBranchId && !quotedBranchId) || (canonicalBranchId === quotedBranchId);
+                        const departmentMatches = Boolean(qData.departmentId && canonicalDepartmentId && qData.departmentId === canonicalDepartmentId);
+                        const municipalityMatches = Boolean(qData.municipalityId && canonicalMunicipalityId && qData.municipalityId === canonicalMunicipalityId);
+                        const countryMatches = Boolean(qData.countryCode && canonicalCountryCode && qData.countryCode.toUpperCase() === canonicalCountryCode);
+                        // GEO-ROUTE DESTINATION BINDING (Protección de trazabilidad y ganancias del courier)
+                        // Requiere estrictamente coordenadas de destino válidas en quote y orden. Missing => FAIL-CLOSED (false).
+                        let geoRouteMatches = false;
+                        let geoRouteDeltaMeters = -1;
+                        const hasQuotedDest = typeof qData.destLat === "number" && typeof qData.destLng === "number" && !isNaN(qData.destLat) && !isNaN(qData.destLng) && qData.destLat !== 0;
+                        const hasOrderDest = typeof orderDestLat === "number" && typeof orderDestLng === "number" && !isNaN(orderDestLat) && !isNaN(orderDestLng) && orderDestLat !== 0;
+                        if (hasQuotedDest && hasOrderDest) {
+                            const R = 6371000;
+                            const dLat = ((orderDestLat - qData.destLat) * Math.PI) / 180;
+                            const dLon = ((orderDestLng - qData.destLng) * Math.PI) / 180;
+                            const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                                Math.cos((qData.destLat * Math.PI) / 180) *
+                                    Math.cos((orderDestLat * Math.PI) / 180) *
+                                    Math.sin(dLon / 2) *
+                                    Math.sin(dLon / 2);
+                            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                            geoRouteDeltaMeters = Math.round(R * c);
+                            if (geoRouteDeltaMeters <= exports.QUOTE_DESTINATION_TOLERANCE_METERS) {
+                                geoRouteMatches = true;
+                            }
+                        }
+                        // GEO-ROUTE ORIGIN BINDING (Protección de origen / sucursal)
+                        // Requiere estrictamente coordenadas de origen válidas en quote y comercio. Missing => FAIL-CLOSED (false).
+                        let originMatches = false;
+                        let originDeltaMeters = -1;
+                        const hasQuotedOrigin = typeof qData.originLat === "number" && typeof qData.originLng === "number" && !isNaN(qData.originLat) && !isNaN(qData.originLng) && qData.originLat !== 0;
+                        const hasOrderOrigin = typeof latVal === "number" && typeof lngVal === "number" && !isNaN(latVal) && !isNaN(lngVal) && latVal !== 0;
+                        if (hasQuotedOrigin && hasOrderOrigin) {
+                            const R = 6371000;
+                            const dLatO = ((latVal - qData.originLat) * Math.PI) / 180;
+                            const dLonO = ((lngVal - qData.originLng) * Math.PI) / 180;
+                            const aO = Math.sin(dLatO / 2) * Math.sin(dLatO / 2) +
+                                Math.cos((qData.originLat * Math.PI) / 180) *
+                                    Math.cos((latVal * Math.PI) / 180) *
+                                    Math.sin(dLonO / 2) *
+                                    Math.sin(dLonO / 2);
+                            const cO = 2 * Math.atan2(Math.sqrt(aO), Math.sqrt(1 - aO));
+                            originDeltaMeters = Math.round(R * cO);
+                            if (originDeltaMeters <= exports.QUOTE_ORIGIN_TOLERANCE_METERS) {
+                                originMatches = true;
+                            }
+                        }
+                        const isBindingValid = customerMatches &&
+                            businessMatches &&
+                            branchMatches &&
+                            departmentMatches &&
+                            municipalityMatches &&
+                            countryMatches &&
+                            geoRouteMatches &&
+                            originMatches;
+                        if (isUnused && isUnexpired && isBindingValid && typeof qData.deliveryFee === "number" && qData.deliveryFee > 0) {
+                            // Mutación atómica indivisible: get + check + mark used dentro de la misma transacción
+                            transaction.update(quoteRef, {
+                                used: true,
+                                orderId,
+                                usedAt: FieldValue.serverTimestamp(),
+                            });
+                            validServerQuote = qData;
+                            verifiedQuoteId = providedQuoteId;
+                        }
+                        else {
+                            functions.logger.warn(`[QUOTE_VERIFY_FAIL] quoteId=${providedQuoteId} rechazado en transacción: unused=${isUnused}, unexpired=${isUnexpired}, cust=${customerMatches}, biz=${businessMatches}, branch=${branchMatches}, dept=${departmentMatches}, muni=${municipalityMatches}, country=${countryMatches}, geoDest=${geoRouteMatches} (deltaDest=${geoRouteDeltaMeters}m), geoOrigin=${originMatches} (deltaOrigin=${originDeltaMeters}m)`);
+                        }
+                    });
+                }
+                catch (qErr) {
+                    functions.logger.warn(`[QUOTE_TRANSACTION_ERROR] Error en transacción de quoteId=${providedQuoteId}:`, qErr);
+                }
+            }
+            let pricingValidationStatus;
+            if (validServerQuote) {
+                // Cotización server-side auténtica, vigente y consumida atómicamente
+                finalDeliveryFee = validServerQuote.deliveryFee;
+                feeSource = "SERVER_VERIFIED_QUOTE";
+                pricingValidationStatus = "VERIFIED_QUOTE";
+            }
+            else if (isFlat) {
+                finalDeliveryFee = territorialResolution.fixedDeliveryFee;
+                feeSource = "AUTHORITATIVE_MUNICIPAL_FLAT";
+                pricingValidationStatus = providedQuoteId ? "CORRECTED_AUTHORITATIVE" : "VERIFIED_MUNICIPAL_FLAT";
+            }
+            else {
+                // Recalcular autoritativamente por distancia en backend (cero confianza en deliveryFee de Android)
+                const authoritativeDist = (0, routingService_1.calculateCommerceAuthoritativeFee)(routeDistanceMeters, { customerPricePerKm: customerRatePerKm, courierPricePerKm: effectiveCourierRate }, territorialResolution);
+                finalDeliveryFee = authoritativeDist.deliveryFee;
+                feeSource = "AUTHORITATIVE_DISTANCE_ENGINE";
+                pricingValidationStatus = "VERIFIED_DISTANCE";
+            }
+            authoritativeReconciledDeliveryFee = finalDeliveryFee;
+            // ── Reconciliación Contable Estricta con la Fórmula Canónica de BlueSystem ──
+            // total = max(0, subtotal - (couponDiscount + promoDiscount + discountAmount)) + finalDeliveryFee + tip + additionalCharges
+            const couponDiscountVal = Number(order.couponDiscount || 0);
+            const promoDiscountVal = Number(order.promotionDiscount || 0);
+            const discountAmountVal = Number(order.discountAmount || 0);
+            const totalDiscounts = couponDiscountVal + promoDiscountVal + discountAmountVal;
+            const productNet = subtotalVal > 0 ? Math.max(0, subtotalVal - totalDiscounts) : (Number(order.merchantGrossSales) || 0);
+            const reconciledTotal = Math.round((productNet + finalDeliveryFee + tipVal + addChargeVal) * 100) / 100;
+            const reconciledTotalCents = Math.round(reconciledTotal * 100);
             const pricingSnapshot = {
                 serviceType: "COMMERCE_DELIVERY",
+                pricingMode: isFlat ? "FLAT" : "DISTANCE",
+                pricingPolicyId: (territorialResolution === null || territorialResolution === void 0 ? void 0 : territorialResolution.policyId) || null,
+                pricingPolicyVersion: (territorialResolution === null || territorialResolution === void 0 ? void 0 : territorialResolution.pricingPolicyVersion) || null,
+                fixedDeliveryFee: isFlat ? territorialResolution === null || territorialResolution === void 0 ? void 0 : territorialResolution.fixedDeliveryFee : null,
                 customerPricePerKm: customerRatePerKm,
                 courierPricePerKm: effectiveCourierRate,
                 routeDistanceKm,
                 routeDistanceMeters,
-                deliveryFee: deliveryFeeVal,
+                deliveryFee: finalDeliveryFee,
                 courierEarnings: courierDistanceEarningsFloat,
-                currency: "NIO",
+                currency: (territorialResolution === null || territorialResolution === void 0 ? void 0 : territorialResolution.currency) || "NIO",
                 pricingVersion: "v2.2-commerce",
                 calculatedAt: new Date().toISOString(),
+                feeSource,
+                quoteId: verifiedQuoteId,
+                pricingValidationStatus,
+                reconciledTotal,
+                reconciledTotalCents,
             };
             const locationStamp = {
                 commercialMunicipalityId: muniId,
@@ -457,12 +622,24 @@ exports.notifyNewOrder = functions.firestore
                 customerPricePerKm: customerRatePerKm,
                 courierPricePerKm: effectiveCourierRate,
                 pricingVersion: "v2.2-commerce",
+                pricingMode: isFlat ? "FLAT" : "DISTANCE",
+                pricingPolicyId: (territorialResolution === null || territorialResolution === void 0 ? void 0 : territorialResolution.policyId) || null,
+                pricingPolicyVersion: (territorialResolution === null || territorialResolution === void 0 ? void 0 : territorialResolution.pricingPolicyVersion) || null,
+                fixedDeliveryFee: isFlat ? territorialResolution === null || territorialResolution === void 0 ? void 0 : territorialResolution.fixedDeliveryFee : null,
+                deliveryFee: finalDeliveryFee,
+                total: reconciledTotal,
+                customerTotal: reconciledTotal,
+                grandTotal: reconciledTotal,
+                orderTotal: reconciledTotal,
+                reconciledTotalCents,
+                feeSource,
+                pricingValidationStatus,
                 pricingSnapshot,
                 courierRatePerKmApplied: effectiveCourierRate,
                 courierOrderBonusApplied: courierOrderBonus,
                 courierDistanceEarnings: courierDistanceEarningsFloat,
                 courierBonusEarnings: courierBonusEarningsFloat,
-                courierDeliveryEarnings: deliveryFeeVal,
+                courierDeliveryEarnings: finalDeliveryFee,
                 courierTipEarnings: tipVal,
                 courierTotalEarnings: courierTotalEarningsFloat,
                 courierEarnings: courierTotalEarningsFloat, // Legacy alias
@@ -470,7 +647,6 @@ exports.notifyNewOrder = functions.firestore
                 platformAdditionalChargeRevenue: addChargeVal,
                 platformCommissionRevenue: commissionAmountVal,
                 platformRevenue: platformRevenueVal,
-                customerTotal: Number(order.total || 0),
             };
             await snap.ref.update(locationStamp);
             functions.logger.info(`[FLEET_ELIGIBILITY_ORDER_STAMP] orderId=${orderId} businessId=${order.businessId} branchId=${order.branchId || "none"} municipality=${muniId} department=${deptId} tenant=${targetTenantId} grossSales=${grossSalesVal}`);
@@ -514,7 +690,7 @@ exports.notifyNewOrder = functions.firestore
         const rawCode = (order.couponCode || "").trim().toUpperCase();
         const declaredCouponDiscount = Number(order.couponDiscount) || 0;
         const subtotal = Number(order.subtotal) || 0;
-        const deliveryFee = Number(order.deliveryFee) || 0;
+        const deliveryFee = authoritativeReconciledDeliveryFee != null ? authoritativeReconciledDeliveryFee : (Number(order.deliveryFee) || 0);
         const promoDiscount = Number(order.promotionDiscount) || 0;
         const customerId = order.customerId || order.clienteId || order.userId || "";
         const businessId = order.businessId;

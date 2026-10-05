@@ -71,7 +71,7 @@ window.dashboardManagerModule = {
                                 <h3 class="text-sm font-extrabold text-indigo-400 uppercase tracking-wider">Visibilidad de Bloques en el Dashboard</h3>
                                 <p class="text-xs text-slate-400">Activa o desactiva los bloques. El cambio se envía inmediatamente a las apps de los clientes conectados.</p>
                             </div>
-                            <span class="text-[11px] text-slate-500 font-mono">16 Secciones Dinámicas</span>
+                            <span class="text-[11px] text-slate-500 font-mono">17 Secciones Dinámicas</span>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2" id="visibilityTogglesContainer">
@@ -329,7 +329,7 @@ window.dashboardManagerModule = {
 
     allToggles: [
         { key: 'showBanners', sectionId: 'BANNERS', label: 'Banners Promocionales Superiores', icon: '🖼️', desc: 'Carrusel superior con anuncios de comercios y ofertas.' },
-        { key: 'showCategories', sectionId: 'CATEGORIES', label: 'Categorías (PedidosYa Style)', icon: '🏷️', desc: 'Barra horizontal de filtros por categorías comerciales.' },
+        { key: 'showCategories', sectionId: 'CATEGORIES', label: 'Qué se te antoja hoy', icon: '🏷️', desc: 'Carrusel de categorías para explorar comercios y productos.' },
         { key: 'showBranchesBlock', sectionId: 'BRANCHES', label: 'Bloque de Sucursales por Comercio 🏢', icon: '🏢', desc: 'Carrusel de sedes específicas para comercios multicentrales.' },
         { key: 'showNearbyBusinesses', sectionId: 'NEARBY', label: 'Comercios Cerca de Ti (Geolocalización) 📍', icon: '📍', desc: 'Descubrimiento geoespacial con radio dinámico expandible.' },
         { key: 'showFeaturedProducts', sectionId: 'FEATURED_PRODUCTS', label: 'Productos Estrella ⭐', icon: '🍔', desc: 'Platillos destacados fijados para compra directa.' },
@@ -344,12 +344,13 @@ window.dashboardManagerModule = {
         { key: 'showFavoritesBlock', sectionId: 'FAVORITES', label: 'Tus Comercios Favoritos ❤️', icon: '⭐', desc: 'Comercios guardados en favoritos por el cliente.' },
         { key: 'showExpressDeliveryBanner', sectionId: 'EXPRESS_DELIVERY', label: 'Servicio Encomiendas X→Y (Banner)', icon: '🛵', desc: 'Banner de acceso directo al servicio de envíos express punto a punto.' },
         { key: 'showEditorialAds', sectionId: 'EDITORIAL_ADS', label: 'Publicidad / Anuncios del Home 📣', icon: '📣', desc: 'Carrusel editorial de promociones y anuncios en el feed principal.' },
+        { key: 'showAllBusinesses', sectionId: 'ALL_BUSINESSES', label: 'Todos los Comercios 🏪', icon: '🏪', desc: 'Listado general de comercios disponibles para el cliente.' },
         { key: 'xToYServiceEnabled', sectionId: null, label: 'Servicio Encomiendas X→Y (Habilitación Operativa)', icon: '🚚', desc: 'Control maestro de acceso y disponibilidad operativa al servicio de encomiendas X→Y.' }
     ],
 
     defaultSectionOrder: [
         { id: 'BANNERS', name: 'Banners Promocionales Superiores', icon: '🖼️' },
-        { id: 'CATEGORIES', name: 'Categorías (PedidosYa Style)', icon: '🏷️' },
+        { id: 'CATEGORIES', name: 'Qué se te antoja hoy', icon: '🏷️' },
         { id: 'BRANCHES', name: 'Bloque de Sucursales por Comercio', icon: '🏢' },
         { id: 'NEARBY', name: 'Comercios Cerca de Ti (Geolocalización)', icon: '📍' },
         { id: 'FEATURED_BUSINESSES', name: 'Comercios Destacados', icon: '🏪' },
@@ -363,7 +364,8 @@ window.dashboardManagerModule = {
         { id: 'QUICK_REORDER', name: 'Volver a Pedir (Reorder)', icon: '🔄' },
         { id: 'FAVORITES', name: 'Tus Comercios Favoritos', icon: '⭐' },
         { id: 'EXPRESS_DELIVERY', name: 'Servicio Encomiendas X→Y (Express Delivery)', icon: '🛵' },
-        { id: 'EDITORIAL_ADS', name: 'Publicidad / Anuncios del Home', icon: '📣' }
+        { id: 'EDITORIAL_ADS', name: 'Publicidad / Anuncios del Home', icon: '📣' },
+        { id: 'ALL_BUSINESSES', name: 'Todos los Comercios', icon: '🏪' }
     ],
 
     currentSectionOrder: [],

@@ -1845,37 +1845,41 @@ class FirebaseManager {
         val effectiveTenantId = tenantId?.trim()?.takeIf { it.isNotEmpty() && it != "GLOBAL" }
         var globalRegistration: com.google.firebase.firestore.ListenerRegistration? = null
         var tenantRegistration: com.google.firebase.firestore.ListenerRegistration? = null
+        var lastGlobalConfig = DashboardConfig()
+        var lastTenantSnapshot: com.google.firebase.firestore.DocumentSnapshot? = null
 
-        fun listenGlobal() {
-            if (globalRegistration != null) return
-            globalRegistration = db.collection("dashboard").document("configuration")
-                .addSnapshotListener { globalSnapshot, globalError ->
-                    if (globalError != null) {
-                        Log.e("FirebaseManager", "Error loading Global DashboardConfig", globalError)
-                        trySend(DashboardConfig())
-                        return@addSnapshotListener
-                    }
-                    trySend(globalSnapshot.toDashboardConfigSafely())
-                }
+        fun emitMerged() {
+            val tenantSnap = lastTenantSnapshot
+            if (tenantSnap != null && tenantSnap.exists()) {
+                trySend(tenantSnap.toDashboardConfigSafely(base = lastGlobalConfig))
+            } else {
+                trySend(lastGlobalConfig)
+            }
         }
+
+        globalRegistration = db.collection("dashboard").document("configuration")
+            .addSnapshotListener { globalSnapshot, globalError ->
+                if (globalError == null && globalSnapshot != null && globalSnapshot.exists()) {
+                    lastGlobalConfig = globalSnapshot.toDashboardConfigSafely()
+                } else if (globalError != null) {
+                    Log.e("FirebaseManager", "Error loading Global DashboardConfig", globalError)
+                }
+                emitMerged()
+            }
 
         if (effectiveTenantId != null) {
             val tenantDocRef = db.collection("tenants").document(effectiveTenantId)
                 .collection("dashboard").document("configuration")
 
             tenantRegistration = tenantDocRef.addSnapshotListener { tenantSnapshot, tenantError ->
-                if (tenantError == null && tenantSnapshot != null && tenantSnapshot.exists()) {
-                    // Si existe configuración específica activa del tenant, tiene precedencia
-                    globalRegistration?.remove()
-                    globalRegistration = null
-                    trySend(tenantSnapshot.toDashboardConfigSafely())
+                if (tenantError == null) {
+                    lastTenantSnapshot = tenantSnapshot
+                    emitMerged()
                 } else {
-                    // Fallback a Global Default si el tenant no tiene documento de configuración
-                    listenGlobal()
+                    Log.w("FirebaseManager", "Error loading Tenant DashboardConfig", tenantError)
+                    emitMerged()
                 }
             }
-        } else {
-            listenGlobal()
         }
 
         awaitClose {

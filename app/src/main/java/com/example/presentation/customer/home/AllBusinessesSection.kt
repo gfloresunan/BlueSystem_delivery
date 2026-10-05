@@ -16,11 +16,14 @@ import androidx.compose.ui.unit.sp
 import com.example.data.repository.BusinessInfo
 import com.example.presentation.customer.components.PublicBusinessCard
 
+import com.example.BlockActionConfig
+
 /**
  * Componente Modular de UI: Sección Catálogo General - Todos los Comercios (BSD-CUSTOMER-MARKETPLACE-CATALOG-UNIFICATION-001)
  *
  * Muestra el catálogo general de todos los comercios públicos y activos del Marketplace,
  * independientemente de su estado editorial de destacados (isFeatured).
+ * Soporta títulos dinámicos y acciones de encabezado gobernadas por Dashboard Manager Enterprise.
  */
 @Composable
 fun AllBusinessesSection(
@@ -28,7 +31,10 @@ fun AllBusinessesSection(
     favoriteIds: Set<String>,
     onBusinessClick: (businessId: String) -> Unit,
     onToggleFavorite: (businessId: String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    title: String = "Todos los Comercios 🏪",
+    headerAction: BlockActionConfig? = null,
+    onHeaderActionClick: ((BlockActionConfig) -> Unit)? = null
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Row(
@@ -39,24 +45,43 @@ fun AllBusinessesSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Todos los Comercios 🏪",
+                text = title,
                 fontWeight = FontWeight.ExtraBold,
                 fontSize = 18.sp,
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f, fill = false)
             )
-            if (publicBusinesses.isNotEmpty()) {
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                ) {
-                    Text(
-                        text = "${publicBusinesses.size} disponibles",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                    )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                if (publicBusinesses.isNotEmpty()) {
+                    Surface(
+                        shape = RoundedCornerShape(8.dp),
+                        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    ) {
+                        Text(
+                            text = "${publicBusinesses.size} disponibles",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                        )
+                    }
+                }
+                if (headerAction != null && !headerAction.type.equals("NONE", ignoreCase = true) && headerAction.type.isNotBlank()) {
+                    TextButton(
+                        onClick = { onHeaderActionClick?.invoke(headerAction) },
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp)
+                    ) {
+                        Text(
+                            text = headerAction.label.ifBlank { "Ver más ›" },
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
         }

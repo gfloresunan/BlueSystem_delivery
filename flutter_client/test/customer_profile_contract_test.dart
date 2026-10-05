@@ -250,6 +250,8 @@ class DummyMerchantService implements IMerchantService {
   Stream<List<PromotionEntity>> watchPromotions({required String tenantId}) => Stream.value([]);
   @override
   Future<void> updateProductQuick(String productId, {required String name, required double price}) async {}
+  @override
+  Stream<List<HomeEditorialAdEntity>> watchHomeEditorialAds({String? tenantId}) => Stream.value([]);
 }
 
 class MockSessionState extends SessionState {

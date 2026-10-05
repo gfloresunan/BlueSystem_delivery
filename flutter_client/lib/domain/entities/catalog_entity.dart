@@ -1,6 +1,9 @@
 /// BLUE SYSTEM DELIVERY ENTERPRISE — CATALOG & MERCHANT ENTITIES
 /// Clean Architecture Domain Entities for Commercial Multi-Tenant Catalog (1:1 Android Parity).
 
+import 'editorial_ad_entity.dart';
+export 'editorial_ad_entity.dart';
+
 class ProductEntity {
   final String productId;
   final String tenantId;
@@ -890,7 +893,7 @@ class BusinessEntity {
   }
 }
 
-/// SPRINT 15 / C2D ENTERPRISE DASHBOARD CONFIGURATION (1:1 Android Models.kt:1023-1093)
+/// SPRINT 15 / C2D & ENTERPRISE 2.0 DASHBOARD CONFIGURATION (1:1 Android Models.kt:1114-1246)
 class DashboardConfigEntity {
   final bool showBanners;
   final bool showCategories;
@@ -909,6 +912,7 @@ class DashboardConfigEntity {
   final bool showAllBusinesses;
   final bool showExpressDeliveryBanner; // FAIL-CLOSED: Oculto por defecto (Addendum P0-02)
   final bool xToYServiceEnabled; // FAIL-CLOSED: Deshabilitado por defecto (Addendum P0-02)
+  final bool showEditorialAds; // Dynamic Editorial Ads (BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001)
   final double nearbyInitialRadiusKm;
   final double nearbySecondaryRadiusKm;
   final double nearbyMaxRadiusKm;
@@ -916,6 +920,8 @@ class DashboardConfigEntity {
   final bool nearbyAutoExpandEnabled;
   final String nearbyOrdering; // 'nearest' | 'rating'
   final List<String> sectionOrder;
+  final Map<String, String> blockTitles;
+  final Map<String, BlockActionConfigEntity> blockActions;
 
   static const List<String> canonicalDefaultSectionOrder = [
     'BANNERS',
@@ -933,7 +939,29 @@ class DashboardConfigEntity {
     'QUICK_REORDER',
     'FAVORITES',
     'EXPRESS_DELIVERY',
+    'EDITORIAL_ADS',
+    'ALL_BUSINESSES',
   ];
+
+  static const Map<String, String> canonicalDefaultBlockTitles = {
+    'BANNERS': 'Banners Promocionales',
+    'CATEGORIES': '¿Qué se te antoja hoy?',
+    'BRANCHES': 'Sucursales por Comercio 🏢',
+    'NEARBY': 'Comercios Cerca de Ti 🏢',
+    'FEATURED_BUSINESSES': 'Comercios Destacados ⭐',
+    'FEATURED_PRODUCTS': 'Productos Estrella ⭐',
+    'FLASH_DEALS': 'Ofertas Flash ⚡ (Tiempo Limitado)',
+    'PROMOTIONS': 'Productos con Descuentos 🏷️',
+    'SAME_PRICE': 'Mismo Precio que en Local 💰',
+    'TOP_SELLING': 'Los Más Vendidos 🔥',
+    'RECOMMENDED': 'Recomendados para ti 🎯',
+    'NEW_BUSINESSES': 'Comercios Nuevos 🟢',
+    'QUICK_REORDER': 'Volver a Pedir 🔄',
+    'FAVORITES': 'Tus Comercios Favoritos ❤️',
+    'EXPRESS_DELIVERY': 'Envíos Express X→Y',
+    'EDITORIAL_ADS': 'Destacados y Novedades',
+    'ALL_BUSINESSES': 'Todos los Comercios 🏪',
+  };
 
   const DashboardConfigEntity({
     this.showBanners = true,
@@ -953,6 +981,7 @@ class DashboardConfigEntity {
     this.showAllBusinesses = true,
     this.showExpressDeliveryBanner = false,
     this.xToYServiceEnabled = false,
+    this.showEditorialAds = true,
     this.nearbyInitialRadiusKm = 5.0,
     this.nearbySecondaryRadiusKm = 10.0,
     this.nearbyMaxRadiusKm = 15.0,
@@ -960,12 +989,15 @@ class DashboardConfigEntity {
     this.nearbyAutoExpandEnabled = true,
     this.nearbyOrdering = 'nearest',
     this.sectionOrder = canonicalDefaultSectionOrder,
+    this.blockTitles = const {},
+    this.blockActions = const {},
   });
 
-  /// Normaliza la lista de orden de secciones (1:1 Android Models.kt:1074-1092):
-  /// 1. Elimina IDs duplicados conservando la primera aparición válida.
-  /// 2. Descarta IDs desconocidos.
-  /// 3. Anexa al final cualquier sección canónica faltante para evitar pérdida de bloques.
+  /// Normaliza la lista de orden de secciones (1:1 Android Models.kt:1196-1214):
+  /// 1. Respeta el orden remoto válido.
+  /// 2. Elimina IDs duplicados conservando la primera aparición válida.
+  /// 3. Descarta IDs desconocidos.
+  /// 4. Anexa al final cualquier sección canónica faltante para evitar pérdida de bloques (incluyendo EDITORIAL_ADS).
   List<String> getNormalizedSectionOrder() {
     final result = <String>[];
     final knownSet = canonicalDefaultSectionOrder.toSet();
@@ -986,38 +1018,87 @@ class DashboardConfigEntity {
     return result;
   }
 
-  factory DashboardConfigEntity.fromMap(Map<String, dynamic> map) {
-    List<String> order = canonicalDefaultSectionOrder;
+  /// Resuelve el título dinámico con degradación segura (1:1 Android Models.kt:1220-1230):
+  /// displayTitle = blockTitles[blockId] ?: defaultTitle ?: CANONICAL_DEFAULT
+  String getDisplayTitle(String blockId, {String? defaultTitle}) {
+    final normalizedId = blockId.trim().toUpperCase();
+    final custom = blockTitles[normalizedId]?.trim();
+    if (custom != null && custom.isNotEmpty) {
+      return custom;
+    }
+    if (defaultTitle != null && defaultTitle.trim().isNotEmpty) {
+      return defaultTitle;
+    }
+    return canonicalDefaultBlockTitles[normalizedId] ?? blockId;
+  }
+
+  /// Obtiene la acción configurada para el encabezado del bloque (Fail-Closed).
+  BlockActionConfigEntity? getBlockAction(String blockId) {
+    final normalizedId = blockId.trim().toUpperCase();
+    final action = blockActions[normalizedId];
+    if (action != null && action.isActionable) {
+      return action;
+    }
+    return null;
+  }
+
+  factory DashboardConfigEntity.fromMap(Map<String, dynamic> map, {DashboardConfigEntity? base}) {
+    final defaultBase = base ?? const DashboardConfigEntity();
+
+    List<String> order = defaultBase.sectionOrder;
     if (map['sectionOrder'] is List) {
       final list = (map['sectionOrder'] as List).map((e) => e.toString()).toList();
       if (list.isNotEmpty) order = list;
     }
 
+    final titles = Map<String, String>.from(defaultBase.blockTitles);
+    if (map['blockTitles'] is Map) {
+      (map['blockTitles'] as Map).forEach((k, v) {
+        if (k != null && v != null) {
+          titles[k.toString().trim().toUpperCase()] = v.toString();
+        }
+      });
+    }
+
+    final actions = Map<String, BlockActionConfigEntity>.from(defaultBase.blockActions);
+    if (map['blockActions'] is Map) {
+      (map['blockActions'] as Map).forEach((k, v) {
+        if (k != null && v is Map<String, dynamic>) {
+          actions[k.toString().trim().toUpperCase()] = BlockActionConfigEntity.fromMap(v);
+        } else if (k != null && v is Map) {
+          actions[k.toString().trim().toUpperCase()] = BlockActionConfigEntity.fromMap(Map<String, dynamic>.from(v));
+        }
+      });
+    }
+
     return DashboardConfigEntity(
-      showBanners: map['showBanners'] as bool? ?? true,
-      showCategories: map['showCategories'] as bool? ?? true,
-      showBranchesBlock: map['showBranchesBlock'] as bool? ?? true,
-      showFeaturedBusinesses: map['showFeaturedBusinesses'] as bool? ?? true,
-      showFeaturedProducts: map['showFeaturedProducts'] as bool? ?? true,
-      showPromotions: map['showPromotions'] as bool? ?? true,
-      showSamePrice: map['showSamePrice'] as bool? ?? true,
-      showFlashDeals: map['showFlashDeals'] as bool? ?? true,
-      showTopSelling: map['showTopSelling'] as bool? ?? true,
-      showRecommended: map['showRecommended'] as bool? ?? true,
-      showNewBusinesses: map['showNewBusinesses'] as bool? ?? true,
-      showQuickReorder: map['showQuickReorder'] as bool? ?? true,
-      showFavoritesBlock: map['showFavoritesBlock'] as bool? ?? true,
-      showNearbyBusinesses: map['showNearbyBusinesses'] as bool? ?? true,
-      showAllBusinesses: map['showAllBusinesses'] as bool? ?? true,
-      showExpressDeliveryBanner: map['showExpressDeliveryBanner'] as bool? ?? false,
-      xToYServiceEnabled: map['xToYServiceEnabled'] as bool? ?? false,
-      nearbyInitialRadiusKm: (map['nearbyInitialRadiusKm'] as num?)?.toDouble() ?? 5.0,
-      nearbySecondaryRadiusKm: (map['nearbySecondaryRadiusKm'] as num?)?.toDouble() ?? 10.0,
-      nearbyMaxRadiusKm: (map['nearbyMaxRadiusKm'] as num?)?.toDouble() ?? 15.0,
-      nearbyMinimumMerchantCount: (map['nearbyMinimumMerchantCount'] as num?)?.toInt() ?? 5,
-      nearbyAutoExpandEnabled: map['nearbyAutoExpandEnabled'] as bool? ?? true,
-      nearbyOrdering: map['nearbyOrdering'] as String? ?? 'nearest',
+      showBanners: map.containsKey('showBanners') ? (map['showBanners'] as bool? ?? defaultBase.showBanners) : defaultBase.showBanners,
+      showCategories: map.containsKey('showCategories') ? (map['showCategories'] as bool? ?? defaultBase.showCategories) : defaultBase.showCategories,
+      showBranchesBlock: map.containsKey('showBranchesBlock') ? (map['showBranchesBlock'] as bool? ?? defaultBase.showBranchesBlock) : defaultBase.showBranchesBlock,
+      showFeaturedBusinesses: map.containsKey('showFeaturedBusinesses') ? (map['showFeaturedBusinesses'] as bool? ?? defaultBase.showFeaturedBusinesses) : defaultBase.showFeaturedBusinesses,
+      showFeaturedProducts: map.containsKey('showFeaturedProducts') ? (map['showFeaturedProducts'] as bool? ?? defaultBase.showFeaturedProducts) : defaultBase.showFeaturedProducts,
+      showPromotions: map.containsKey('showPromotions') ? (map['showPromotions'] as bool? ?? defaultBase.showPromotions) : defaultBase.showPromotions,
+      showSamePrice: map.containsKey('showSamePrice') ? (map['showSamePrice'] as bool? ?? defaultBase.showSamePrice) : defaultBase.showSamePrice,
+      showFlashDeals: map.containsKey('showFlashDeals') ? (map['showFlashDeals'] as bool? ?? defaultBase.showFlashDeals) : defaultBase.showFlashDeals,
+      showTopSelling: map.containsKey('showTopSelling') ? (map['showTopSelling'] as bool? ?? defaultBase.showTopSelling) : defaultBase.showTopSelling,
+      showRecommended: map.containsKey('showRecommended') ? (map['showRecommended'] as bool? ?? defaultBase.showRecommended) : defaultBase.showRecommended,
+      showNewBusinesses: map.containsKey('showNewBusinesses') ? (map['showNewBusinesses'] as bool? ?? defaultBase.showNewBusinesses) : defaultBase.showNewBusinesses,
+      showQuickReorder: map.containsKey('showQuickReorder') ? (map['showQuickReorder'] as bool? ?? defaultBase.showQuickReorder) : defaultBase.showQuickReorder,
+      showFavoritesBlock: map.containsKey('showFavoritesBlock') ? (map['showFavoritesBlock'] as bool? ?? defaultBase.showFavoritesBlock) : defaultBase.showFavoritesBlock,
+      showNearbyBusinesses: map.containsKey('showNearbyBusinesses') ? (map['showNearbyBusinesses'] as bool? ?? defaultBase.showNearbyBusinesses) : defaultBase.showNearbyBusinesses,
+      showAllBusinesses: map.containsKey('showAllBusinesses') ? (map['showAllBusinesses'] as bool? ?? defaultBase.showAllBusinesses) : defaultBase.showAllBusinesses,
+      showExpressDeliveryBanner: map.containsKey('showExpressDeliveryBanner') ? (map['showExpressDeliveryBanner'] as bool? ?? defaultBase.showExpressDeliveryBanner) : defaultBase.showExpressDeliveryBanner,
+      xToYServiceEnabled: map.containsKey('xToYServiceEnabled') ? (map['xToYServiceEnabled'] as bool? ?? defaultBase.xToYServiceEnabled) : defaultBase.xToYServiceEnabled,
+      showEditorialAds: map.containsKey('showEditorialAds') ? (map['showEditorialAds'] as bool? ?? defaultBase.showEditorialAds) : defaultBase.showEditorialAds,
+      nearbyInitialRadiusKm: (map['nearbyInitialRadiusKm'] as num?)?.toDouble() ?? defaultBase.nearbyInitialRadiusKm,
+      nearbySecondaryRadiusKm: (map['nearbySecondaryRadiusKm'] as num?)?.toDouble() ?? defaultBase.nearbySecondaryRadiusKm,
+      nearbyMaxRadiusKm: (map['nearbyMaxRadiusKm'] as num?)?.toDouble() ?? defaultBase.nearbyMaxRadiusKm,
+      nearbyMinimumMerchantCount: (map['nearbyMinimumMerchantCount'] as num?)?.toInt() ?? defaultBase.nearbyMinimumMerchantCount,
+      nearbyAutoExpandEnabled: map.containsKey('nearbyAutoExpandEnabled') ? (map['nearbyAutoExpandEnabled'] as bool? ?? defaultBase.nearbyAutoExpandEnabled) : defaultBase.nearbyAutoExpandEnabled,
+      nearbyOrdering: map['nearbyOrdering'] as String? ?? defaultBase.nearbyOrdering,
       sectionOrder: order,
+      blockTitles: titles,
+      blockActions: actions,
     );
   }
 }
