@@ -5,6 +5,21 @@ on:
     branches: [ main, staging, develop ]
   pull_request:
     branches: [ main, staging ]
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: 'Entorno de despliegue explícito (staging o production)'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      confirm_production:
+        description: 'Escriba "CONFIRM_PROD" para autorizar despliegue productivo (ADR-014)'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   validate_and_test:
@@ -39,7 +54,7 @@ jobs:
   deploy_staging:
     name: 🚀 Deploy to Staging Environment
     needs: validate_and_test
-    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop'
+    if: (github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop') || (github.event_name == 'workflow_dispatch' && github.event.inputs.target_environment == 'staging')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -61,16 +76,18 @@ jobs:
           FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           if [ -z "$FIREBASE_TOKEN" ]; then
-            echo "⚠️ No se detectaron credenciales para staging (FIREBASE_TOKEN). Despliegue de staging omitido con seguridad."
-            exit 0
+            echo "❌ ERROR: No se detectó el secreto FIREBASE_TOKEN para staging. Despliegue abortado."
+            exit 1
           fi
           echo "🔍 Desplegando a Staging (bluesystem-7c9af-staging)..."
           npx firebase-tools@13.31.0 deploy --project bluesystem-7c9af-staging --only functions,firestore:rules,firestore:indexes,storage --token "$FIREBASE_TOKEN"
 
   deploy_production:
-    name: 🛡️ Deploy to Production (Manual Approval Gate)
+    name: 🛡️ Deploy to Production (Manual Authorization Gate)
     needs: validate_and_test
-    if: github.ref == 'refs/heads/main'
+    # ADR-014 No Auto-Rollout: Merge a main NO despliega a producción automáticamente.
+    # Requiere workflow_dispatch explícito con confirmación escrita CONFIRM_PROD.
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.target_environment == 'production' && github.event.inputs.confirm_production == 'CONFIRM_PROD'
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -90,5 +107,12 @@ jobs:
           npm run build
 
       - name: Deploy Firebase Production Infrastructure
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
-          npx firebase-tools@13.31.0 deploy --project bluesystem-7c9af --only functions,firestore:rules,firestore:indexes,storage --token "${{ secrets.FIREBASE_TOKEN }}"
+          if [ -z "$FIREBASE_TOKEN" ]; then
+            echo "❌ ERROR: No se detectó el secreto FIREBASE_TOKEN para producción. Despliegue abortado."
+            exit 1
+          fi
+          echo "🛡️ Desplegando a Producción (bluesystem-7c9af) bajo autorización ADR-014..."
+          npx firebase-tools@13.31.0 deploy --project bluesystem-7c9af --only functions,firestore:rules,firestore:indexes,storage --token "$FIREBASE_TOKEN"
