@@ -94,27 +94,27 @@ if: >-
 ### Pull Request
 - **URL del PR:** [https://github.com/gfloresunan/BlueSystem_delivery/pull/1](https://github.com/gfloresunan/BlueSystem_delivery/pull/1)
 
-### Ejecuciones Validadas en GitHub Actions
+### Ejecuciones Validadas en GitHub Actions para HEAD Final (`5a2afb2`)
 1. **Pipeline Backend:**
    - **Workflow:** `BlueSystem Enterprise Backend CI/CD Pipeline`
-   - **Run ID:** `37803873763`
-   - **URL:** [https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37803873763](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37803873763)
-   - **Estado:** `completed` / `success` 🟢
-   - **Resultados:** **191 tests pasados, 0 fallidos** (35 suites). Despliegues omitidos (PR run).
+   - **Run ID:** `37805879170`
+   - **URL:** [https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37805879170](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37805879170)
+   - **Estado:** `completed` / `success` 🟢 (**191 tests pasados, 0 fallidos**, 35 suites). Despliegues omitidos (PR run).
 
 2. **Pipeline iOS:**
    - **Workflow:** `🍏 [L1] iOS Build Validation — flutter_client`
-   - **Run ID:** `37803873826`
-   - **URL:** [https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37803873826](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37803873826)
+   - **Run ID:** `37805879010`
+   - **URL:** [https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37805879010](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37805879010)
+   - **Estado:** `completed` / `success` 🟢
    - **Job 1 (Dart Analyze + Tests):** `completed` / `success` 🟢 (**205 tests pasados, 0 issues en analyze** bajo Flutter 3.47.6).
-   - **Job 2 (iOS Build macos-15):** Compilación y empaquetado de `Runner.app` y `.IPA`.
+   - **Job 2 (iOS Build macos-15):** Compilación y empaquetado exitoso de `Runner.app` y `.IPA` (Xcode 16.4, CocoaPods 1.17.0, target iOS 15.0).
 
 ### Artifacts Descargables Certificados
-| Artifact | Tamaño | Run ID | Artifact ID | URL de Descarga |
-| :--- | :--- | :--- | :--- | :--- |
-| **`BlueSystem-iOS-L1-48`** (.IPA Unsigned) | **20.30 MB** | `37803873826` | `11562881563` | [Descargar Artifact IPA #11562881563](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37803873826/artifacts/11562881563) |
-| **`flutter-test-logs-48`** (Logs) | **0.01 MB** | `37803873826` | `11562116602` | [Descargar Logs #11562116602](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37803873826/artifacts/11562116602) |
-| **`BlueSystem-iOS-L1-46`** (.IPA Unsigned) | **19.36 MB** | `37801395186` | `11561497370` | [Descargar Artifact IPA #11561497370](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37801395186/artifacts/11561497370) |
+| Artifact | Commit SHA | Tamaño | Run ID | Artifact ID | URL de Descarga |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **`BlueSystem-iOS-L1-49`** (.IPA Unsigned) | `5a2afb2` (HEAD) | **20.30 MB** | `37805879010` | `11563433026` | [Descargar Artifact IPA #11563433026](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37805879010/artifacts/11563433026) |
+| **`BlueSystem-iOS-L1-48`** (.IPA Unsigned) | `1271dca` | **20.30 MB** | `37803873826` | `11562881563` | [Descargar Artifact IPA #11562881563](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37803873826/artifacts/11562881563) |
+| **`BlueSystem-iOS-L1-46`** (.IPA Unsigned) | `e6a644b` | **19.36 MB** | `37801395186` | `11561497370` | [Descargar Artifact IPA #11561497370](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37801395186/artifacts/11561497370) |
 
 ---
 
