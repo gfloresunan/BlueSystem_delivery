@@ -152,8 +152,8 @@ jobs:
           # NO borrar Podfile.lock — contiene las versiones exactas que compilan correctamente
           # Solo limpiar la carpeta Pods (binarios descargados, no la definición de versiones)
           rm -rf Pods 2>/dev/null || true
-          pod install
-          echo "✅ CocoaPods instalado con versiones del Podfile.lock"
+          pod install || pod install --repo-update
+          echo "✅ CocoaPods instalado exitosamente"
 
       - name: "🏗️ Build iOS Release (no-codesign)"
         id: build_step
