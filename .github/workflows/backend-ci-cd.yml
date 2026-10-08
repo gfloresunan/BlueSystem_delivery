@@ -54,7 +54,13 @@ jobs:
   deploy_staging:
     name: 🚀 Deploy to Staging Environment
     needs: validate_and_test
-    if: (github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop') || (github.event_name == 'workflow_dispatch' && github.event.inputs.target_environment == 'staging')
+    # Distingue explícitamente:
+    # 1. Push directo a ramas staging o develop
+    # 2. Invocación manual vía workflow_dispatch dirigida explícitamente a 'staging'
+    # (Un workflow_dispatch hacia 'production' ejecutado desde develop/staging NO activará staging)
+    if: >-
+      (github.event_name == 'push' && (github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.target_environment == 'staging')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -85,9 +91,17 @@ jobs:
   deploy_production:
     name: 🛡️ Deploy to Production (Manual Authorization Gate)
     needs: validate_and_test
-    # ADR-014 No Auto-Rollout: Merge a main NO despliega a producción automáticamente.
-    # Requiere workflow_dispatch explícito con confirmación escrita CONFIRM_PROD.
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.target_environment == 'production' && github.event.inputs.confirm_production == 'CONFIRM_PROD'
+    # ADR-014 No Auto-Rollout Policy:
+    # Exige simultáneamente 4 condiciones estrictas:
+    # 1. Invocación manual vía workflow_dispatch
+    # 2. Ejecución exclusiva sobre la rama 'main' (refs/heads/main)
+    # 3. Target explícito 'production'
+    # 4. Confirmación manual escrita 'CONFIRM_PROD'
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.event.inputs.target_environment == 'production' &&
+      github.event.inputs.confirm_production == 'CONFIRM_PROD'
     runs-on: ubuntu-latest
     environment:
       name: production
