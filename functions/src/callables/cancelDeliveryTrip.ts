@@ -10,6 +10,7 @@
 
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
+import { NotificationTemplateService } from "../services/notificationTemplateService";
 
 const db = admin.firestore();
 const messaging = admin.messaging();
@@ -204,11 +205,15 @@ export const cancelDeliveryTrip = functions.https.onCall(
         });
 
         if (tokens.length > 0) {
+          const resolvedCourier = await NotificationTemplateService.resolve("XY_TRIP_CANCELLED_COURIER", {
+            tripShortCode: shortId,
+          });
+
           await messaging.sendEachForMulticast({
             tokens,
             notification: {
-              title: "❌ Encomienda cancelada",
-              body: `La encomienda #${shortId} ya no requiere recogida.`,
+              title: resolvedCourier.title,
+              body: resolvedCourier.body,
             },
             data: {
               type: "TRIP_CANCELLED",
@@ -240,11 +245,15 @@ export const cancelDeliveryTrip = functions.https.onCall(
         });
 
         if (custTokens.length > 0) {
+          const resolvedCustomer = await NotificationTemplateService.resolve("XY_TRIP_CANCELLED_CUSTOMER", {
+            tripShortCode: shortId,
+          });
+
           await messaging.sendEachForMulticast({
             tokens: custTokens,
             notification: {
-              title: "❌ Encomienda cancelada",
-              body: `Tu encomienda #${shortId} fue cancelada por administración.`,
+              title: resolvedCustomer.title,
+              body: resolvedCustomer.body,
             },
             data: {
               type: "TRIP_CANCELLED",

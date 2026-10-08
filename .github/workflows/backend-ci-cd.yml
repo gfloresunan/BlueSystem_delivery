@@ -5,6 +5,21 @@ on:
     branches: [ main, staging, develop ]
   pull_request:
     branches: [ main, staging ]
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: 'Entorno de despliegue explícito (staging o production)'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      confirm_production:
+        description: 'Escriba "CONFIRM_PROD" para autorizar despliegue productivo (ADR-014)'
+        required: false
+        default: ''
+        type: string
 
 jobs:
   validate_and_test:
@@ -31,7 +46,7 @@ jobs:
           cd functions
           npm run build
 
-      - name: Run Enterprise Backend Test Suite (87 Tests)
+      - name: Run Enterprise Backend Test Suite (191 Tests)
         run: |
           cd functions
           npm test
@@ -39,7 +54,13 @@ jobs:
   deploy_staging:
     name: 🚀 Deploy to Staging Environment
     needs: validate_and_test
-    if: github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop'
+    # Distingue explícitamente:
+    # 1. Push directo a ramas staging o develop
+    # 2. Invocación manual vía workflow_dispatch dirigida explícitamente a 'staging'
+    # (Un workflow_dispatch hacia 'production' ejecutado desde develop/staging NO activará staging)
+    if: >-
+      (github.event_name == 'push' && (github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/develop')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.target_environment == 'staging')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -56,18 +77,31 @@ jobs:
           npm ci
           npm run build
 
-      - name: Deploy to Firebase Staging
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_BLUESYSTEM_STAGING }}'
-          channelId: live
-          projectId: bluesystem-7c9af-staging
+      - name: Pre-flight Staging Verification & Deploy
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          if [ -z "$FIREBASE_TOKEN" ]; then
+            echo "❌ ERROR: No se detectó el secreto FIREBASE_TOKEN para staging. Despliegue abortado."
+            exit 1
+          fi
+          echo "🔍 Desplegando a Staging (bluesystem-7c9af-staging)..."
+          npx firebase-tools@13.31.0 deploy --project bluesystem-7c9af-staging --only functions,firestore:rules,firestore:indexes,storage --token "$FIREBASE_TOKEN"
 
   deploy_production:
-    name: 🛡️ Deploy to Production (Manual Approval Gate)
+    name: 🛡️ Deploy to Production (Manual Authorization Gate)
     needs: validate_and_test
-    if: github.ref == 'refs/heads/main'
+    # ADR-014 No Auto-Rollout Policy:
+    # Exige simultáneamente 4 condiciones estrictas:
+    # 1. Invocación manual vía workflow_dispatch
+    # 2. Ejecución exclusiva sobre la rama 'main' (refs/heads/main)
+    # 3. Target explícito 'production'
+    # 4. Confirmación manual escrita 'CONFIRM_PROD'
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.ref == 'refs/heads/main' &&
+      github.event.inputs.target_environment == 'production' &&
+      github.event.inputs.confirm_production == 'CONFIRM_PROD'
     runs-on: ubuntu-latest
     environment:
       name: production
@@ -87,5 +121,12 @@ jobs:
           npm run build
 
       - name: Deploy Firebase Production Infrastructure
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
-          npx firebase-tools deploy --only functions,firestore:rules,storage:rules,firestore:indexes --token "${{ secrets.FIREBASE_TOKEN }}"
+          if [ -z "$FIREBASE_TOKEN" ]; then
+            echo "❌ ERROR: No se detectó el secreto FIREBASE_TOKEN para producción. Despliegue abortado."
+            exit 1
+          fi
+          echo "🛡️ Desplegando a Producción (bluesystem-7c9af) bajo autorización ADR-014..."
+          npx firebase-tools@13.31.0 deploy --project bluesystem-7c9af --only functions,firestore:rules,firestore:indexes,storage --token "$FIREBASE_TOKEN"

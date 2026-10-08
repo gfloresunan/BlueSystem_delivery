@@ -1,5 +1,6 @@
 import * as admin from "firebase-admin";
 import { Logger } from "../shared/logger/logger";
+import { NotificationTemplateService } from "./notificationTemplateService";
 
 if (!admin.apps.length) {
   admin.initializeApp();
@@ -299,6 +300,13 @@ export async function notifyTargetedCouriers(
   if (tokens.size === 0) return;
 
   try {
+    const resolvedOffer = await NotificationTemplateService.resolve("XY_TARGETED_OFFER_COURIER", {
+      radiusKm: String(radiusKm),
+      originAddress: originAddress || "Origen",
+      destinationAddress: destinationAddress || "Destino",
+      customerOffer: String(customerOffer),
+    });
+
     await messaging.sendEachForMulticast({
       tokens: Array.from(tokens),
       data: {
@@ -307,8 +315,8 @@ export async function notifyTargetedCouriers(
         tripId: tripId,
         serviceType: "X_TO_Y_DELIVERY",
         screen: "courier_dashboard",
-        title: `📦 ¡Nueva Encomienda X→Y (${radiusKm} km)!`,
-        body: `${originAddress} → ${destinationAddress} | Oferta: C$${customerOffer}`,
+        title: resolvedOffer.title,
+        body: resolvedOffer.body,
       },
       android: {
         priority: "high",

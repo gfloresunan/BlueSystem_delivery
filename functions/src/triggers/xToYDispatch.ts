@@ -3,6 +3,7 @@ import * as admin from "firebase-admin";
 import { advanceTripDispatch } from "../services/xToYDispatchEngine";
 import { Logger } from "../shared/logger/logger";
 import { EmailService } from "../services/emailService";
+import { NotificationTemplateService } from "../services/notificationTemplateService";
 
 const db = admin.firestore();
 
@@ -80,8 +81,12 @@ export const onTripCreated = functions.firestore
       
       const customerFee = Number(trip.deliveryFee || trip.calculatedFee || trip.customerOffer || 0);
       const tripIdShort = tripId.slice(-6).toUpperCase();
-      const notifTitle = "💳 Transferencia pendiente de verificación";
-      const notifBody = `La encomienda X→Y #${tripIdShort} tiene un comprobante pendiente de revisión por C$ ${customerFee.toFixed(2)}.`;
+      const resolvedAdmin = await NotificationTemplateService.resolve("XY_TRANSFER_VERIFY_ADMIN", {
+        tripShortCode: tripIdShort,
+        amount: customerFee.toFixed(2),
+      });
+      const notifTitle = resolvedAdmin.title;
+      const notifBody = resolvedAdmin.body;
 
       try {
         const { uids: adminUids, emails: adminEmails } = await getPlatformAdminRecipients();

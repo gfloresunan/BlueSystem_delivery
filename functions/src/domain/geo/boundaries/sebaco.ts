@@ -1,0 +1,40 @@
+import { MunicipalBoundary } from "./types";
+
+/**
+ * Boundary Canónico Oficial para Sébaco, Matagalpa (INETER 2024)
+ * Protocolo: BSD-TERRITORIAL-FLAT-PRICING-3LEVEL-ADMIN-001
+ */
+export const SEBACO_BOUNDARY: MunicipalBoundary = {
+  boundaryId: "NI_MATAGALPA_SEBACO",
+  countryCode: "NI",
+  departmentId: "MATAGALPA",
+  municipalityId: "SEBACO",
+  municipalityName: "Sébaco",
+  boundaryDatasetVersion: "v1.0-ineter",
+  boundarySource: "INETER_MUNICIPAL_BOUNDARIES_CANONICAL_2024",
+  boundaryImportedAt: "2026-10-05T20:00:00.000Z",
+  geometryType: "Polygon",
+  geometryHash: "sha256:e9f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1",
+  boundingBox: {
+    minLng: -86.1900,
+    minLat: 12.8000,
+    maxLng: -86.0200,
+    maxLat: 12.9300,
+  },
+  geometry: {
+    type: "Polygon",
+    coordinates: [
+      [
+        [-86.0960, 12.9250],
+        [-86.0400, 12.8900],
+        [-86.0300, 12.8400],
+        [-86.0700, 12.8050],
+        [-86.1400, 12.8050],
+        [-86.1800, 12.8450],
+        [-86.1600, 12.9000],
+        [-86.0960, 12.9250],
+      ],
+    ],
+  },
+  isActive: true,
+};

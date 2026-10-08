@@ -211,76 +211,59 @@ export const setMembershipClaims = functions.firestore
     );
   });
 
+import { NotificationTemplateService } from "../services/notificationTemplateService";
+
 /**
  * Despacha de forma server-authoritative e idempotente la notificación de bienvenida
- * al buzón /users/{uid}/notifications/WELCOME_FIRST_REGISTRATION_V1 con TTL de 72 horas.
+ * al buzón /users/{uid}/notifications/WELCOME_CUSTOMER con TTL de 72 horas.
  */
 async function dispatchWelcomeNotification(uid: string, customerName: string): Promise<void> {
   const db = admin.firestore();
-  const notifRef = db.collection("users").doc(uid).collection("notifications").doc("WELCOME_FIRST_REGISTRATION_V1");
-  const doc = await notifRef.get();
-  if (doc.exists) {
-    functions.logger.info(`[WELCOME_FIRST_REGISTRATION] Notificación ya existe para uid=${uid}. Omitiendo recreación.`);
+  const notifRef = db.collection("users").doc(uid).collection("notifications").doc("WELCOME_CUSTOMER");
+  const legacyRef = db.collection("users").doc(uid).collection("notifications").doc("WELCOME_FIRST_REGISTRATION_V1");
+
+  const [docSnap, legacySnap] = await Promise.all([notifRef.get(), legacyRef.get()]);
+  if (docSnap.exists || legacySnap.exists) {
+    functions.logger.info(`[WELCOME_CUSTOMER] Notificación de bienvenida ya existe para uid=${uid}. Omitiendo recreación.`);
     return;
   }
 
-  const now = Date.now();
-  const expiresAt = admin.firestore.Timestamp.fromMillis(now + 72 * 60 * 60 * 1000);
-  const title = "¡Bienvenido a BlueSystem! 👋";
-  const body = `Hola ${customerName}, estamos felices de tenerte. Descubre comercios, productos y ofertas cerca de ti.`;
-
-  await notifRef.set({
-    id: "WELCOME_FIRST_REGISTRATION_V1",
-    notificationId: "WELCOME_FIRST_REGISTRATION_V1",
-    type: "WELCOME_FIRST_REGISTRATION",
-    category: "Sistema",
-    title,
-    body,
-    priority: "NORMAL",
-    action: "OPEN_HOME",
-    destinationType: "CUSTOMER_HOME",
-    destinationRoute: "customer_dashboard",
-    source: "SYSTEM",
-    isRead: false,
-    read: false,
-    deletedByUser: false,
-    visibilityStatus: "VISIBLE",
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-    sentAt: admin.firestore.FieldValue.serverTimestamp(),
-    expiresAt,
-    version: 1,
+  const resolved = await NotificationTemplateService.resolve("WELCOME_CUSTOMER", {
+    customerName: customerName || "Cliente",
   });
 
-  functions.logger.info(`[WELCOME_FIRST_REGISTRATION] Creada notificación in-app para uid=${uid} con expiración en 72h`);
+  const now = Date.now();
+  const expiresAt = admin.firestore.Timestamp.fromMillis(now + 72 * 60 * 60 * 1000);
 
-  // Despachar Push si existen tokens registrados para el cliente
-  try {
-    const devicesSnap = await db.collection("user_devices")
-      .where("uid", "==", uid)
-      .where("isActive", "==", true)
-      .get();
+  // Consultar si ya existen tokens activos al momento del registro
+  const devicesSnap = await db.collection("user_devices")
+    .where("uid", "==", uid)
+    .where("isActive", "==", true)
+    .get();
 
-    const tokens: string[] = [];
-    devicesSnap.forEach((d) => {
-      const t = d.data()?.fcmToken?.trim();
-      if (t && t.length > 20 && !tokens.includes(t)) {
-        tokens.push(t);
-      }
-    });
+  const tokens: string[] = [];
+  devicesSnap.forEach((d) => {
+    const t = (d.data()?.fcmToken || d.data()?.token || "").toString().trim();
+    if (t && t.length > 20 && !tokens.includes(t)) {
+      tokens.push(t);
+    }
+  });
 
-    if (tokens.length > 0) {
+  let pushSent = false;
+  if (tokens.length > 0) {
+    try {
       await admin.messaging().sendEachForMulticast({
         tokens,
-        notification: { title, body },
+        notification: { title: resolved.title, body: resolved.body },
         data: {
-          action: "WELCOME_FIRST_REGISTRATION",
-          type: "WELCOME_FIRST_REGISTRATION",
+          action: "WELCOME_CUSTOMER",
+          type: "WELCOME_CUSTOMER",
           destinationType: "CUSTOMER_HOME",
-          route: "customer_dashboard",
-          screen: "customer_dashboard",
-          title,
-          body,
-          notificationId: "WELCOME_FIRST_REGISTRATION_V1",
+          route: resolved.destinationRoute || "customer_dashboard",
+          screen: resolved.destinationRoute || "customer_dashboard",
+          title: resolved.title,
+          body: resolved.body,
+          notificationId: "WELCOME_CUSTOMER",
           priority: "NORMAL",
         },
         android: {
@@ -294,17 +277,135 @@ async function dispatchWelcomeNotification(uid: string, customerName: string): P
         apns: {
           payload: {
             aps: {
-              alert: { title, body },
+              alert: { title: resolved.title, body: resolved.body },
               sound: "default",
               badge: 1,
             },
           },
         },
       });
-      functions.logger.info(`[WELCOME_FIRST_REGISTRATION] Push enviado a ${tokens.length} dispositivo(s) de uid=${uid}`);
+      pushSent = true;
+      functions.logger.info(`[WELCOME_CUSTOMER] Push enviado inmediatamente a ${tokens.length} dispositivo(s) de uid=${uid}`);
+    } catch (pushErr: any) {
+      functions.logger.warn(`[WELCOME_CUSTOMER] Error enviando push de bienvenida para uid=${uid}:`, pushErr?.message);
     }
-  } catch (pushErr: any) {
-    functions.logger.warn(`[WELCOME_FIRST_REGISTRATION] Error enviando push de bienvenida para uid=${uid}: ${pushErr?.message}`);
   }
+
+  // Persistir documento en buzón In-App
+  await notifRef.set({
+    id: "WELCOME_CUSTOMER",
+    notificationId: "WELCOME_CUSTOMER",
+    type: "WELCOME_CUSTOMER",
+    category: resolved.category,
+    title: resolved.title,
+    body: resolved.body,
+    priority: resolved.priority,
+    action: resolved.action,
+    destinationType: "CUSTOMER_HOME",
+    destinationRoute: resolved.destinationRoute || "customer_dashboard",
+    source: "SYSTEM",
+    isRead: false,
+    read: false,
+    deletedByUser: false,
+    visibilityStatus: "VISIBLE",
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    sentAt: admin.firestore.FieldValue.serverTimestamp(),
+    expiresAt,
+    pushSent,
+    version: 1,
+  });
+
+  functions.logger.info(`[WELCOME_CUSTOMER] Creada notificación in-app para uid=${uid} (pushSent=${pushSent}) con expiración en 72h`);
 }
+
+/**
+ * Trigger: onUserDeviceCreatedSyncWelcome (/user_devices/{deviceDocId})
+ * Resuelve la condición de carrera entre el registro del usuario y el registro de su token FCM.
+ * Si un cliente tiene pendiente su Push de bienvenida (pushSent === false), lo despacha de inmediato
+ * de forma atómica e idempotente.
+ */
+export const onUserDeviceCreatedSyncWelcome = functions.firestore
+  .document("user_devices/{deviceDocId}")
+  .onWrite(async (change, context) => {
+    const after = change.after.exists ? change.after.data() : null;
+    if (!after || after.isActive !== true) return null;
+
+    const uid = (after.uid || "").toString().trim();
+    if (!uid || uid.startsWith("guest_") || uid.startsWith("device_")) return null;
+
+    const token = (after.fcmToken || after.token || "").toString().trim();
+    if (!token || token.length < 20) return null;
+
+    const db = admin.firestore();
+    const welcomeRef = db.collection("users").doc(uid).collection("notifications").doc("WELCOME_CUSTOMER");
+
+    // Transacción atómica para evitar duplicados en retries o dispositivos simultáneos
+    let shouldSend = false;
+    let notifTitle = "👋 ¡Bienvenido a TuaniGo!";
+    let notifBody = "Tu nueva forma de pedir, enviar y moverte está aquí. Descubrí comercios, solicitá entregas y disfrutá TuaniGo.";
+
+    try {
+      await db.runTransaction(async (transaction) => {
+        const notifSnap = await transaction.get(welcomeRef);
+        if (!notifSnap.exists) return;
+        const data = notifSnap.data() || {};
+        if (data.pushSent === true) return;
+
+        notifTitle = data.title || notifTitle;
+        notifBody = data.body || notifBody;
+
+        transaction.update(welcomeRef, {
+          pushSent: true,
+          pushSentAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+        shouldSend = true;
+      });
+    } catch (err: any) {
+      functions.logger.warn(`[WELCOME_CUSTOMER] Error en transacción de sync de dispositivo para uid=${uid}:`, err?.message);
+      return null;
+    }
+
+    if (!shouldSend) return null;
+
+    try {
+      await admin.messaging().sendEachForMulticast({
+        tokens: [token],
+        notification: { title: notifTitle, body: notifBody },
+        data: {
+          action: "WELCOME_CUSTOMER",
+          type: "WELCOME_CUSTOMER",
+          destinationType: "CUSTOMER_HOME",
+          route: "customer_dashboard",
+          screen: "customer_dashboard",
+          title: notifTitle,
+          body: notifBody,
+          notificationId: "WELCOME_CUSTOMER",
+          priority: "NORMAL",
+        },
+        android: {
+          priority: "normal",
+          directBootOk: true,
+          notification: {
+            channelId: "order_status_channel",
+            icon: "ic_notification",
+          },
+        } as any,
+        apns: {
+          payload: {
+            aps: {
+              alert: { title: notifTitle, body: notifBody },
+              sound: "default",
+              badge: 1,
+            },
+          },
+        },
+      });
+      functions.logger.info(`[WELCOME_CUSTOMER] Push diferido de bienvenida entregado exitosamente a dispositivo para uid=${uid}`);
+    } catch (pushErr: any) {
+      functions.logger.warn(`[WELCOME_CUSTOMER] Error despachando push diferido:`, pushErr?.message);
+    }
+
+    return null;
+  });
+
 

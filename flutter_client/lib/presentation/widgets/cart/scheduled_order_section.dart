@@ -141,17 +141,19 @@ class _ScheduledOrderSectionState extends State<ScheduledOrderSection> {
               )
             : <ScheduledSlot>[];
 
-        return Container(
-          margin: const EdgeInsets.symmetric(vertical: 8),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Material(
             color: BSColors.surfaceDark,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: BSColors.outlineVariantDark),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: const BorderSide(color: BSColors.outlineVariantDark),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
               // 1. Selector de Modo: Inmediato vs Programado
               Row(
                 children: [
@@ -313,20 +315,23 @@ class _ScheduledOrderSectionState extends State<ScheduledOrderSection> {
               const Divider(color: BSColors.outlineVariantDark, height: 28),
 
               // 4. Enviar a otra persona / Destinatario
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text(
-                  '🎁 ¿Es un pedido para otra persona o regalo?',
-                  style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
+              Material(
+                type: MaterialType.transparency,
+                child: SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text(
+                    '🎁 ¿Es un pedido para otra persona o regalo?',
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
+                  ),
+                  value: _showRecipientForm,
+                  onChanged: (val) {
+                    setState(() {
+                      _showRecipientForm = val;
+                    });
+                    _syncRecipient();
+                  },
+                  activeColor: BSColors.primary,
                 ),
-                value: _showRecipientForm,
-                onChanged: (val) {
-                  setState(() {
-                    _showRecipientForm = val;
-                  });
-                  _syncRecipient();
-                },
-                activeColor: BSColors.primary,
               ),
 
               if (_showRecipientForm) ...[
@@ -373,20 +378,23 @@ class _ScheduledOrderSectionState extends State<ScheduledOrderSection> {
 
                 const SizedBox(height: 12),
                 // Toggle Tarjeta de Regalo
-                CheckboxListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: const Text(
-                    'Incluir tarjeta de dedicatoria de regalo 💌',
-                    style: TextStyle(fontSize: 13, color: Colors.white),
+                Material(
+                  type: MaterialType.transparency,
+                  child: CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: const Text(
+                      'Incluir tarjeta de dedicatoria de regalo 💌',
+                      style: TextStyle(fontSize: 13, color: Colors.white),
+                    ),
+                    value: _showGiftForm,
+                    onChanged: (val) {
+                      setState(() {
+                        _showGiftForm = val ?? false;
+                      });
+                      _syncGift();
+                    },
+                    activeColor: BSColors.primary,
                   ),
-                  value: _showGiftForm,
-                  onChanged: (val) {
-                    setState(() {
-                      _showGiftForm = val ?? false;
-                    });
-                    _syncGift();
-                  },
-                  activeColor: BSColors.primary,
                 ),
 
                 if (_showGiftForm) ...[
@@ -451,20 +459,23 @@ class _ScheduledOrderSectionState extends State<ScheduledOrderSection> {
                     ),
                     onChanged: (_) => _syncGift(),
                   ),
-                  CheckboxListTile(
-                    contentPadding: EdgeInsets.zero,
-                    title: const Text(
-                      'Enviar como regalo anónimo 🕶️',
-                      style: TextStyle(fontSize: 12, color: Colors.white70),
+                  Material(
+                    type: MaterialType.transparency,
+                    child: CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text(
+                        'Enviar como regalo anónimo 🕶️',
+                        style: TextStyle(fontSize: 12, color: Colors.white70),
+                      ),
+                      value: _isAnonymous,
+                      onChanged: (val) {
+                        setState(() {
+                          _isAnonymous = val ?? false;
+                        });
+                        _syncGift();
+                      },
+                      activeColor: BSColors.primary,
                     ),
-                    value: _isAnonymous,
-                    onChanged: (val) {
-                      setState(() {
-                        _isAnonymous = val ?? false;
-                      });
-                      _syncGift();
-                    },
-                    activeColor: BSColors.primary,
                   ),
                 ],
               ],
@@ -523,9 +534,11 @@ class _ScheduledOrderSectionState extends State<ScheduledOrderSection> {
               ),
             ],
           ),
-        );
-      },
+        ),
+      ),
     );
+  },
+);
   }
 
   Widget _buildModeTab({

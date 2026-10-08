@@ -322,6 +322,7 @@ export interface BusinessEntity {
   slug: string;                        // Slug para URL y subdominio
   category: string;                    // Categoría principal (ej. "RESTAURANT")
   status: 'ACTIVE' | 'INACTIVE' | 'ARCHIVED';
+  scheduledOrdersEnabled?: boolean;   // BSD-SCHEDULED-COMMERCE-PHASE-1-CAPABILITY-001
   settings?: {
     currency?: string;
     timezone?: string;

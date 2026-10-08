@@ -5,6 +5,8 @@ import {
   calculateCommerceDeliveryRoute,
   RoutingOptions,
 } from "../services/routingService";
+import { validatePointInMunicipality } from "../services/municipalGeoIntegrityService";
+import { resolveTerritorialPricingPolicy } from "../services/territorialPricingService";
 
 /**
  * Callable HTTPS: calculateDeliveryRouteCallable
@@ -37,13 +39,112 @@ export const calculateDeliveryRouteCallable = functions.https.onCall(async (data
     const businessId = (data?.businessId || data?.storeId || data?.comercioId || "").toString().trim() || undefined;
     const branchId = (data?.branchId || data?.sucursalId || "").toString().trim() || undefined;
 
+    let deptInput = departmentId;
+    let muniInput = municipalityId;
+
+    if (isCommerce && !muniInput && businessId) {
+      try {
+        const bDoc = await admin.firestore().collection("businesses").doc(businessId).get();
+        if (bDoc.exists) {
+          const bData = bDoc.data() || {};
+          deptInput = deptInput || bData.departmentId || bData.departamento || bData.department;
+          muniInput = bData.municipalityId || bData.municipio || bData.municipality || bData.cityId || bData.city;
+        }
+      } catch (bErr) {
+        functions.logger.warn(`[CALLABLE] No se pudo leer municipio del comercio ${businessId}:`, bErr);
+      }
+    }
+
+    // ── MUNICIPAL GEO INTEGRITY GATE (BSD-MUNICIPAL-GEO-INTEGRITY-GATE-001) ──
+    let originGeoCheck: any = null;
+    let destGeoCheck: any = null;
+
+    if (isCommerce) {
+      const declaredMuni = muniInput || "UNKNOWN";
+      originGeoCheck = await validatePointInMunicipality({
+        countryCode: "NI",
+        departmentId: deptInput,
+        municipalityId: declaredMuni,
+        latitude: originLat,
+        longitude: originLng,
+      });
+
+      if (!originGeoCheck.valid) {
+        if (originGeoCheck.status === "OUTSIDE_MUNICIPALITY") {
+          throw new functions.https.HttpsError(
+            "failed-precondition",
+            `ORIGIN_MUNICIPALITY_MISMATCH: Las coordenadas del comercio no pertenecen al municipio configurado (${declaredMuni}).`
+          );
+        } else if (originGeoCheck.status === "BOUNDARY_UNAVAILABLE") {
+          throw new functions.https.HttpsError(
+            "failed-precondition",
+            `MUNICIPAL_BOUNDARY_UNAVAILABLE: Polígono municipal no disponible para validar el comercio.`
+          );
+        } else {
+          throw new functions.https.HttpsError(
+            "invalid-argument",
+            `INVALID_ORIGIN_COORDINATES: Coordenadas de origen inválidas.`
+          );
+        }
+      }
+
+      const destMuniInput = (data?.destinationMunicipalityId || data?.destMunicipalityId || declaredMuni).toString().trim().toUpperCase();
+
+      destGeoCheck = await validatePointInMunicipality({
+        countryCode: "NI",
+        departmentId: deptInput,
+        municipalityId: destMuniInput,
+        latitude: destLat,
+        longitude: destLng,
+      });
+
+      if (!destGeoCheck.valid) {
+        if (destGeoCheck.status === "OUTSIDE_MUNICIPALITY") {
+          throw new functions.https.HttpsError(
+            "failed-precondition",
+            `DESTINATION_MUNICIPALITY_MISMATCH: La dirección de destino se encuentra fuera de los límites de ${destMuniInput}.`
+          );
+        } else if (destGeoCheck.status === "BOUNDARY_UNAVAILABLE") {
+          throw new functions.https.HttpsError(
+            "failed-precondition",
+            `MUNICIPAL_BOUNDARY_UNAVAILABLE: Polígono municipal no disponible para validar el destino.`
+          );
+        } else {
+          throw new functions.https.HttpsError(
+            "invalid-argument",
+            `INVALID_DESTINATION_COORDINATES: Coordenadas de destino inválidas.`
+          );
+        }
+      }
+
+      // Verificación estricta de aislamiento intramunicipal Commerce con excepción de Nivel 3 autorizado
+      if (originGeoCheck.declaredMunicipalityId && destGeoCheck.declaredMunicipalityId &&
+          originGeoCheck.declaredMunicipalityId !== destGeoCheck.declaredMunicipalityId) {
+        const territorialRes = await resolveTerritorialPricingPolicy(deptInput, originGeoCheck.declaredMunicipalityId, {
+          destinationCoordinates: { latitude: destLat, longitude: destLng },
+          originCoordinates: { latitude: originLat, longitude: originLng },
+          destinationMunicipalityInput: destGeoCheck.declaredMunicipalityId,
+          destinationDepartmentInput: data?.destinationDepartmentId || deptInput,
+        });
+
+        if (!territorialRes.isApplied || territorialRes.territorialLevel !== "INTER_MUNICIPAL") {
+          throw new functions.https.HttpsError(
+            "failed-precondition",
+            `CROSS_CITY_ORDER_BLOCKED: Envíos comerciales entre municipios no autorizados (${originGeoCheck.declaredMunicipalityId} -> ${destGeoCheck.declaredMunicipalityId}). Utilice X->Y o configure ruta Nivel 3.`
+          );
+        }
+      }
+    }
+
     const options: RoutingOptions = {
       origin: { latitude: originLat, longitude: originLng },
       destination: { latitude: destLat, longitude: destLng },
       transportProfile,
       tenantId,
-      departmentId,
-      municipalityId,
+      departmentId: deptInput,
+      municipalityId: muniInput,
+      destinationDepartmentId: data?.destinationDepartmentId || deptInput,
+      destinationMunicipalityId: destGeoCheck?.declaredMunicipalityId || data?.destinationMunicipalityId || muniInput,
       businessId,
       branchId,
     };
@@ -55,14 +156,29 @@ export const calculateDeliveryRouteCallable = functions.https.onCall(async (data
     let quoteId: string | null = null;
     let quoteExpiresAt: string | null = null;
 
-    // FEATURE GATE: /pricing_quotes solo se genera cuando la resolución territorial es FLAT y el usuario está autenticado.
-    // Esto garantiza que Gate A sea 100% inerte para todos los municipios DISTANCE (cero writes, cero reads, cero costo adicional).
+    // FEATURE GATE: /pricing_quotes solo se genera cuando la resolución territorial es FLAT / TERRITORIAL_FLAT y el usuario está autenticado.
+    // Esto garantiza que sea 100% inerte para todos los municipios DISTANCE (cero writes, cero reads, cero costo adicional).
     const isFlatPolicyApplied = isCommerce &&
-      routingResult.pricingSnapshot?.pricingMode === "FLAT" &&
-      routingResult.pricingSnapshot?.fixedDeliveryFee != null &&
-      routingResult.calculatedFee != null;
+      (routingResult.pricingSnapshot?.pricingMode === "FLAT" || routingResult.pricingSnapshot?.pricingMode === "TERRITORIAL_FLAT") &&
+      (routingResult.pricingSnapshot?.fixedDeliveryFee != null || routingResult.calculatedFee != null);
 
     const authenticatedUid = context.auth?.uid;
+
+    const geoIntegritySnapshot = isCommerce && originGeoCheck && destGeoCheck ? {
+      originMunicipalityId: originGeoCheck.declaredMunicipalityId,
+      destinationMunicipalityId: destGeoCheck.declaredMunicipalityId,
+      originValidation: originGeoCheck.status,
+      destinationValidation: destGeoCheck.status,
+      boundaryVersion: originGeoCheck.boundaryVersion || destGeoCheck.boundaryVersion || "v1.0",
+      validatedAt: new Date().toISOString(),
+    } : null;
+
+    if (geoIntegritySnapshot) {
+      (routingResult as any).geoIntegritySnapshot = geoIntegritySnapshot;
+      if (routingResult.pricingSnapshot) {
+        (routingResult.pricingSnapshot as any).geoIntegritySnapshot = geoIntegritySnapshot;
+      }
+    }
 
     if (isFlatPolicyApplied && authenticatedUid) {
       try {
@@ -77,6 +193,11 @@ export const calculateDeliveryRouteCallable = functions.https.onCall(async (data
         const quoteMuniId = (options.municipalityId || routingResult.pricingSnapshot?.municipalityId || "").toString().trim() || null;
         const quoteBizId = (options.businessId || "").toString().trim() || null;
         const quoteBranchId = (options.branchId || "").toString().trim() || null;
+        const quotePricingMode = routingResult.pricingSnapshot?.pricingMode || "FLAT";
+        const quoteTerritorialLevel = (routingResult.pricingSnapshot as any)?.territorialLevel || null;
+        const quoteInterMunicipalRouteId = (routingResult.pricingSnapshot as any)?.interMunicipalRouteId || null;
+        const quoteDestDeptId = (options.destinationDepartmentId || (routingResult.pricingSnapshot as any)?.destinationDepartmentId || quoteDeptId || "").toString().trim() || null;
+        const quoteDestMuniId = (options.destinationMunicipalityId || (routingResult.pricingSnapshot as any)?.destinationMunicipalityId || quoteMuniId || "").toString().trim() || null;
 
         await quoteRef.set({
           quoteId,
@@ -85,10 +206,14 @@ export const calculateDeliveryRouteCallable = functions.https.onCall(async (data
           branchId: quoteBranchId,
           departmentId: quoteDeptId,
           municipalityId: quoteMuniId,
+          destinationDepartmentId: quoteDestDeptId,
+          destinationMunicipalityId: quoteDestMuniId,
           countryCode: (routingResult.pricingSnapshot?.countryCode || "NI").toString().trim().toUpperCase(),
           deliveryFee: routingResult.calculatedFee,
           courierEarnings: routingResult.pricingSnapshot?.courierEarnings ?? 0,
-          pricingMode: "FLAT",
+          pricingMode: quotePricingMode,
+          territorialLevel: quoteTerritorialLevel,
+          interMunicipalRouteId: quoteInterMunicipalRouteId,
           pricingPolicyId: routingResult.pricingSnapshot?.pricingPolicyId ?? null,
           pricingPolicyVersion: routingResult.pricingSnapshot?.pricingPolicyVersion ?? null,
           distanceMeters: routingResult.routeDistanceMeters,
@@ -98,6 +223,7 @@ export const calculateDeliveryRouteCallable = functions.https.onCall(async (data
           destLat: Math.round(options.destination.latitude * 10000) / 10000,
           destLng: Math.round(options.destination.longitude * 10000) / 10000,
           currency: routingResult.pricingSnapshot?.currency || "NIO",
+          geoIntegritySnapshot: geoIntegritySnapshot || null,
           expiresAt: admin.firestore.Timestamp.fromDate(expiresAtDate),
           ttlExpiresAt: admin.firestore.Timestamp.fromDate(ttlExpiresAtDate),
           used: false,
