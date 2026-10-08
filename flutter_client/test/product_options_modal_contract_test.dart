@@ -64,6 +64,10 @@ class MockMerchantService implements IMerchantService {
 
   @override
   Stream<List<HomeEditorialAdEntity>> watchHomeEditorialAds({String? tenantId}) => Stream.value([]);
+  @override
+  Stream<List<HomeServiceCategoryEntity>> watchHomeServiceCategories({String? tenantId}) => Stream.value([]);
+  @override
+  Future<List<BusinessEntity>> getActiveBusinesses({String? tenantId}) async => products.isNotEmpty && business != null ? [business!] : [];
 }
 
 void main() {

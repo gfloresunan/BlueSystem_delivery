@@ -5,6 +5,8 @@
 import 'package:flutter/foundation.dart';
 import '../../core/observability/app_logger.dart';
 import '../../domain/entities/catalog_entity.dart';
+import '../../domain/entities/scheduled_order_entity.dart';
+import '../../core/engine/scheduled_commerce_engine.dart';
 
 class CartItem {
   final String id;
@@ -273,8 +275,65 @@ class CartProvider extends ChangeNotifier {
     }
   }
 
+  bool _isScheduled = false;
+  bool get isScheduled => _isScheduled;
+
+  ScheduledDay? _selectedScheduledDay;
+  ScheduledDay? get selectedScheduledDay => _selectedScheduledDay;
+
+  ScheduledSlot? _selectedScheduledSlot;
+  ScheduledSlot? get selectedScheduledSlot => _selectedScheduledSlot;
+
+  RecipientInfoEntity? _recipientInfo;
+  RecipientInfoEntity? get recipientInfo => _recipientInfo;
+
+  GiftDetailsEntity? _giftDetails;
+  GiftDetailsEntity? get giftDetails => _giftDetails;
+
+  SpecialHandlingEntity? _specialHandling;
+  SpecialHandlingEntity? get specialHandling => _specialHandling;
+
+  void setDeliveryMode({required bool scheduled}) {
+    if (_isScheduled != scheduled) {
+      _isScheduled = scheduled;
+      notifyListeners();
+    }
+  }
+
+  void setScheduledDay(ScheduledDay? day) {
+    _selectedScheduledDay = day;
+    _selectedScheduledSlot = null;
+    notifyListeners();
+  }
+
+  void setScheduledSlot(ScheduledSlot? slot) {
+    _selectedScheduledSlot = slot;
+    notifyListeners();
+  }
+
+  void setRecipientInfo(RecipientInfoEntity? info) {
+    _recipientInfo = info;
+    notifyListeners();
+  }
+
+  void setGiftDetails(GiftDetailsEntity? details) {
+    _giftDetails = details;
+    notifyListeners();
+  }
+
+  void setSpecialHandling(SpecialHandlingEntity? handling) {
+    _specialHandling = handling;
+    notifyListeners();
+  }
+
   void clearCart() {
     _items.clear();
+    _isScheduled = false;
+    _selectedScheduledDay = null;
+    _selectedScheduledSlot = null;
+    _recipientInfo = null;
+    _giftDetails = null;
+    _specialHandling = null;
     notifyListeners();
   }
 }

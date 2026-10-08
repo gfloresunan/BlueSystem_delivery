@@ -35,6 +35,7 @@ import '../orders/orders_screen.dart';
 import '../trips/trips_screen.dart';
 import '../trips/solicitar_envio_screen.dart';
 import '../trips/trip_live_tracking_screen.dart';
+import '../../widgets/cart/scheduled_order_section.dart';
 
 class AppShell extends StatefulWidget {
   final SessionState sessionState;
@@ -1819,6 +1820,14 @@ class _AppShellState extends State<AppShell> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                // ── SECCIÓN PROGRAMACIÓN DE ENTREGA (GATED POR CAPABILITY) ───────────
+                                if (business != null && business.scheduledOrdersEnabled) ...[
+                                  ScheduledOrderSection(
+                                    business: business,
+                                    cart: _cart,
+                                  ),
+                                  const SizedBox(height: 12),
+                                ],
                                 const Row(
                                   children: [
                                     Icon(Icons.location_on, size: 16, color: Color(0xFF10B981)),
@@ -2071,6 +2080,32 @@ class _AppShellState extends State<AppShell> {
                             onPressed: (isSubmittingOrder || _cart.isCalculatingQuote)
                                 ? null
                                 : () async {
+                                    if (_cart.isScheduled) {
+                                      if (_cart.selectedScheduledSlot == null || !_cart.selectedScheduledSlot!.isAvailable) {
+                                        if (ctx.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('⚠️ Por favor selecciona un horario de entrega disponible.'),
+                                              behavior: SnackBarBehavior.floating,
+                                            ),
+                                          );
+                                        }
+                                        return;
+                                      }
+                                      if (_cart.recipientInfo?.isThirdParty == true &&
+                                          (_cart.recipientInfo!.name.trim().isEmpty || _cart.recipientInfo!.phone.trim().isEmpty)) {
+                                        if (ctx.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            const SnackBar(
+                                              content: Text('⚠️ Por favor ingresa el nombre y teléfono de quien recibirá el pedido.'),
+                                              behavior: SnackBarBehavior.floating,
+                                            ),
+                                          );
+                                        }
+                                        return;
+                                      }
+                                    }
+
                                     setModalState(() => isSubmittingOrder = true);
 
                                     final user = widget.sessionState.currentUser!;
@@ -2211,10 +2246,26 @@ class _AppShellState extends State<AppShell> {
                                         'latitude': bizLat,
                                         'longitude': bizLng,
                                       },
-                                      'orderCodePrefix': cleanPrefix,
+                                      'orderCodePrefix': _cart.isScheduled ? 'SCH' : cleanPrefix,
                                       'platform': 'IOS',
                                       'courierPhase': 1,
                                       'hasBeenRated': false,
+                                      if (_cart.isScheduled && _cart.selectedScheduledSlot != null)
+                                        'fulfillmentTiming': {
+                                          'mode': 'SCHEDULED',
+                                          'windowStartAt': _cart.selectedScheduledSlot!.windowStartAt.toIso8601String(),
+                                          'windowEndAt': _cart.selectedScheduledSlot!.windowEndAt.toIso8601String(),
+                                          'timezone': 'America/Managua',
+                                          'slotKey': _cart.selectedScheduledSlot!.slotKey,
+                                          'preparationLeadMinutes': 60,
+                                          'dispatchLeadMinutes': 30,
+                                        },
+                                      if (_cart.recipientInfo != null && _cart.recipientInfo!.isThirdParty)
+                                        'recipient': _cart.recipientInfo!.toMap(),
+                                      if (_cart.giftDetails != null && _cart.giftDetails!.isGift)
+                                        'giftDetails': _cart.giftDetails!.toMap(),
+                                      if (_cart.specialHandling != null)
+                                        'specialHandling': _cart.specialHandling!.toMap(),
                                     };
 
                                     try {
@@ -2256,8 +2307,12 @@ class _AppShellState extends State<AppShell> {
                                       color: Colors.white,
                                     ),
                                   )
-                                : Text('Confirmar Pedido (C\$ ${currentTotal.toInt()})',
-                                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                                : Text(
+                                    _cart.isScheduled
+                                        ? 'CONFIRMAR ENTREGA PROGRAMADA 📅'
+                                        : 'Confirmar Pedido (C\$ ${currentTotal.toInt()})',
+                                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                                  ),
                           ),
                         ),
                       ],

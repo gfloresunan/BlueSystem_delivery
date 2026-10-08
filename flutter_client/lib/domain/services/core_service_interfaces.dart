@@ -7,6 +7,7 @@ import '../../core/config/app_config.dart';
 import '../../core/gatekeeper/gatekeeper.dart';
 import '../../core/subscription/subscription_context.dart';
 import '../../core/tenant/tenant_context.dart';
+import '../entities/home_service_category_entity.dart';
 import '../entities/banner_entity.dart';
 import '../entities/catalog_entity.dart';
 import '../entities/courier_location_entity.dart';
@@ -14,6 +15,8 @@ import '../entities/order_entity.dart';
 import '../entities/saved_address_entity.dart';
 import '../entities/trip_entity.dart';
 import '../entities/user_profile_entity.dart';
+
+export '../entities/home_service_category_entity.dart';
 
 abstract class IBannerService {
   Stream<List<BannerEntity>> watchActiveBanners({String? tenantId});
@@ -119,6 +122,9 @@ abstract class IMerchantService {
   Stream<List<ProductEntity>> watchDiscountedProducts({required String tenantId});
   Stream<List<HomeEditorialAdEntity>> watchHomeEditorialAds({String? tenantId}) =>
       const Stream.empty();
+  Stream<List<HomeServiceCategoryEntity>> watchHomeServiceCategories({String? tenantId}) =>
+      const Stream.empty();
+  Future<List<BusinessEntity>> getActiveBusinesses({String? tenantId}) async => [];
   Future<void> updateProductQuick(
     String productId, {
     required String name,

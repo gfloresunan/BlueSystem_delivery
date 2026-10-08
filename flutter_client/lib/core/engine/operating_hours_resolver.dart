@@ -26,6 +26,20 @@ class DayScheduleConfig {
   });
 }
 
+class TimeInterval {
+  final int openHour;
+  final int openMinute;
+  final int closeHour;
+  final int closeMinute;
+
+  const TimeInterval({
+    required this.openHour,
+    required this.openMinute,
+    required this.closeHour,
+    required this.closeMinute,
+  });
+}
+
 class OperatingHoursResolver {
   static const String defaultTimezone = 'America/Managua';
 
@@ -34,12 +48,50 @@ class OperatingHoursResolver {
     dynamic schedule,
     bool manualOpen = true,
     DateTime? targetDateTime,
+    String? timezone,
   }) {
     return resolveStatus(
       schedule: schedule,
       manualOpen: manualOpen,
       targetDateTime: targetDateTime,
     ).isOpen;
+  }
+
+  /// Resolves operating intervals for a specific target day.
+  static List<TimeInterval> getOperatingIntervalsForDay({
+    dynamic schedule,
+    required DateTime targetDate,
+  }) {
+    final scheduleMap = _extractScheduleMap(schedule);
+    if (scheduleMap == null || scheduleMap.isEmpty) {
+      return [
+        const TimeInterval(openHour: 8, openMinute: 0, closeHour: 22, closeMinute: 0),
+      ];
+    }
+    final config = _getDayConfig(scheduleMap, targetDate.weekday);
+    if (config == null || !config.isOpen) {
+      return [];
+    }
+    if (config.openTime == null || config.closeTime == null) {
+      return [
+        const TimeInterval(openHour: 8, openMinute: 0, closeHour: 22, closeMinute: 0),
+      ];
+    }
+    final openMinutes = _parseTimeToMinutes(config.openTime);
+    final closeMinutes = _parseTimeToMinutes(config.closeTime);
+    if (openMinutes == null || closeMinutes == null) {
+      return [
+        const TimeInterval(openHour: 8, openMinute: 0, closeHour: 22, closeMinute: 0),
+      ];
+    }
+    return [
+      TimeInterval(
+        openHour: openMinutes ~/ 60,
+        openMinute: openMinutes % 60,
+        closeHour: closeMinutes ~/ 60,
+        closeMinute: closeMinutes % 60,
+      ),
+    ];
   }
 
   /// Resolves the detailed operating status.

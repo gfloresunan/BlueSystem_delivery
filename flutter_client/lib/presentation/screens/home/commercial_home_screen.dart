@@ -22,9 +22,11 @@ import '../../../data/services/user_firestore_service.dart';
 import '../../../domain/entities/banner_entity.dart';
 import '../../../domain/entities/catalog_entity.dart';
 import '../../../domain/services/core_service_interfaces.dart';
+import '../../../core/router/destination_router.dart';
 import '../../providers/session_state.dart';
 import '../../theme/brand_theme_builder.dart';
 import '../merchant/merchant_detail_screen.dart';
+import 'widgets/service_explorer_section.dart';
 import '../../widgets/editorial/editorial_ads_carousel_widget.dart';
 
 class CommercialHomeScreen extends StatefulWidget {
@@ -448,6 +450,16 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
               )
             : const SizedBox.shrink();
 
+      case 'SERVICE_EXPLORER':
+        return config.showServiceExplorer
+            ? Column(
+                children: [
+                  const SizedBox(height: 16),
+                  _buildServiceExplorerSection(tenantId, config),
+                ],
+              )
+            : const SizedBox.shrink();
+
       case 'CATEGORIES':
         return config.showCategories
             ? Column(
@@ -615,10 +627,11 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // 1. TOPBAR & GRADIENT HEADER (Matching Android HomeHeader.kt)
+  // 1. TOPBAR & GRADIENT HEADER (Matching Android HomeHeader.kt / ADR-037 Compaction)
   // ═══════════════════════════════════════════════════════════════════════════
   Widget _buildCanonicalHeader(String currentUserName) {
-    final initialLetter = currentUserName.isNotEmpty ? currentUserName.substring(0, 1).toUpperCase() : 'C';
+    final firstName = currentUserName.trim().split(RegExp(r'\s+')).firstWhere((s) => s.isNotEmpty, orElse: () => currentUserName);
+    final initialLetter = firstName.isNotEmpty ? firstName.substring(0, 1).toUpperCase() : 'C';
 
     return Container(
       width: double.infinity,
@@ -632,7 +645,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
       child: SafeArea(
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -641,8 +654,8 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
                 children: [
                   // Circle Avatar
                   Container(
-                    width: 46,
-                    height: 46,
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.white,
@@ -661,12 +674,12 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
                         style: const TextStyle(
                           color: BrandColors.bluePrimary,
                           fontWeight: FontWeight.w900,
-                          fontSize: 20,
+                          fontSize: 18,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  const SizedBox(width: 10),
 
                   // Greeting texts
                   Expanded(
@@ -674,7 +687,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Hola, $currentUserName',
+                          'Hola, $firstName',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
@@ -688,14 +701,7 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
                           style: TextStyle(
                             color: Colors.white.withOpacity(0.92),
                             fontWeight: FontWeight.w600,
-                            fontSize: 12,
-                          ),
-                        ),
-                        Text(
-                          '¿Qué deseas pedir hoy?',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.78),
-                            fontSize: 10,
+                            fontSize: 11.5,
                           ),
                         ),
                       ],
@@ -746,40 +752,44 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 10),
 
-              // Location Row with Map Pin
-              InkWell(
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('📍 Entregar en: Managua, Nicaragua')),
-                  );
-                },
-                child: Row(
-                  children: [
-                    const Icon(Icons.location_on, color: Colors.white, size: 16),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Entregar en: ',
-                      style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.85)),
-                    ),
-                    const Expanded(
-                      child: Text(
-                        '4P4H+7W7, Pista de La Unan, Managua',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+              // Location Row with Map Pin (Accessible & Compact)
+              Semantics(
+                label: 'Dirección de entrega: Managua, Nicaragua. Toca para cambiar dirección.',
+                button: true,
+                child: InkWell(
+                  onTap: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('📍 Entregar en: Managua, Nicaragua')),
+                    );
+                  },
+                  child: Row(
+                    children: [
+                      const Icon(Icons.location_on, color: Colors.white, size: 16),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Entregar en: ',
+                        style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.85)),
                       ),
-                    ),
-                    const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 16),
-                  ],
+                      const Expanded(
+                        child: Text(
+                          '4P4H+7W7, Pista de La Unan, Managua',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 16),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 14),
+              const SizedBox(height: 12),
 
               // Search Bar Card (White rounded card with Voice Mic)
               Container(
@@ -835,6 +845,49 @@ class _CommercialHomeScreenState extends State<CommercialHomeScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // SERVICE EXPLORER SECTION (1:1 Android ServiceExplorerSection.kt / ADR-036)
+  // ═══════════════════════════════════════════════════════════════════════════
+  Widget _buildServiceExplorerSection(String tenantId, DashboardConfigEntity config) {
+    if (widget.merchantService == null) return const SizedBox.shrink();
+    final title = config.getDisplayTitle('SERVICE_EXPLORER', defaultTitle: 'Explora servicios');
+
+    return StreamBuilder<List<HomeServiceCategoryEntity>>(
+      stream: widget.merchantService!.watchHomeServiceCategories(tenantId: tenantId),
+      builder: (context, snapshot) {
+        final categories = snapshot.data ?? [];
+        return ServiceExplorerSection(
+          showServiceExplorer: config.showServiceExplorer,
+          serviceCategories: categories,
+          title: title,
+          onCategoryClick: (cat) {
+            DestinationRouter.navigate(
+              context: context,
+              navigationType: cat.navigationType,
+              target: cat.navigationTarget,
+              title: cat.name,
+              categorySlug: cat.slug,
+              serviceCategory: cat,
+              merchantService: widget.merchantService!,
+              onAddToCart: widget.onAddToCart,
+              onOpenExpress: widget.onOpenExpress,
+            );
+          },
+          onViewAllClick: () {
+            DestinationRouter.navigate(
+              context: context,
+              navigationType: 'ALL_SERVICES',
+              target: '',
+              merchantService: widget.merchantService!,
+              onAddToCart: widget.onAddToCart,
+              onOpenExpress: widget.onOpenExpress,
+            );
+          },
+        );
+      },
     );
   }
 

@@ -1,5 +1,8 @@
 /// BLUE SYSTEM DELIVERY ENTERPRISE — ORDER DOMAIN ENTITY
 /// Canonical schema for Commerce Orders (/orders/{orderId}).
+/// Full 1:1 Parity with Android Models.kt (Pedido).
+
+import 'scheduled_order_entity.dart';
 
 enum OrderStatus {
   pending,
@@ -90,6 +93,38 @@ class OrderEntity {
   final double? courierTip;
   final int createdAt;
   final int updatedAt;
+  final String orderCode;
+  final String orderCodePrefix;
+  final FulfillmentTimingEntity? fulfillmentTiming;
+  final RecipientInfoEntity? recipient;
+  final GiftDetailsEntity? giftDetails;
+  final SpecialHandlingEntity? specialHandling;
+
+  bool get isScheduledOrder =>
+      fulfillmentTiming?.mode.toUpperCase() == 'SCHEDULED' &&
+      fulfillmentTiming?.windowStartAt != null &&
+      fulfillmentTiming?.windowEndAt != null;
+
+  bool get isThirdPartyRecipient =>
+      recipient?.isThirdParty == true && (recipient?.name.trim().isNotEmpty ?? false);
+
+  bool get isGiftOrder => giftDetails?.isGift == true;
+
+  bool get requiresSpecialHandling =>
+      specialHandling != null &&
+      (specialHandling!.fragile ||
+          specialHandling!.keepUpright ||
+          specialHandling!.temperatureSensitive ||
+          specialHandling!.type != 'STANDARD');
+
+  String get displayOrderCode {
+    if (orderCode.trim().isNotEmpty) return orderCode;
+    if (orderId.trim().isNotEmpty) {
+      final suffix = orderId.length >= 6 ? orderId.substring(orderId.length - 6) : orderId;
+      return 'ORD-${suffix.toUpperCase()}';
+    }
+    return 'ORD-000000';
+  }
 
   /// Subtotal neto de productos correspondiente exclusivamente al comercio
   /// (BSD-MERCHANT-ORDER-FINANCIAL-VISIBILITY-RESPONSIVE-UX-001 / ADR-019).
@@ -152,6 +187,12 @@ class OrderEntity {
     this.courierTip,
     required this.createdAt,
     required this.updatedAt,
+    this.orderCode = '',
+    this.orderCodePrefix = '',
+    this.fulfillmentTiming,
+    this.recipient,
+    this.giftDetails,
+    this.specialHandling,
   });
 
   factory OrderEntity.fromMap(Map<String, dynamic> map, String id) {
@@ -167,6 +208,12 @@ class OrderEntity {
         (map['courierTip'] as num?)?.toDouble();
     final grossSales = (map['merchantGrossSales'] as num?)?.toDouble() ??
         (map['merchantProductSubtotal'] as num?)?.toDouble();
+
+    Map<String, dynamic>? toCastMap(dynamic val) {
+      if (val is Map<String, dynamic>) return val;
+      if (val is Map) return Map<String, dynamic>.from(val);
+      return null;
+    }
 
     return OrderEntity(
       orderId: id,
@@ -221,6 +268,20 @@ class OrderEntity {
       courierTip: tipVal,
       createdAt: (map['createdAt'] as num?)?.toInt() ?? 0,
       updatedAt: (map['updatedAt'] as num?)?.toInt() ?? 0,
+      orderCode: map['orderCode'] as String? ?? '',
+      orderCodePrefix: map['orderCodePrefix'] as String? ?? '',
+      fulfillmentTiming: map['fulfillmentTiming'] != null
+          ? FulfillmentTimingEntity.fromMap(toCastMap(map['fulfillmentTiming']))
+          : null,
+      recipient: map['recipient'] != null
+          ? RecipientInfoEntity.fromMap(toCastMap(map['recipient']))
+          : null,
+      giftDetails: map['giftDetails'] != null
+          ? GiftDetailsEntity.fromMap(toCastMap(map['giftDetails']))
+          : null,
+      specialHandling: map['specialHandling'] != null
+          ? SpecialHandlingEntity.fromMap(toCastMap(map['specialHandling']))
+          : null,
     );
   }
 
@@ -309,5 +370,11 @@ class OrderEntity {
         'isPaid': isPaid,
         'createdAt': createdAt,
         'updatedAt': updatedAt,
+        'orderCode': orderCode,
+        'orderCodePrefix': orderCodePrefix,
+        if (fulfillmentTiming != null) 'fulfillmentTiming': fulfillmentTiming!.toMap(),
+        if (recipient != null) 'recipient': recipient!.toMap(),
+        if (giftDetails != null) 'giftDetails': giftDetails!.toMap(),
+        if (specialHandling != null) 'specialHandling': specialHandling!.toMap(),
       };
 }

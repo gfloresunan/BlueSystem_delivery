@@ -652,6 +652,15 @@ class BusinessEntity {
   final int? activatedAt;
   final Map<String, dynamic>? weeklySchedule;
   final double? calculatedDistanceKm;
+  final bool scheduledOrdersEnabled;
+
+  Map<String, dynamic>? get horario => weeklySchedule;
+  int get scheduledMaxAdvanceDays => 7;
+  List<String> get scheduledBlockedDates => const [];
+  int get scheduledMinLeadTimeMinutes => 60;
+  int get scheduledPreparationBufferMinutes => 30;
+  int get scheduledSlotIntervalMinutes => 60;
+  int get scheduledDeliveryWindowMinutes => 60;
 
   const BusinessEntity({
     required this.businessId,
@@ -684,6 +693,7 @@ class BusinessEntity {
     this.activatedAt,
     this.weeklySchedule,
     this.calculatedDistanceKm,
+    this.scheduledOrdersEnabled = true,
   });
 
   /// 1:1 Android Parity validation from BusinessRepository.kt
@@ -733,6 +743,7 @@ class BusinessEntity {
       activatedAt: activatedAt,
       weeklySchedule: weeklySchedule,
       calculatedDistanceKm: calculatedDistanceKm ?? this.calculatedDistanceKm,
+      scheduledOrdersEnabled: scheduledOrdersEnabled ?? this.scheduledOrdersEnabled,
     );
   }
 
@@ -889,6 +900,7 @@ class BusinessEntity {
       priceParityVerifiedAt: parseTimestamp(map['priceParityVerifiedAt']),
       activatedAt: parseTimestamp(map['activatedAt']),
       weeklySchedule: sched,
+      scheduledOrdersEnabled: map['scheduledOrdersEnabled'] as bool? ?? map['pedidosProgramadosHabilitados'] as bool? ?? true,
     );
   }
 }
@@ -913,6 +925,7 @@ class DashboardConfigEntity {
   final bool showExpressDeliveryBanner; // FAIL-CLOSED: Oculto por defecto (Addendum P0-02)
   final bool xToYServiceEnabled; // FAIL-CLOSED: Deshabilitado por defecto (Addendum P0-02)
   final bool showEditorialAds; // Dynamic Editorial Ads (BSD-DASHBOARD-MANAGER-DYNAMIC-CONTENT-ORDER-ADS-001)
+  final bool showServiceExplorer; // Explora Servicios / Category Experience Manager (BSD-CUSTOMER-SERVICE-CATEGORY-HUB-001)
   final double nearbyInitialRadiusKm;
   final double nearbySecondaryRadiusKm;
   final double nearbyMaxRadiusKm;
@@ -925,6 +938,7 @@ class DashboardConfigEntity {
 
   static const List<String> canonicalDefaultSectionOrder = [
     'BANNERS',
+    'SERVICE_EXPLORER',
     'CATEGORIES',
     'BRANCHES',
     'NEARBY',
@@ -945,6 +959,7 @@ class DashboardConfigEntity {
 
   static const Map<String, String> canonicalDefaultBlockTitles = {
     'BANNERS': 'Banners Promocionales',
+    'SERVICE_EXPLORER': 'Explora servicios',
     'CATEGORIES': '¿Qué se te antoja hoy?',
     'BRANCHES': 'Sucursales por Comercio 🏢',
     'NEARBY': 'Comercios Cerca de Ti 🏢',
@@ -982,6 +997,7 @@ class DashboardConfigEntity {
     this.showExpressDeliveryBanner = false,
     this.xToYServiceEnabled = false,
     this.showEditorialAds = true,
+    this.showServiceExplorer = true,
     this.nearbyInitialRadiusKm = 5.0,
     this.nearbySecondaryRadiusKm = 10.0,
     this.nearbyMaxRadiusKm = 15.0,
@@ -997,7 +1013,7 @@ class DashboardConfigEntity {
   /// 1. Respeta el orden remoto válido.
   /// 2. Elimina IDs duplicados conservando la primera aparición válida.
   /// 3. Descarta IDs desconocidos.
-  /// 4. Anexa al final cualquier sección canónica faltante para evitar pérdida de bloques (incluyendo EDITORIAL_ADS).
+  /// 4. Anexa al final cualquier sección canónica faltante para evitar pérdida de bloques (incluyendo EDITORIAL_ADS y SERVICE_EXPLORER).
   List<String> getNormalizedSectionOrder() {
     final result = <String>[];
     final knownSet = canonicalDefaultSectionOrder.toSet();
@@ -1090,6 +1106,7 @@ class DashboardConfigEntity {
       showExpressDeliveryBanner: map.containsKey('showExpressDeliveryBanner') ? (map['showExpressDeliveryBanner'] as bool? ?? defaultBase.showExpressDeliveryBanner) : defaultBase.showExpressDeliveryBanner,
       xToYServiceEnabled: map.containsKey('xToYServiceEnabled') ? (map['xToYServiceEnabled'] as bool? ?? defaultBase.xToYServiceEnabled) : defaultBase.xToYServiceEnabled,
       showEditorialAds: map.containsKey('showEditorialAds') ? (map['showEditorialAds'] as bool? ?? defaultBase.showEditorialAds) : defaultBase.showEditorialAds,
+      showServiceExplorer: map.containsKey('showServiceExplorer') ? (map['showServiceExplorer'] as bool? ?? defaultBase.showServiceExplorer) : defaultBase.showServiceExplorer,
       nearbyInitialRadiusKm: (map['nearbyInitialRadiusKm'] as num?)?.toDouble() ?? defaultBase.nearbyInitialRadiusKm,
       nearbySecondaryRadiusKm: (map['nearbySecondaryRadiusKm'] as num?)?.toDouble() ?? defaultBase.nearbySecondaryRadiusKm,
       nearbyMaxRadiusKm: (map['nearbyMaxRadiusKm'] as num?)?.toDouble() ?? defaultBase.nearbyMaxRadiusKm,

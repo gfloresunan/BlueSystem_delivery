@@ -768,5 +768,41 @@ class MerchantFirestoreService implements IMerchantService {
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }
+
+  @override
+  Stream<List<HomeServiceCategoryEntity>> watchHomeServiceCategories({String? tenantId}) {
+    AppLogger.info('MerchantFirestoreService', 'Watching /home_service_categories for tenant: $tenantId');
+    return _firestore.collection('home_service_categories').snapshots().map((snap) {
+      final list = <HomeServiceCategoryEntity>[];
+      for (final doc in snap.docs) {
+        final entity = HomeServiceCategoryEntity.fromMap(doc.data(), doc.id);
+        if (entity.isActive) {
+          list.add(entity);
+        }
+      }
+      list.sort((a, b) {
+        final r = a.row.compareTo(b.row);
+        if (r != 0) return r;
+        return a.position.compareTo(b.position);
+      });
+      return list;
+    }).handleError((e, st) {
+      AppLogger.error('MerchantFirestoreService', 'Error in watchHomeServiceCategories', e, st);
+      return <HomeServiceCategoryEntity>[];
+    });
+  }
+
+  @override
+  Future<List<BusinessEntity>> getActiveBusinesses({String? tenantId}) async {
+    final snap = await _firestore.collection('businesses').get();
+    final list = <BusinessEntity>[];
+    for (final doc in snap.docs) {
+      final entity = BusinessEntity.fromMap(doc.data(), doc.id);
+      if (entity.isValidPublicCatalogItem()) {
+        list.add(entity);
+      }
+    }
+    return list;
+  }
 }
 

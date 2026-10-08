@@ -166,20 +166,54 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Pedido #${(order.orderId.length > 8 ? order.orderId.substring(0, 8) : order.orderId).toUpperCase()}',
+                    order.displayOrderCode,
                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: statusColor.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(6),
-                      border: Border.all(color: statusColor.withOpacity(0.4)),
-                    ),
-                    child: Text(
-                      order.status.name.toUpperCase(),
-                      style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold),
-                    ),
+                  Row(
+                    children: [
+                      if (order.isScheduledOrder) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          margin: const EdgeInsets.only(right: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.purple.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.purple.withOpacity(0.4)),
+                          ),
+                          child: const Text(
+                            '🗓️ Programado',
+                            style: TextStyle(color: Colors.purple, fontSize: 10, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                      if (order.isGiftOrder) ...[
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          margin: const EdgeInsets.only(right: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.pink.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(6),
+                            border: Border.all(color: Colors.pink.withOpacity(0.4)),
+                          ),
+                          child: const Text(
+                            '🎁 Regalo',
+                            style: TextStyle(color: Colors.pink, fontSize: 10, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: statusColor.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(color: statusColor.withOpacity(0.4)),
+                        ),
+                        child: Text(
+                          order.status.name.toUpperCase(),
+                          style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -188,10 +222,13 @@ class _OrdersScreenState extends State<OrdersScreen> {
                 children: [
                   Icon(Icons.person_outline, size: 16, color: theme.colorScheme.onSurfaceVariant),
                   const SizedBox(width: 6),
-                  Text(order.customerName, style: const TextStyle(fontSize: 13)),
+                  Text(
+                    order.isThirdPartyRecipient ? '${order.recipient!.name} (Tercero)' : order.customerName,
+                    style: const TextStyle(fontSize: 13),
+                  ),
                   const Spacer(),
                   Text(
-                    '\$${order.total.toStringAsFixed(2)}',
+                    'C\$ ${order.total.toInt()}',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: theme.colorScheme.primary),
                   ),
                 ],
@@ -302,11 +339,41 @@ class _OrdersScreenState extends State<OrdersScreen> {
             const SizedBox(height: 16),
             Text('Detalle de Pedido', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
+            if (order.isScheduledOrder) ...[
+              Container(
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(
+                  color: Colors.purple.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.purple.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.schedule, color: Colors.purple),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Entrega Programada 🗓️', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.purple)),
+                          if (order.fulfillmentTiming?.windowStartAt != null)
+                            Text(
+                              'Ventana: ${order.fulfillmentTiming!.windowStartAt.toString().substring(0, 16)}',
+                              style: const TextStyle(fontSize: 12),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.tag),
-              title: const Text('ID de Pedido'),
-              subtitle: Text(order.orderId),
+              title: const Text('Código de Pedido'),
+              subtitle: Text(order.displayOrderCode),
             ),
             ListTile(
               contentPadding: EdgeInsets.zero,
@@ -314,6 +381,30 @@ class _OrdersScreenState extends State<OrdersScreen> {
               title: const Text('Cliente'),
               subtitle: Text('${order.customerName} (${order.customerPhone})'),
             ),
+            if (order.isThirdPartyRecipient) ...[
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.person_pin),
+                title: const Text('Destinatario (Tercero)'),
+                subtitle: Text('${order.recipient!.name} - ${order.recipient!.phone}\n${order.recipient!.deliveryInstructions}'),
+              ),
+            ],
+            if (order.isGiftOrder) ...[
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.card_giftcard, color: Colors.pink),
+                title: const Text('Tarjeta de Dedicatoria 💌'),
+                subtitle: Text('"${order.giftDetails!.message}"\nDe: ${order.giftDetails!.isAnonymous ? "Anónimo" : (order.giftDetails!.senderName.isNotEmpty ? order.giftDetails!.senderName : "Remitente")}'),
+              ),
+            ],
+            if (order.requiresSpecialHandling) ...[
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: const Icon(Icons.warning_amber_rounded, color: Colors.orange),
+                title: const Text('Manejo Especial'),
+                subtitle: Text('${order.specialHandling!.type} ${order.specialHandling!.fragile ? "(Frágil)" : ""} ${order.specialHandling!.keepUpright ? "(Vertical)" : ""} ${order.specialHandling!.temperatureSensitive ? "(Sensible temp)" : ""}'),
+              ),
+            ],
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const Icon(Icons.place),

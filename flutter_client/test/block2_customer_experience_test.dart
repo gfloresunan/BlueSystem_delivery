@@ -139,6 +139,10 @@ class MockMerchantService implements IMerchantService {
   Future<void> updateProductQuick(String productId, {required String name, required double price}) async {}
   @override
   Stream<List<HomeEditorialAdEntity>> watchHomeEditorialAds({String? tenantId}) => Stream.value([]);
+  @override
+  Stream<List<HomeServiceCategoryEntity>> watchHomeServiceCategories({String? tenantId}) => Stream.value([]);
+  @override
+  Future<List<BusinessEntity>> getActiveBusinesses({String? tenantId}) async => business != null ? [business!] : [];
 }
 
 class MockOrderService implements IOrderService {

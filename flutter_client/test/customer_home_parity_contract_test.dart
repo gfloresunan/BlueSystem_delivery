@@ -174,6 +174,12 @@ class MockParityMerchantService implements IMerchantService {
   }
 
   @override
+  Stream<List<HomeServiceCategoryEntity>> watchHomeServiceCategories({String? tenantId}) => Stream.value([]);
+
+  @override
+  Future<List<BusinessEntity>> getActiveBusinesses({String? tenantId}) async => currentBusinesses;
+
+  @override
   Stream<BusinessEntity?> watchBusiness(String businessId) {
     final b = currentBusinesses.firstWhere(
       (biz) => biz.businessId == businessId,
@@ -395,10 +401,11 @@ void main() {
       expect(normalized.contains('QUICK_REORDER'), isTrue);
       expect(normalized.contains('FAVORITES'), isTrue);
       expect(normalized.contains('EXPRESS_DELIVERY'), isTrue);
+      expect(normalized.contains('SERVICE_EXPLORER'), isTrue);
       expect(normalized.contains('EDITORIAL_ADS'), isTrue);
       expect(normalized.contains('ALL_BUSINESSES'), isTrue);
-      expect(DashboardConfigEntity.canonicalDefaultSectionOrder.length, equals(17));
-      expect(normalized.length, equals(17));
+      expect(DashboardConfigEntity.canonicalDefaultSectionOrder.length, equals(18));
+      expect(normalized.length, equals(18));
     });
 
     test('TEST 09: Haversine distance engine calculates accurate km matching Android GeoUtils.kt', () {
