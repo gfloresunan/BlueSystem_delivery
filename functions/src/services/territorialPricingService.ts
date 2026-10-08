@@ -1,13 +1,42 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin";
 import { normalizeGeoLocationStrict, getMunicipalityById } from "../domain/geo/geoCatalog";
+import { validatePointInUrbanCore } from "./municipalGeoIntegrityService";
 
 /**
  * BlueSystem Delivery Enterprise — SSOT Políticas Territoriales Municipales
- * Protocolo: BSD-TERRITORIAL-MUNICIPAL-PRICING-POLICY-001 (Fase 1)
+ * Protocolo: BSD-TERRITORIAL-FLAT-PRICING-3LEVEL-ADMIN-001
  */
 
-export type PricingMode = "DISTANCE" | "FLAT";
+export type PricingMode = "DISTANCE" | "FLAT" | "TERRITORIAL_FLAT";
+
+export type TerritorialPricingLevel = "URBAN_CORE" | "MUNICIPAL_OUTER" | "INTER_MUNICIPAL";
+
+export interface UrbanCoreLevelConfig {
+  enabled: boolean;
+  customerFlatFee: number;
+  courierFlatEarning: number;
+  zoneId?: string;
+}
+
+export interface MunicipalOuterLevelConfig {
+  enabled: boolean;
+  customerFlatFee: number;
+  courierFlatEarning: number;
+}
+
+export interface InterMunicipalRouteConfig {
+  enabled: boolean;
+  customerFlatFee: number;
+  courierFlatEarning: number;
+  destinationDepartmentId?: string;
+  destinationMunicipalityName?: string;
+}
+
+export interface TerritorialPricingPolicyLevels {
+  urbanCore?: UrbanCoreLevelConfig;
+  municipalOuter?: MunicipalOuterLevelConfig;
+}
 
 export interface TerritorialPricingPolicy {
   policyId: string;
@@ -17,7 +46,10 @@ export interface TerritorialPricingPolicy {
   municipalityId: string;
   municipalityName: string;
   pricingMode: PricingMode;
-  fixedDeliveryFee: number | null;
+  fixedDeliveryFee?: number | null;
+  courierFlatEarning?: number | null;
+  levels?: TerritorialPricingPolicyLevels;
+  interMunicipalRoutes?: Record<string, InterMunicipalRouteConfig>;
   currency: string;
   isActive: boolean;
   version: number;
@@ -31,17 +63,26 @@ export interface TerritorialPricingResolution {
   pricingMode: PricingMode;
   policyId: string | null;
   pricingPolicyVersion: number | null;
-  fixedDeliveryFee: number | null;
+  fixedDeliveryFee: number | null; // Tarifa fija del cliente
+  courierFlatEarning: number | null; // Ganancia fija del motorizado
+  territorialLevel?: TerritorialPricingLevel | null;
+  interMunicipalRouteId?: string | null;
   currency: string;
   isApplied: boolean;
   departmentId?: string;
   municipalityId?: string;
+  destinationDepartmentId?: string;
+  destinationMunicipalityId?: string;
   countryCode?: string;
   fallbackReason?: string;
 }
 
 export interface ResolveTerritorialOptions {
   bypassCache?: boolean;
+  destinationDepartmentInput?: string | null;
+  destinationMunicipalityInput?: string | null;
+  destinationCoordinates?: { latitude: number; longitude: number } | null;
+  originCoordinates?: { latitude: number; longitude: number } | null;
 }
 
 interface CacheEntry {
@@ -100,6 +141,7 @@ export async function resolveTerritorialPricingPolicy(
     policyId: null,
     pricingPolicyVersion: null,
     fixedDeliveryFee: null,
+    courierFlatEarning: null,
     currency: "NIO",
     isApplied: false,
     fallbackReason: "NO_MUNICIPALITY_SPECIFIED",
@@ -139,6 +181,9 @@ export async function resolveTerritorialPricingPolicy(
         policy = null;
       } else {
         const data = docSnap.data() || {};
+        const rawMode = (data.pricingMode || "").toString().toUpperCase();
+        const mode: PricingMode = rawMode === "TERRITORIAL_FLAT" ? "TERRITORIAL_FLAT" : (rawMode === "FLAT" ? "FLAT" : "DISTANCE");
+
         policy = {
           policyId: data.policyId || docSnap.id,
           countryCode: (data.countryCode || "NI").toString().toUpperCase(),
@@ -146,8 +191,11 @@ export async function resolveTerritorialPricingPolicy(
           departmentName: data.departmentName || geo.departmentName,
           municipalityId: (data.municipalityId || municipalityId).toString().toUpperCase(),
           municipalityName: data.municipalityName || geo.municipalityName,
-          pricingMode: (data.pricingMode === "FLAT" ? "FLAT" : "DISTANCE") as PricingMode,
+          pricingMode: mode,
           fixedDeliveryFee: typeof data.fixedDeliveryFee === "number" ? data.fixedDeliveryFee : null,
+          courierFlatEarning: typeof data.courierFlatEarning === "number" ? data.courierFlatEarning : null,
+          levels: data.levels || undefined,
+          interMunicipalRoutes: data.interMunicipalRoutes || undefined,
           currency: (data.currency || "NIO").toString().toUpperCase(),
           isActive: Boolean(data.isActive),
           version: Number(data.version || 1),
@@ -168,6 +216,7 @@ export async function resolveTerritorialPricingPolicy(
         policyId: null,
         pricingPolicyVersion: null,
         fixedDeliveryFee: null,
+        courierFlatEarning: null,
         currency: "NIO",
         isApplied: false,
         departmentId,
@@ -184,6 +233,7 @@ export async function resolveTerritorialPricingPolicy(
       policyId: null,
       pricingPolicyVersion: null,
       fixedDeliveryFee: null,
+      courierFlatEarning: null,
       currency: "NIO",
       isApplied: false,
       departmentId,
@@ -198,6 +248,7 @@ export async function resolveTerritorialPricingPolicy(
       policyId: policy.policyId,
       pricingPolicyVersion: policy.version,
       fixedDeliveryFee: null,
+      courierFlatEarning: null,
       currency: policy.currency,
       isApplied: false,
       departmentId,
@@ -212,6 +263,7 @@ export async function resolveTerritorialPricingPolicy(
       policyId: policy.policyId,
       pricingPolicyVersion: policy.version,
       fixedDeliveryFee: null,
+      courierFlatEarning: null,
       currency: policy.currency,
       isApplied: false,
       departmentId,
@@ -220,16 +272,175 @@ export async function resolveTerritorialPricingPolicy(
     };
   }
 
-  // 3. Modo FLAT con validación Fail-Safe estricta
+  // 3. Modo TERRITORIAL_FLAT (3 Niveles: Urban Core, Municipal Outer, Authorized Inter-Municipal)
+  if (policy.pricingMode === "TERRITORIAL_FLAT" || (policy.pricingMode === "FLAT" && (policy.levels || policy.interMunicipalRoutes))) {
+    let destMuniId = municipalityId;
+    let destDeptId = departmentId;
+    if (options?.destinationMunicipalityInput) {
+      const destGeo = normalizeGeoLocationStrict(options.destinationDepartmentInput, options.destinationMunicipalityInput);
+      if (destGeo) {
+        destMuniId = destGeo.municipalityId;
+        destDeptId = destGeo.departmentId;
+      } else {
+        const byMuni = getMunicipalityById(options.destinationMunicipalityInput);
+        if (byMuni) {
+          destMuniId = byMuni.id;
+          destDeptId = byMuni.departmentId;
+        }
+      }
+    }
+
+    // ── NIVEL 3: INTER_MUNICIPAL (Municipios Cercanos Autorizados) ──
+    if (destMuniId !== municipalityId) {
+      const route = policy.interMunicipalRoutes?.[destMuniId];
+      if (route && route.enabled === true && typeof route.customerFlatFee === "number" && route.customerFlatFee > 0) {
+        const cFee = Math.round(route.customerFlatFee * 100) / 100;
+        const cEarn = typeof route.courierFlatEarning === "number" && route.courierFlatEarning > 0
+          ? Math.round(route.courierFlatEarning * 100) / 100
+          : cFee;
+
+        return {
+          pricingMode: "TERRITORIAL_FLAT",
+          policyId: policy.policyId,
+          pricingPolicyVersion: policy.version,
+          fixedDeliveryFee: cFee,
+          courierFlatEarning: cEarn,
+          territorialLevel: "INTER_MUNICIPAL",
+          interMunicipalRouteId: `${municipalityId}->${destMuniId}`,
+          currency: policy.currency || "NIO",
+          isApplied: true,
+          departmentId,
+          municipalityId,
+          destinationDepartmentId: destDeptId,
+          destinationMunicipalityId: destMuniId,
+          countryCode: policy.countryCode || "NI",
+        };
+      } else {
+        // Ruta intermunicipal NO autorizada -> Fail-closed: CROSS_CITY_ORDER_BLOCKED
+        return {
+          pricingMode: "DISTANCE",
+          policyId: policy.policyId,
+          pricingPolicyVersion: policy.version,
+          fixedDeliveryFee: null,
+          courierFlatEarning: null,
+          currency: policy.currency || "NIO",
+          isApplied: false,
+          departmentId,
+          municipalityId,
+          destinationDepartmentId: destDeptId,
+          destinationMunicipalityId: destMuniId,
+          fallbackReason: "INTER_MUNICIPAL_ROUTE_NOT_AUTHORIZED",
+        };
+      }
+    }
+
+    // ── NIVELES 1 Y 2: INTRAMUNICIPAL (Casco Urbano vs Resto del Municipio) ──
+    let inUrbanCore = true;
+    if (options?.destinationCoordinates) {
+      inUrbanCore = await validatePointInUrbanCore({
+        countryCode: policy.countryCode,
+        departmentId,
+        municipalityId,
+        latitude: options.destinationCoordinates.latitude,
+        longitude: options.destinationCoordinates.longitude,
+        bypassCache,
+      });
+    }
+
+    // NIVEL 1 — URBAN_CORE (Casco Urbano)
+    if (inUrbanCore) {
+      const uc = policy.levels?.urbanCore;
+      const cFee = (uc && uc.enabled !== false && typeof uc.customerFlatFee === "number" && uc.customerFlatFee > 0)
+        ? Math.round(uc.customerFlatFee * 100) / 100
+        : (typeof policy.fixedDeliveryFee === "number" && policy.fixedDeliveryFee > 0 ? Math.round(policy.fixedDeliveryFee * 100) / 100 : null);
+
+      if (cFee !== null) {
+        const cEarn = (uc && typeof uc.courierFlatEarning === "number" && uc.courierFlatEarning > 0)
+          ? Math.round(uc.courierFlatEarning * 100) / 100
+          : (typeof policy.courierFlatEarning === "number" && policy.courierFlatEarning > 0 ? Math.round(policy.courierFlatEarning * 100) / 100 : cFee);
+
+        return {
+          pricingMode: "TERRITORIAL_FLAT",
+          policyId: policy.policyId,
+          pricingPolicyVersion: policy.version,
+          fixedDeliveryFee: cFee,
+          courierFlatEarning: cEarn,
+          territorialLevel: "URBAN_CORE",
+          currency: policy.currency || "NIO",
+          isApplied: true,
+          departmentId,
+          municipalityId,
+          countryCode: policy.countryCode || "NI",
+        };
+      } else {
+        return {
+          pricingMode: "DISTANCE",
+          policyId: policy.policyId,
+          pricingPolicyVersion: policy.version,
+          fixedDeliveryFee: null,
+          courierFlatEarning: null,
+          currency: policy.currency || "NIO",
+          isApplied: false,
+          departmentId,
+          municipalityId,
+          fallbackReason: "URBAN_CORE_DISABLED_OR_INVALID",
+        };
+      }
+    } else {
+      // NIVEL 2 — MUNICIPAL_OUTER (Afueras / Resto del Municipio)
+      const mo = policy.levels?.municipalOuter;
+      if (mo && mo.enabled === true && typeof mo.customerFlatFee === "number" && mo.customerFlatFee > 0) {
+        const cFee = Math.round(mo.customerFlatFee * 100) / 100;
+        const cEarn = typeof mo.courierFlatEarning === "number" && mo.courierFlatEarning > 0
+          ? Math.round(mo.courierFlatEarning * 100) / 100
+          : cFee;
+
+        return {
+          pricingMode: "TERRITORIAL_FLAT",
+          policyId: policy.policyId,
+          pricingPolicyVersion: policy.version,
+          fixedDeliveryFee: cFee,
+          courierFlatEarning: cEarn,
+          territorialLevel: "MUNICIPAL_OUTER",
+          currency: policy.currency || "NIO",
+          isApplied: true,
+          departmentId,
+          municipalityId,
+          countryCode: policy.countryCode || "NI",
+        };
+      } else {
+        return {
+          pricingMode: "DISTANCE",
+          policyId: policy.policyId,
+          pricingPolicyVersion: policy.version,
+          fixedDeliveryFee: null,
+          courierFlatEarning: null,
+          currency: policy.currency || "NIO",
+          isApplied: false,
+          departmentId,
+          municipalityId,
+          fallbackReason: "MUNICIPAL_OUTER_LEVEL_DISABLED",
+        };
+      }
+    }
+  }
+
+  // 4. Modo FLAT Legacy (Compatibilidad con V1 sin niveles desglosados)
   if (policy.pricingMode === "FLAT") {
     const fee = policy.fixedDeliveryFee;
     if (typeof fee === "number" && !isNaN(fee) && fee > 0) {
       const roundedFee = Math.round(fee * 100) / 100;
+      const courierEarn = typeof policy.courierFlatEarning === "number" && policy.courierFlatEarning > 0
+        ? Math.round(policy.courierFlatEarning * 100) / 100
+        : null;
+
       return {
         pricingMode: "FLAT",
         policyId: policy.policyId,
         pricingPolicyVersion: policy.version,
         fixedDeliveryFee: roundedFee,
+        courierFlatEarning: courierEarn,
+        territorialLevel: "URBAN_CORE",
         currency: policy.currency || "NIO",
         isApplied: true,
         departmentId,
@@ -245,6 +456,7 @@ export async function resolveTerritorialPricingPolicy(
         policyId: policy.policyId,
         pricingPolicyVersion: policy.version,
         fixedDeliveryFee: null,
+        courierFlatEarning: null,
         currency: policy.currency || "NIO",
         isApplied: false,
         departmentId,
@@ -260,6 +472,7 @@ export async function resolveTerritorialPricingPolicy(
     policyId: policy.policyId,
     pricingPolicyVersion: policy.version,
     fixedDeliveryFee: null,
+    courierFlatEarning: null,
     currency: "NIO",
     isApplied: false,
     departmentId,

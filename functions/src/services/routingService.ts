@@ -4,6 +4,7 @@ import {
   resolveTerritorialPricingPolicy,
   TerritorialPricingResolution,
 } from "./territorialPricingService";
+import { validatePointInMunicipality } from "./municipalGeoIntegrityService";
 
 export interface LatLngPoint {
   latitude: number;
@@ -18,6 +19,8 @@ export interface RoutingOptions {
   googleApiKey?: string;
   departmentId?: string;
   municipalityId?: string;
+  destinationDepartmentId?: string;
+  destinationMunicipalityId?: string;
   businessId?: string;
   branchId?: string;
 }
@@ -36,13 +39,16 @@ export interface PricingSnapshot {
   roundingAdjustment?: number;
   courierEarnings?: number;
   platformRevenue?: number;
-  pricingMode?: "DISTANCE" | "FLAT";
+  pricingMode?: "DISTANCE" | "FLAT" | "TERRITORIAL_FLAT";
+  territorialLevel?: "URBAN_CORE" | "MUNICIPAL_OUTER" | "INTER_MUNICIPAL" | null;
+  interMunicipalRouteId?: string | null;
   pricingPolicyId?: string | null;
   pricingPolicyVersion?: number | null;
   departmentId?: string | null;
   municipalityId?: string | null;
   countryCode?: string;
   fixedDeliveryFee?: number | null;
+  courierFlatEarning?: number | null;
   quotedDeliveryFee?: number;
   quoteExpiresAt?: string;
 }
@@ -61,13 +67,16 @@ export interface CommerceDeliveryPricingConfig {
 
 export interface CommercePricingSnapshot {
   serviceType: "COMMERCE_DELIVERY";
-  pricingMode?: "DISTANCE" | "FLAT";
+  pricingMode?: "DISTANCE" | "FLAT" | "TERRITORIAL_FLAT";
+  territorialLevel?: "URBAN_CORE" | "MUNICIPAL_OUTER" | "INTER_MUNICIPAL" | null;
+  interMunicipalRouteId?: string | null;
   pricingPolicyId?: string | null;
   pricingPolicyVersion?: number | null;
   departmentId?: string | null;
   municipalityId?: string | null;
   countryCode?: string;
   fixedDeliveryFee?: number | null;
+  courierFlatEarning?: number | null;
   quotedDeliveryFee?: number;
   quoteExpiresAt?: string;
   customerPricePerKm: number;
@@ -117,6 +126,10 @@ interface CacheEntry {
 const ROUTE_CACHE = new Map<string, CacheEntry>();
 const CACHE_TTL_MS = 15 * 60 * 1000;
 const MAX_CACHE_ENTRIES = 500;
+
+export function clearRouteCache(): void {
+  ROUTE_CACHE.clear();
+}
 
 // Constantes Financieras Canónicas de BlueSystem Delivery (X→Y)
 export const TARIFA_BASE_NIO = 35.0;
@@ -656,8 +669,8 @@ export function buildCommercePricingSnapshot(
   // Independencia total de ganancias del courier (courierEarnings ≠ deliveryFee):
   const courierEarnings = distanceMeters > 0 ? Math.floor(rawCourierEarnings) : 0;
 
-  // Resolución territorial municipal autoritativa (BSD-TERRITORIAL-MUNICIPAL-PRICING-POLICY-001)
-  const isFlat = territorialResolution?.pricingMode === "FLAT" &&
+  // Resolución territorial municipal autoritativa (BSD-TERRITORIAL-FLAT-PRICING-3LEVEL-ADMIN-001)
+  const isFlat = (territorialResolution?.pricingMode === "FLAT" || territorialResolution?.pricingMode === "TERRITORIAL_FLAT") &&
                  territorialResolution.isApplied &&
                  typeof territorialResolution.fixedDeliveryFee === "number" &&
                  territorialResolution.fixedDeliveryFee > 0;
@@ -666,18 +679,25 @@ export function buildCommercePricingSnapshot(
     ? territorialResolution!.fixedDeliveryFee!
     : (distanceMeters > 0 ? Math.ceil(rawDeliveryFee) : 0);
 
+  const finalCourierEarnings = isFlat && typeof territorialResolution?.courierFlatEarning === "number" && territorialResolution.courierFlatEarning > 0
+    ? territorialResolution.courierFlatEarning
+    : (distanceMeters > 0 ? Math.floor(rawCourierEarnings) : 0);
+
   const now = new Date();
   const quoteExpiresAt = new Date(now.getTime() + 15 * 60 * 1000).toISOString(); // 15 minutos de validez de cotización
 
   const pricingSnapshot: CommercePricingSnapshot = {
     serviceType: "COMMERCE_DELIVERY",
-    pricingMode: isFlat ? "FLAT" : "DISTANCE",
-    pricingPolicyId: territorialResolution?.policyId || null,
-    pricingPolicyVersion: territorialResolution?.pricingPolicyVersion || null,
+    pricingMode: isFlat ? (territorialResolution?.pricingMode || "TERRITORIAL_FLAT") : "DISTANCE",
+    territorialLevel: isFlat ? (territorialResolution?.territorialLevel || "URBAN_CORE") : null,
+    interMunicipalRouteId: isFlat ? (territorialResolution?.interMunicipalRouteId || null) : null,
+    pricingPolicyId: isFlat ? (territorialResolution?.policyId || null) : null,
+    pricingPolicyVersion: isFlat ? (territorialResolution?.pricingPolicyVersion || null) : null,
     departmentId: territorialResolution?.departmentId || null,
     municipalityId: territorialResolution?.municipalityId || null,
     countryCode: territorialResolution?.countryCode || "NI",
     fixedDeliveryFee: isFlat ? territorialResolution!.fixedDeliveryFee! : null,
+    courierFlatEarning: isFlat ? (territorialResolution?.courierFlatEarning ?? null) : null,
     quotedDeliveryFee: deliveryFee,
     quoteExpiresAt,
     customerPricePerKm: customerRate,
@@ -685,14 +705,14 @@ export function buildCommercePricingSnapshot(
     distanceKm: displayKm,
     distanceMeters,
     deliveryFee,
-    courierEarnings,
+    courierEarnings: finalCourierEarnings,
     currency: config?.currency || territorialResolution?.currency || "NIO",
     pricingPolicy: policy,
     pricingVersion: config?.pricingVersion || "v2.2-commerce",
     calculatedAt: now.toISOString(),
   };
 
-  return { deliveryFee, courierEarnings, pricingSnapshot };
+  return { deliveryFee, courierEarnings: finalCourierEarnings, pricingSnapshot };
 }
 
 /**
@@ -754,13 +774,67 @@ export async function calculateCommerceDeliveryRoute(options: RoutingOptions): P
       }
     }
 
-    territorialResolution = await resolveTerritorialPricingPolicy(deptInput, muniInput);
+    territorialResolution = await resolveTerritorialPricingPolicy(deptInput, muniInput, {
+      destinationDepartmentInput: options.destinationDepartmentId,
+      destinationMunicipalityInput: options.destinationMunicipalityId,
+      destinationCoordinates: destination,
+      originCoordinates: origin,
+    });
+
+    // Invariante Canónico: FLAT ACTIVE requires GEO BOUNDARY AVAILABLE AND GEO INTEGRITY VERIFIED
+    if ((territorialResolution?.pricingMode === "FLAT" || territorialResolution?.pricingMode === "TERRITORIAL_FLAT") && territorialResolution.isApplied) {
+      const isInterMunicipal = territorialResolution.territorialLevel === "INTER_MUNICIPAL";
+      const targetDestMuni = isInterMunicipal && territorialResolution.destinationMunicipalityId
+        ? territorialResolution.destinationMunicipalityId
+        : territorialResolution.municipalityId!;
+      const targetDestDept = isInterMunicipal && territorialResolution.destinationDepartmentId
+        ? territorialResolution.destinationDepartmentId
+        : territorialResolution.departmentId;
+
+      const geoCheckOrigin = await validatePointInMunicipality({
+        countryCode: "NI",
+        departmentId: territorialResolution.departmentId,
+        municipalityId: territorialResolution.municipalityId!,
+        latitude: origin.latitude,
+        longitude: origin.longitude,
+        isFlatRequired: true,
+      });
+
+      const geoCheckDest = await validatePointInMunicipality({
+        countryCode: "NI",
+        departmentId: targetDestDept,
+        municipalityId: targetDestMuni,
+        latitude: destination.latitude,
+        longitude: destination.longitude,
+        isFlatRequired: true,
+      });
+
+      if (!geoCheckOrigin.valid || !geoCheckDest.valid) {
+        functions.logger.warn(
+          `[COMMERCE_ROUTING] FLAT anulado por Geo Integrity mismatch: origin=${geoCheckOrigin.status}, dest=${geoCheckDest.status}`
+        );
+        territorialResolution = {
+          pricingMode: "DISTANCE",
+          policyId: null,
+          pricingPolicyVersion: null,
+          fixedDeliveryFee: null,
+          courierFlatEarning: null,
+          currency: territorialResolution.currency || "NIO",
+          isApplied: false,
+          fallbackReason: `GEO_INTEGRITY_FAILED: ${!geoCheckOrigin.valid ? geoCheckOrigin.status : geoCheckDest.status}`,
+        };
+      }
+    }
   }
 
   const muniTag = territorialResolution?.municipalityId || options.municipalityId || "NOMUNI";
+  const modeTag = territorialResolution?.pricingMode || "DISTANCE";
+  const levelTag = territorialResolution?.territorialLevel || "NOLEVEL";
+  const feeTag = territorialResolution?.fixedDeliveryFee ?? "VAR";
+  const earnTag = territorialResolution?.courierFlatEarning ?? "VAR";
 
-  // 2. Verificación de Caché en Memoria (incorporando municipio para evitar colisiones)
-  const cacheKey = `COMMERCE:${muniTag}:${getCacheKey(origin, destination, transportProfile)}`;
+  // 2. Verificación de Caché en Memoria (incorporando municipio, modo, nivel, tarifas y coordenadas)
+  const cacheKey = `COMMERCE:${muniTag}:${modeTag}:${levelTag}:${feeTag}:${earnTag}:${getCacheKey(origin, destination, transportProfile)}`;
   const cached = ROUTE_CACHE.get(cacheKey);
   const now = Date.now();
   if (cached && cached.expiresAt > now) {
@@ -770,8 +844,8 @@ export async function calculateCommerceDeliveryRoute(options: RoutingOptions): P
 
   // Helper to convert CommercePricingSnapshot to legacy PricingSnapshot
   const toPricingSnapshot = (cps: CommercePricingSnapshot): PricingSnapshot => ({
-    baseFee: cps.pricingMode === "FLAT" ? (cps.fixedDeliveryFee ?? 0) : 0,
-    pricePerKm: cps.pricingMode === "FLAT" ? 0 : cps.customerPricePerKm,
+    baseFee: (cps.pricingMode === "FLAT" || cps.pricingMode === "TERRITORIAL_FLAT") ? (cps.fixedDeliveryFee ?? 0) : 0,
+    pricePerKm: (cps.pricingMode === "FLAT" || cps.pricingMode === "TERRITORIAL_FLAT") ? 0 : cps.customerPricePerKm,
     distanceKm: cps.distanceKm,
     distanceMeters: cps.distanceMeters,
     calculatedAmount: cps.deliveryFee,
@@ -782,6 +856,9 @@ export async function calculateCommerceDeliveryRoute(options: RoutingOptions): P
     courierEarnings: cps.courierEarnings,
     platformRevenue: Math.max(0, Math.round((cps.deliveryFee - cps.courierEarnings) * 100) / 100),
     pricingMode: cps.pricingMode,
+    territorialLevel: cps.territorialLevel || null,
+    interMunicipalRouteId: cps.interMunicipalRouteId || null,
+    courierFlatEarning: cps.courierFlatEarning ?? null,
     pricingPolicyId: cps.pricingPolicyId,
     pricingPolicyVersion: cps.pricingPolicyVersion,
     departmentId: cps.departmentId,

@@ -5,7 +5,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/design_system/bsds_theme.dart';
 import '../../../domain/entities/catalog_entity.dart';
-import '../../../domain/entities/home_service_category_entity.dart';
 import '../../../domain/services/core_service_interfaces.dart';
 import '../home/widgets/service_explorer_section.dart';
 import 'category_landing_screen.dart';

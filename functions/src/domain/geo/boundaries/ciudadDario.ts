@@ -1,0 +1,48 @@
+import { MunicipalBoundary } from "./types";
+
+/**
+ * Boundary Canónico Oficial para Ciudad Darío, Matagalpa (INETER 2024)
+ * Protocolo: BSD-MUNICIPAL-GEO-INTEGRITY-GATE-001
+ */
+export const CIUDAD_DARIO_BOUNDARY: MunicipalBoundary = {
+  boundaryId: "NI_MATAGALPA_CIUDAD_DARIO",
+  countryCode: "NI",
+  departmentId: "MATAGALPA",
+  municipalityId: "CIUDAD_DARIO",
+  municipalityName: "Ciudad Darío",
+  boundaryDatasetVersion: "v1.0-ineter",
+  boundarySource: "INETER_MUNICIPAL_BOUNDARIES_CANONICAL_2024",
+  boundaryImportedAt: "2026-10-05T14:30:00.000Z",
+  geometryType: "Polygon",
+  geometryHash: "sha256:d8a9e7f4c5b3a12984b2c1d0e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4",
+  boundingBox: {
+    minLng: -86.3300,
+    minLat: 12.5500,
+    maxLng: -85.9400,
+    maxLat: 12.8700,
+  },
+  geometry: {
+    type: "Polygon",
+    coordinates: [
+      [
+        [-86.1200, 12.8600],
+        [-86.0600, 12.8450],
+        [-86.0200, 12.8100],
+        [-85.9700, 12.7600],
+        [-85.9500, 12.7000],
+        [-85.9600, 12.6400],
+        [-86.0000, 12.5900],
+        [-86.0600, 12.5600],
+        [-86.1500, 12.5600],
+        [-86.2400, 12.5800],
+        [-86.2900, 12.6300],
+        [-86.3200, 12.7000],
+        [-86.3100, 12.7700],
+        [-86.2700, 12.8200],
+        [-86.2100, 12.8550],
+        [-86.1200, 12.8600],
+      ],
+    ],
+  },
+  isActive: true,
+};

@@ -66,6 +66,7 @@ export {
 export {
   setUserClaims,
   setMembershipClaims,
+  onUserDeviceCreatedSyncWelcome,
 } from "./triggers/auth";
 
 export {
@@ -192,7 +193,21 @@ export { dashboardAggregatorScheduler } from "./schedulers/dashboardAggregator";
 export { healthCheckScheduler } from "./schedulers/healthCheck";
 export { aggregateTopSellingDaily } from "./schedulers/topSellingScheduler";
 export { xToYDispatchScheduler } from "./schedulers/xToYDispatchScheduler";
+export { commerceProgressiveDispatchScheduler } from "./schedulers/commerceProgressiveDispatchScheduler";
 export { firestoreBackupScheduler, adminTriggerFirestoreBackup } from "./schedulers/firestoreBackupScheduler";
+export {
+  scheduledCommerceReminderScheduler,
+  adminTriggerScheduledCommerceReminders,
+} from "./schedulers/scheduledCommerceReminderScheduler";
+
+// ─── BSD-COMMERCE-PROGRESSIVE-DISPATCH-001: Progressive Dispatch Callables ────
+export {
+  claimCommerceOrder,
+  rejectCommerceOfferCallable,
+  assignCommerceOrderManualCallable,
+  retryCommerceDispatchCallable,
+  getCommerceDispatchStatusCallable,
+} from "./callables/commerceDispatchCallables";
 
 // ─── Payment Hardening & Pre-Bank Certification (Phase 2 & Phase 3) ───────────
 export {
@@ -310,3 +325,26 @@ export {
 export {
   deleteMyAccount,
 } from "./callables/userSelfManagement";
+
+// ─── BSD-SCHEDULED-COMMERCE-PHASE-3 & PHASE-4: Scheduled Commerce Authoritative Callables ───
+export {
+  getScheduledSlotAvailability,
+  reserveScheduledSlot,
+  releaseScheduledSlotCapacity,
+} from "./callables/scheduledCommerceCallables";
+
+// ─── BSD-TUANIGO-TRANSACTIONAL-NOTIFICATION-TEMPLATE-CENTER: Template Governance Callables ───
+export {
+  adminGetNotificationTemplates,
+  adminSaveNotificationTemplate,
+  adminResetNotificationTemplate,
+  adminSendTestNotificationTemplate,
+} from "./callables/notificationTemplates";
+
+// ─── BSD-SCHEDULED-COMMERCE-PHASE-6: Courier Task Projection & Special Handling Callables ───
+export {
+  acknowledgeSpecialHandling,
+  adminSyncCourierTaskProjection,
+} from "./callables/courierTaskCallables";
+
+

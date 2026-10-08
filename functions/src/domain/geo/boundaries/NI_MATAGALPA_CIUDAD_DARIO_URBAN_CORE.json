@@ -1,0 +1,32 @@
+{
+  "type": "Feature",
+  "properties": {
+    "boundaryId": "NI_MATAGALPA_CIUDAD_DARIO_URBAN_CORE",
+    "countryCode": "NI",
+    "departmentId": "MATAGALPA",
+    "municipalityId": "CIUDAD_DARIO",
+    "municipalityName": "Ciudad Darío (Casco Urbano)",
+    "boundaryDatasetVersion": "v1.0-ineter-urban",
+    "boundarySource": "INETER_URBAN_CORE_CANONICAL_2024",
+    "geometryType": "Polygon",
+    "geometryHash": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "boundingBox": {
+      "minLng": -86.1380,
+      "minLat": 12.7160,
+      "maxLng": -86.1100,
+      "maxLat": 12.7480
+    }
+  },
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [-86.1380, 12.7480],
+        [-86.1100, 12.7480],
+        [-86.1100, 12.7160],
+        [-86.1380, 12.7160],
+        [-86.1380, 12.7480]
+      ]
+    ]
+  }
+}

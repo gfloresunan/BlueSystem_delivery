@@ -5,7 +5,15 @@ import { evaluateCourierFinancialAccessInternal } from "../callables/courierAcce
 import { normalizeGeoLocationStrict } from "../domain/geo/geoCatalog";
 import { resolveTerritorialPricingPolicy } from "../services/territorialPricingService";
 import { calculateCommerceAuthoritativeFee } from "../services/routingService";
+import { validatePointInMunicipality } from "../services/municipalGeoIntegrityService";
 import { getNextOrderCodeInTransaction } from "../shared/orderCodeUtils";
+import {
+  startCommerceDispatch,
+  cancelCommerceDispatch,
+  getCommerceProgressiveDispatchConfig,
+} from "../services/commerceProgressiveDispatchEngine";
+import { NotificationTemplateService } from "../services/notificationTemplateService";
+import { syncCourierTaskProjection } from "../services/courierTaskProjectionService";
 
 const db = admin.firestore();
 const messaging = admin.messaging();
@@ -395,13 +403,32 @@ export const notifyNewOrder = functions.firestore
 
         const destMuni = (order.destinationMunicipalityId || (order.deliveryAddress && order.deliveryAddress.municipalityId) || muniId).toString().trim().toUpperCase();
 
-        // 🔒 C2D.35.GEO-R.2: KILL-SWITCH AUTORITATIVO INTRAMUNICIPAL
-        if (!muniId || !destMuni || muniId !== destMuni) {
+        const destLat = Number(order.destinationLatitude ?? order.rawDestino?.coordenadas?.latitud ?? order.destino?.coordenadas?.latitud ?? order.latitude ?? 0);
+        const destLng = Number(order.destinationLongitude ?? order.rawDestino?.coordenadas?.longitud ?? order.destino?.coordenadas?.longitud ?? order.longitude ?? 0);
+
+        // 🔒 C2D.35.GEO-R.2: KILL-SWITCH AUTORITATIVO INTRAMUNICIPAL CON EXCEPCIÓN DE NIVEL 3 AUTORIZADO
+        let isAuthorizedInterMunicipal = false;
+        let territorialResolution: any = undefined;
+
+        if (isTerritorialPricingEnabled) {
+          territorialResolution = await resolveTerritorialPricingPolicy(deptId, muniId, {
+            bypassCache: true,
+            destinationCoordinates: { latitude: destLat, longitude: destLng },
+            originCoordinates: { latitude: latVal, longitude: lngVal },
+            destinationMunicipalityInput: destMuni,
+            destinationDepartmentInput: deptId,
+          });
+          if (territorialResolution?.isApplied && territorialResolution?.territorialLevel === "INTER_MUNICIPAL") {
+            isAuthorizedInterMunicipal = true;
+          }
+        }
+
+        if (!muniId || !destMuni || (muniId !== destMuni && !isAuthorizedInterMunicipal)) {
           functions.logger.error(`[SECURITY_REJECT] Violación de aislamiento municipal en Commerce Delivery: origin=${muniId}, dest=${destMuni}, orderId=${orderId}`);
           await snap.ref.update({
             status: "cancelled",
             estado: "cancelado",
-            cancelReason: `CROSS_CITY_ORDER_BLOCKED: Envíos comerciales intramunicipales únicamente (${muniId} -> ${destMuni}). Utilice X->Y.`,
+            cancelReason: `CROSS_CITY_ORDER_BLOCKED: Envíos comerciales intramunicipales únicamente (${muniId} -> ${destMuni}). Utilice X->Y o configure ruta Nivel 3 autorizada.`,
             isFraudulent: true,
             updatedAt: FieldValue.serverTimestamp(),
           });
@@ -416,6 +443,59 @@ export const notifyNewOrder = functions.firestore
           });
           return null;
         }
+
+        // 🔒 MUNICIPAL GEO INTEGRITY GATE (BSD-MUNICIPAL-GEO-INTEGRITY-GATE-001)
+        const originGeoCheck = await validatePointInMunicipality({
+          countryCode: "NI",
+          departmentId: deptId,
+          municipalityId: muniId,
+          latitude: latVal,
+          longitude: lngVal,
+        });
+
+        const destGeoCheck = await validatePointInMunicipality({
+          countryCode: "NI",
+          departmentId: deptId,
+          municipalityId: destMuni,
+          latitude: destLat,
+          longitude: destLng,
+        });
+
+        if (!originGeoCheck.valid || !destGeoCheck.valid) {
+          const reason = !destGeoCheck.valid
+            ? `DESTINATION_MUNICIPALITY_MISMATCH: Destino fuera del municipio canónico (${destMuni}) o coordenadas inválidas.`
+            : `ORIGIN_MUNICIPALITY_MISMATCH: Comercio fuera del municipio canónico (${muniId}) o coordenadas inválidas.`;
+
+          functions.logger.error(`[GEO_INTEGRITY_REJECT] Violación de integridad geográfica: orderId=${orderId}, reason=${reason}`);
+          await snap.ref.update({
+            status: "cancelled",
+            estado: "cancelado",
+            cancelReason: `GEO_INTEGRITY_ORDER_MISMATCH: ${reason}`,
+            isFraudulent: true,
+            updatedAt: FieldValue.serverTimestamp(),
+          });
+          await db.collection("audit_events").add({
+            event: "GEO_INTEGRITY_ORDER_REJECTED",
+            orderId,
+            customerId: order.customerId || order.clienteId || "",
+            businessId: order.businessId,
+            originStatus: originGeoCheck.status,
+            destinationStatus: destGeoCheck.status,
+            originMunicipalityId: muniId,
+            destinationMunicipalityId: destMuni,
+            timestamp: FieldValue.serverTimestamp(),
+          });
+          return null;
+        }
+
+        const geoIntegritySnapshot = {
+          originMunicipalityId: originGeoCheck.declaredMunicipalityId,
+          destinationMunicipalityId: destGeoCheck.declaredMunicipalityId,
+          originValidation: originGeoCheck.status,
+          destinationValidation: destGeoCheck.status,
+          boundaryVersion: originGeoCheck.boundaryVersion || destGeoCheck.boundaryVersion || "v1.0",
+          validatedAt: new Date().toISOString(),
+        };
 
         // ── Resolución de Distancia Operacional Real y Ganancia Canónica del Courier ──
         let routeDistanceMeters: number = 0;
@@ -469,13 +549,16 @@ export const notifyNewOrder = functions.firestore
         const courierTotalEarningsFloat = courierDistanceEarningsFloat + courierBonusEarningsFloat + (Math.round(tipEarningsCents) / 100);
 
         // ── Resolución Territorial Municipal Autoritativa (BSD-TERRITORIAL-MUNICIPAL-PRICING-POLICY-001) ──
-        // FEATURE GATE: Si territorialPricingEnabled NO está activo en /system_config/global,
-        // no se consulta la colección /territorial_pricing_policies (0 lecturas adicionales en Gate A).
-        let territorialResolution: any = undefined;
-        if (isTerritorialPricingEnabled) {
-          territorialResolution = await resolveTerritorialPricingPolicy(deptId, muniId, { bypassCache: true });
+        if (isTerritorialPricingEnabled && !territorialResolution) {
+          territorialResolution = await resolveTerritorialPricingPolicy(deptId, muniId, {
+            bypassCache: true,
+            destinationCoordinates: { latitude: destLat, longitude: destLng },
+            originCoordinates: { latitude: latVal, longitude: lngVal },
+            destinationMunicipalityInput: destMuni,
+            destinationDepartmentInput: deptId,
+          });
         }
-        const isFlat = territorialResolution?.pricingMode === "FLAT" &&
+        const isFlat = (territorialResolution?.pricingMode === "FLAT" || territorialResolution?.pricingMode === "TERRITORIAL_FLAT") &&
                        territorialResolution.isApplied &&
                        typeof territorialResolution.fixedDeliveryFee === "number" &&
                        territorialResolution.fixedDeliveryFee > 0;
@@ -627,6 +710,24 @@ export const notifyNewOrder = functions.firestore
 
         authoritativeReconciledDeliveryFee = finalDeliveryFee;
 
+        // 🔒 DETERMINACIÓN AUTORITATIVA DE GANANCIA DE COURIER
+        let finalCourierEarnings: number;
+        let finalCourierDistanceEarnings: number;
+
+        if (validServerQuote && (validServerQuote.pricingMode === "TERRITORIAL_FLAT" || validServerQuote.territorialLevel)) {
+          finalCourierEarnings = typeof validServerQuote.courierEarnings === "number" ? validServerQuote.courierEarnings : finalDeliveryFee;
+          finalCourierDistanceEarnings = finalCourierEarnings;
+        } else if (isFlat && territorialResolution?.courierFlatEarning != null && territorialResolution.courierFlatEarning > 0) {
+          finalCourierEarnings = territorialResolution.courierFlatEarning;
+          finalCourierDistanceEarnings = finalCourierEarnings;
+        } else if (isFlat) {
+          finalCourierEarnings = finalDeliveryFee;
+          finalCourierDistanceEarnings = finalCourierEarnings;
+        } else {
+          finalCourierDistanceEarnings = courierDistanceEarningsFloat;
+          finalCourierEarnings = courierTotalEarningsFloat;
+        }
+
         // ── Reconciliación Contable Estricta con la Fórmula Canónica de BlueSystem ──
         // total = max(0, subtotal - (couponDiscount + promoDiscount + discountAmount)) + finalDeliveryFee + tip + additionalCharges
         const couponDiscountVal = Number(order.couponDiscount || 0);
@@ -638,18 +739,24 @@ export const notifyNewOrder = functions.firestore
         const reconciledTotal = Math.round((productNet + finalDeliveryFee + tipVal + addChargeVal) * 100) / 100;
         const reconciledTotalCents = Math.round(reconciledTotal * 100);
 
+        const resolvedPricingMode = isFlat ? (territorialResolution?.pricingMode || "TERRITORIAL_FLAT") : "DISTANCE";
+        const resolvedTerritorialLevel = (validServerQuote as any)?.territorialLevel || territorialResolution?.territorialLevel || null;
+        const resolvedInterMunicipalRouteId = (validServerQuote as any)?.interMunicipalRouteId || territorialResolution?.interMunicipalRouteId || null;
+
         const pricingSnapshot = {
           serviceType: "COMMERCE_DELIVERY",
-          pricingMode: isFlat ? "FLAT" : "DISTANCE",
-          pricingPolicyId: territorialResolution?.policyId || null,
-          pricingPolicyVersion: territorialResolution?.pricingPolicyVersion || null,
-          fixedDeliveryFee: isFlat ? territorialResolution?.fixedDeliveryFee! : null,
+          pricingMode: resolvedPricingMode,
+          territorialLevel: resolvedTerritorialLevel,
+          interMunicipalRouteId: resolvedInterMunicipalRouteId,
+          pricingPolicyId: territorialResolution?.policyId || validServerQuote?.pricingPolicyId || null,
+          pricingPolicyVersion: territorialResolution?.pricingPolicyVersion || validServerQuote?.pricingPolicyVersion || null,
+          fixedDeliveryFee: isFlat ? finalDeliveryFee : null,
           customerPricePerKm: customerRatePerKm,
           courierPricePerKm: effectiveCourierRate,
           routeDistanceKm,
           routeDistanceMeters,
           deliveryFee: finalDeliveryFee,
-          courierEarnings: courierDistanceEarningsFloat,
+          courierEarnings: finalCourierEarnings,
           currency: territorialResolution?.currency || "NIO",
           pricingVersion: "v2.2-commerce",
           calculatedAt: new Date().toISOString(),
@@ -658,6 +765,7 @@ export const notifyNewOrder = functions.firestore
           pricingValidationStatus,
           reconciledTotal,
           reconciledTotalCents,
+          geoIntegritySnapshot,
         };
 
         const locationStamp: Record<string, any> = {
@@ -693,10 +801,12 @@ export const notifyNewOrder = functions.firestore
           customerPricePerKm: customerRatePerKm,
           courierPricePerKm: effectiveCourierRate,
           pricingVersion: "v2.2-commerce",
-          pricingMode: isFlat ? "FLAT" : "DISTANCE",
-          pricingPolicyId: territorialResolution?.policyId || null,
-          pricingPolicyVersion: territorialResolution?.pricingPolicyVersion || null,
-          fixedDeliveryFee: isFlat ? territorialResolution?.fixedDeliveryFee! : null,
+          pricingMode: resolvedPricingMode,
+          territorialLevel: resolvedTerritorialLevel,
+          interMunicipalRouteId: resolvedInterMunicipalRouteId,
+          pricingPolicyId: territorialResolution?.policyId || validServerQuote?.pricingPolicyId || null,
+          pricingPolicyVersion: territorialResolution?.pricingPolicyVersion || validServerQuote?.pricingPolicyVersion || null,
+          fixedDeliveryFee: isFlat ? finalDeliveryFee : null,
           deliveryFee: finalDeliveryFee,
           total: reconciledTotal,
           customerTotal: reconciledTotal,
@@ -706,15 +816,16 @@ export const notifyNewOrder = functions.firestore
           feeSource,
           pricingValidationStatus,
           pricingSnapshot,
+          geoIntegritySnapshot,
           courierRatePerKmApplied: effectiveCourierRate,
           courierOrderBonusApplied: courierOrderBonus,
-          courierDistanceEarnings: courierDistanceEarningsFloat,
+          courierDistanceEarnings: finalCourierDistanceEarnings,
           courierBonusEarnings: courierBonusEarningsFloat,
           courierDeliveryEarnings: finalDeliveryFee,
           courierTipEarnings: tipVal,
-          courierTotalEarnings: courierTotalEarningsFloat,
-          courierEarnings: courierTotalEarningsFloat, // Legacy alias
-          gananciaRepartidor: courierTotalEarningsFloat, // Legacy alias
+          courierTotalEarnings: finalCourierEarnings,
+          courierEarnings: finalCourierEarnings, // Legacy alias
+          gananciaRepartidor: finalCourierEarnings, // Legacy alias
           platformAdditionalChargeRevenue: addChargeVal,
           platformCommissionRevenue: commissionAmountVal,
           platformRevenue: platformRevenueVal,
@@ -960,8 +1071,15 @@ export const notifyNewOrder = functions.firestore
 
     const fulfillmentText = order.fulfillmentType === "PICKUP" ? "🏪 Retiro en Tienda (PICKUP)" : "🛵 Envío Delivery";
     const displayCode = orderCode ? ` #${orderCode}` : "";
-    const newOrderTitle = "🛒 ¡Nuevo Pedido Entrante!";
-    const newOrderBody = `[${fulfillmentText}] Pedido${displayCode} - Cliente: ${order.customerName || "Cliente"} - Total: C$ ${order.total || "0.00"}`;
+    const resolvedNewOrder = await NotificationTemplateService.resolve("ORDER_CREATED_MERCHANT", {
+      fulfillmentType: fulfillmentText,
+      orderCode: displayCode,
+      customerName: order.customerName || "Cliente",
+      total: order.total || "0.00",
+      orderId,
+    });
+    const newOrderTitle = resolvedNewOrder.title || "🛒 ¡Nuevo Pedido Entrante!";
+    const newOrderBody = resolvedNewOrder.body || `[${fulfillmentText}] Pedido${displayCode} - Cliente: ${order.customerName || "Cliente"} - Total: C$ ${order.total || "0.00"}`;
 
     // 1. Persistir notificación in-app en buzón del comercio
     const notifDocId = `order_${orderId}_created_merchant`;
@@ -1110,12 +1228,25 @@ export const notifyOrderStatusChange = functions.firestore
 
     if (!statusChanged && !courierIdChanged) return null;
 
+    // 🔒 FASE 6: Sincronización Server-Authoritative de la Proyección de Tarea de Motorizado (/courier_tasks)
+    try {
+      await syncCourierTaskProjection(orderId, after);
+    } catch (projErr: any) {
+      functions.logger.error(`[COURIER_TASK_PROJECTION_ERROR] Error sincronizando proyección para orderId=${orderId}:`, projErr);
+    }
+
     // 1. Notificación directa al motorizado cuando es asignado por el comercio o administración
     if (assignedCourierId && (currentStatus === "assigned" || currentStatus === "asignado" || courierIdChanged)) {
       const courierTokens = await getUserActiveTokens(assignedCourierId);
       if (courierTokens.length > 0) {
         functions.logger.info(`[FCM] Enviando notificación de asignación a courierUid=${assignedCourierId}, orderId=${orderId}`);
         const displayCode = after.orderCode || orderId.slice(-6).toUpperCase();
+        const resolvedCourier = await NotificationTemplateService.resolve("COURIER_DIRECT_ASSIGNED", {
+          businessName: after.businessName || "Comercio",
+          orderCode: displayCode,
+          total: after.total || "0.00",
+          orderId,
+        });
         await messaging.sendEachForMulticast({
           tokens: courierTokens,
           data: {
@@ -1125,8 +1256,8 @@ export const notifyOrderStatusChange = functions.firestore
             orderShortCode: (after.orderShortCode || "").toString(),
             status: currentStatus || "assigned",
             screen: "assigned_orders",
-            title: "🛵 Nuevo pedido asignado",
-            body: `[${after.businessName || "Comercio"}] Pedido #${displayCode} — Total: C$ ${after.total || "0.00"}`,
+            title: resolvedCourier.title || "🛵 Nuevo pedido asignado",
+            body: resolvedCourier.body || `[${after.businessName || "Comercio"}] Pedido #${displayCode} — Total: C$ ${after.total || "0.00"}`,
           },
           android: { priority: "high", directBootOk: true } as any,
         });
@@ -1147,26 +1278,45 @@ export const notifyOrderStatusChange = functions.firestore
       if (!targetMuniId) {
         functions.logger.error(`[FCM_ABORT] Orden ${orderId} en estado READY carece de commercialMunicipalityId válido. Difusión a pool cancelada.`);
       } else {
-        const topicName = `fleet_${targetTenantId}_${targetMuniId}`;
-        functions.logger.info(`[FCM] Difundiendo pedido listo al pool de repartidores (${topicName}): orderId=${orderId} muni=${targetMuniId}`);
-        await messaging.send({
-          topic: topicName,
-          data: {
-            action: "NEW_ORDER",
+        // Consultar SSOT de Progressive Dispatch
+        const dispatchConfig = await getCommerceProgressiveDispatchConfig(targetMuniId);
+
+        if (dispatchConfig.enabled) {
+          functions.logger.info(`[COMMERCE_DISPATCH] Iniciando despacho progresivo autoritativo para orden ${orderId} en municipio ${targetMuniId}`);
+          try {
+            await startCommerceDispatch(orderId, after);
+          } catch (dispatchErr: any) {
+            functions.logger.error(`[COMMERCE_DISPATCH] Error iniciando despacho progresivo para orden ${orderId}:`, dispatchErr);
+          }
+        } else {
+          // Despacho Legacy: Broad topic broadcast
+          const topicName = `fleet_${targetTenantId}_${targetMuniId}`;
+          functions.logger.info(`[FCM] Difundiendo pedido listo al pool de repartidores legacy (${topicName}): orderId=${orderId} muni=${targetMuniId}`);
+          const resolvedPool = await NotificationTemplateService.resolve("ORDER_READY_FLEET_POOL", {
+            businessName: after.businessName || "Comercio",
+            destinationAddress: after.destinationAddress || "Dirección de entrega",
             orderId,
             orderCode: (after.orderCode || "").toString(),
-            orderShortCode: (after.orderShortCode || "").toString(),
-            title: "🛵 Pedido Listo para Recoger",
-            body: `Comercio: ${after.businessName || "Comercio"} - Dir: ${after.destinationAddress || "Dirección de entrega"}`,
-            tenantId: targetTenantId,
-            commercialTenantId: targetTenantId,
-            cityId: targetMuniId,
-            municipalityId: targetMuniId,
-            commercialMunicipalityId: targetMuniId,
-            departmentId: (after.departmentId || "").toString(),
-          },
-          android: { priority: "high", directBootOk: true } as any,
-        });
+          });
+          await messaging.send({
+            topic: topicName,
+            data: {
+              action: "NEW_ORDER",
+              orderId,
+              orderCode: (after.orderCode || "").toString(),
+              orderShortCode: (after.orderShortCode || "").toString(),
+              title: resolvedPool.title || "🛵 Pedido Listo para Recoger",
+              body: resolvedPool.body || `Comercio: ${after.businessName || "Comercio"} - Dir: ${after.destinationAddress || "Dirección de entrega"}`,
+              tenantId: targetTenantId,
+              commercialTenantId: targetTenantId,
+              cityId: targetMuniId,
+              municipalityId: targetMuniId,
+              commercialMunicipalityId: targetMuniId,
+              departmentId: (after.departmentId || "").toString(),
+            },
+            android: { priority: "high", directBootOk: true } as any,
+          });
+        }
       }
     }
 
@@ -1183,25 +1333,41 @@ export const notifyOrderStatusChange = functions.firestore
 
     switch (currentStatus) {
       case "pending":
-      case "pendiente":
-        title = "Pedido recibido";
-        body = "Estamos procesando tu pedido.";
+      case "pendiente": {
+        const resPending = await NotificationTemplateService.resolve("ORDER_RECEIVED_CUSTOMER", {
+          businessName,
+          orderId,
+          orderCode: after.orderCode || "",
+        });
+        title = resPending.title || "Pedido recibido";
+        body = resPending.body || "Estamos procesando tu pedido.";
         canonicalType = "ORDER_CREATED";
         destinationType = "CUSTOMER_ORDER_DETAIL";
         canonicalAction = "OPEN_ORDER";
         shouldNotifyCustomer = true;
         break;
+      }
 
       case "preparing":
       case "preparando":
       case "en_cocina": {
         const isRestaurant = await resolveMerchantIsRestaurant(after);
         if (isRestaurant) {
-          title = "🍳 Pedido en Cocina";
-          body = `${businessName} está preparando tu pedido.`;
+          const resPrep = await NotificationTemplateService.resolve("ORDER_PREPARING_RESTAURANT", {
+            businessName,
+            orderId,
+            orderCode: after.orderCode || "",
+          });
+          title = resPrep.title || "🍳 Pedido en Cocina";
+          body = resPrep.body || `${businessName} está preparando tu pedido.`;
         } else {
-          title = "📦 Tu pedido en Preparación";
-          body = `${businessName} está preparando tu pedido.`;
+          const resPrep = await NotificationTemplateService.resolve("ORDER_PREPARING_RETAIL", {
+            businessName,
+            orderId,
+            orderCode: after.orderCode || "",
+          });
+          title = resPrep.title || "📦 Tu pedido en Preparación";
+          body = resPrep.body || `${businessName} está preparando tu pedido.`;
         }
         canonicalType = "ORDER_PREPARING";
         destinationType = "CUSTOMER_ORDER_DETAIL";
@@ -1211,71 +1377,116 @@ export const notifyOrderStatusChange = functions.firestore
       }
 
       case "ready":
-      case "listo":
-        title = "📦 Tu pedido está listo";
-        body = "Tu pedido está listo y pronto será entregado.";
+      case "listo": {
+        const resReady = await NotificationTemplateService.resolve("ORDER_READY_CUSTOMER", {
+          businessName,
+          orderId,
+          orderCode: after.orderCode || "",
+        });
+        title = resReady.title || "📦 Tu pedido está listo";
+        body = resReady.body || "Tu pedido está listo y pronto será entregado.";
         canonicalType = "ORDER_READY";
         destinationType = "CUSTOMER_ORDER_DETAIL";
         canonicalAction = "OPEN_ORDER";
         shouldNotifyCustomer = true;
         break;
+      }
 
       case "assigned":
-      case "asignado":
-        title = "🛵 Repartidor asignado";
-        body = "Un motorizado ha sido asignado para entregar tu pedido.";
+      case "asignado": {
+        const resAssigned = await NotificationTemplateService.resolve("COURIER_ASSIGNED_CUSTOMER", {
+          businessName,
+          orderId,
+          orderCode: after.orderCode || "",
+          courierName: after.assignedCourierName || "Motorizado",
+        });
+        title = resAssigned.title || "🛵 Repartidor asignado";
+        body = resAssigned.body || "Un motorizado ha sido asignado para entregar tu pedido.";
         canonicalType = "COURIER_ASSIGNED";
         destinationType = "CUSTOMER_ORDER_DETAIL";
         canonicalAction = "OPEN_ORDER";
         shouldNotifyCustomer = true;
         break;
+      }
 
       case "courier_accepted":
-      case "aceptado_por_motorizado":
-        title = "🛵 Repartidor confirmado";
-        body = "Tu repartidor aceptó el pedido y se dirige al comercio.";
+      case "aceptado_por_motorizado": {
+        const resAccepted = await NotificationTemplateService.resolve("COURIER_ACCEPTED_CUSTOMER", {
+          businessName,
+          orderId,
+          orderCode: after.orderCode || "",
+          courierName: after.assignedCourierName || "Motorizado",
+        });
+        title = resAccepted.title || "🛵 Repartidor confirmado";
+        body = resAccepted.body || "Tu repartidor aceptó el pedido y se dirige al comercio.";
         canonicalType = "COURIER_ASSIGNED";
         destinationType = "CUSTOMER_ORDER_DETAIL";
         canonicalAction = "OPEN_ORDER";
         shouldNotifyCustomer = true;
         break;
+      }
 
       case "picked_up":
-      case "recogido":
-        title = "📦 Pedido recogido";
-        body = "El motorizado ha recogido tu pedido en el comercio.";
+      case "recogido": {
+        const resPicked = await NotificationTemplateService.resolve("ORDER_PICKED_UP_CUSTOMER", {
+          businessName,
+          orderId,
+          orderCode: after.orderCode || "",
+          courierName: after.assignedCourierName || "Motorizado",
+        });
+        title = resPicked.title || "📦 Pedido recogido";
+        body = resPicked.body || "El motorizado ha recogido tu pedido en el comercio.";
         canonicalType = "ORDER_PICKED_UP";
         destinationType = "CUSTOMER_ORDER_TRACKING";
         canonicalAction = "OPEN_TRACKING";
         shouldNotifyCustomer = true;
         break;
+      }
 
       case "in_transit":
-      case "en_camino":
-        title = "🛵 Tu pedido está en camino";
-        body = "Tu repartidor lleva tu pedido en ruta hacia tu dirección.";
+      case "en_camino": {
+        const resTransit = await NotificationTemplateService.resolve("ORDER_IN_TRANSIT_CUSTOMER", {
+          businessName,
+          orderId,
+          orderCode: after.orderCode || "",
+          courierName: after.assignedCourierName || "Motorizado",
+        });
+        title = resTransit.title || "🛵 Tu pedido está en camino";
+        body = resTransit.body || "Tu repartidor lleva tu pedido en ruta hacia tu dirección.";
         canonicalType = "ORDER_IN_TRANSIT";
         destinationType = "CUSTOMER_ORDER_TRACKING";
         canonicalAction = "OPEN_TRACKING";
         shouldNotifyCustomer = true;
         break;
+      }
 
       case "delivered":
-      case "entregado":
-        title = "🎉 ¡Pedido entregado!";
-        body = "Tu pedido fue entregado correctamente.";
+      case "entregado": {
+        const resDelivered = await NotificationTemplateService.resolve("ORDER_DELIVERED_CUSTOMER", {
+          businessName,
+          orderId,
+          orderCode: after.orderCode || "",
+        });
+        title = resDelivered.title || "🎉 ¡Pedido entregado!";
+        body = resDelivered.body || "Tu pedido fue entregado correctamente.";
         canonicalType = "ORDER_DELIVERED";
         destinationType = "CUSTOMER_ORDER_DETAIL";
         canonicalAction = "OPEN_ORDER";
         shouldNotifyCustomer = true;
         break;
+      }
 
       case "completed":
       case "completado":
         // Si el estado previo fue 'delivered', no saturar al cliente con un push duplicado instantáneo
         if (previousStatus !== "delivered" && previousStatus !== "entregado") {
-          title = "✓ Pedido completado";
-          body = "Tu pedido ha sido completado con éxito.";
+          const resCompleted = await NotificationTemplateService.resolve("ORDER_COMPLETED_CUSTOMER", {
+            businessName,
+            orderId,
+            orderCode: after.orderCode || "",
+          });
+          title = resCompleted.title || "✓ Pedido completado";
+          body = resCompleted.body || "Tu pedido ha sido completado con éxito.";
           canonicalType = "ORDER_DELIVERED";
           destinationType = "CUSTOMER_ORDER_DETAIL";
           canonicalAction = "OPEN_ORDER";
@@ -1284,15 +1495,37 @@ export const notifyOrderStatusChange = functions.firestore
         break;
 
       case "cancelled":
-      case "cancelado":
+      case "cancelado": {
         actionType = "ORDER_CANCELLED";
         canonicalType = "ORDER_CANCELLED";
         destinationType = "CUSTOMER_ORDER_DETAIL";
         canonicalAction = "OPEN_ORDER";
-        title = "🚫 Pedido cancelado";
-        body = after.cancellationReason ? `Motivo: ${after.cancellationReason}` : "Tu pedido ha sido cancelado.";
+        const resCancelled = await NotificationTemplateService.resolve("ORDER_CANCELLED_CUSTOMER", {
+          businessName,
+          cancellationReason: after.cancellationReason || "Pedido cancelado",
+          orderId,
+          orderCode: after.orderCode || "",
+        });
+        title = resCancelled.title || "🚫 Pedido cancelado";
+        body = resCancelled.body || (after.cancellationReason ? `Motivo: ${after.cancellationReason}` : "Tu pedido ha sido cancelado.");
         shouldNotifyCustomer = true;
+        try {
+          await cancelCommerceDispatch(orderId, after.cancellationReason || "ORDER_CANCELLED");
+        } catch (cancelErr: any) {
+          functions.logger.warn(`[COMMERCE_DISPATCH] Error cancelando sesión de orden ${orderId}: ${cancelErr.message}`);
+        }
+        // 🔒 P1 CAPACITY RELEASE RESOLUTION (BSD-SCHEDULED-COMMERCE-PHASE-4-MERCHANT-AGENDA-001)
+        try {
+          const { executeAuthoritativeCapacityRelease } = await import("../callables/scheduledCommerceCallables");
+          await executeAuthoritativeCapacityRelease(
+            orderId,
+            after.rejectionReason || after.cancellationReason || "ORDER_CANCELLED"
+          );
+        } catch (capErr: any) {
+          functions.logger.warn(`[CAPACITY_RELEASE_WARN] Error liberando capacidad para orden ${orderId}: ${capErr.message}`);
+        }
         break;
+      }
     }
 
     if (!shouldNotifyCustomer || !targetCustomerId) {
@@ -1403,60 +1636,96 @@ export const notifyOrderStatusChange = functions.firestore
         case "assigned":
         case "asignado":
         case "courier_accepted":
-        case "aceptado_por_motorizado":
-          merchantTitle = `🛵 Motorizado Asignado (#${displayCode})`;
-          merchantBody = `${courierName} ha sido asignado para recoger el pedido de ${custName}.`;
+        case "aceptado_por_motorizado": {
+          const resMerchAssigned = await NotificationTemplateService.resolve("COURIER_ASSIGNED_MERCHANT", {
+            orderCode: displayCode,
+            courierName,
+            customerName: custName,
+            orderId,
+          });
+          merchantTitle = resMerchAssigned.title || `🛵 Motorizado Asignado (#${displayCode})`;
+          merchantBody = resMerchAssigned.body || `${courierName} ha sido asignado para recoger el pedido de ${custName}.`;
           merchantNotifType = "COURIER_ASSIGNED";
           shouldNotifyMerchant = true;
           break;
+        }
 
         case "ready":
         case "listo":
           if (statusChanged) {
-            merchantTitle = `📦 Pedido Listo para Despacho (#${displayCode})`;
-            merchantBody = `Pedido marcado como listo. Esperando recolección por motorizado.`;
+            const resMerchReady = await NotificationTemplateService.resolve("ORDER_READY_MERCHANT", {
+              orderCode: displayCode,
+              orderId,
+            });
+            merchantTitle = resMerchReady.title || `📦 Pedido Listo para Despacho (#${displayCode})`;
+            merchantBody = resMerchReady.body || `Pedido marcado como listo. Esperando recolección por motorizado.`;
             merchantNotifType = "ORDER_READY";
             shouldNotifyMerchant = true;
           }
           break;
 
         case "picked_up":
-        case "recogido":
-          merchantTitle = `📦 Pedido Recogido (#${displayCode})`;
-          merchantBody = `${courierName} ha recogido el pedido y se dirige al cliente.`;
+        case "recogido": {
+          const resMerchPicked = await NotificationTemplateService.resolve("ORDER_PICKED_UP_MERCHANT", {
+            orderCode: displayCode,
+            courierName,
+            orderId,
+          });
+          merchantTitle = resMerchPicked.title || `📦 Pedido Recogido (#${displayCode})`;
+          merchantBody = resMerchPicked.body || `${courierName} ha recogido el pedido y se dirige al cliente.`;
           merchantNotifType = "ORDER_PICKED_UP";
           shouldNotifyMerchant = true;
           break;
+        }
 
         case "in_transit":
-        case "en_camino":
-          merchantTitle = `🛵 Pedido en Camino (#${displayCode})`;
-          merchantBody = `El pedido va en ruta hacia la dirección del cliente (${custName}).`;
+        case "en_camino": {
+          const resMerchTransit = await NotificationTemplateService.resolve("ORDER_IN_TRANSIT_MERCHANT", {
+            orderCode: displayCode,
+            customerName: custName,
+            orderId,
+          });
+          merchantTitle = resMerchTransit.title || `🛵 Pedido en Camino (#${displayCode})`;
+          merchantBody = resMerchTransit.body || `El pedido va en ruta hacia la dirección del cliente (${custName}).`;
           merchantNotifType = "ORDER_IN_TRANSIT";
           shouldNotifyMerchant = true;
           break;
+        }
 
         case "delivered":
         case "entregado":
         case "completed":
         case "completado":
           if (previousStatus !== "delivered" && previousStatus !== "entregado" && previousStatus !== "completed") {
-            merchantTitle = `✅ ¡Pedido Entregado! (#${displayCode})`;
-            merchantBody = `El pedido fue entregado con éxito a ${custName}. Total: C$ ${after.total || "0.00"}`;
+            const resMerchDelivered = await NotificationTemplateService.resolve("ORDER_DELIVERED_MERCHANT", {
+              orderCode: displayCode,
+              customerName: custName,
+              total: after.total || "0.00",
+              orderId,
+            });
+            merchantTitle = resMerchDelivered.title || `✅ ¡Pedido Entregado! (#${displayCode})`;
+            merchantBody = resMerchDelivered.body || `El pedido fue entregado con éxito a ${custName}. Total: C$ ${after.total || "0.00"}`;
             merchantNotifType = "ORDER_DELIVERED";
             shouldNotifyMerchant = true;
           }
           break;
 
         case "cancelled":
-        case "cancelado":
-          merchantTitle = `🚫 Pedido Cancelado (#${displayCode})`;
-          merchantBody = after.cancellationReason || after.cancelReason
+        case "cancelado": {
+          const resMerchCancel = await NotificationTemplateService.resolve("ORDER_CANCELLED_MERCHANT", {
+            orderCode: displayCode,
+            customerName: custName,
+            cancellationReason: after.cancellationReason || after.cancelReason || "Pedido cancelado",
+            orderId,
+          });
+          merchantTitle = resMerchCancel.title || `🚫 Pedido Cancelado (#${displayCode})`;
+          merchantBody = resMerchCancel.body || (after.cancellationReason || after.cancelReason
             ? `Motivo: ${after.cancellationReason || after.cancelReason}`
-            : `El pedido de ${custName} ha sido cancelado.`;
+            : `El pedido de ${custName} ha sido cancelado.`);
           merchantNotifType = "ORDER_CANCELLED";
           shouldNotifyMerchant = true;
           break;
+        }
       }
 
       if (shouldNotifyMerchant) {
@@ -1526,8 +1795,13 @@ export const onPaymentStatusUpdated = functions.firestore
     if (before.status === "payment_verifying" && after.status === "pending") {
       const tokens = await getUserActiveTokens(after.customerId);
       if (tokens.length > 0) {
-        const notifTitle = "❌ Comprobante no verificado";
-        const notifBody = `Motivo: ${after.paymentRejectionReason || "No coincide con la transferencia"}. Revisa tu pago.`;
+        const resPayReject = await NotificationTemplateService.resolve("PAYMENT_PROOF_REJECTED_CUSTOMER", {
+          rejectionReason: after.paymentRejectionReason || "No coincide con la transferencia",
+          orderId,
+          orderCode: after.orderCode || "",
+        });
+        const notifTitle = resPayReject.title || "❌ Comprobante no verificado";
+        const notifBody = resPayReject.body || `Motivo: ${after.paymentRejectionReason || "No coincide con la transferencia"}. Revisa tu pago.`;
         await messaging.sendEachForMulticast({
           tokens,
           data: {
@@ -1561,8 +1835,12 @@ export const onPaymentStatusUpdated = functions.firestore
     ) {
       const tokens = await getUserActiveTokens(after.customerId);
       if (tokens.length > 0) {
-        const notifTitle = "🚫 Pedido Cancelado";
-        const notifBody = "Tu pedido fue cancelado al superar el límite de intentos de comprobantes.";
+        const resMaxAttempts = await NotificationTemplateService.resolve("PAYMENT_MAX_ATTEMPTS_CANCELLED", {
+          orderId,
+          orderCode: after.orderCode || "",
+        });
+        const notifTitle = resMaxAttempts.title || "🚫 Pedido Cancelado";
+        const notifBody = resMaxAttempts.body || "Tu pedido fue cancelado al superar el límite de intentos de comprobantes.";
         await messaging.sendEachForMulticast({
           tokens,
           data: {
@@ -1788,7 +2066,20 @@ export const onOrderDelivered = functions.firestore
     const merchantNetCents = Math.max(0, merchantGrossSalesCents - platformFeeCents);
     
     // Ganancias del courier (BSD-COURIER-EARNINGS-CASH-SETTLEMENT-001)
-    const courierTotalEarningsCents = distanceEarningsCents + bonusEarningsCents + tipEarningsCents;
+    // RESPETO ESTRICTO DEL SNAPSHOT CONGELADO PARA PEDIDOS TERRITORIAL_FLAT
+    const isTerritorialFlatOrder = after.pricingMode === "TERRITORIAL_FLAT" || after.pricingSnapshot?.pricingMode === "TERRITORIAL_FLAT";
+    let finalCourierDistanceEarningsCents = distanceEarningsCents;
+    let courierTotalEarningsCents = distanceEarningsCents + bonusEarningsCents + tipEarningsCents;
+
+    if (isTerritorialFlatOrder && (after.courierTotalEarnings != null || after.courierEarnings != null)) {
+      const frozenEarning = Number(after.courierTotalEarnings ?? after.courierEarnings ?? 0);
+      courierTotalEarningsCents = Math.round(frozenEarning * 100);
+      finalCourierDistanceEarningsCents = Math.max(0, courierTotalEarningsCents - bonusEarningsCents - tipEarningsCents);
+    } else if (after.courierDistanceEarnings != null) {
+      const frozenDist = Number(after.courierDistanceEarnings || 0);
+      finalCourierDistanceEarningsCents = Math.round(frozenDist * 100);
+      courierTotalEarningsCents = finalCourierDistanceEarningsCents + bonusEarningsCents + tipEarningsCents;
+    }
     const courierEarningsFloat = Math.round(courierTotalEarningsCents) / 100;
     const platformRevenueFloat = Math.round((platformFeeCents / 100 + additionalChargeAmountFloat) * 100) / 100;
 
@@ -1830,7 +2121,7 @@ export const onOrderDelivered = functions.firestore
       routingProvider,
       courierRatePerKmApplied: courierRatePerKm,
       courierOrderBonusApplied: courierOrderBonus,
-      courierDistanceEarnings: distanceEarningsCents / 100,
+      courierDistanceEarnings: finalCourierDistanceEarningsCents / 100,
       courierBonusEarnings: bonusEarningsCents / 100,
       courierTipEarnings: tipEarningsCents / 100,
       courierTotalEarnings: courierEarningsFloat,
@@ -1940,7 +2231,7 @@ export const onOrderDelivered = functions.firestore
             compensatedCents: compensationCents,
             netCustodyCents: netCustodyIncrementCents,
             earningsCents: courierTotalEarningsCents,
-            distanceEarningsCents,
+            distanceEarningsCents: finalCourierDistanceEarningsCents,
             bonusEarningsCents,
             tipEarningsCents,
             currency: "NIO",
