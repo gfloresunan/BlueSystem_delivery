@@ -190,12 +190,10 @@ class AppUpdateResolver {
       rolePolicy = config.rolePolicies![normalizedRole];
     }
 
-    final rolePolicyActive = rolePolicy != null && rolePolicy.enabled;
-
     bool isRoleForced = false;
     bool isRoleOptional = false;
 
-    if (rolePolicyActive && rolePolicy != null) {
+    if (rolePolicy != null && rolePolicy.enabled) {
       final roleMin = rolePolicy.minimumVersion.trim().isNotEmpty ? rolePolicy.minimumVersion.trim() : safeMin;
       final roleCmpMin = compareSemVer(safeInstalled, roleMin);
       final roleLatest = rolePolicy.latestVersion.trim().isNotEmpty ? rolePolicy.latestVersion.trim() : safeLatest;
@@ -207,8 +205,8 @@ class AppUpdateResolver {
 
     // 3. Strictest-Wins Combinator
     if (isGlobalForced || isRoleForced) {
-      final title = (isRoleForced && rolePolicy?.title != null) ? rolePolicy!.title! : config.title;
-      final message = (isRoleForced && rolePolicy?.message != null) ? rolePolicy!.message! : config.message;
+      final title = (isRoleForced && rolePolicy != null && rolePolicy.title != null) ? rolePolicy.title! : config.title;
+      final message = (isRoleForced && rolePolicy != null && rolePolicy.message != null) ? rolePolicy.message! : config.message;
       final minVer = (isRoleForced && rolePolicy != null && rolePolicy.minimumVersion.isNotEmpty)
           ? rolePolicy.minimumVersion
           : safeMin;
@@ -225,8 +223,8 @@ class AppUpdateResolver {
 
     // 4. Actualización Opcional
     if (cmpLatest < 0 || isRoleOptional) {
-      final title = (isRoleOptional && rolePolicy?.title != null) ? rolePolicy!.title! : config.title;
-      final message = (isRoleOptional && rolePolicy?.message != null) ? rolePolicy!.message! : config.message;
+      final title = (isRoleOptional && rolePolicy != null && rolePolicy.title != null) ? rolePolicy.title! : config.title;
+      final message = (isRoleOptional && rolePolicy != null && rolePolicy.message != null) ? rolePolicy.message! : config.message;
 
       return OptionalUpdateResolution(
         title: title,

@@ -711,6 +711,7 @@ class BusinessEntity {
   BusinessEntity copyWith({
     double? calculatedDistanceKm,
     bool? isOpen,
+    bool? scheduledOrdersEnabled,
   }) {
     return BusinessEntity(
       businessId: businessId,
