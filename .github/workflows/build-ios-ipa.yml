@@ -24,6 +24,7 @@ on:
       - main
     paths:
       - "flutter_client/**"
+      - ".github/workflows/build-ios-ipa.yml"
   workflow_dispatch:
     inputs:
       build_type:
@@ -43,6 +44,9 @@ jobs:
     name: "🔍 Dart Analyze + Unit Tests"
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: "📥 Checkout"
@@ -56,34 +60,57 @@ jobs:
 
       - name: "📦 flutter pub get"
         run: |
+          set -euo pipefail
           cd flutter_client
           flutter pub get
 
       - name: "🔍 flutter analyze"
         run: |
+          set -euo pipefail
           cd flutter_client
-          flutter analyze --no-pub 2>&1 | tee analyze_output.txt
-          # Falla si hay errores, pero permite warnings
-          if grep -q "^  error •" analyze_output.txt; then
-            echo "❌ Flutter analyze encontró errores. Corregir antes de continuar."
+          ANALYZE_EXIT=0
+          flutter analyze --no-pub > analyze_output.txt 2>&1 || ANALYZE_EXIT=$?
+          cat analyze_output.txt
+          if [ "$ANALYZE_EXIT" -ne 0 ] || grep -q "^  error •" analyze_output.txt; then
+            echo "❌ Flutter analyze encontró errores (exit code: $ANALYZE_EXIT). Corregir antes de continuar."
             exit 1
           fi
           echo "✅ flutter analyze: sin errores"
 
       - name: "🧪 flutter test"
         run: |
+          set -euo pipefail
           cd flutter_client
-          flutter test --no-pub 2>&1 | tee test_output.txt
-          echo "✅ flutter test completado"
+          TEST_EXIT=0
+          flutter test --no-pub > test_output.txt 2>&1 || TEST_EXIT=$?
+          cat test_output.txt
+          if [ "$TEST_EXIT" -ne 0 ]; then
+            echo "❌ flutter test falló con exit code: $TEST_EXIT"
+            exit "$TEST_EXIT"
+          fi
+          echo "✅ flutter test completado exitosamente (0 fallos)"
+
+      - name: "📤 Upload Analysis & Test Logs"
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: "flutter-test-logs-${{ github.run_number }}"
+          path: |
+            flutter_client/analyze_output.txt
+            flutter_client/test_output.txt
+          if-no-files-found: ignore
 
   # ───────────────────────────────────────────────────────────────────────────
   # JOB 2 — Build iOS real en macOS (L1 Validation)
   # ───────────────────────────────────────────────────────────────────────────
   build_ios:
     name: "🍎 [L1] iOS Build — macos-15 (Xcode 16 / Swift 6)"
-    runs-on: macos-15  # Xcode 16 + Swift 6: Única solución para firebase_core ^3.10 (Firebase iOS SDK 11.x)
+    runs-on: macos-15  # Xcode 16 + Swift 6: Requerido para firebase_core ^3.10 (Firebase iOS SDK 11.x)
     timeout-minutes: 60
     needs: analyze_and_test
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: "📥 Checkout Repository"
@@ -97,6 +124,7 @@ jobs:
 
       - name: "🔍 Verify Environment — Flutter + Xcode + CocoaPods"
         run: |
+          set -euo pipefail
           echo "=== Flutter Version ==="
           flutter --version
           echo ""
@@ -111,6 +139,7 @@ jobs:
 
       - name: "📦 flutter pub get + precache iOS artifacts"
         run: |
+          set -euo pipefail
           cd flutter_client
           flutter pub get
           flutter precache --ios
@@ -118,23 +147,26 @@ jobs:
 
       - name: "☕ Setup CocoaPods"
         run: |
+          set -euo pipefail
           cd flutter_client/ios
           # NO borrar Podfile.lock — contiene las versiones exactas que compilan correctamente
           # Solo limpiar la carpeta Pods (binarios descargados, no la definición de versiones)
           rm -rf Pods 2>/dev/null || true
-          pod install 2>&1 | tail -20
+          pod install
           echo "✅ CocoaPods instalado con versiones del Podfile.lock"
 
       - name: "🏗️ Build iOS Release (no-codesign)"
+        id: build_step
         run: |
+          set -euo pipefail
           cd flutter_client
 
           BUILD_TYPE="${{ github.event.inputs.build_type || 'release' }}"
 
           if [ "$BUILD_TYPE" = "debug" ]; then
-            flutter build ios --debug --no-codesign --verbose 2>&1 | tail -50
+            flutter build ios --debug --no-codesign --verbose
           else
-            flutter build ios --release --no-codesign --verbose 2>&1 | tail -50
+            flutter build ios --release --no-codesign --verbose
           fi
 
           # Verificar que Runner.app fue producido
@@ -147,7 +179,9 @@ jobs:
           fi
 
       - name: "📦 Package .IPA (unsigned — for sideloading)"
+        id: package_step
         run: |
+          set -euo pipefail
           cd flutter_client
 
           echo "=== Verificando frameworks embebidos ==="
@@ -187,9 +221,8 @@ jobs:
           cp -r build/ios/iphoneos/Runner.app build/ios/ipa/Payload/Runner.app
 
           IPA_NAME="BlueSystem_Delivery_iOS_${{ github.run_number }}.ipa"
-          # Crear el .ipa directamente en build/ios/ (ruta que espera el upload)
           cd build/ios/ipa
-          zip -r -q "../BlueSystem_Delivery_iOS_${{ github.run_number }}.ipa" Payload
+          zip -r -q "../${IPA_NAME}" Payload
           cd ../../..
 
           echo "=== IPA generado ==="
@@ -202,17 +235,24 @@ jobs:
           name: "BlueSystem-iOS-L1-${{ github.run_number }}"
           path: "flutter_client/build/ios/*.ipa"
           retention-days: 14
-          if-no-files-found: warn
+          if-no-files-found: error
 
       - name: "📋 L1 Build Summary"
         if: always()
         run: |
+          L1_STATUS="BUILD_VALIDATED (no CERTIFIED)"
+          L1_EMOJI="✅"
+          if [ "${{ job.status }}" != "success" ]; then
+            L1_STATUS="FAILED (Build Incompleto o Errores Detectados)"
+            L1_EMOJI="❌"
+          fi
+
           echo "## 🍏 L1 — iOS Build Validation Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
           echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
-          echo "| **Estado L1** | BUILD_VALIDATED (no CERTIFIED) |" >> $GITHUB_STEP_SUMMARY
-          echo "| **Runner** | macos-14 (Apple Silicon) |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Estado L1** | ${L1_EMOJI} ${L1_STATUS} |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Runner** | macos-15 (Apple Silicon / Xcode 16) |" >> $GITHUB_STEP_SUMMARY
           echo "| **Build type** | ${{ github.event.inputs.build_type || 'release' }} |" >> $GITHUB_STEP_SUMMARY
           echo "| **Codesign** | ❌ no-codesign (unsigned) |" >> $GITHUB_STEP_SUMMARY
           echo "| **Commit** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
@@ -235,3 +275,4 @@ jobs:
           echo "1. Descargá el artifact \`BlueSystem-iOS-L1-${{ github.run_number }}\` desde la pestaña **Actions**" >> $GITHUB_STEP_SUMMARY
           echo "2. Usá **AltStore**, **Sideloadly** o **Apple Configurator 2** para instalarlo" >> $GITHUB_STEP_SUMMARY
           echo "3. En el iPhone: **Ajustes → General → VPN y gestión del dispositivo → Confiar**" >> $GITHUB_STEP_SUMMARY
+

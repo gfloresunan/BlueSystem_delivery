@@ -628,6 +628,8 @@ void main() {
       expect(quickChip, findsOneWidget);
 
       // Tap quick select chip
+      await tester.ensureVisible(quickChip);
+      await tester.pumpAndSettle();
       await tester.tap(quickChip);
       await tester.pumpAndSettle();
 

@@ -31,7 +31,7 @@ jobs:
           cd functions
           npm run build
 
-      - name: Run Enterprise Backend Test Suite (87 Tests)
+      - name: Run Enterprise Backend Test Suite (191 Tests)
         run: |
           cd functions
           npm test
@@ -56,13 +56,16 @@ jobs:
           npm ci
           npm run build
 
-      - name: Deploy to Firebase Staging
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: '${{ secrets.GITHUB_TOKEN }}'
-          firebaseServiceAccount: '${{ secrets.FIREBASE_SERVICE_ACCOUNT_BLUESYSTEM_STAGING }}'
-          channelId: live
-          projectId: bluesystem-7c9af-staging
+      - name: Pre-flight Staging Verification & Deploy
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          if [ -z "$FIREBASE_TOKEN" ]; then
+            echo "⚠️ No se detectaron credenciales para staging (FIREBASE_TOKEN). Despliegue de staging omitido con seguridad."
+            exit 0
+          fi
+          echo "🔍 Desplegando a Staging (bluesystem-7c9af-staging)..."
+          npx firebase-tools@13.31.0 deploy --project bluesystem-7c9af-staging --only functions,firestore:rules,firestore:indexes,storage --token "$FIREBASE_TOKEN"
 
   deploy_production:
     name: 🛡️ Deploy to Production (Manual Approval Gate)
@@ -88,4 +91,4 @@ jobs:
 
       - name: Deploy Firebase Production Infrastructure
         run: |
-          npx firebase-tools deploy --only functions,firestore:rules,storage:rules,firestore:indexes --token "${{ secrets.FIREBASE_TOKEN }}"
+          npx firebase-tools@13.31.0 deploy --project bluesystem-7c9af --only functions,firestore:rules,firestore:indexes,storage --token "${{ secrets.FIREBASE_TOKEN }}"

@@ -69,6 +69,7 @@ describe("BSD-TERRITORIAL-MUNICIPAL-PRICING-POLICY-001: Territorial Municipal Pr
         policyId: null,
         pricingPolicyVersion: null,
         fixedDeliveryFee: null,
+        courierFlatEarning: null,
         currency: "NIO",
         isApplied: false,
       };
@@ -92,6 +93,7 @@ describe("BSD-TERRITORIAL-MUNICIPAL-PRICING-POLICY-001: Territorial Municipal Pr
         policyId: "NI_MATAGALPA_CIUDAD_DARIO",
         pricingPolicyVersion: 1,
         fixedDeliveryFee: 40.0,
+        courierFlatEarning: null,
         currency: "NIO",
         isApplied: true,
         departmentId: "MATAGALPA",
@@ -125,6 +127,7 @@ describe("BSD-TERRITORIAL-MUNICIPAL-PRICING-POLICY-001: Territorial Municipal Pr
         policyId: "NI_MATAGALPA_CIUDAD_DARIO",
         pricingPolicyVersion: 1,
         fixedDeliveryFee: 40.0,
+        courierFlatEarning: null,
         currency: "NIO",
         isApplied: true,
       };
@@ -145,6 +148,7 @@ describe("BSD-TERRITORIAL-MUNICIPAL-PRICING-POLICY-001: Territorial Municipal Pr
         policyId: "NI_TEST_MUNI",
         pricingPolicyVersion: 1,
         fixedDeliveryFee: 0, // Invalid!
+        courierFlatEarning: null,
         currency: "NIO",
         isApplied: false, // Marked unapplied by resolver fail-safe
         fallbackReason: "INVALID_FLAT_FEE_FAILSAFE",
@@ -165,6 +169,7 @@ describe("BSD-TERRITORIAL-MUNICIPAL-PRICING-POLICY-001: Territorial Municipal Pr
         policyId: "NI_MATAGALPA_CIUDAD_DARIO",
         pricingPolicyVersion: 2,
         fixedDeliveryFee: 40.0,
+        courierFlatEarning: null,
         currency: "NIO",
         isApplied: true,
       };
@@ -183,6 +188,7 @@ describe("BSD-TERRITORIAL-MUNICIPAL-PRICING-POLICY-001: Territorial Municipal Pr
         policyId: "NI_MATAGALPA_CIUDAD_DARIO",
         pricingPolicyVersion: 1,
         fixedDeliveryFee: 40.0,
+        courierFlatEarning: null,
         currency: "NIO",
         isApplied: true,
       };
@@ -403,6 +409,7 @@ describe("BSD-TERRITORIAL-MUNICIPAL-PRICING-POLICY-001: Territorial Municipal Pr
         policyId: null,
         pricingPolicyVersion: null,
         fixedDeliveryFee: null,
+        courierFlatEarning: null,
         currency: "NIO",
         isApplied: false,
         fallbackReason: "NO_FLAT_POLICY_ACTIVE",

@@ -4,12 +4,17 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "test": "npm run build && npx tsc src/__tests__/loyalty.test.ts src/__tests__/couponEngine.test.ts src/__tests__/promotionsContract.test.ts src/__tests__/topSellingScheduler.test.ts src/__tests__/orderCodeConcurrency.test.ts src/__tests__/commerceDeliveryPricingDispatch001.test.ts src/__tests__/firestoreBackupScheduler.test.ts --outDir lib/__tests__ --target es2020 --module commonjs --esModuleInterop --skipLibCheck && node --test lib/__tests__/__tests__/loyalty.test.js lib/__tests__/__tests__/couponEngine.test.js lib/__tests__/__tests__/promotionsContract.test.js lib/__tests__/__tests__/topSellingScheduler.test.js lib/__tests__/__tests__/orderCodeConcurrency.test.js lib/__tests__/__tests__/commerceDeliveryPricingDispatch001.test.js lib/__tests__/__tests__/firestoreBackupScheduler.test.js",
+    "test": "npm run build && npx tsc src/__tests__/loyalty.test.ts src/__tests__/couponEngine.test.ts src/__tests__/promotionsContract.test.ts src/__tests__/topSellingScheduler.test.ts src/__tests__/orderCodeConcurrency.test.ts src/__tests__/commerceDeliveryPricingDispatch001.test.ts src/__tests__/firestoreBackupScheduler.test.ts src/__tests__/municipalGeoIntegrity.test.ts src/__tests__/territorialFlat3Level.test.ts src/__tests__/commerceProgressiveDispatch.test.ts src/__tests__/territorialPricing.test.ts --outDir lib/__tests__ --target es2020 --module commonjs --esModuleInterop --skipLibCheck && node --test lib/__tests__/__tests__/loyalty.test.js lib/__tests__/__tests__/couponEngine.test.js lib/__tests__/__tests__/promotionsContract.test.js lib/__tests__/__tests__/topSellingScheduler.test.js lib/__tests__/__tests__/orderCodeConcurrency.test.js lib/__tests__/__tests__/commerceDeliveryPricingDispatch001.test.js lib/__tests__/__tests__/firestoreBackupScheduler.test.js lib/__tests__/__tests__/municipalGeoIntegrity.test.js lib/__tests__/__tests__/territorialFlat3Level.test.js lib/__tests__/__tests__/commerceProgressiveDispatch.test.js lib/__tests__/__tests__/territorialPricing.test.js",
+    "test:territorial-pricing": "npm run build && npx tsc src/__tests__/territorialPricing.test.ts --outDir lib/__tests__ --target es2020 --module commonjs --esModuleInterop --skipLibCheck && node --test lib/__tests__/__tests__/territorialPricing.test.js",
+    "test:progressive-dispatch": "npm run build && npx tsc src/__tests__/commerceProgressiveDispatch.test.ts --outDir lib/__tests__ --target es2020 --module commonjs --esModuleInterop --skipLibCheck && node --test lib/__tests__/__tests__/commerceProgressiveDispatch.test.js",
+    "test:territorial-3level": "npm run build && npx tsc src/__tests__/territorialFlat3Level.test.ts --outDir lib/__tests__ --target es2020 --module commonjs --esModuleInterop --skipLibCheck && node --test lib/__tests__/__tests__/territorialFlat3Level.test.js",
+    "test:geo-integrity": "npm run build && npx tsc src/__tests__/municipalGeoIntegrity.test.ts --outDir lib/__tests__ --target es2020 --module commonjs --esModuleInterop --skipLibCheck && node --test lib/__tests__/__tests__/municipalGeoIntegrity.test.js",
     "test:commerce-pricing": "npm run build && npx tsc src/__tests__/commerceDeliveryPricingDispatch001.test.ts --outDir lib/__tests__ --target es2020 --module commonjs --esModuleInterop --skipLibCheck && node --test lib/__tests__/__tests__/commerceDeliveryPricingDispatch001.test.js",
     "test:coupons": "npm run build && npx tsc src/__tests__/couponEngine.test.ts --outDir lib/__tests__ --target es2020 --module commonjs --esModuleInterop --skipLibCheck && node --test lib/__tests__/__tests__/couponEngine.test.js",
     "test:account-deletion": "npm run build && npx tsc src/__tests__/accountDeletion.test.ts --outDir lib/__tests__ --target es2020 --module commonjs --esModuleInterop --skipLibCheck && node --test lib/__tests__/accountDeletion.test.js",
     "test:email": "npm run build && npx tsc src/__tests__/emailService.test.ts --outDir lib/__tests__ --target es2020 --module commonjs --esModuleInterop --skipLibCheck && node --test lib/__tests__/__tests__/emailService.test.js",
     "test:courier-ledger": "npm run build && npx tsc src/__tests__/courierCashLedgerE2E.test.ts --outDir lib --target es2020 --module commonjs --esModuleInterop --skipLibCheck && node --test lib/courierCashLedgerE2E.test.js",
+    "test:scheduled-reminders": "npm run build && npx tsc src/__tests__/scheduledCommerceReminder.test.ts --outDir lib/__tests__ --target es2020 --module commonjs --esModuleInterop --skipLibCheck && node --test lib/__tests__/__tests__/scheduledCommerceReminder.test.js",
     "serve": "npm run build && firebase emulators:start --only functions",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
@@ -23,6 +28,8 @@
   "dependencies": {
     "@google-cloud/secret-manager": "^6.3.0",
     "@sendgrid/mail": "^7.7.0",
+    "@turf/boolean-point-in-polygon": "^7.4.0",
+    "@turf/helpers": "^7.4.0",
     "firebase-admin": "^11.8.0",
     "firebase-functions": "^4.3.1",
     "nodemailer": "^6.9.13"
