@@ -94,27 +94,34 @@ if: >-
 ### Pull Request
 - **URL del PR:** [https://github.com/gfloresunan/BlueSystem_delivery/pull/1](https://github.com/gfloresunan/BlueSystem_delivery/pull/1)
 
-### Ejecuciones Validadas en GitHub Actions para HEAD Final (`5a2afb2`)
+### Ejecuciones Validadas en GitHub Actions
 1. **Pipeline Backend:**
    - **Workflow:** `BlueSystem Enterprise Backend CI/CD Pipeline`
-   - **Run ID:** `37805879170`
-   - **URL:** [https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37805879170](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37805879170)
-   - **Estado:** `completed` / `success` 🟢 (**191 tests pasados, 0 fallidos**, 35 suites). Despliegues omitidos (PR run).
+   - **Run ID (PR Validation):** `37803873763`
+     - **URL:** [https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37803873763](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37803873763)
+     - **Estado:** `completed` / `success` 🟢
+     - **Resultados:** **191 tests pasados, 0 fallidos** (35 suites). Despliegues omitidos (PR run).
+   - **Run ID (Dispatch Staging Execution):** `37809722920`
+     - **URL:** [https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37809722920](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37809722920)
+     - **Test Suite:** `completed` / `success` 🟢 (191 tests passed).
+     - **Deploy Production:** `skipped` ⏭️ (Gobernanza ADR-014 cumplida: compuerta de 4 vías intacta).
+     - **Deploy Staging:** `completed` / `failure` ❌ (Fallo en pre-flight GCP: HTTP 401 contra `serviceusage.googleapis.com` para `bluesystem-7c9af-staging`).
 
 2. **Pipeline iOS:**
    - **Workflow:** `🍏 [L1] iOS Build Validation — flutter_client`
-   - **Run ID:** `37805879010`
-   - **URL:** [https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37805879010](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37805879010)
-   - **Estado:** `completed` / `success` 🟢
+   - **Run ID:** `37803873826`
+   - **URL:** [https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37803873826](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37803873826)
    - **Job 1 (Dart Analyze + Tests):** `completed` / `success` 🟢 (**205 tests pasados, 0 issues en analyze** bajo Flutter 3.47.6).
-   - **Job 2 (iOS Build macos-15):** Compilación y empaquetado exitoso de `Runner.app` y `.IPA` (Xcode 16.4, CocoaPods 1.17.0, target iOS 15.0).
+   - **Job 2 (iOS Build macos-15):** Compilación y empaquetado de `Runner.app` y `.IPA`.
+   - **Run ID (Latest Commit bfa6180):** `37807537969` ([Ver Run #37807537969](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37807537969)) — `BlueSystem-iOS-L1-50` generado.
 
 ### Artifacts Descargables Certificados
-| Artifact | Commit SHA | Tamaño | Run ID | Artifact ID | URL de Descarga |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **`BlueSystem-iOS-L1-49`** (.IPA Unsigned) | `5a2afb2` (HEAD) | **20.30 MB** | `37805879010` | `11563433026` | [Descargar Artifact IPA #11563433026](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37805879010/artifacts/11563433026) |
-| **`BlueSystem-iOS-L1-48`** (.IPA Unsigned) | `1271dca` | **20.30 MB** | `37803873826` | `11562881563` | [Descargar Artifact IPA #11562881563](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37803873826/artifacts/11562881563) |
-| **`BlueSystem-iOS-L1-46`** (.IPA Unsigned) | `e6a644b` | **19.36 MB** | `37801395186` | `11561497370` | [Descargar Artifact IPA #11561497370](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37801395186/artifacts/11561497370) |
+| Artifact | Tamaño | Run ID | Artifact ID | URL de Descarga |
+| :--- | :--- | :--- | :--- | :--- |
+| **`BlueSystem-iOS-L1-50`** (.IPA Unsigned) | **20.30 MB** | `37807537969` | `11564945136` | [Descargar Artifact IPA #11564945136](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37807537969/artifacts/11564945136) |
+| **`BlueSystem-iOS-L1-49`** (.IPA Unsigned) | **20.30 MB** | `37805879010` | `11563433026` | [Descargar Artifact IPA #11563433026](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37805879010/artifacts/11563433026) |
+| **`BlueSystem-iOS-L1-48`** (.IPA Unsigned) | **20.30 MB** | `37803873826` | `11562881563` | [Descargar Artifact IPA #11562881563](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37803873826/artifacts/11562881563) |
+| **`flutter-test-logs-48`** (Logs) | **0.01 MB** | `37803873826` | `11562116602` | [Descargar Logs #11562116602](https://github.com/gfloresunan/BlueSystem_delivery/actions/runs/37803873826/artifacts/11562116602) |
 
 ---
 
@@ -134,6 +141,14 @@ if: >-
   - `Job 2: 🍎 [L1] iOS Build — macos-15` $\rightarrow$ `failure` ❌ (Fallo en `pod install` debido a incompatibilidad de target deployment `14.0` con pods de Firebase iOS SDK 11.x).
 - **Conclusión Forense:** Este run documenta un fallo interno de compilación/enlazado en macOS, el cual fue resuelto elevando el target a `15.0`.
 
+### C. Fallo de Aislamiento de Credenciales de Staging — Run #37809722920
+- **Causa:** El secreto actual `FIREBASE_TOKEN` en el repositorio fue generado para el proyecto de producción `bluesystem-7c9af` y no cuenta con credenciales OAuth/IAM válidas para el proyecto `bluesystem-7c9af-staging`.
+- **Comportamiento en GitHub Actions:**
+  - `Test Suite`: `success` 🟢 (191 tests pasaron).
+  - `Deploy Staging`: `failure` ❌ (`Error: Request to https://serviceusage.googleapis.com/v1/projects/bluesystem-7c9af-staging/services/firebasestorage.googleapis.com had HTTP Error: 401, Request had invalid authentication credentials`).
+  - `Deploy Production`: `skipped` ⏭️ (Gobernanza ADR-014 intacta).
+- **Conclusión Forense:** El flujo de CI/CD funciona con total aislamiento lógico y estricto control de errores, pero el despliegue cloud efectivo a staging requiere que el proyecto `bluesystem-7c9af-staging` sea provisionado en Firebase Console y se configure un secreto/cuenta de servicio con permisos sobre dicho proyecto.
+
 ---
 
 ## 7. Pendientes Administrativos y Auditoría de Seguridad
@@ -148,9 +163,10 @@ if: >-
 - **Acción Pendiente para el Administrador:** Asignar revisores obligatorios en **Settings → Environments → production → Required reviewers**.
 - **Mitigación Temporal:** Compuerta de 4 vías (`workflow_dispatch` + `main` + `production` + `CONFIRM_PROD`).
 
-### C. Plan de Migración de Autenticación (`--token` → WIF / OIDC)
-1. **Fase 1 (GCP):** Crear Workload Identity Pool y Service Account con roles de mínimo privilegio (`cloudfunctions.developer`, `firebase.admin`, `storage.admin`).
-2. **Fase 2 (GitHub Actions):** Migrar de `FIREBASE_TOKEN` a `google-github-actions/auth@v2` con tokens efímeros OIDC (`id-token: write`) segregados por entorno.
+### C. Configuración de Credenciales de Staging y Plan de Migración OIDC
+1. **Staging:** Provisionar proyecto `bluesystem-7c9af-staging` o asociar credenciales con permisos IAM correspondientes.
+2. **Fase 1 (GCP):** Crear Workload Identity Pool y Service Account con roles de mínimo privilegio (`cloudfunctions.developer`, `firebase.admin`, `storage.admin`).
+3. **Fase 2 (GitHub Actions):** Migrar de `FIREBASE_TOKEN` a `google-github-actions/auth@v2` con tokens efímeros OIDC (`id-token: write`) segregados por entorno.
 
 ---
 
@@ -185,10 +201,10 @@ if: >-
 | Dimensión | Estado | Evidencia / Justificación |
 | :--- | :--- | :--- |
 | **1. Validación Local** | 🟢 **CERTIFICADO** | Backend (191 tests OK) + Flutter (205 tests OK, analyze 0 issues) ejecutados y validados localmente. |
-| **2. CI & Build iOS (GitHub Actions)** | 🟢 **CERTIFICADO** | Backend Run `#37803873763` (Success) + iOS Run `#37801395186` (Success). Generación de IPA de 19.36 MB. |
-| **3. Configuración de Despliegue** | 🟢 **REMEDIADO** | `firebase.json` con `storage.rules` aislado, versión exacta `firebase-tools@13.31.0`, targets multi-entorno corregidos (`bluesystem-7c9af-staging` y `bluesystem-7c9af`). |
-| **4. Firebase CD (Staging)** | 🟡 **PENDIENTE DE VALIDACIÓN EN VIVO** | Jobs omitidos en PR (esperado). Requiere push a rama `staging`/`develop` o `workflow_dispatch` con credenciales configuradas para certificar despliegue real en nube. |
-| **5. Firebase CD (Producción)** | 🛡️ **PROTEGIDO (ADR-014)** | Auto-rollout bloqueado. Requiere compuerta de 4 vías (`workflow_dispatch`, `main`, `production`, `CONFIRM_PROD`). Pendiente asignación de revisores en repo settings. |
+| **2. CI & Build iOS (GitHub Actions)** | 🟢 **CERTIFICADO** | Backend Runs `#37803873763` & `#37809722920` (191 tests OK). iOS Runs `#37803873826`, `#37805879010`, `#37807537969` (Success). IPAs de 20.30 MB disponibles. |
+| **3. Configuración de Despliegue** | 🟢 **CERTIFICADO** | `firebase.json` con `storage.rules` aislado, versión exacta `firebase-tools@13.31.0`, compuerta de 4 vías ADR-014 en producción y aislamiento de eventos en staging. |
+| **4. Firebase CD (Staging)** | 🟡 **AUDITADO (REQUIERE CREDENCIALES/PROYECTO)** | Ejecutado en vivo en Run `#37809722920`. El workflow ejecutó y falló de forma controlada (`exit 1`) por error HTTP 401 en `serviceusage.googleapis.com` (el `FIREBASE_TOKEN` del repo no tiene permisos sobre el proyecto `bluesystem-7c9af-staging`). |
+| **5. Firebase CD (Producción)** | 🛡️ **PROTEGIDO (ADR-014)** | Auto-rollout estrictamente bloqueado. Omitido en PR y en dispatch de staging. Requiere merge a `main` y ejecución manual con `confirm_production: CONFIRM_PROD`. |
 
 ---
 
