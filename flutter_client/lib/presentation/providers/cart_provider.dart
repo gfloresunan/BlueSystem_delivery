@@ -3,6 +3,8 @@
 /// Enforces dynamic deliveryFee resolution from SSOT /businesses/{id}.deliveryFee (fallback C$45.00, NEVER C$35.00).
 
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/observability/app_logger.dart';
 import '../../domain/entities/catalog_entity.dart';
 import '../../domain/entities/scheduled_order_entity.dart';
@@ -88,7 +90,7 @@ class CartProvider extends ChangeNotifier {
   BusinessEntity? _activeBusiness;
 
   List<CartItem> get items => List.unmodifiable(_items);
-  int get itemCount => _items.fold(0, (sum, item) => sum + item.quantity);
+  int get itemCount => _items.fold(0, (total, item) => total + item.quantity);
   bool get isEmpty => _items.isEmpty;
   bool get isNotEmpty => _items.isNotEmpty;
 
@@ -100,7 +102,7 @@ class CartProvider extends ChangeNotifier {
   String get branchId => _items.isNotEmpty ? _items.first.branchId : '';
 
   double get subtotal {
-    return _items.fold(0.0, (sum, item) => sum + (item.price * item.quantity));
+    return _items.fold(0.0, (total, item) => total + (item.price * item.quantity));
   }
 
   CommerceQuoteStatus _quoteStatus = CommerceQuoteStatus.unquoted;
@@ -250,6 +252,7 @@ class CartProvider extends ChangeNotifier {
     }
 
     AppLogger.info('CartProvider', 'Added item: $name (x1). Total items: $itemCount');
+    _syncCartSnapshotToCloud();
     notifyListeners();
   }
 
@@ -265,12 +268,14 @@ class CartProvider extends ChangeNotifier {
       _items[index] = _items[index].copyWith(quantity: newQty);
     }
 
+    _syncCartSnapshotToCloud();
     notifyListeners();
   }
 
   void removeItem(int index) {
     if (index >= 0 && index < _items.length) {
       _items.removeAt(index);
+      _syncCartSnapshotToCloud();
       notifyListeners();
     }
   }
@@ -334,6 +339,48 @@ class CartProvider extends ChangeNotifier {
     _recipientInfo = null;
     _giftDetails = null;
     _specialHandling = null;
+    _syncCartSnapshotToCloud();
     notifyListeners();
+  }
+
+  /// Lightweight, passive cloud cart snapshot sync for abandoned cart continuity (BSD-TG-ICO-001)
+  /// Non-blocking, offline-first resilient. Does NOT replace local CartProvider state.
+  void _syncCartSnapshotToCloud() {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null || user.uid.isEmpty || user.uid.startsWith('guest_') || user.uid.startsWith('device_')) {
+        return;
+      }
+      final uid = user.uid;
+      final docRef = FirebaseFirestore.instance.collection('user_carts').doc(uid);
+
+      if (_items.isEmpty) {
+        docRef.set({
+          'uid': uid,
+          'itemsCount': 0,
+          'totalAmount': 0.0,
+          'status': 'CLEARED',
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true)).catchError((e) {
+          AppLogger.warn('CartProvider', 'Cloud cart sync (cleared) failed: $e');
+        });
+      } else {
+        final first = _items.first;
+        docRef.set({
+          'uid': uid,
+          'businessId': first.businessId,
+          'businessName': first.businessName,
+          'branchId': first.branchId,
+          'itemsCount': itemCount,
+          'totalAmount': subtotal,
+          'status': 'ACTIVE',
+          'updatedAt': FieldValue.serverTimestamp(),
+        }, SetOptions(merge: true)).catchError((e) {
+          AppLogger.warn('CartProvider', 'Cloud cart sync (active) failed: $e');
+        });
+      }
+    } catch (e) {
+      AppLogger.warn('CartProvider', 'Cloud cart snapshot bypassed/offline: $e');
+    }
   }
 }

@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>BlueSystem Delivery</string>
+	<string>TuaniGo</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -48,17 +48,17 @@
 
 	<!-- Location & Telemetry Permissions (ADR-015 / CoreLocation Enterprise) -->
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>BlueSystem Delivery necesita su ubicación para mostrar comercios cercanos, calcular rutas de entrega y seguimiento en vivo.</string>
+	<string>TuaniGo necesita su ubicación para mostrar comercios cercanos, calcular rutas de entrega y seguimiento en vivo.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>BlueSystem Delivery requiere acceso continuo a la ubicación para la navegación y actualización en tiempo real de pedidos activos mientras la aplicación está en segundo plano.</string>
+	<string>TuaniGo requiere acceso continuo a la ubicación para la navegación y actualización en tiempo real de pedidos activos mientras la aplicación está en segundo plano.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Ubicación en segundo plano requerida para la telemetría de motorizados de BlueSystem.</string>
+	<string>Ubicación en segundo plano requerida para la telemetría de motorizados de TuaniGo.</string>
 
 	<!-- Camera & Photo Library for Courier Cash Closure Receipts -->
 	<key>NSCameraUsageDescription</key>
-	<string>BlueSystem requiere acceso a la cámara para capturar comprobantes de depósito bancario en el arqueo diario.</string>
+	<string>TuaniGo requiere acceso a la cámara para capturar comprobantes de depósito bancario en el arqueo diario.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>BlueSystem requiere acceso a las fotos para seleccionar comprobantes de pago y depósitos bancarios.</string>
+	<string>TuaniGo requiere acceso a las fotos para seleccionar comprobantes de pago y depósitos bancarios.</string>
 
 	<!-- Background Modes: Location Telemetry & Push Notifications -->
 	<key>UIBackgroundModes</key>

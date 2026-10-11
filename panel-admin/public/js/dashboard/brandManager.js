@@ -442,10 +442,29 @@ const brandManagerModule = {
                     </div>
                 </div>
 
-                <!-- Section 4: Live Ephemeral Preview -->
+                <!-- Section 4: Enlaces Legales & Políticas (Términos & Privacidad) -->
+                <div class="space-y-3 pt-2 border-t border-slate-800">
+                    <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
+                        <span>⚖️</span> Enlaces Legales & Políticas (HTTPS)
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
+                            <label class="block text-xs font-bold text-slate-300">URL Términos y Condiciones</label>
+                            <input type="url" id="bm-field-termsUrl" value="${metadata.termsUrl || ''}" placeholder="https://tuanigo.app/terminos" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 font-mono text-[11px]">
+                            <p class="text-[10px] text-slate-500">Debe ser URL absoluta HTTPS bajo dominio autorizado (tuanigo.app).</p>
+                        </div>
+                        <div class="p-3 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
+                            <label class="block text-xs font-bold text-slate-300">URL Políticas de Privacidad</label>
+                            <input type="url" id="bm-field-privacyUrl" value="${metadata.privacyUrl || ''}" placeholder="https://tuanigo.app/privacidad" class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 font-mono text-[11px]">
+                            <p class="text-[10px] text-slate-500">Debe ser URL absoluta HTTPS bajo dominio autorizado (tuanigo.app).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Live Ephemeral Preview -->
                 <div class="space-y-2 pt-2 border-t border-slate-800">
                     <h4 class="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center gap-1.5">
-                        <span>4.</span> Previsualización en Vivo (Read-Only)
+                        <span>5.</span> Previsualización en Vivo (Read-Only)
                     </h4>
                     <div id="bm-live-preview-box" class="p-4 rounded-xl border transition-all duration-200" style="background-color: ${visual.backgroundColor || '#0F172A'}; border-color: ${visual.primaryColor || '#0284C7'};">
                         <div class="flex items-center justify-between">
@@ -588,16 +607,60 @@ const brandManagerModule = {
         const logoUrl = document.getElementById('bm-field-logoUrl')?.value.trim() || 'https://storage.googleapis.com/bluesystem-assets/logo.png';
         const iconUrl = document.getElementById('bm-field-iconUrl')?.value.trim() || 'https://storage.googleapis.com/bluesystem-assets/icon.png';
 
+        const termsUrl = (document.getElementById('bm-field-termsUrl')?.value || '').trim();
+        const privacyUrl = (document.getElementById('bm-field-privacyUrl')?.value || '').trim();
+
         const hexRegex = /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/;
         if (!hexRegex.test(primaryColor) || !hexRegex.test(secondaryColor) || !hexRegex.test(accentColor) || !hexRegex.test(backgroundColor) || !hexRegex.test(textColor)) {
             alert("Formato de color hexadecimal inválido. Debe ser #RGB o #RRGGBB.");
             return;
         }
 
+        // Validación estricta WHATWG URL de URLs legales HTTPS (Protocolo TGO-AUTH-UXUI-CORRECTION-003)
+        const validateLegalHttpsUrl = (urlString) => {
+            if (!urlString) return true;
+            try {
+                const parsed = new URL(urlString);
+                // 1. Protocolo obligatorio HTTPS (rechazar cualquier otro esquema)
+                if (parsed.protocol !== 'https:') return false;
+                // 4. Rechazar credenciales embebidas en URL (user:pass@host)
+                if (parsed.username || parsed.password) return false;
+                // 2. Hostname exactamente tuanigo.app o subdominio expresamente autorizado
+                const host = (parsed.hostname || '').toLowerCase();
+                if (!host || host.length < 4 || host.length > 253) return false;
+                const isAuthorized = host === 'tuanigo.app' || 
+                                     host.endsWith('.tuanigo.app') || 
+                                     host === 'tuanigo.com' || 
+                                     host.endsWith('.tuanigo.com');
+                if (!isAuthorized) return false;
+                // 3. Rechazar dominios engañosos y hosts mal formados
+                const labels = host.split('.');
+                if (labels.length < 2) return false;
+                for (const label of labels) {
+                    if (!label || label.length > 63) return false;
+                    if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(label)) return false;
+                }
+                return true;
+            } catch (_) {
+                return false;
+            }
+        };
+
+        if (termsUrl && !validateLegalHttpsUrl(termsUrl)) {
+            alert("La URL de Términos y Condiciones debe ser una URL segura con protocolo HTTPS bajo el dominio tuanigo.app o subdominios autorizados (ej: https://tuanigo.app/terminos), sin credenciales embebidas.");
+            return;
+        }
+        if (privacyUrl && !validateLegalHttpsUrl(privacyUrl)) {
+            alert("La URL de Políticas de Privacidad debe ser una URL segura con protocolo HTTPS bajo el dominio tuanigo.app o subdominios autorizados (ej: https://tuanigo.app/privacidad), sin credenciales embebidas.");
+            return;
+        }
+
+
         const now = Date.now();
         const currentUser = firebase.auth().currentUser;
         const currentUid = currentUser ? currentUser.uid : 'admin_system';
 
+        const existingMetadata = (brandManagerModule.currentEditingBrand && brandManagerModule.currentEditingBrand.metadata) || {};
         const brandDocData = {
             brandId,
             tenantId,
@@ -619,9 +682,11 @@ const brandManagerModule = {
                 fontFamily: "Inter, sans-serif"
             },
             metadata: {
-                supportEmail: "soporte@" + slug + ".com",
-                supportPhone: "+505 8888 8888",
-                website: "https://" + slug + ".bluesystemdelivery.com"
+                supportEmail: existingMetadata.supportEmail || ("soporte@" + slug + ".com"),
+                supportPhone: existingMetadata.supportPhone || "+505 8888 8888",
+                website: existingMetadata.website || ("https://" + slug + ".bluesystemdelivery.com"),
+                termsUrl: termsUrl,
+                privacyUrl: privacyUrl
             },
             updatedAt: now,
             updatedBy: currentUid

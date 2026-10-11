@@ -43,6 +43,17 @@ import com.facebook.FacebookCallback
 import com.facebook.FacebookException
 import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.foundation.text.ClickableText
+import android.content.Intent
+import android.net.Uri
+
 
 fun formatAuthError(rawError: String?): String {
     if (rawError.isNullOrBlank()) return "Ocurrió un error inesperado. Por favor, reintenta."
@@ -89,6 +100,25 @@ fun AuthScreen(
     var confirmPasswordVisible by remember { mutableStateOf(false) }
     var showOtherMethods by remember { mutableStateOf(false) }
     var validationError by remember { mutableStateOf<String?>(null) }
+    var isTermsAccepted by remember { mutableStateOf(false) }
+    var termsUrl by remember { mutableStateOf<String?>(null) }
+    var privacyUrl by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        try {
+            com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                .collection("brands")
+                .document("tuanigo")
+                .get()
+                .addOnSuccessListener { doc ->
+                    if (doc != null && doc.exists()) {
+                        val meta = doc.get("metadata") as? Map<*, *>
+                        termsUrl = meta?.get("termsUrl") as? String ?: doc.getString("termsUrl")
+                        privacyUrl = meta?.get("privacyUrl") as? String ?: doc.getString("privacyUrl")
+                    }
+                }
+        } catch (_: Exception) {}
+    }
 
     // ── Estado: Diálogo de recuperación de contraseña (Forgot Password) ─────
     var showForgotPasswordDialog by remember { mutableStateOf(false) }
@@ -249,7 +279,7 @@ fun AuthScreen(
             },
             title = {
                 Text(
-                    text = "¿Deseas proteger BlueSystem con tu huella digital?",
+                    text = "¿Deseas proteger TuaniGo con tu huella digital?",
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp
                 )
@@ -405,393 +435,535 @@ fun AuthScreen(
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFEEF2FF))
+        modifier = Modifier.fillMaxSize()
     ) {
+        // Fondo celeste con ondas inferiores oficiales de TuaniGo
+        Image(
+            painter = painterResource(id = com.example.R.drawable.fondo_login_pantalla),
+            contentDescription = null,
+            contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        // Cabecera artística de TuaniGo (Mascota scooter, branding, badges)
+        Image(
+            painter = painterResource(id = com.example.R.drawable.fondo_login_cabecera),
+            contentDescription = "TuaniGo Delivery",
+            contentScale = androidx.compose.ui.layout.ContentScale.FillWidth,
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .align(Alignment.TopCenter)
+        )
+
+        // Contenedor principal con tarjeta blanca flotante responsiva
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 60.dp),
+                .imePadding(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Header Logo / Text
-            Icon(
-                imageVector = Icons.Default.LocalShipping,
-                contentDescription = "Logo",
-                tint = Color(0xFF6366F1),
-                modifier = Modifier.size(80.dp)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "BlueSystem",
-                fontSize = 28.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFF1E293B)
-            )
-            Text(
-                text = "Delivery Express",
-                fontSize = 16.sp,
-                color = Color(0xFF64748B),
-                letterSpacing = 1.sp
-            )
+            // Espacio de separación para lucir la ilustración de cabecera y el lema completo sin cortes
+            Spacer(modifier = Modifier.height(206.dp))
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Auth Card with rounded top
+            // Tarjeta blanca principal flotante con bordes redondeados y márgenes responsivos
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
-                shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp),
+                    .widthIn(max = 500.dp)
+                    .weight(1f)
+                    .padding(start = 14.dp, end = 14.dp, bottom = 6.dp),
+                shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .verticalScroll(rememberScrollState())
-                        .padding(24.dp),
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = if (isLogin) "Bienvenido" else "Crear Cuenta",
-                        fontSize = 24.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E293B)
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = if (isLogin) "Ingresa o regístrate para continuar" else "Completa tus datos para unirte a BlueSystem",
-                        color = Color.Gray,
-                        fontSize = 14.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // --- UX Improvement #3: Card de Continuar como Ultimo Usuario ---
-                    if (lastEmail.isNotEmpty() && isLogin && !showOtherMethods) {
-                        Surface(
-                            onClick = {
-                                if (lastEmail.isNotEmpty()) {
-                                    email = lastEmail
-                                }
-                                showOtherMethods = true
-                            },
-                            enabled = uiState !is AuthUiState.Loading,
-                            shape = RoundedCornerShape(14.dp),
-                            color = Color(0xFFF8FAFC),
-                            border = BorderStroke(1.dp, Color(0xFFCBD5E1)),
+                    // ── PESTAÑAS: INGRESAR / CREAR CUENTA ────────────────────
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        // Pestaña Ingresar
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 20.dp)
+                                .weight(1f)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+                                    isLogin = true
+                                    validationError = null
+                                    viewModel.resetState()
+                                }
+                                .padding(vertical = 4.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.padding(14.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(42.dp)
-                                        .background(Color(0xFFEEF2FF), RoundedCornerShape(21.dp)),
-                                    contentAlignment = Alignment.Center
+                            Text(
+                                text = "Ingresar",
+                                fontSize = 14.5.sp,
+                                fontWeight = if (isLogin) FontWeight.Bold else FontWeight.Medium,
+                                color = if (isLogin) Color(0xFF0F172A) else Color(0xFF94A3B8)
+                            )
+                            Spacer(modifier = Modifier.height(3.dp))
+                            Box(
+                                modifier = Modifier
+                                    .height(3.dp)
+                                    .fillMaxWidth(0.55f)
+                                    .background(
+                                        if (isLogin) Color(0xFF2563EB) else Color.Transparent,
+                                        RoundedCornerShape(2.dp)
+                                    )
+                            )
+                        }
+
+                        // Divisor vertical sutil entre pestañas
+                        Text(
+                            text = "|",
+                            color = Color(0xFFE2E8F0),
+                            fontSize = 15.sp,
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
+
+                        // Pestaña Crear cuenta
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                                .weight(1f)
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
                                 ) {
-                                    Text(
-                                        text = (lastName.ifEmpty { lastEmail }).take(1).uppercase(),
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF4F46E5),
-                                        fontSize = 18.sp
-                                    )
+                                    isLogin = false
+                                    showOtherMethods = true
+                                    validationError = null
+                                    viewModel.resetState()
                                 }
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(text = "Continuar como", fontSize = 11.sp, color = Color.Gray)
-                                    Text(
-                                        text = lastName.ifEmpty { lastEmail },
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF1E293B)
+                                .padding(vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "Crear cuenta",
+                                fontSize = 14.5.sp,
+                                fontWeight = if (!isLogin) FontWeight.Bold else FontWeight.Medium,
+                                color = if (!isLogin) Color(0xFF0F172A) else Color(0xFF94A3B8)
+                            )
+                            Spacer(modifier = Modifier.height(3.dp))
+                            Box(
+                                modifier = Modifier
+                                    .height(3.dp)
+                                    .fillMaxWidth(0.55f)
+                                    .background(
+                                        if (!isLogin) Color(0xFF2563EB) else Color.Transparent,
+                                        RoundedCornerShape(2.dp)
                                     )
-                                }
-                                Surface(
-                                    shape = RoundedCornerShape(6.dp),
-                                    color = Color(0xFFEEF2FF)
-                                ) {
-                                    Text(
-                                        text = lastProvider.ifEmpty { "Email" },
-                                        fontSize = 10.sp,
-                                        color = Color(0xFF4F46E5),
-                                        fontWeight = FontWeight.SemiBold,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                    )
-                                }
-                            }
+                            )
                         }
                     }
 
-                    // Social Auth Buttons (UX Improvement #6: Google Credential Manager One Tap)
-                    Button(
-                        onClick = {
-                            android.util.Log.d("Auth", "Clic en Google Credential Manager")
-                            coroutineScope.launch {
-                                try {
-                                    val googleIdOption = GetGoogleIdOption.Builder()
-                                        .setFilterByAuthorizedAccounts(false)
-                                        .setServerClientId(context.getString(com.example.R.string.default_web_client_id))
-                                        .setAutoSelectEnabled(false)
-                                        .build()
+                    HorizontalDivider(
+                        color = Color(0xFFF1F5F9),
+                        thickness = 1.dp,
+                        modifier = Modifier.padding(bottom = 6.dp)
+                    )
 
-                                    val request = GetCredentialRequest.Builder()
-                                        .addCredentialOption(googleIdOption)
-                                        .build()
+                    // ── ENCABEZADOS SEGÚN LA PESTAÑA ACTIVA ──────────────────
+                    if (isLogin) {
+                        Text(
+                            text = "¡Bienvenido!",
+                            fontSize = 19.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFF0F172A),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(1.dp))
+                        Text(
+                            text = "Ingresa para continuar con TuaniGo",
+                            fontSize = 12.sp,
+                            color = Color(0xFF64748B),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    } else {
+                        Text(
+                            text = "¡Crea tu cuenta!",
+                            fontSize = 19.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = Color(0xFF0F172A),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(1.dp))
+                        Text(
+                            text = "Regístrate para pedir, enviar y descubrir con TuaniGo.",
+                            fontSize = 12.sp,
+                            color = Color(0xFF64748B),
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
 
-                                    val result = credentialManager.getCredential(
-                                        context = context,
-                                        request = request
-                                    )
-                                    val credential = result.credential
-                                    if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
-                                        val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
-                                        val idToken = googleIdTokenCredential.idToken
-                                        viewModel.loginWithGoogleToken(idToken)
-                                    } else {
-                                        Toast.makeText(context, "Tipo de credencial no esperado.", Toast.LENGTH_SHORT).show()
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // ── CONTENIDO DE LA PESTAÑA INGRESAR ────────────────────
+                    if (isLogin) {
+                        // Card de "Continuar como último usuario" (si existe)
+                        if (lastEmail.isNotEmpty() && !showOtherMethods) {
+                            Surface(
+                                onClick = {
+                                    email = lastEmail
+                                    showOtherMethods = true
+                                },
+                                enabled = uiState !is AuthUiState.Loading,
+                                shape = RoundedCornerShape(12.dp),
+                                color = Color(0xFFF8FAFC),
+                                border = BorderStroke(1.dp, Color(0xFFCBD5E1)),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 8.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(32.dp)
+                                            .background(Color(0xFFEEF2FF), CircleShape),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = (lastName.ifEmpty { lastEmail }).take(1).uppercase(),
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF2563EB),
+                                            fontSize = 14.sp
+                                        )
                                     }
-                                } catch (e: GetCredentialCancellationException) {
-                                    Toast.makeText(context, "Inicio de sesión cancelado.", Toast.LENGTH_SHORT).show()
-                                } catch (e: GetCredentialException) {
-                                    android.util.Log.e("Auth", "Error en Credential Manager de Google", e)
-                                    Toast.makeText(context, formatAuthError(e.localizedMessage), Toast.LENGTH_LONG).show()
-                                } catch (e: Exception) {
-                                    android.util.Log.e("Auth", "Excepción al iniciar sesión con Google", e)
-                                    Toast.makeText(context, formatAuthError(e.localizedMessage), Toast.LENGTH_LONG).show()
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(text = "Continuar como", fontSize = 9.5.sp, color = Color.Gray)
+                                        Text(
+                                            text = lastName.ifEmpty { lastEmail },
+                                            fontSize = 12.5.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF1E293B)
+                                        )
+                                    }
+                                    Surface(
+                                        shape = RoundedCornerShape(6.dp),
+                                        color = Color(0xFFEEF2FF)
+                                    ) {
+                                        Text(
+                                            text = lastProvider.ifEmpty { "Email" },
+                                            fontSize = 9.5.sp,
+                                            color = Color(0xFF2563EB),
+                                            fontWeight = FontWeight.SemiBold,
+                                            modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp)
+                                        )
+                                    }
                                 }
                             }
-                        },
-                        enabled = uiState !is AuthUiState.Loading,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.White,
-                            contentColor = Color.Black
-                        ),
-                        border = BorderStroke(1.dp, Color(0xFFCBD5E1))
-                    ) {
-                        Image(
-                            painter = painterResource(id = com.example.R.drawable.ic_google_logo),
-                            contentDescription = "Logotipo Oficial de Google",
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(10.dp))
-                        Text("Continuar con Google", fontWeight = FontWeight.SemiBold, color = Color(0xFF1E293B))
-                    }
+                        }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Button(
-                        onClick = {
-                            android.util.Log.d("Auth", "Clic en Facebook")
-                            try {
-                                facebookLauncher.launch(listOf("public_profile"))
-                            } catch (e: Exception) {
-                                android.util.Log.e("Auth", "Error al abrir Facebook login", e)
-                                Toast.makeText(context, formatAuthError(e.localizedMessage), Toast.LENGTH_LONG).show()
-                            }
-                        },
-                        enabled = uiState !is AuthUiState.Loading,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF1877F2),
-                            contentColor = Color.White
-                        )
-                    ) {
-                        Icon(Icons.Default.Facebook, contentDescription = "Facebook")
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Continuar con Facebook", fontWeight = FontWeight.SemiBold)
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                        HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE2E8F0))
-                        Text(" o ", color = Color.Gray, modifier = Modifier.padding(horizontal = 8.dp))
-                        HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE2E8F0))
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    OutlinedButton(
-                        onClick = { showOtherMethods = !showOtherMethods },
-                        enabled = uiState !is AuthUiState.Loading,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF475569)),
-                        border = BorderStroke(1.dp, Color(0xFFCBD5E1))
-                    ) {
-                        Text(if (showOtherMethods) "Ocultar formulario" else "Otro método (Email/Teléfono)", fontWeight = FontWeight.SemiBold)
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // --- UX Improvement #1: Animación de Entrada FadeIn + ScaleIn (250ms) ---
-                    AnimatedVisibility(
-                        visible = isLogin && !showOtherMethods,
-                        enter = fadeIn(animationSpec = tween(250)) + scaleIn(initialScale = 0.95f, animationSpec = tween(250)),
-                        exit = fadeOut(animationSpec = tween(200)) + shrinkVertically(animationSpec = tween(200))
-                    ) {
-                        Surface(
+                        // Botón Oficial: Continuar con Google
+                        Button(
                             onClick = {
-                                isLogin = false
-                                showOtherMethods = true
-                                viewModel.resetState()
+                                android.util.Log.d("Auth", "Clic en Google Credential Manager")
+                                coroutineScope.launch {
+                                    try {
+                                        val googleIdOption = GetGoogleIdOption.Builder()
+                                            .setFilterByAuthorizedAccounts(false)
+                                            .setServerClientId(context.getString(com.example.R.string.default_web_client_id))
+                                            .setAutoSelectEnabled(false)
+                                            .build()
+
+                                        val request = GetCredentialRequest.Builder()
+                                            .addCredentialOption(googleIdOption)
+                                            .build()
+
+                                        val result = credentialManager.getCredential(
+                                            context = context,
+                                            request = request
+                                        )
+                                        val credential = result.credential
+                                        if (credential is CustomCredential && credential.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+                                            val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                                            val idToken = googleIdTokenCredential.idToken
+                                            viewModel.loginWithGoogleToken(idToken)
+                                        } else {
+                                            Toast.makeText(context, "Tipo de credencial no esperado.", Toast.LENGTH_SHORT).show()
+                                        }
+                                    } catch (e: GetCredentialCancellationException) {
+                                        Toast.makeText(context, "Inicio de sesión cancelado.", Toast.LENGTH_SHORT).show()
+                                    } catch (e: GetCredentialException) {
+                                        android.util.Log.e("Auth", "Error en Credential Manager de Google", e)
+                                        Toast.makeText(context, formatAuthError(e.localizedMessage), Toast.LENGTH_LONG).show()
+                                    } catch (e: Exception) {
+                                        android.util.Log.e("Auth", "Excepción al iniciar sesión con Google", e)
+                                        Toast.makeText(context, formatAuthError(e.localizedMessage), Toast.LENGTH_LONG).show()
+                                    }
+                                }
                             },
                             enabled = uiState !is AuthUiState.Loading,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(60.dp),
-                            shape = RoundedCornerShape(14.dp),
-                            color = Color(0xFFEEF2FF),
-                            border = BorderStroke(1.5.dp, Color(0xFF6366F1)),
-                            shadowElevation = 2.dp
+                                .height(44.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.White,
+                                contentColor = Color(0xFF0F172A)
+                            ),
+                            border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 0.dp)
                         ) {
                             Row(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = 16.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Image(
+                                    painter = painterResource(id = com.example.R.drawable.ic_google_logo),
+                                    contentDescription = "Google",
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = "Continuar con Google",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.5.sp,
+                                    color = Color(0xFF1E293B),
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.ChevronRight,
+                                    contentDescription = null,
+                                    tint = Color(0xFF94A3B8),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        // Botón Oficial: Continuar con Facebook
+                        Button(
+                            onClick = {
+                                android.util.Log.d("Auth", "Clic en Facebook")
+                                try {
+                                    facebookLauncher.launch(listOf("public_profile"))
+                                } catch (e: Exception) {
+                                    android.util.Log.e("Auth", "Error al abrir Facebook login", e)
+                                    Toast.makeText(context, formatAuthError(e.localizedMessage), Toast.LENGTH_LONG).show()
+                                }
+                            },
+                            enabled = uiState !is AuthUiState.Loading,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(44.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF1877F2),
+                                contentColor = Color.White
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(defaultElevation = 1.dp),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 0.dp)
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Icon(Icons.Default.Facebook, contentDescription = "Facebook", tint = Color.White, modifier = Modifier.size(18.dp))
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = "Continuar con Facebook",
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 13.5.sp,
+                                    color = Color.White,
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.ChevronRight,
+                                    contentDescription = null,
+                                    tint = Color.White.copy(alpha = 0.85f),
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        // Separador " o "
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 0.dp)
+                        ) {
+                            HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE2E8F0))
+                            Text(" o ", color = Color(0xFF94A3B8), fontSize = 11.5.sp, modifier = Modifier.padding(horizontal = 6.dp))
+                            HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE2E8F0))
+                        }
+
+                        Spacer(modifier = Modifier.height(6.dp))
+
+                        // Si no está abierto el formulario por correo, mostrar botón alternativo y card verde
+                        if (!showOtherMethods) {
+                            Surface(
+                                onClick = { showOtherMethods = true },
+                                enabled = uiState !is AuthUiState.Loading,
+                                shape = RoundedCornerShape(12.dp),
+                                color = Color(0xFFF1F5F9),
+                                border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(44.dp)
                             ) {
                                 Row(
                                     verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(horizontal = 14.dp)
                                 ) {
-                                    Surface(
-                                        shape = RoundedCornerShape(10.dp),
-                                        color = Color(0xFF6366F1).copy(alpha = 0.15f),
-                                        modifier = Modifier.size(38.dp)
+                                    Icon(
+                                        imageVector = Icons.Default.Email,
+                                        contentDescription = null,
+                                        tint = Color(0xFF1E293B),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(10.dp))
+                                    Text(
+                                        text = "Correo o teléfono",
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 13.5.sp,
+                                        color = Color(0xFF1E293B),
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    Icon(
+                                        imageVector = Icons.Default.ChevronRight,
+                                        contentDescription = null,
+                                        tint = Color(0xFF94A3B8),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Card Promocional Verde Oficial: "¿No tienes cuenta? Crear cuenta >"
+                            Surface(
+                                onClick = {
+                                    isLogin = false
+                                    showOtherMethods = true
+                                    validationError = null
+                                    viewModel.resetState()
+                                },
+                                enabled = uiState !is AuthUiState.Loading,
+                                shape = RoundedCornerShape(14.dp),
+                                color = Color(0xFFEDF7ED),
+                                border = BorderStroke(1.dp, Color(0xFFC8E6C9)),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(32.dp)
+                                            .background(Color(0xFFA5D6A7), RoundedCornerShape(8.dp)),
+                                        contentAlignment = Alignment.Center
                                     ) {
-                                        Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Default.PersonAdd,
+                                            contentDescription = null,
+                                            tint = Color(0xFF1B5E20),
+                                            modifier = Modifier.size(16.dp)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(
+                                            text = "¿No tienes cuenta?",
+                                            fontSize = 11.5.sp,
+                                            maxLines = 1,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFF1B5E20)
+                                        )
+                                        Text(
+                                            text = "Crea tu cuenta y descubre con TuaniGo.",
+                                            fontSize = 9.sp,
+                                            maxLines = 1,
+                                            color = Color(0xFF2E7D32)
+                                        )
+                                    }
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Surface(
+                                        shape = RoundedCornerShape(20.dp),
+                                        color = Color(0xFF0F5132)
+                                    ) {
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp)
+                                        ) {
+                                            Text(
+                                                text = "Crear cuenta",
+                                                fontSize = 10.5.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color.White
+                                            )
+                                            Spacer(modifier = Modifier.width(2.dp))
                                             Icon(
-                                                imageVector = Icons.Default.PersonAdd,
-                                                contentDescription = "Registro",
-                                                tint = Color(0xFF4F46E5),
-                                                modifier = Modifier.size(22.dp)
+                                                imageVector = Icons.Default.ChevronRight,
+                                                contentDescription = null,
+                                                tint = Color.White,
+                                                modifier = Modifier.size(11.dp)
                                             )
                                         }
                                     }
-                                    Spacer(modifier = Modifier.width(12.dp))
-                                    Column {
-                                        Text(
-                                            text = "¿No tienes cuenta?",
-                                            fontSize = 11.sp,
-                                            color = Color(0xFF6366F1),
-                                            fontWeight = FontWeight.Medium
-                                        )
-                                        Text(
-                                            text = "Regístrate aquí",
-                                            fontSize = 15.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color(0xFF1E1B4B)
-                                        )
-                                    }
                                 }
-                                Icon(
-                                    imageVector = Icons.Default.ArrowForward,
-                                    contentDescription = "Ir a registro",
-                                    tint = Color(0xFF4F46E5),
-                                    modifier = Modifier.size(20.dp)
-                                )
                             }
-                        }
-                    }
-
-                    // --- UX Improvement #2: Animación Fluida de Formulario (Expand, Slide, Fade) ---
-                    AnimatedVisibility(
-                        visible = showOtherMethods,
-                        enter = expandVertically(animationSpec = tween(300)) + fadeIn(animationSpec = tween(300)) + slideInVertically(initialOffsetY = { -20 }, animationSpec = tween(300)),
-                        exit = shrinkVertically(animationSpec = tween(300)) + fadeOut(animationSpec = tween(300)) + slideOutVertically(targetOffsetY = { -20 }, animationSpec = tween(300))
-                    ) {
-                        Column(modifier = Modifier.padding(top = 16.dp)) {
-                            // --- Campo: Nombre (Solo Registro) ---
-                            AnimatedVisibility(visible = !isLogin) {
+                        } else {
+                            // Formulario desplegado de Correo y Contraseña
+                            Column(modifier = Modifier.fillMaxWidth()) {
                                 OutlinedTextField(
-                                    value = name,
-                                    onValueChange = { name = it },
-                                    label = { Text("Nombre Completo") },
-                                    leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                                    value = email,
+                                    onValueChange = { email = it; validationError = null },
+                                    label = { Text("Correo o teléfono") },
+                                    leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(12.dp),
                                     singleLine = true,
                                     colors = textFieldColors
                                 )
-                                Spacer(modifier = Modifier.height(16.dp))
-                            }
 
-                            // --- Campo: Teléfono (Solo Registro) ---
-                            AnimatedVisibility(visible = !isLogin) {
+                                Spacer(modifier = Modifier.height(14.dp))
+
                                 OutlinedTextField(
-                                    value = phone,
-                                    onValueChange = { phone = it },
-                                    label = { Text("Número de Teléfono") },
-                                    leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                                    value = password,
+                                    onValueChange = { password = it; validationError = null },
+                                    label = { Text("Contraseña") },
+                                    leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                    trailingIcon = {
+                                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                            Icon(
+                                                imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                                contentDescription = null
+                                            )
+                                        }
+                                    },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(12.dp),
                                     singleLine = true,
                                     colors = textFieldColors
                                 )
-                                Spacer(modifier = Modifier.height(16.dp))
-                            }
 
-                            // --- Campo: Email ---
-                            OutlinedTextField(
-                                value = email,
-                                onValueChange = { email = it },
-                                label = { Text("Correo Electrónico") },
-                                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp),
-                                singleLine = true,
-                                colors = textFieldColors
-                            )
-                            
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            // --- Campo: Contraseña ---
-                            OutlinedTextField(
-                                value = password,
-                                onValueChange = {
-                                    password = it
-                                    validationError = null
-                                },
-                                label = { Text(if (isLogin) "Contraseña" else "Contraseña (mín. 6 car.)") },
-                                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
-                                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                                trailingIcon = {
-                                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                                        Icon(
-                                            imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                            contentDescription = null
-                                        )
-                                    }
-                                },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(12.dp),
-                                singleLine = true,
-                                colors = textFieldColors
-                            )
-
-                            // --- Enlace: ¿Olvidaste tu contraseña? (Solo Login) ---
-                            AnimatedVisibility(visible = isLogin) {
+                                // Enlace: ¿Olvidaste tu contraseña?
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -810,121 +982,310 @@ fun AuthScreen(
                                         Text(
                                             text = "¿Olvidaste tu contraseña?",
                                             fontSize = 13.sp,
-                                            color = Color(0xFF6366F1),
+                                            color = Color(0xFF2563EB),
                                             fontWeight = FontWeight.SemiBold
                                         )
                                     }
                                 }
-                            }
 
-                            // --- Campo: Confirmar Contraseña (Solo Registro) ---
-                            AnimatedVisibility(visible = !isLogin) {
-                                Column {
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    OutlinedTextField(
-                                        value = confirmPassword,
-                                        onValueChange = {
-                                            confirmPassword = it
-                                            validationError = null
-                                        },
-                                        label = { Text("Confirmar Contraseña") },
-                                        leadingIcon = { Icon(Icons.Default.LockReset, contentDescription = null) },
-                                        visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-                                        trailingIcon = {
-                                            IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
-                                                Icon(
-                                                    imageVector = if (confirmPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                                                    contentDescription = null
-                                                )
-                                            }
-                                        },
-                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                                        modifier = Modifier.fillMaxWidth(),
-                                        shape = RoundedCornerShape(12.dp),
-                                        singleLine = true,
-                                        colors = textFieldColors
+                                if (validationError != null) {
+                                    Text(
+                                        text = validationError!!,
+                                        color = MaterialTheme.colorScheme.error,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        modifier = Modifier.padding(top = 6.dp)
                                     )
                                 }
-                            }
 
-                            // --- Validación local de campos ---
-                            if (validationError != null) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = validationError!!,
-                                    color = MaterialTheme.colorScheme.error,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
+                                if (uiState is AuthUiState.Error) {
+                                    Text(
+                                        text = formatAuthError((uiState as AuthUiState.Error).mensaje),
+                                        color = MaterialTheme.colorScheme.error,
+                                        fontSize = 13.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        modifier = Modifier.padding(top = 6.dp)
+                                    )
+                                }
 
-                            // --- UX Improvement #4: Feedback de Error Amigable desde Backend ---
-                            if (uiState is AuthUiState.Error) {
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = formatAuthError((uiState as AuthUiState.Error).mensaje),
-                                    color = MaterialTheme.colorScheme.error,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
+                                Spacer(modifier = Modifier.height(18.dp))
 
-                            Spacer(modifier = Modifier.height(24.dp))
-
-                            // --- Botón Principal ---
-                            Button(
-                                onClick = {
-                                    validationError = null
-                                    if (isLogin) {
+                                Button(
+                                    onClick = {
+                                        validationError = null
                                         if (email.isBlank() || password.isBlank()) {
                                             validationError = "Por favor, ingresa tu correo y contraseña."
                                             return@Button
                                         }
                                         viewModel.login(email.trim(), password)
+                                    },
+                                    enabled = uiState !is AuthUiState.Loading,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(52.dp),
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB))
+                                ) {
+                                    if (uiState is AuthUiState.Loading) {
+                                        CircularProgressIndicator(color = Color.White, modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
                                     } else {
-                                        if (name.isBlank()) {
-                                            validationError = "Por favor, ingresa tu nombre completo."
-                                            return@Button
-                                        }
-                                        if (email.isBlank()) {
-                                            validationError = "Por favor, ingresa tu correo electrónico."
-                                            return@Button
-                                        }
-                                        if (password.length < 6) {
-                                            validationError = "La contraseña debe tener al menos 6 caracteres."
-                                            return@Button
-                                        }
-                                        if (password != confirmPassword) {
-                                            validationError = "Las contraseñas no coinciden."
-                                            return@Button
-                                        }
-                                        // Customer App registra exclusivamente con rol 'customer'
-                                        viewModel.register(email.trim(), password, name.trim(), phone.trim(), "customer")
+                                        Text("INICIAR SESIÓN", fontWeight = FontWeight.Bold, fontSize = 15.sp, color = Color.White)
                                     }
+                                }
+
+                                Spacer(modifier = Modifier.height(10.dp))
+
+                                TextButton(
+                                    onClick = { showOtherMethods = false },
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                ) {
+                                    Text("Ver otros métodos de acceso", color = Color(0xFF64748B), fontSize = 13.sp)
+                                }
+                            }
+                        }
+                    } else {
+                        // ── CONTENIDO DE LA PESTAÑA CREAR CUENTA ────────────────
+                        Column(modifier = Modifier.fillMaxWidth()) {
+                            // 1. Nombre Completo
+                            OutlinedTextField(
+                                value = name,
+                                onValueChange = { name = it; validationError = null },
+                                label = { Text("Nombre Completo") },
+                                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                singleLine = true,
+                                colors = textFieldColors
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // 2. Número de Teléfono
+                            OutlinedTextField(
+                                value = phone,
+                                onValueChange = { phone = it; validationError = null },
+                                label = { Text("Número de Teléfono") },
+                                leadingIcon = { Icon(Icons.Default.Phone, contentDescription = null) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                singleLine = true,
+                                colors = textFieldColors
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // 3. Correo Electrónico
+                            OutlinedTextField(
+                                value = email,
+                                onValueChange = { email = it; validationError = null },
+                                label = { Text("Correo Electrónico") },
+                                leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                singleLine = true,
+                                colors = textFieldColors
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // 4. Contraseña
+                            OutlinedTextField(
+                                value = password,
+                                onValueChange = { password = it; validationError = null },
+                                label = { Text("Contraseña (mín. 6 car.)") },
+                                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
+                                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                trailingIcon = {
+                                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                        Icon(
+                                            imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                            contentDescription = null
+                                        )
+                                    }
+                                },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                singleLine = true,
+                                colors = textFieldColors
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // 5. Confirmar Contraseña
+                            OutlinedTextField(
+                                value = confirmPassword,
+                                onValueChange = { confirmPassword = it; validationError = null },
+                                label = { Text("Confirmar Contraseña") },
+                                leadingIcon = { Icon(Icons.Default.LockReset, contentDescription = null) },
+                                visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                trailingIcon = {
+                                    IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
+                                        Icon(
+                                            imageVector = if (confirmPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                            contentDescription = null
+                                        )
+                                    }
+                                },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(12.dp),
+                                singleLine = true,
+                                colors = textFieldColors
+                            )
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // ── CHECKBOX LEGAL Y ENLACES INDEPENDIENTES ─────────
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    checked = isTermsAccepted,
+                                    onCheckedChange = { isTermsAccepted = it },
+                                    colors = CheckboxDefaults.colors(
+                                        checkedColor = Color(0xFF2563EB),
+                                        uncheckedColor = Color(0xFF94A3B8)
+                                    )
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+
+                                val termsText = buildAnnotatedString {
+                                    append("Acepto los ")
+                                    pushStringAnnotation(tag = "TERMS", annotation = "terms")
+                                    withStyle(style = SpanStyle(color = Color(0xFF2563EB), fontWeight = FontWeight.SemiBold, textDecoration = TextDecoration.Underline)) {
+                                        append("Términos y Condiciones")
+                                    }
+                                    pop()
+                                    append(" y las ")
+                                    pushStringAnnotation(tag = "PRIVACY", annotation = "privacy")
+                                    withStyle(style = SpanStyle(color = Color(0xFF2563EB), fontWeight = FontWeight.SemiBold, textDecoration = TextDecoration.Underline)) {
+                                        append("Políticas de Privacidad")
+                                    }
+                                    pop()
+                                    append(" de TuaniGo.")
+                                }
+
+                                ClickableText(
+                                    text = termsText,
+                                    style = androidx.compose.ui.text.TextStyle(
+                                        fontSize = 12.sp,
+                                        color = Color(0xFF475569),
+                                        lineHeight = 16.sp
+                                    ),
+                                    onClick = { offset ->
+                                        termsText.getStringAnnotations(tag = "TERMS", start = offset, end = offset).firstOrNull()?.let {
+                                            val target = termsUrl?.takeIf { u -> u.isNotBlank() }
+                                            if (target != null) {
+                                                try {
+                                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(target)))
+                                                } catch (e: Exception) {
+                                                    Toast.makeText(context, "No se pudo abrir el enlace legal.", Toast.LENGTH_SHORT).show()
+                                                }
+                                            } else {
+                                                Toast.makeText(context, "Los Términos y Condiciones no están disponibles en este momento.", Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                        termsText.getStringAnnotations(tag = "PRIVACY", start = offset, end = offset).firstOrNull()?.let {
+                                            val target = privacyUrl?.takeIf { u -> u.isNotBlank() }
+                                            if (target != null) {
+                                                try {
+                                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(target)))
+                                                } catch (e: Exception) {
+                                                    Toast.makeText(context, "No se pudo abrir el enlace legal.", Toast.LENGTH_SHORT).show()
+                                                }
+                                            } else {
+                                                Toast.makeText(context, "La Política de Privacidad no está disponible en este momento.", Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+
+                            if (validationError != null) {
+                                Text(
+                                    text = validationError!!,
+                                    color = MaterialTheme.colorScheme.error,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    modifier = Modifier.padding(top = 8.dp)
+                                )
+                            }
+
+                            if (uiState is AuthUiState.Error) {
+                                Text(
+                                    text = formatAuthError((uiState as AuthUiState.Error).mensaje),
+                                    color = MaterialTheme.colorScheme.error,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    modifier = Modifier.padding(top = 8.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(20.dp))
+
+                            // Botón Principal: Crear cuenta →
+                            Button(
+                                onClick = {
+                                    validationError = null
+                                    if (name.isBlank()) {
+                                        validationError = "Por favor, ingresa tu nombre completo."
+                                        return@Button
+                                    }
+                                    if (email.isBlank()) {
+                                        validationError = "Por favor, ingresa tu correo electrónico."
+                                        return@Button
+                                    }
+                                    if (password.length < 6) {
+                                        validationError = "La contraseña debe tener al menos 6 caracteres."
+                                        return@Button
+                                    }
+                                    if (password != confirmPassword) {
+                                        validationError = "Las contraseñas no coinciden."
+                                        return@Button
+                                    }
+                                    viewModel.register(email.trim(), password, name.trim(), phone.trim(), "customer")
                                 },
                                 enabled = uiState !is AuthUiState.Loading,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(52.dp),
                                 shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6366F1))
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2563EB))
                             ) {
                                 if (uiState is AuthUiState.Loading) {
-                                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                                    CircularProgressIndicator(color = Color.White, modifier = Modifier.size(22.dp), strokeWidth = 2.dp)
                                 } else {
-                                    Text(
-                                        text = if (isLogin) "INICIAR SESIÓN" else "REGISTRARME",
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 15.sp,
-                                        color = Color.White
-                                    )
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        Text(
+                                            text = "Crear cuenta",
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 15.sp,
+                                            color = Color.White
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Icon(
+                                            imageVector = Icons.Default.ArrowForward,
+                                            contentDescription = null,
+                                            tint = Color.White,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                    }
                                 }
                             }
 
-                            // --- Botón Alternador ---
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // Enlace alternador: ¿Ya tienes cuenta? Inicia sesión
                             TextButton(
                                 onClick = {
-                                    isLogin = !isLogin
+                                    isLogin = true
                                     validationError = null
                                     viewModel.resetState()
                                 },
@@ -932,15 +1293,16 @@ fun AuthScreen(
                                 modifier = Modifier.align(Alignment.CenterHorizontally)
                             ) {
                                 Text(
-                                    text = if (isLogin) "¿No tienes cuenta? Regístrate aquí" else "¿Ya tienes cuenta? Inicia Sesión",
-                                    color = Color(0xFF4F46E5),
-                                    fontWeight = FontWeight.SemiBold
+                                    text = "¿Ya tienes cuenta? Inicia sesión",
+                                    color = Color(0xFF2563EB),
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 14.sp
                                 )
                             }
                         }
                     }
 
-                    // --- UX Improvement #5: Indicador Visual de Carga Dinámico ---
+                    // Indicador de carga dinámico
                     AnimatedVisibility(
                         visible = uiState is AuthUiState.Loading,
                         enter = fadeIn() + expandVertically(),
@@ -956,39 +1318,60 @@ fun AuthScreen(
                             CircularProgressIndicator(
                                 modifier = Modifier.size(18.dp),
                                 strokeWidth = 2.5.dp,
-                                color = Color(0xFF6366F1)
+                                color = Color(0xFF2563EB)
                             )
                             Spacer(modifier = Modifier.width(10.dp))
                             Text(
-                                text = "Iniciando sesión... Por favor espera",
+                                text = "Procesando... Por favor espera",
                                 fontSize = 13.sp,
-                                color = Color(0xFF4F46E5),
+                                color = Color(0xFF2563EB),
                                 fontWeight = FontWeight.Medium
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
-                    // --- BOTÓN EXPLORACIÓN PÚBLICA (GUEST MODE) ---
-                    TextButton(
-                        onClick = {
-                            navController.navigate("guest_home") {
-                                popUpTo("login_register") { inclusive = true }
-                            }
-                        },
-                        enabled = uiState !is AuthUiState.Loading,
-                        modifier = Modifier.align(Alignment.CenterHorizontally)
+                    // ── MODO INVITADO (GUEST MODE) CON DIVISORES E ICONO ─────
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
                     ) {
-                        Text(
-                            text = "Explorar como invitado",
-                            color = Color.Gray,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 14.sp
-                        )
+                        HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE2E8F0))
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .clickable(
+                                    interactionSource = remember { MutableInteractionSource() },
+                                    indication = null
+                                ) {
+                                    navController.navigate("guest_home") {
+                                        popUpTo("login_register") { inclusive = true }
+                                    }
+                                }
+                                .padding(horizontal = 10.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Visibility,
+                                contentDescription = null,
+                                tint = Color(0xFF64748B),
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "Explorar como invitado",
+                                color = Color(0xFF64748B),
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 12.5.sp
+                            )
+                        }
+                        HorizontalDivider(modifier = Modifier.weight(1f), color = Color(0xFFE2E8F0))
                     }
                 }
             }
         }
     }
 }
+
